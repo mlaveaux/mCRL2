@@ -300,6 +300,12 @@ bool destructive_refinement_checker(
     // Assign the reduced LTS, and set init_l2.
     init_l2=bisim_part.get_eq_class(init_l2);
     bisim_part.replace_transition_system(weak_reduction,preserve_divergence);
+
+    if (bisim_part.in_same_class(init_l2, l1.initial_state()))
+    {
+      mCRL2log(log::debug) << "Both LTSs are (divergence-preserving) branching bisimular, so no need to check refinement relation.\n";
+      return true;
+    }
   }
 
   const detail::lts_cache<LTS_TYPE> weak_property_cache(l1,weak_reduction);
