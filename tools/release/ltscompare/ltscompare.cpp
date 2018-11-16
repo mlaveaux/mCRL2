@@ -26,6 +26,7 @@
 #include "mcrl2/lts/lts_fsm.h"
 #include "mcrl2/lts/lts_dot.h"
 
+#include "mcrl2/lts/detail/exploration_strategy.h"
 
 using namespace std;
 using namespace mcrl2::lts;
@@ -34,7 +35,6 @@ using namespace mcrl2::utilities::tools;
 using namespace mcrl2::utilities;
 using namespace mcrl2::core;
 using namespace mcrl2::log;
-
 
 struct t_tool_options
 {
@@ -46,6 +46,7 @@ struct t_tool_options
     format_for_second(lts_none),
     equivalence(lts_eq_none),
     preorder(lts_pre_none),
+    strategy(es_none),
     generate_counter_examples(false)
   {}
 
@@ -55,6 +56,7 @@ struct t_tool_options
   lts_type        format_for_second;
   lts_equivalence equivalence;
   lts_preorder    preorder;
+  exploration_strategy strategy;
   std::vector<std::string> tau_actions;   // Actions with these labels must be considered equal to tau.
   bool generate_counter_examples;
 };
@@ -129,11 +131,9 @@ class ltscompare_tool : public ltscompare_base
       if (tool_options.preorder != lts_pre_none)
       {
         mCRL2log(verbose) << "comparing LTSs using " <<
-                     tool_options.preorder << "..." << std::endl;
-        mCRL2log(verbose) << "comparing LTSs using " <<
                      description(tool_options.preorder) << "..." << std::endl;
 
-        result = compare(l1,l2,tool_options.preorder,tool_options.generate_counter_examples);
+        result = destructive_compare(l1, l2, tool_options.preorder, tool_options.generate_counter_examples, tool_options.strategy);
 
         mCRL2log(info) << "The LTS in " << tool_options.name_for_first
                        << " is " << ((result) ? "" : "not ")
@@ -255,6 +255,11 @@ class ltscompare_tool : public ltscompare_base
                  .add_value(lts_pre_weak_failures_refinement) 
                  .add_value(lts_pre_failures_divergence_refinement),
                  "use preorder NAME (not allowed in combination with -e/--equivalence):", 'p').
+      add_option("strategy", make_enum_argument<exploration_strategy>("NAME")
+                 .add_value_short(es_breadth, "b", true)
+                 .add_value_short(es_depth, "d")
+                 , "explore the state space using strategy NAME:"
+                 , 's').
       add_option("tau", make_mandatory_argument("ACTNAMES"),
                  "consider actions with a name in the comma separated list ACTNAMES to "
                  "be internal (tau) actions in addition to those defined as such by "
@@ -316,6 +321,13 @@ class ltscompare_tool : public ltscompare_base
         tool_options.name_for_first  = parser.arguments[0];
         tool_options.name_for_second = parser.arguments[1];
       } // else something strange going on, caught in check_preconditions()
+
+      if (parser.options.count("strategy"))
+      {
+        tool_options.strategy = mcrl2::lts::parse_exploration_strategy(parser.option_argument("strategy"));
+
+        // Warn the user about strategy having no effect.
+      }
 
       if (parser.options.count("in1"))
       {

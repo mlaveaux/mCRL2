@@ -21,8 +21,9 @@
 #define _LIBLTS_FAILURES_REFINEMENT_H
 
 #include "unordered_set"
-#include "mcrl2/lts/detail/liblts_bisim_gjkw.h"
 #include "mcrl2/lts/detail/counter_example.h"
+#include "mcrl2/lts/detail/exploration_strategy.h"
+#include "mcrl2/lts/detail/liblts_bisim_gjkw.h"
 
 namespace mcrl2
 {
@@ -261,20 +262,22 @@ namespace detail
 
 enum refinement_type { trace, failures, failures_divergence };
 
-/* This function checks using algorithms in the paper mentioned above that
- * whether transition system l1 is included in transition system l2, in the
- * sense of trace inclusions, failures inclusion and divergence failures 
- * inclusion. If the bool weak_reduction is set, it will do so where tau's 
- * are included. When generate_counter_example is set, a labelled transition 
- * system is generated that can act as a counterexample. It consists of a 
- * trace, followed by outgoing transitions representing a refusal set. */
-
+/// \brief This function checks using algorithms in the paper mentioned above that
+/// whether transition system l1 is included in transition system l2, in the
+/// sense of trace inclusions, failures inclusion and divergence failures
+/// inclusion.
+/// \param weak_reduction If set, it will do so where tau's are included.
+/// \param generate_counter_example If set, a labelled transition system is generated
+///        that can act as a counterexample. It consists of a trace, followed by
+///        outgoing transitions representing a refusal set.
+/// \param strategy Choose between breadth and depth first.
 template < class LTS_TYPE, class COUNTER_EXAMPLE_CONSTRUCTOR = detail::dummy_counter_example_constructor >
 bool destructive_refinement_checker(
                         LTS_TYPE& l1, 
                         LTS_TYPE& l2, 
                         const refinement_type refinement, 
-                        const bool weak_reduction, 
+                        const bool weak_reduction,
+                        const exploration_strategy strategy,
                         COUNTER_EXAMPLE_CONSTRUCTOR generate_counter_example = detail::dummy_counter_example_constructor())
 {
   std::size_t init_l2 = l2.initial_state() + l1.num_states();
@@ -402,7 +405,14 @@ bool destructive_refinement_checker(
                           impl_spec_counterex(t.to(),spec_prime,new_counterexample_index);
         if (detail::antichain_insert(anti_chain, impl_spec_counterex))   
         {
-          working.push_back(impl_spec_counterex);   // push(impl,spec') into working;
+          if (strategy == exploration_strategy::es_breadth)
+          {
+            working.push_back(impl_spec_counterex);   // push(impl,spec') into working;
+          }
+          else if (strategy == exploration_strategy::es_depth)
+          {
+            working.push_front(impl_spec_counterex);   // push(impl,spec') into working;
+          }
         }
       }
     }
