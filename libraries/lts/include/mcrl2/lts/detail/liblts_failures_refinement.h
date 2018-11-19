@@ -85,9 +85,14 @@ namespace detail
       }
   };
  
-  template <  class COUNTER_EXAMPLE_CONSTRUCTOR >
-  inline bool antichain_insert(
+  template<typename COUNTER_EXAMPLE_CONSTRUCTOR>
+  inline void antichain_insert(
                   anti_chain_type& anti_chain, 
+                  const state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>& impl_spec);
+
+  template<typename COUNTER_EXAMPLE_CONSTRUCTOR>
+  inline bool antichain_contains(
+                  anti_chain_type& anti_chain,
                   const state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>& impl_spec);
 
   // The class below recalls what the stable states and the states with a divergent
@@ -364,10 +369,7 @@ bool destructive_refinement_checker(
                                   generate_counter_example.root_index() ) });
                                                       // let antichain := emptyset;
   detail::anti_chain_type anti_chain;
-  detail::antichain_insert(anti_chain, working.front());   // antichain := antichain united with (impl,spec); 
-                                                           // This line occurs at another place in the code than in 
-                                                           // the original algorithm, where insertion in the anti-chain
-                                                           // was too late, causing too many impl-spec pairs to be investigated.
+  
   std::size_t statistics_counter_max = l1.num_states() / 10;
   std::size_t statistics_counter = statistics_counter_max;
   refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> stats(anti_chain, working);
@@ -375,11 +377,12 @@ bool destructive_refinement_checker(
   while (working.size()>0)                            // while working!=empty
   {
     detail::state_states_counter_example_index_triple < COUNTER_EXAMPLE_CONSTRUCTOR > impl_spec;   // pop (impl,spec) from working;
-    impl_spec.swap(working.front());
-    stats.max_working   = std::max(working.size(), stats.max_working);
-    stats.max_antichain = std::max(anti_chain.size(), stats.max_antichain);
+    impl_spec.swap(working.front());  
+    stats.max_working = std::max(working.size(), stats.max_working);
     working.pop_front();     // At this point it could be checked whether impl_spec still exists in anti_chain.
                              // Small scale experiments show that this is a little bit more expensive than doing the explicit check below.
+    detail::antichain_insert(anti_chain, impl_spec);
+    stats.max_antichain = std::max(anti_chain.size(), stats.max_antichain);
 
     // Periodically report statistics.
     if (--statistics_counter == 0)
@@ -467,7 +470,7 @@ bool destructive_refinement_checker(
         ++stats.antichain_inserts;
         const detail::state_states_counter_example_index_triple < COUNTER_EXAMPLE_CONSTRUCTOR > 
                           impl_spec_counterex(t.to(),spec_prime,new_counterexample_index);
-        if (detail::antichain_insert(anti_chain, impl_spec_counterex))   
+        if (!detail::antichain_contains(anti_chain, impl_spec_counterex))   
         {
           ++stats.antichain_misses;
           if (strategy == exploration_strategy::es_breadth)
@@ -561,6 +564,26 @@ namespace detail
     return collect_reachable_states_via_taus(states_reachable_via_e, weak_property_cache, weak_reduction);
   }
 
+  template <  class COUNTER_EXAMPLE_CONSTRUCTOR >
+  inline bool antichain_contains(
+                  anti_chain_type& anti_chain,
+                  const state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>& impl_spec)
+  {
+    // First check whether there is a set in the antichain for impl_spec.state() which is smaller than impl_spec.states().
+    // If so, impl_spec.states() does not have to be inserted in the anti_chain.
+    for(anti_chain_type::const_iterator i=anti_chain.lower_bound(impl_spec.state()); i!=anti_chain.upper_bound(impl_spec.state()); ++i)
+    {
+      const set_of_states s=i->second;
+      // If s is included in impl_spec.states()
+      if (std::includes(impl_spec.states().begin(), impl_spec.states().end(), s.begin(),s.end()))
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /* This function implements the insertion of <p,state(), p.states()> in the anti_chain.
      Concretely, this means that p.states() is inserted among the sets s1,...,sn associated to p.state().
      It is important that an anti_chain contains for each state a set of states of which 
@@ -572,22 +595,10 @@ namespace detail
      This function returns true if insertion was succesful, and false otherwise.
    */
   template <  class COUNTER_EXAMPLE_CONSTRUCTOR >
-  inline bool antichain_insert(
+  inline void antichain_insert(
                   anti_chain_type& anti_chain, 
                   const state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>& impl_spec)
   {
-    // First check whether there is a set in the antichain for impl_spec.state() which is smaller than impl_spec.states().
-    // If so, impl_spec.states() does not have to be inserted in the anti_chain.
-    for(anti_chain_type::const_iterator i=anti_chain.lower_bound(impl_spec.state()); i!=anti_chain.upper_bound(impl_spec.state()); ++i)
-    {
-      const set_of_states s=i->second;
-      // If s is included in impl_spec.states() 
-      if (std::includes(impl_spec.states().begin(), impl_spec.states().end(), s.begin(),s.end()))
-      {
-        return false;
-      }
-    }
-
     // Here impl_spec.states() must be inserted in the antichain. Moreover, all sets in the antichain that 
     // are a superset of impl_spec.states() must be removed.
     for(anti_chain_type::iterator i=anti_chain.lower_bound(impl_spec.state()); i!=anti_chain.upper_bound(impl_spec.state()); )
@@ -606,7 +617,6 @@ namespace detail
       }
     }
     anti_chain.insert(std::pair<detail::state_type,detail::set_of_states>(impl_spec.state(),impl_spec.states()));
-    return true;
   }
   
   /* Calculate the states that are stable and reachable through tau-steps */
@@ -684,8 +694,6 @@ namespace detail
               const LTS_TYPE& l,
               const bool provide_a_counter_example)
   {
-    if (!weak_property_cache.stable(impl)) return true; // Checking in case of instability is not necessary, but rather time consuming. 
-
     // This function calculates whether refusals(impl) are not included in the refusals(spec).
     // This is equivalent to:
     // There is a tau-reachable stable state s' from impl, such that for each tau-reachable stable state s''
