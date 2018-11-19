@@ -323,13 +323,16 @@ bool destructive_refinement_checker(
   detail::antichain_insert(anti_chain, working.front());   // antichain := antichain united with (impl,spec); 
                                                            // This line occurs at another place in the code than in 
                                                            // the original algorithm, where insertion in the anti-chain
-                                                           // was too late, causing too many impl-spec pairs to be investigated. 
+                                                           // was too late, causing too many impl-spec pairs to be investigated.
+  std::size_t antichain_misses = 0; // Number of times a pair was inserted into the antichain.
+  std::size_t antichain_inserts = 0; // Number of times antichain_insert was called.
+
   while (working.size()>0)                            // while working!=empty
   {
     detail::state_states_counter_example_index_triple < COUNTER_EXAMPLE_CONSTRUCTOR > impl_spec;   // pop (impl,spec) from working;
     impl_spec.swap(working.front());  
     working.pop_front();     // At this point it could be checked whether impl_spec still exists in anti_chain. 
-                             // Small scale experiments show that this is a little bit more expensive than doing the explicit check below. 
+                             // Small scale experiments show that this is a little bit more expensive than doing the explicit check below.
     
     if (refinement==failures_divergence && weak_property_cache.diverges(impl_spec.state()))
                                                       // if impl diverges
@@ -401,10 +404,12 @@ bool destructive_refinement_checker(
           return false;                             //    return false;  
         }
                                                     // if (impl',spec') in antichain is not true then
+        ++antichain_inserts;
         const detail::state_states_counter_example_index_triple < COUNTER_EXAMPLE_CONSTRUCTOR > 
                           impl_spec_counterex(t.to(),spec_prime,new_counterexample_index);
         if (detail::antichain_insert(anti_chain, impl_spec_counterex))   
         {
+          ++antichain_misses;
           if (strategy == exploration_strategy::es_breadth)
           {
             working.push_back(impl_spec_counterex);   // push(impl,spec') into working;
@@ -418,6 +423,10 @@ bool destructive_refinement_checker(
     }
     
   }
+
+  mCRL2log(log::debug) << antichain_inserts - antichain_misses << " pairs already included in the antichain, "
+                       << antichain_misses << " pairs inserted in the antichain, "
+                       << anti_chain.size() << " pairs in the antichain.\n";
   return true;                                      // return true;
 }
 
