@@ -17,8 +17,8 @@
 // All algorithms come in a variant with and without internal steps. 
 // It is possible to generate a counter transition system in case the inclusion is answered by no.
 
-#ifndef _LIBLTS_FAILURES_REFINEMENT_H
-#define _LIBLTS_FAILURES_REFINEMENT_H
+#ifndef LIBLTS_FAILURES_REFINEMENT_H
+#define LIBLTS_FAILURES_REFINEMENT_H
 
 #include "unordered_set"
 #include "mcrl2/lts/detail/counter_example.h"
@@ -765,6 +765,4 @@ namespace detail
 } // namespace lts
 } // namespace mcrl2
 
-#endif //  _LIBLTS_FAILURES_REFINEMENT_H
-
-
+#endif //  LIBLTS_FAILURES_REFINEMENT_H
