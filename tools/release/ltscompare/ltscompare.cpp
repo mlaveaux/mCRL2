@@ -46,7 +46,7 @@ struct t_tool_options
     format_for_second(lts_none),
     equivalence(lts_eq_none),
     preorder(lts_pre_none),
-    strategy(es_none),
+    strategy(es_breadth),
     generate_counter_examples(false)
   {}
 
@@ -130,8 +130,9 @@ class ltscompare_tool : public ltscompare_base
 
       if (tool_options.preorder != lts_pre_none)
       {
-        mCRL2log(verbose) << "comparing LTSs using " <<
-                     description(tool_options.preorder) << "..." << std::endl;
+        mCRL2log(verbose) << "comparing LTSs for " <<
+                     description(tool_options.preorder) << "..."
+                     " using the " << print_exploration_strategy(tool_options.strategy) << " strategy.\n";
 
         result = destructive_compare(l1, l2, tool_options.preorder, tool_options.generate_counter_examples, tool_options.strategy);
 
@@ -149,7 +150,6 @@ class ltscompare_tool : public ltscompare_base
   public:
     bool run()
     {
-
       check_preconditions();
 
       if (tool_options.format_for_first==lts_none)
@@ -188,6 +188,7 @@ class ltscompare_tool : public ltscompare_base
           throw mcrl2::runtime_error("Reading the .dot format is not supported anymore.");
         }
       }
+
       return true;
     }
 
@@ -326,7 +327,10 @@ class ltscompare_tool : public ltscompare_base
       {
         tool_options.strategy = mcrl2::lts::parse_exploration_strategy(parser.option_argument("strategy"));
 
-        // Warn the user about strategy having no effect.
+        if (tool_options.strategy != es_breadth && tool_options.generate_counter_examples)
+        {
+          mCRL2log(mcrl2::log::warning) << "Generated counter example might not be the shortest with the " << print_exploration_strategy(tool_options.strategy) << " strategy.\n";
+        }
       }
 
       if (parser.options.count("in1"))
