@@ -262,6 +262,30 @@ namespace detail
 
 enum refinement_type { trace, failures, failures_divergence };
 
+template<typename T>
+struct refinement_statistics
+{
+  refinement_statistics(detail::anti_chain_type& antichain, std::deque<T>& working) :
+    antichain(antichain),
+    working(working)
+  {}
+
+  detail::anti_chain_type& antichain;
+  std::deque<T>& working;
+  std::size_t antichain_misses = 0; // Number of times a pair was inserted into the antichain.
+  std::size_t antichain_inserts = 0; // Number of times antichain_insert was called.
+};
+
+/// \brief Print a message to debugging containing information about the given statistics.
+template<typename T>
+void report_statistics(refinement_statistics<T>& stats)
+{
+  mCRL2log(log::debug) << "working contains " << stats.working.size() << " pairs.\n";
+  mCRL2log(log::debug) << stats.antichain_inserts - stats.antichain_misses << " explored pairs already contained in the antichain, "
+                       << stats.antichain_misses << " explored pairs not found in the antichain, "
+                       << stats.antichain.size() << " pairs in the antichain.\n";
+}
+
 /// \brief This function checks using algorithms in the paper mentioned above that
 /// whether transition system l1 is included in transition system l2, in the
 /// sense of trace inclusions, failures inclusion and divergence failures
@@ -339,8 +363,9 @@ bool destructive_refinement_checker(
                                                            // This line occurs at another place in the code than in 
                                                            // the original algorithm, where insertion in the anti-chain
                                                            // was too late, causing too many impl-spec pairs to be investigated.
-  std::size_t antichain_misses = 0; // Number of times a pair was inserted into the antichain.
-  std::size_t antichain_inserts = 0; // Number of times antichain_insert was called.
+  std::size_t statistics_counter_max = l1.num_states() / 10;
+  std::size_t statistics_counter = statistics_counter_max;
+  refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> stats(anti_chain, working);
 
   while (working.size()>0)                            // while working!=empty
   {
@@ -348,6 +373,13 @@ bool destructive_refinement_checker(
     impl_spec.swap(working.front());  
     working.pop_front();     // At this point it could be checked whether impl_spec still exists in anti_chain. 
                              // Small scale experiments show that this is a little bit more expensive than doing the explicit check below.
+    --statistics_counter;
+    if (statistics_counter == 0)
+    {
+      // Periodically report statistics.
+      report_statistics(stats);
+      statistics_counter = statistics_counter_max;
+    }
     
     if (refinement==failures_divergence && weak_property_cache.diverges(impl_spec.state()))
                                                       // if impl diverges
@@ -364,7 +396,8 @@ bool destructive_refinement_checker(
       if (!spec_diverges)
       {
         generate_counter_example.save_counter_example(impl_spec.counter_example_index(),l1);
-        return false;                                 // return false; 
+        report_statistics(stats);
+        return false;                                 // return false;
       }
     }
     else 
@@ -391,7 +424,8 @@ bool destructive_refinement_checker(
                                                                                 failures_divergence || weak_reduction);
           }
           generate_counter_example.save_counter_example(impl_spec.counter_example_index(),l1, counter_example_extension);
-          return false;                               // return false; 
+          report_statistics(stats);
+          return false;                               // return false;
         }
       }
       
@@ -416,15 +450,16 @@ bool destructive_refinement_checker(
         if (spec_prime.empty())                     // if spec'={} then
         {
           generate_counter_example.save_counter_example(new_counterexample_index,l1);
-          return false;                             //    return false;  
+          report_statistics(stats);
+          return false;                             //    return false;
         }
                                                     // if (impl',spec') in antichain is not true then
-        ++antichain_inserts;
+        ++stats.antichain_inserts;
         const detail::state_states_counter_example_index_triple < COUNTER_EXAMPLE_CONSTRUCTOR > 
                           impl_spec_counterex(t.to(),spec_prime,new_counterexample_index);
         if (detail::antichain_insert(anti_chain, impl_spec_counterex))   
         {
-          ++antichain_misses;
+          ++stats.antichain_misses;
           if (strategy == exploration_strategy::es_breadth)
           {
             working.push_back(impl_spec_counterex);   // push(impl,spec') into working;
@@ -439,9 +474,7 @@ bool destructive_refinement_checker(
     
   }
 
-  mCRL2log(log::debug) << antichain_inserts - antichain_misses << " pairs already included in the antichain, "
-                       << antichain_misses << " pairs inserted in the antichain, "
-                       << anti_chain.size() << " pairs in the antichain.\n";
+  report_statistics(stats);
   return true;                                      // return true;
 }
 
