@@ -304,6 +304,8 @@ bool destructive_refinement_checker(
                         const exploration_strategy strategy,
                         COUNTER_EXAMPLE_CONSTRUCTOR generate_counter_example = detail::dummy_counter_example_constructor())
 {
+  assert(strategy == exploration_strategy::es_breadth || strategy == exploration_strategy::es_depth); // Need a valid strategy.
+
   if (!generate_counter_example.is_dummy())  // Counter example is requested, apply bisimulation to l2.
   {
     const bool preserve_divergence=weak_reduction && (refinement!=trace);
