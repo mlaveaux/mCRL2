@@ -280,6 +280,21 @@ bool destructive_refinement_checker(
                         const exploration_strategy strategy,
                         COUNTER_EXAMPLE_CONSTRUCTOR generate_counter_example = detail::dummy_counter_example_constructor())
 {
+  if (!generate_counter_example.is_dummy())  // Counter example is requested, apply bisimulation to l2.
+  {
+    const bool preserve_divergence=weak_reduction && (refinement!=trace);
+    l2.clear_state_labels();
+    if (weak_reduction)
+    {
+      detail::scc_partitioner<LTS_TYPE> scc_part(l2);
+      scc_part.replace_transition_system(preserve_divergence);
+    }
+
+    detail::bisim_partitioner_gjkw<LTS_TYPE> bisim_part(l2,weak_reduction,preserve_divergence);
+    // Assign the reduced LTS, and set init_l2.
+    bisim_part.replace_transition_system(weak_reduction,preserve_divergence);
+  }
+
   std::size_t init_l2 = l2.initial_state() + l1.num_states();
   mcrl2::lts::detail::merge(l1,l2);
   l2.clear(); // No use for l2 anymore.
