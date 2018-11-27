@@ -273,6 +273,7 @@ struct refinement_statistics
   detail::anti_chain_type& antichain;
   std::deque<T>& working;
   std::size_t max_working = 0; // The largest size of working.
+  std::size_t max_antichain = 0; // The largest size of the antichain.
   std::size_t antichain_misses = 0; // Number of times a pair was inserted into the antichain.
   std::size_t antichain_inserts = 0; // Number of times antichain_insert was called.
 };
@@ -284,7 +285,8 @@ void report_statistics(refinement_statistics<T>& stats)
   mCRL2log(log::debug, "Performance") << "working (current: " << stats.working.size() << ", max: " << stats.max_working << ").\n";
   mCRL2log(log::debug, "Performance") << "antichain (hits: " << stats.antichain_inserts - stats.antichain_misses
       << ", misses: " << stats.antichain_misses
-      << ", size: " << stats.antichain.size() << ")\n";
+      << ", size: " << stats.antichain.size()
+      << ", max: " << stats.max_antichain << ")\n";
 }
 
 /// \brief This function checks using algorithms in the paper mentioned above that
@@ -373,14 +375,15 @@ bool destructive_refinement_checker(
   while (working.size()>0)                            // while working!=empty
   {
     detail::state_states_counter_example_index_triple < COUNTER_EXAMPLE_CONSTRUCTOR > impl_spec;   // pop (impl,spec) from working;
-    impl_spec.swap(working.front());  
-    stats.max_working = std::max(working.size(), stats.max_working);
+    impl_spec.swap(working.front());
+    stats.max_working   = std::max(working.size(), stats.max_working);
+    stats.max_antichain = std::max(anti_chain.size(), stats.max_antichain);
     working.pop_front();     // At this point it could be checked whether impl_spec still exists in anti_chain.
                              // Small scale experiments show that this is a little bit more expensive than doing the explicit check below.
-    --statistics_counter;
-    if (statistics_counter == 0)
+
+    // Periodically report statistics.
+    if (--statistics_counter == 0)
     {
-      // Periodically report statistics.
       report_statistics(stats);
       statistics_counter = statistics_counter_max;
     }
