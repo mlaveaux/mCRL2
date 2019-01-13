@@ -348,7 +348,7 @@ bool destructive_refinement_checker(
     init_l2=bisim_part.get_eq_class(init_l2);
     bisim_part.replace_transition_system(weak_reduction,preserve_divergence);
 
-    if (bisim_part.in_same_class(init_l2, l1.initial_state()))
+    if (bisim_part.in_same_class(init_l2, l1.initial_state()) && weak_reduction)
     {
       mCRL2log(log::debug) << "Both LTSs are (divergence-preserving) branching bisimular, so no need to check refinement relation.\n";
       return true;
@@ -387,28 +387,31 @@ bool destructive_refinement_checker(
       report_statistics(stats);
       statistics_counter = statistics_counter_max;
     }
-    
-    if (refinement==failures_divergence && weak_property_cache.diverges(impl_spec.state()))
-                                                      // if impl diverges
+
+    bool spec_diverges = false;
+    if (refinement == failures_divergence)
     {
-      bool spec_diverges=false;
-      for(const detail::state_type s: impl_spec.states())       // if spec does not diverge
+      // Only compute when the result is required.
+      for (detail::state_type s : impl_spec.states())
       {
         if (weak_property_cache.diverges(s))
         {
-          spec_diverges=true;
+          spec_diverges = true;
           break;
         }
       }
-      if (!spec_diverges)
+    }
+
+    if (!spec_diverges || refinement != failures_divergence)
+    {
+      if (refinement == failures_divergence && weak_property_cache.diverges(impl_spec.state()))
       {
+                                                      // if impl diverges
         generate_counter_example.save_counter_example(impl_spec.counter_example_index(),l1);
         report_statistics(stats);
         return false;                                 // return false;
       }
-    }
-    else 
-    {
+
       if (refinement==failures || refinement==failures_divergence)
       { 
         detail::label_type offending_action=std::size_t(-1);

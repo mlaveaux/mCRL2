@@ -77,7 +77,7 @@ bool preorder_compare(const std::string& s1, const std::string& s2, lts_preorder
 {
   lts_aut_t t1=parse_aut(s1);
   lts_aut_t t2=parse_aut(s2);
-  return compare(t1, t2, pre,false);
+  return compare(t1, t2, pre, false, es_breadth);
 }
 
 static inline
