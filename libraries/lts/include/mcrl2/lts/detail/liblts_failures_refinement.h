@@ -668,139 +668,101 @@ namespace detail
     return cache[states];
   }
 
-  /* This function checks that the refusals(impl) are contained in the refusals of spec, where
-     the refusals of spec are defined by { r | exists s in spec. r in refusals(s) }.
-     This is equivalent to saying that for all stable states s' reachable via tau's from impl there is a stable t'
-     reachable via tau's from some t in spec, enable(t') is contained in enable(s'). The last expression is calculated below. 
-     If enable(t') is not included in enable(s'), their is a problematic action a. This action is returned as "culprit".
-     It can be used to construct an extended counterexample. 
-  */
+  /// \brief This function checks that the refusals(impl) are contained in the refusals of spec, where
+  ///        the refusals of spec are defined by { r | exists s in spec. r in refusals(s) and stable(r) }.
+  /// \details This is equivalent to saying that for all enabled actions of impl it must be contained in the enabled actions
+  ///          of every stable state in spec.
+  ///          If enable(t') is not included in enable(s'), their is a problematic action a. This action is returned as "culprit".
+  ///          It can be used to construct an extended counterexample.
   template < class LTS_TYPE >
   bool refusals_contained_in(
-              const state_type impl, 
-              const set_of_states& spec, 
+              const state_type impl,
+              const set_of_states& spec,
               const lts_cache<LTS_TYPE>& weak_property_cache,
               label_type& culprit,
               const LTS_TYPE& l,
               const bool provide_a_counter_example)
   {
-    if (!weak_property_cache.stable(impl)) return true; // Checking in case of instability is not necessary, but rather time consuming. 
+    if (!weak_property_cache.stable(impl)) return true; // Checking in case of instability is not necessary, but rather time consuming.
 
-    // This function calculates whether refusals(impl) are not included in the refusals(spec).
-    // This is equivalent to:
-    // There is a tau-reachable stable state s' from impl, such that for each tau-reachable stable state s''
-    // from any of the states in spec: enable(s'')\enable(s') is not empty.
+    const action_label_set& impl_action_labels = weak_property_cache.action_labels(impl);
+    bool success = false;
 
-    // First calculate the refusal sets reachable from spec.
-    const set_of_states& tau_reachable_states_of_the_specification=calculate_tau_reachable_states(spec,weak_property_cache);
-
-    // Now walk through the tau-reachable stable states s' of impl.
-    static std::unordered_set<state_type> visited;
-    assert(visited.empty());
-    visited.insert(impl);
-    static std::stack < state_type > todo_stack;
-    assert(todo_stack.empty());
-    todo_stack.push(impl);
-
-    while (todo_stack.size()>0)
+    // Compare the obtained enable set of impl with all of those stable in the specification.
+    for(const state_type s : spec)
     {
-      const state_type current_state=todo_stack.top();
-      todo_stack.pop();
-      if (weak_property_cache.stable(current_state))
-      {
-        // Put the outgoing action labels in a set and put these in the result.
-       
-        const action_label_set& impl_enabled_action_set=weak_property_cache.action_labels(current_state);
+      // Only stable states in this set should be checked.
+      if (!weak_property_cache.stable(s)) { continue; }
 
-        bool success=false;
-        // Compare the obtained enable set of s' with all those of the specification.
-        // for(const action_label_set& spec_action_labels: enabled_stable_sets_of_specification)
-        for(const state_type s: tau_reachable_states_of_the_specification)
-        {
-          // Check whether the enabled actions of spec are included in the enabled actions of impl.
-          // This is equivalent to checking that all spec_action_labels are in the impl_enabled_action_set.
-          const action_label_set& spec_action_labels=weak_property_cache.action_labels(s);
-          // Warning: std::includes checks whether the second range is included in the first. 
-          bool inclusion_success=std::includes(impl_enabled_action_set.begin(), impl_enabled_action_set.end(),
-                                               spec_action_labels.begin(), spec_action_labels.end());
-          if (inclusion_success)
-          {
-            success=true;
-            break;
-          }
-          else 
-          { 
-            // Find the offending action. 
-            for(const label_type a: spec_action_labels)
-            {
-              if (impl_enabled_action_set.count(a)==0) // We want to know which action caused the problem. 
-              {
-                culprit=a;
-              }
-            }
-          }
-        }
-        if (!success)
-        {
-          if (provide_a_counter_example)
-          {
-            // Print the acceptance set of the implementation 
-            if (impl_enabled_action_set.empty())
-            {
-              mCRL2log(log::verbose) << "The acceptance of the left process is empty.\n";
-            }
-            else
-            {
-              mCRL2log(log::verbose) << "A stable acceptance set of the left process is:\n";
-              for(const label_type a: impl_enabled_action_set)
-              {
-                mCRL2log(log::verbose) << l.action_label(a) << "\n";
-              }
-            }
-            // Print the acceptance sets of the specification. 
-            // if (enabled_stable_sets_of_specification.empty())
-            if (tau_reachable_states_of_the_specification.empty())
-            {
-              mCRL2log(log::verbose) << "The process at the right has no acceptance sets.\n";
-            }
-            else 
-            {
-              mCRL2log(log::verbose) << "Below all corresponding stable acceptance sets of the right process are provided:\n";
-              for(const state_type s: tau_reachable_states_of_the_specification)
-              {
-                const action_label_set& spec_action_labels=weak_property_cache.action_labels(s);
-                mCRL2log(log::verbose) << "An acceptance set of the right process is:\n";
-                for(const label_type a: spec_action_labels)
-                {
-                  mCRL2log(log::verbose) << l.action_label(a) << "\n";
-                }
-              }
-            }
-            mCRL2log(log::verbose) << "Finished printing acceptance sets.\n";          
-            // Ready printing acceptance sets. 
-          }
-          
-          visited.clear();
-          todo_stack=std::stack < state_type >();
-          return false;
-        }
+      // Check whether the enabled actions of spec are included in the enabled actions of impl.
+      // This is equivalent to checking that all spec_action_labels are in the impl_enabled_action_set.
+      const action_label_set& spec_action_labels = weak_property_cache.action_labels(s);
+
+      // Warning: std::includes checks whether the second range is included in the first.
+      bool inclusion_success = std::includes(impl_action_labels.begin(), impl_action_labels.end(),
+                                             spec_action_labels.begin(), spec_action_labels.end());
+      if (inclusion_success)
+      {
+        success = true;
+        break;
       }
       else
       {
-        // Put the states reachable in one tau step onto the todo stack, if they have not 
-        // been visited yet. 
-        for(const state_type s: weak_property_cache.tau_reachable_states(current_state)) 
+        // Find the offending action.
+        for(const label_type a : spec_action_labels)
         {
-          if (visited.insert(s).second) // s is a new state.
+          if (impl_action_labels.count(a) == 0) // We want to know which action caused the problem.
           {
-            todo_stack.push(s);
+            culprit = a;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!success)
+    {
+      if (provide_a_counter_example)
+      {
+        // Print the acceptance set of the implementation
+        if (impl_action_labels.empty())
+        {
+          mCRL2log(log::verbose) << "The acceptance of the left process is empty.\n";
+        }
+        else
+        {
+          mCRL2log(log::verbose) << "A stable acceptance set of the left process is:\n";
+          for(const label_type a : impl_action_labels)
+          {
+            mCRL2log(log::verbose) << l.action_label(a) << "\n";
           }
         }
 
+        // Print the acceptance sets of the specification.
+        if (spec.empty())
+        {
+          mCRL2log(log::verbose) << "The process at the right has no acceptance sets.\n";
+        }
+        else
+        {
+          mCRL2log(log::verbose) << "Below all corresponding stable acceptance sets of the right process are provided:\n";
+          for(const state_type s : spec)
+          {
+            const action_label_set& spec_action_labels = weak_property_cache.action_labels(s);
+            mCRL2log(log::verbose) << "An acceptance set of the right process is:\n";
+            for(const label_type a : spec_action_labels)
+            {
+              mCRL2log(log::verbose) << l.action_label(a) << "\n";
+            }
+          }
+        }
+        mCRL2log(log::verbose) << "Finished printing acceptance sets.\n";
+        // Ready printing acceptance sets.
       }
+      return false;
     }
-    visited.clear();
-    return true;   
+
+    return true;
   }
   
   
