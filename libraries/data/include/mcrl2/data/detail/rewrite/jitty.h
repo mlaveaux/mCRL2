@@ -32,8 +32,6 @@ class RewriterJitty: public Rewriter
 
     data_expression rewrite(const data_expression &term, substitution_type &sigma);
 
-    RewriterJitty& operator=(const RewriterJitty& other)=delete;
-
   private:
     std::map< function_symbol, data_equation_list > jitty_eqns;
     std::vector<strategy> jitty_strat;

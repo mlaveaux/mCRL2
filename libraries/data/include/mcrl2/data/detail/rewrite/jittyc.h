@@ -127,9 +127,6 @@ class RewriterCompilingJitty: public Rewriter
     std::vector<rewriter_function> functions_when_arguments_are_not_in_normal_form;
     std::vector<rewriter_function> functions_when_arguments_are_in_normal_form;
 
-    // Standard assignment operator.
-    RewriterCompilingJitty& operator=(const RewriterCompilingJitty& other)=delete;
-
   private:
     class ImplementTree;
     friend class ImplementTree;
