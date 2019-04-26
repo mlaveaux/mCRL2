@@ -6,17 +6,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/data/substitutions/mutable_indexed_substitution.h
-/// \brief add your file description here.
-
-// The code below contains an experiment to replace the classical mutable_indexed_substitution
-// by a std::unordered_map from variables to expressions. This is up to 1.5 times 
-// slower in most state space generations when there are not too many variables, which is
-// typical for state space generation without complex sum operations or quantifiers.
-// When a large number of variables exist, generally generated as fresh variables,
-// std::unordered_map can perform much better, leading to the time to generate a 
-// state space with a factor 2. 
-
 
 #ifndef MCRL2_DATA_SUBSTITUTIONS_MUTABLE_INDEXED_SUBSTITUTION_H
 #define MCRL2_DATA_SUBSTITUTIONS_MUTABLE_INDEXED_SUBSTITUTION_H
