@@ -27,14 +27,33 @@ public:
 
   InnermostRewriter(const data_specification& data_spec, const used_data_equation_selector& selector);
 
+  // Begin of the Rewriter interface.
   data_expression rewrite(const data_expression &term, substitution_type &sigma) override;
 
   rewrite_strategy getStrategy() override { return innermost; };
+  // End of the Rewriter interface.
 
 private:
-  /// \brief The rewrite function defined in the document. Takes a term, a substitution and a set of free
-  ///        variables and returns the rewritten term according to the term rewrite system passed in the constructor.
-  data_expression rewrite_impl(const data_expression &term, substitution_type &sigma, std::set<data::variable> free_variables);
+  /// \brief The rewrite function defined in the document. Takes a term t, a substitution sigma and a set of free
+  ///        variables V.
+  /// \returns The rewritten term according to the term rewrite system passed in the constructor.
+  data_expression rewrite_impl(const data_expression& term, substitution_type& sigma);
+
+  /// \brief Rewrites a term of the form lambda x . u to normal form.
+  data_expression rewrite_abstraction(const abstraction& abstraction, substitution_type& sigma);
+
+  /// \brief Rewrites a term of the form h(u_1, ..., u_n) to normal form.
+  data_expression rewrite_application(const application& appl, substitution_type& sigma);
+
+  /// \brief The match function defined in the document. However, instead of returning a set of right-hand sides it makes a (arbitrary)
+  ///        choice of which right-hand side to return. The given term must be in normal form.
+  /// \returns A boolean indicated that matching has succeeded (could be replaced by optional).
+  bool match(const data_expression& term, data_expression& rhs, substitution_type& sigma);
+
+  /// \brief Matches a single left-hand side with the given term and creates the substitution.
+  bool match_lhs(const data_expression& term, const data_expression& lhs, substitution_type& sigma);
+
+  std::vector<data_equation> m_rewrite_system; ///< The list of data equations that make up the rewrite system.
 };
 
 }
