@@ -81,23 +81,12 @@ class Rewriter : public mcrl2::utilities::noncopyable
      * \param Term The term to be rewritten. This term should be a data_term
      * \return The normal form of Term.
      **/
-
     virtual data_expression rewrite(const data_expression& term, substitution_type& sigma) = 0;
-
-    /**
-     * \brief Rewrite a list of mCRL2 data terms.
-     * \param Terms The list of terms to be rewritten. These terms
-     *              should be in the internal mCRL2 format.
-     * \return The list Terms where each element is replaced by its
-     *         normal form.
-     **/
-    /* virtual data_expression_list rewrite_list(const data_expression_list& terms, substitution_type& sigma); */
 
     /**
      * \brief Provide the rewriter with a () operator, such that it can also
      *        rewrite terms using this operator.
      **/
-
     data_expression operator() (const data_expression& term, substitution_type& sigma)
     {
       return rewrite(term,sigma);
