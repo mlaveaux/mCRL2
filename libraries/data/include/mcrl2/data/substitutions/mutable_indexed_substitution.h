@@ -13,6 +13,7 @@
 #include "mcrl2/data/is_simple_substitution.h"
 #include "mcrl2/data/undefined.h"
 
+
 namespace mcrl2 {
 
 namespace data {
