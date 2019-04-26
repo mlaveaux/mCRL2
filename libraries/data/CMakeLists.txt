@@ -14,6 +14,7 @@ add_mcrl2_library(data
     data_specification.cpp
     typecheck.cpp
     detail/prover/smt_lib_solver.cpp
+    detail/rewrite/innermost.cpp
     detail/rewrite/jitty.cpp
     detail/rewrite/rewrite.cpp
     detail/rewrite/strategy.cpp
