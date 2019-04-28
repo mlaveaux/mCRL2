@@ -198,7 +198,7 @@ static bool match_lhs(const data_expression& term,  const data_expression& lhs, 
     if (sigma.count(var))
     {
       // If the variable was already assigned they must match.
-      return sigma(var) == term;
+      return sigma.at(var) == term;
     }
     else
     {
@@ -244,7 +244,7 @@ static data_expression capture_avoiding_substitution(const data_expression& term
   if (is_variable(term))
   {
     const auto& var = static_cast<const variable&>(term);
-    return sigma(var);
+    return sigma.at(var);
   }
   // C(f, sigma, V) = f, where f is a function symbol.
   else if (is_function_symbol(term))
@@ -282,8 +282,8 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
   for (auto& equation : m_rewrite_system[static_cast<const application&>(term).head()])
   {
     // Compute a matching substitution for each rule.
-    substitution_type sigma;
-    if (match_lhs(term, equation.lhs(), sigma))
+    matching_sigma.clear();
+    if (match_lhs(term, equation.lhs(), matching_sigma))
     {
       // Only consider trivial conditions
       assert(equation.condition() == sort_bool::true_());
@@ -294,7 +294,7 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
       }
 
       // The right-hand side and substitution are a valid match.
-      rhs = capture_avoiding_substitution(equation.rhs(), sigma);
+      rhs = capture_avoiding_substitution(equation.rhs(), matching_sigma);
       return true;
     }
     else if (PrintMatchSteps)
