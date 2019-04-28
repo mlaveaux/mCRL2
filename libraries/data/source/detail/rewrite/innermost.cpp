@@ -180,7 +180,7 @@ bool InnermostRewriter::match_lhs(const data_expression& term,  const data_expre
   {
     const auto& var = static_cast<const variable&>(lhs);
 
-    if (sigma.defined(var))
+    if (sigma.count(var))
     {
       // If the variable was already assigned they must match.
       return sigma(var) == term;
