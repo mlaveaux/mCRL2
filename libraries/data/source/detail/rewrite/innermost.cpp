@@ -14,8 +14,8 @@
 
 #include <assert.h>
 
-constexpr bool PrintRewriteSteps = true;
-constexpr bool PrintMatchSteps   = true;
+constexpr bool PrintRewriteSteps = false;
+constexpr bool PrintMatchSteps   = false;
 
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
@@ -265,6 +265,7 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
   // to the given term.
   for (auto& equation : m_rewrite_system)
   {
+    // Rules that do not start with the correct head symbol cannot match by definition.
     if (is_application(equation.lhs()) && is_application(term))
     {
       const application& lhs_appl  = static_cast<const application&>(equation.lhs());
@@ -276,7 +277,7 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
       }
     }
 
-    mCRL2log(info) << "Trying rule " << equation << " to term " << term << "\n";
+    // Compute a matching substitution for each rule.
     substitution_type sigma;
     if (match_lhs(term, equation.lhs(), sigma))
     {
@@ -292,6 +293,15 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
       rhs = capture_avoiding_substitution(equation.rhs(), sigma);
       return true;
     }
+    else if (PrintMatchSteps)
+    {
+      mCRL2log(info) << "Tried rule " << equation << " to term " << term << "\n";
+    }
+  }
+
+  if (PrintMatchSteps)
+  {
+    mCRL2log(info) << "Term " << term << " is in normal-form.\n";
   }
 
   return false;
