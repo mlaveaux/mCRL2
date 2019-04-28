@@ -222,6 +222,43 @@ bool InnermostRewriter::match_lhs(const data_expression& term,  const data_expre
   }
 }
 
+/// \brief A capture-avoiding substitution of sigma applied to the given term.
+template<typename Substitution>
+static data_expression capture_avoiding_substitution(const data_expression& term, const Substitution& sigma)
+{
+  // If t in variables
+  if (is_variable(term))
+  {
+    const auto& var = static_cast<const variable&>(term);
+    return sigma(var);
+  }
+  // Else if t in function_symbols
+  else if (is_function_symbol(term))
+  {
+    return term;
+  }
+  // Else if t is of the form lambda x . u
+  else if (is_abstraction(term))
+  {
+    const auto& abstraction = static_cast<const class abstraction&>(term);
+    assert(false);
+  }
+  // Else (t is of the form h(u_1, ..., u_n)).
+  else
+  {
+    assert(is_application(term));
+    const auto& appl = static_cast<const application&>(term);
+
+    std::vector<data_expression> arguments(term.size());
+    for (data_expression& arg : arguments)
+    {
+      arg = capture_avoiding_substitution(arg, sigma);
+    }
+
+    return application(appl.head(), arguments.begin(), arguments.end());
+  }
+}
+
 bool InnermostRewriter::match(const data_expression& term, data_expression& rhs, substitution_type& sigma)
 {
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
