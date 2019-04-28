@@ -151,7 +151,6 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
   else
   {
     application appl(head_rewritten, arguments.begin(), arguments.end());
-    mCRL2log(info) << static_cast<const atermpp::aterm&>(appl) << "\n";
 
     // (R, sigma') := match(h'(u_1', ..., u_n')),
     data_expression rhs;
@@ -225,36 +224,38 @@ bool InnermostRewriter::match_lhs(const data_expression& term,  const data_expre
 template<typename Substitution>
 static data_expression capture_avoiding_substitution(const data_expression& term, const Substitution& sigma)
 {
-  // If t in variables
+  // C(x, sigma, V) = sigma(x), where x is a variable
   if (is_variable(term))
   {
     const auto& var = static_cast<const variable&>(term);
     return sigma(var);
   }
-  // Else if t in function_symbols
+  // C(f, sigma, V) = f, where f is a function symbol.
   else if (is_function_symbol(term))
   {
     return term;
   }
-  // Else if t is of the form lambda x . u
+  // C(lambda x . t, sigma, V) = lambda y . C(t, sigma[x := y], V), where x and y are variables.
   else if (is_abstraction(term))
   {
     const auto& abstraction = static_cast<const class abstraction&>(term);
     assert(false);
   }
-  // Else (t is of the form h(u_1, ..., u_n)).
+  // C(t(t_1, ..., t_n, sigma, V) = C(t, sigma, V) ( C(t_1, sigma, V), ..., C(t_n, sigma, V) )
   else
   {
     assert(is_application(term));
     const auto& appl = static_cast<const application&>(term);
 
-    std::vector<data_expression> arguments(term.size());
-    for (data_expression& arg : arguments)
+    // Substitution of all arguments.
+    std::vector<data_expression> arguments(appl.size());
+    for (std::size_t index = 0; index < appl.size(); ++index)
     {
-      arg = capture_avoiding_substitution(arg, sigma);
+      arguments[index] = capture_avoiding_substitution(appl[index], sigma);
     }
 
-    return application(appl.head(), arguments.begin(), arguments.end());
+    // Construct the application, also subsituting the head.
+    return application(capture_avoiding_substitution(appl.head(), sigma), arguments.begin(), arguments.end());
   }
 }
 
