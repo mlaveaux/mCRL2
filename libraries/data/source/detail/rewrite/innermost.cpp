@@ -46,7 +46,8 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
       }
       else
       {
-        m_rewrite_system.emplace_back(equation);
+        const application& lhs_appl = static_cast<const application&>(equation.lhs());
+        m_rewrite_system[lhs_appl.head()].emplace_back(equation);
       }
     }
     else
@@ -263,20 +264,8 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
 {
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
   // to the given term.
-  for (auto& equation : m_rewrite_system)
+  for (auto& equation : m_rewrite_system[static_cast<const application&>(term).head()])
   {
-    // Rules that do not start with the correct head symbol cannot match by definition.
-    if (is_application(equation.lhs()) && is_application(term))
-    {
-      const application& lhs_appl  = static_cast<const application&>(equation.lhs());
-      const application& term_appl = static_cast<const application&>(term);
-
-      if (lhs_appl.head() != term_appl.head())
-      {
-        continue;
-      }
-    }
-
     // Compute a matching substitution for each rule.
     substitution_type sigma;
     if (match_lhs(term, equation.lhs(), sigma))
