@@ -50,9 +50,6 @@ private:
   /// \returns A boolean indicated that matching has succeeded (could be replaced by optional).
   bool match(const data_expression& term, data_expression& rhs);
 
-  /// \brief Matches a single left-hand side with the given term and creates the substitution.
-  bool match_lhs(const data_expression& term, const data_expression& lhs, substitution_type& sigma);
-
   mcrl2::utilities::unordered_map<data_expression, std::vector<data_equation>> m_rewrite_system; ///< A mapping from function symbols to rewrite rules.
 };
 

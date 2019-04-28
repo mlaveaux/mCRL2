@@ -59,6 +59,7 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
 
 data_expression InnermostRewriter::rewrite(const data_expression& term, substitution_type& sigma)
 {
+  m_normal_form.clear();
   return rewrite_impl(term, sigma);
 }
 
@@ -170,7 +171,9 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
   }
 }
 
-bool InnermostRewriter::match_lhs(const data_expression& term,  const data_expression& lhs, substitution_type& sigma)
+/// \brief Matches a single left-hand side with the given term and creates the substitution.
+template<typename Substitution>
+static bool match_lhs(const data_expression& term,  const data_expression& lhs, Substitution& sigma)
 {
   if (is_function_symbol(lhs))
   {
