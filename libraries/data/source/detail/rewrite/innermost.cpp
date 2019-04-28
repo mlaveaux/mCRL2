@@ -126,8 +126,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
   m_normal_form.emplace(head_rewritten);
 
   // For i in {1, ..., n} do u' := rewrite(u, sigma)
-  std::vector<data_expression> arguments;
-  for (auto& argument : appl)
+  std::vector<data_expression> arguments(appl.size());
   for (std::size_t index = 0; index < appl.size(); ++index)
   {
     if (m_normal_form.count(appl[index]))
