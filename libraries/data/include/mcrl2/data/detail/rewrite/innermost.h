@@ -11,6 +11,8 @@
 #define MCRL2_DATA_DETAIL_INNERMOST_H
 
 #include "mcrl2/data/detail/rewrite.h"
+#include "mcrl2/utilities/unordered_set.h"
+#include "mcrl2/utilities/unordered_map.h"
 
 namespace mcrl2
 {
@@ -44,6 +46,8 @@ private:
 
   /// \brief Rewrites a term of the form h(u_1, ..., u_n) to normal form.
   data_expression rewrite_application(const application& appl, substitution_type& sigma);
+
+  mcrl2::utilities::unordered_set_large<data_expression> m_normal_form; ///< Keeps track of terms that are in normal-form.
 
   /// \brief The match function defined in the document. However, instead of returning a set of right-hand sides it makes a (arbitrary)
   ///        choice of which right-hand side to return and applied the matching substitution to it. The given term must be in normal form.

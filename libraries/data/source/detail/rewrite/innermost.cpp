@@ -120,13 +120,26 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 data_expression InnermostRewriter::rewrite_application(const application& appl, substitution_type& sigma)
 {
   // h' := rewrite(h, sigma, V)
-  auto head_rewritten = rewrite_impl(appl.head(), sigma);
+  auto head_rewritten = m_normal_form.count(appl.head()) ? appl.head() : rewrite_impl(appl.head(), sigma);
+
+  // Record normal-forms.
+  m_normal_form.emplace(head_rewritten);
 
   // For i in {1, ..., n} do u' := rewrite(u, sigma)
   std::vector<data_expression> arguments;
   for (auto& argument : appl)
+  for (std::size_t index = 0; index < appl.size(); ++index)
   {
-    arguments.emplace_back(rewrite_impl(argument, sigma));
+    if (m_normal_form.count(appl[index]))
+    {
+      // The given term is already in normal-form.
+      arguments[index] = appl[index];
+    }
+    else
+    {
+      arguments[index] = rewrite_impl(appl[index], sigma);
+      m_normal_form.emplace(arguments[index]);
+    }
   }
 
   // If h' is of the form lambda x . u
