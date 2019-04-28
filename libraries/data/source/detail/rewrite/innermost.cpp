@@ -112,7 +112,7 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
     mCRL2log(info) << "Applied alpha-reduction to" << abstraction << " resulting in " << result << "\n";
   }
 
-  return result;
+  return static_cast<data_expression>(result);
 }
 
 data_expression InnermostRewriter::rewrite_application(const application& appl, substitution_type& sigma)
@@ -150,25 +150,24 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
   }
   else
   {
-    application appl = application(head_rewritten, arguments.begin(), arguments.end());
+    application appl(head_rewritten, arguments.begin(), arguments.end());
+    mCRL2log(info) << static_cast<const atermpp::aterm&>(appl) << "\n";
 
-    // (R, sigma') := match(h'(u_1', ..., u_n'))
-    substitution_type match_sigma;
+    // (R, sigma') := match(h'(u_1', ..., u_n')),
     data_expression rhs;
 
-    // If R not empty
-    if (match(appl, rhs, match_sigma))
+    // If R not empty, this match function already applies the substitution.
+    if (match(appl, rhs))
     {
-      // Return rewrite(r, sigma')
-      return rewrite_impl(rhs, match_sigma);
+      // Return rewrite(r^sigma', sigma)
+      return rewrite_impl(rhs, sigma);
     }
     else
     {
       // Return h'(u_1', ..., u_n')
-      return appl;
+      return static_cast<data_expression>(appl);
     }
   }
-
 }
 
 bool InnermostRewriter::match_lhs(const data_expression& term,  const data_expression& lhs, substitution_type& sigma)
@@ -259,12 +258,25 @@ static data_expression capture_avoiding_substitution(const data_expression& term
   }
 }
 
-bool InnermostRewriter::match(const data_expression& term, data_expression& rhs, substitution_type& sigma)
+bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
 {
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
   // to the given term.
   for (auto& equation : m_rewrite_system)
   {
+    if (is_application(equation.lhs()) && is_application(term))
+    {
+      const application& lhs_appl  = static_cast<const application&>(equation.lhs());
+      const application& term_appl = static_cast<const application&>(term);
+
+      if (lhs_appl.head() != term_appl.head())
+      {
+        continue;
+      }
+    }
+
+    mCRL2log(info) << "Trying rule " << equation << " to term " << term << "\n";
+    substitution_type sigma;
     if (match_lhs(term, equation.lhs(), sigma))
     {
       // Only consider trivial conditions
@@ -272,11 +284,11 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs,
 
       if(PrintMatchSteps)
       {
-        mCRL2log(info) << "Matched rule " << equation << " with term " << term << "\n";
+        mCRL2log(info) << "Matched rule " << equation << " to term " << term << "\n";
       }
 
       // The right-hand side and substitution are a valid match.
-      rhs = equation.rhs();
+      rhs = capture_avoiding_substitution(equation.rhs(), sigma);
       return true;
     }
   }

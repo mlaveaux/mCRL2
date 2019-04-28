@@ -46,9 +46,9 @@ private:
   data_expression rewrite_application(const application& appl, substitution_type& sigma);
 
   /// \brief The match function defined in the document. However, instead of returning a set of right-hand sides it makes a (arbitrary)
-  ///        choice of which right-hand side to return. The given term must be in normal form.
+  ///        choice of which right-hand side to return and applied the matching substitution to it. The given term must be in normal form.
   /// \returns A boolean indicated that matching has succeeded (could be replaced by optional).
-  bool match(const data_expression& term, data_expression& rhs, substitution_type& sigma);
+  bool match(const data_expression& term, data_expression& rhs);
 
   /// \brief Matches a single left-hand side with the given term and creates the substitution.
   bool match_lhs(const data_expression& term, const data_expression& lhs, substitution_type& sigma);
