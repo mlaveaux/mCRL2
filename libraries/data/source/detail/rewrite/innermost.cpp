@@ -123,7 +123,7 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 
   if (PrintRewriteSteps)
   {
-    mCRL2log(info) << "Applied alpha-reduction to" << abstraction << " resulting in " << result << "\n";
+    mCRL2log(info) << "Applied alpha-reduction to " << abstraction << " resulting in " << result << "\n";
   }
 
   return static_cast<data_expression>(result);
@@ -194,7 +194,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
 
 bool InnermostRewriter::is_normal_form(const data_expression& term) const
 {
-  return !EnableNormalForms && (m_normal_forms.count(term) != 0);
+  return EnableNormalForms && (m_normal_forms.count(term) != 0);
 }
 
 void InnermostRewriter::mark_normal_form(const data_expression& term)
