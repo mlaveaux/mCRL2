@@ -40,15 +40,8 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
         continue;
       }
 
-      if (equation.condition() != sort_bool::true_())
-      {
-        mCRL2log(warning) << "Conditions are not supported, so rule " << equation << " has been removed.\n";
-      }
-      else
-      {
-        const application& lhs_appl = static_cast<const application&>(equation.lhs());
-        m_rewrite_system[lhs_appl.head()].emplace_back(equation);
-      }
+      const application& lhs_appl = static_cast<const application&>(equation.lhs());
+      m_rewrite_system[lhs_appl.head()].emplace_back(equation);
     }
     else
     {
@@ -288,19 +281,17 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
   // to the given term.
   for (auto& equation : m_rewrite_system[static_cast<const application&>(term).head()])
   {
-    // Compute a matching substitution for each rule.
+    // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
     matching_sigma.clear();
-    if (match_lhs(term, equation.lhs(), matching_sigma))
+    if (match_lhs(term, equation.lhs(), matching_sigma)
+      && (equation.condition() == sort_bool::true_()
+        || rewrite_impl(capture_avoiding_substitution(equation.condition(), matching_sigma), m_identity) == sort_bool::true_()))
     {
-      // Only consider trivial conditions
-      assert(equation.condition() == sort_bool::true_());
-
       if(PrintMatchSteps)
       {
         mCRL2log(info) << "Matched rule " << equation << " to term " << term << "\n";
       }
 
-      // The right-hand side and substitution are a valid match.
       rhs = capture_avoiding_substitution(equation.rhs(), matching_sigma);
       return true;
     }

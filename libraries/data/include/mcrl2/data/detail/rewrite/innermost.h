@@ -63,6 +63,8 @@ private:
   mcrl2::utilities::unordered_map_large<variable, data_expression> matching_sigma; ///< The matching substitution, only stored here to prevent reallocations.
 
   mcrl2::utilities::unordered_set_large<data_expression> m_normal_forms; ///< Keeps track of terms that are in normal form.
+
+  substitution_type m_identity; ///< The identity substitution.
 };
 
 }
