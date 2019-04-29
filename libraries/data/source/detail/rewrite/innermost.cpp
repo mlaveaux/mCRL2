@@ -45,6 +45,7 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
         continue;
       }
 
+      // Insert the left-hand side into the rewrite rule mapping.
       const application& lhs_appl = static_cast<const application&>(equation.lhs());
       m_rewrite_system[lhs_appl.head()].emplace_back(equation);
     }
@@ -183,7 +184,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
     if (match(appl, rhs))
     {
       // Return rewrite(r^sigma', sigma)
-      return rewrite_impl(rhs, sigma);
+      return rewrite_impl(rhs, m_identity);
     }
     else
     {

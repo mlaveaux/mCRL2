@@ -71,7 +71,7 @@ static bool match_lhs(const data_expression& term,  const data_expression& lhs, 
   {
     const auto& var = static_cast<const variable&>(lhs);
 
-    if (sigma.count(var))
+    if (sigma.count(var) != 0)
     {
       // If the variable was already assigned they must match.
       return sigma.at(var) == term;
