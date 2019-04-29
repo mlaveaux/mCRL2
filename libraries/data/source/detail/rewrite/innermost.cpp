@@ -15,7 +15,11 @@
 #include <assert.h>
 
 constexpr bool PrintRewriteSteps = false;
+
 constexpr bool PrintMatchSteps   = false;
+
+/// \brief Keep track of terms that are in normal form during rewriting.
+constexpr bool EnableNormalForms = true;
 
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
@@ -52,8 +56,9 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
 
 data_expression InnermostRewriter::rewrite(const data_expression& term, substitution_type& sigma)
 {
+  auto result = rewrite_impl(term, sigma);
   m_normal_forms.clear();
-  return rewrite_impl(term, sigma);
+  return result;
 }
 
 // Private functions
@@ -189,12 +194,15 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
 
 bool InnermostRewriter::is_normal_form(const data_expression& term) const
 {
-  return (m_normal_forms.count(term) != 0);
+  return !EnableNormalForms && (m_normal_forms.count(term) != 0);
 }
 
 void InnermostRewriter::mark_normal_form(const data_expression& term)
 {
-  m_normal_forms.emplace(term);
+  if (EnableNormalForms)
+  {
+    m_normal_forms.emplace(term);
+  }
 }
 
 /// \brief Matches a single left-hand side with the given term and creates the substitution.
@@ -298,8 +306,8 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
     matching_sigma.clear();
     if (match_lhs(term, equation.lhs(), matching_sigma)
-      && (equation.condition() == sort_bool::true_()
-        || rewrite_impl(capture_avoiding_substitution(equation.condition(), matching_sigma), m_identity) == sort_bool::true_()))
+        && (equation.condition() == sort_bool::true_()
+            || rewrite_impl(capture_avoiding_substitution(equation.condition(), matching_sigma), m_identity) == sort_bool::true_()))
     {
       if(PrintMatchSteps)
       {
