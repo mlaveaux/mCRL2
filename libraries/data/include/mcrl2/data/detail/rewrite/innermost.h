@@ -47,7 +47,11 @@ private:
   /// \brief Rewrites a term of the form h(u_1, ..., u_n) to normal form.
   data_expression rewrite_application(const application& appl, substitution_type& sigma);
 
-  mcrl2::utilities::unordered_set_large<data_expression> m_normal_form; ///< Keeps track of terms that are in normal-form.
+  /// \returns True if and only if the given term is in normal form.
+  bool is_normal_form(const data_expression& term) const;
+
+  /// \brief Marks the given term as being in normal form.
+  void mark_normal_form(const data_expression& term);
 
   /// \brief The match function defined in the document. However, instead of returning a set of right-hand sides it makes a (arbitrary)
   ///        choice of which right-hand side to return and applied the matching substitution to it. The given term must be in normal form.
@@ -56,6 +60,7 @@ private:
 
   mcrl2::utilities::unordered_map_large<data_expression, std::vector<data_equation>> m_rewrite_system; ///< A mapping from function symbols to rewrite rules.
   mcrl2::utilities::unordered_map_large<variable, data_expression> matching_sigma;
+  mcrl2::utilities::unordered_set_large<data_expression> m_normal_forms; ///< Keeps track of terms that are in normal form.
 };
 
 }

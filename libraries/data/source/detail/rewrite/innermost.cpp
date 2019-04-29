@@ -59,7 +59,7 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
 
 data_expression InnermostRewriter::rewrite(const data_expression& term, substitution_type& sigma)
 {
-  m_normal_form.clear();
+  m_normal_forms.clear();
   return rewrite_impl(term, sigma);
 }
 
@@ -120,24 +120,21 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 data_expression InnermostRewriter::rewrite_application(const application& appl, substitution_type& sigma)
 {
   // h' := rewrite(h, sigma, V)
-  auto head_rewritten = m_normal_form.count(appl.head()) ? appl.head() : rewrite_impl(appl.head(), sigma);
-
-  // Record normal-forms.
-  m_normal_form.emplace(head_rewritten);
+  auto head_rewritten = m_normal_forms.count(appl.head()) ? appl.head() : rewrite_impl(appl.head(), sigma);
+  mark_normal_form(head_rewritten);
 
   // For i in {1, ..., n} do u' := rewrite(u, sigma)
   std::vector<data_expression> arguments(appl.size());
   for (std::size_t index = 0; index < appl.size(); ++index)
   {
-    if (m_normal_form.count(appl[index]))
+    if (is_normal_form(appl[index]))
     {
-      // The given term is already in normal-form.
       arguments[index] = appl[index];
     }
     else
     {
       arguments[index] = rewrite_impl(appl[index], sigma);
-      m_normal_form.emplace(arguments[index]);
+      mark_normal_form(arguments[index]);
     }
   }
 
@@ -181,6 +178,16 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
       return static_cast<data_expression>(appl);
     }
   }
+}
+
+bool InnermostRewriter::is_normal_form(const data_expression& term) const
+{
+  return (m_normal_forms.count(term) != 0);
+}
+
+void InnermostRewriter::mark_normal_form(const data_expression& term)
+{
+  m_normal_forms.emplace(term);
 }
 
 /// \brief Matches a single left-hand side with the given term and creates the substitution.
