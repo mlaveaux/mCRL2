@@ -41,10 +41,13 @@ private:
   /// \returns The rewritten term according to the term rewrite system passed in the constructor.
   data_expression rewrite_impl(const data_expression& term, substitution_type& sigma);
 
-  /// \brief Rewrites a term of the form lambda x . u to normal form.
+  /// \returns The normal form of a function symbol.
+  data_expression rewrite_function_symbol(const function_symbol& symbol);
+
+  /// \returns The normal form of a term of the shape lambda x . u.
   data_expression rewrite_abstraction(const abstraction& abstraction, substitution_type& sigma);
 
-  /// \brief Rewrites a term of the form h(u_1, ..., u_n) to normal form.
+  /// \returns The normal form of a term of the shape h(u_1, ..., u_n).
   data_expression rewrite_application(const application& appl, substitution_type& sigma);
 
   /// \returns True if and only if the given term is in normal form.

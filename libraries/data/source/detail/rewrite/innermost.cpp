@@ -66,10 +66,11 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, sub
     const auto& var = static_cast<const data::variable&>(term);
     return sigma(var);
   }
-  // Else if t in function_symbols
+  // Else if t in function_symbols (This is an extra case handled by h() in the pseudocode).
   else if (is_function_symbol(term))
   {
-    return term;
+    const auto& function_symbol = static_cast<const data::function_symbol&>(term);
+    return rewrite_function_symbol(function_symbol);
   }
   // Else if t is of the form lambda x . u
   else if (is_abstraction(term))
@@ -84,6 +85,19 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, sub
     const auto& appl = static_cast<const data::application&>(term);
     return rewrite_application(appl, sigma);
   }
+}
+
+data_expression InnermostRewriter::rewrite_function_symbol(const function_symbol& symbol)
+{
+  data_expression rhs;
+  // If R not empty, this match function already applies the substitution.
+  if (match(symbol, rhs))
+  {
+    // Return rewrite(r^sigma', sigma)
+    return rhs;
+  }
+
+  return symbol;
 }
 
 data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstraction, substitution_type& sigma)
