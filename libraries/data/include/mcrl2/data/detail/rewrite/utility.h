@@ -157,41 +157,38 @@ public:
   template<typename Substitution, typename Rewrite>
   data_expression construct_term(const Substitution& sigma, Rewrite rewrite) const
   {
+    // We use a vector to be able to iterate over the arity number of arguments directly.
+    std::vector<data_expression> argument_stack;
+
     // Define an iterative version to prevent a large number of nested calls before returning the value.
-    std::stack<data_expression> argument_stack;
     for (const auto& term : m_stack)
     {
       if (is_variable(term))
       {
         // e(x |> Q, S, sigma) = e(Q, S |> sigma(x), sigma)
         const auto& var = static_cast<const variable&>(term);
-        argument_stack.push(sigma.at(var));
+        argument_stack.push_back(sigma.at(var));
       }
       else if (is_function_symbol_arity(term))
       {
         // e(f |> Q, S |> t_0 |> ... |> t_{arity(f)}, sigma) = e(Q, S |> MATCH_APPLY(f(t_0, ..., t__{arity(f)}), sigma)
         const auto& symbol = static_cast<const function_symbol_arity&>(term);
+        data_expression result = rewrite(application(symbol.head(), argument_stack.end() - symbol.arity(), argument_stack.end()));
 
-        // Remove arity(f) number of arguments from the stack and copy them into the arguments.
-        std::vector<data_expression> arguments(symbol.arity());
-        for (std::size_t index = 0; index < symbol.arity(); ++index)
-        {
-          arguments[index] = argument_stack.top();
-          argument_stack.pop();
-        }
-
-        argument_stack.push(rewrite(application(symbol.head(), arguments.begin(), arguments.end())));
+        // Remove arity(f) number of arguments from the stack
+        argument_stack.erase(argument_stack.end() - symbol.arity());
+        argument_stack.push_back(result);
       }
       else
       {
         // e(t |> Q, S, sigma) = e(Q, S |> t, sigma)
-        argument_stack.push(static_cast<const data_expression>(term));
+        argument_stack.push_back(static_cast<const data_expression>(term));
       }
     }
 
     // e([], t |> [], sigma) = t
     assert(argument_stack.size() == 1);
-    return argument_stack.top();
+    return argument_stack.back();
   }
 
 private:
@@ -228,7 +225,7 @@ private:
         // c(f(t_0, ..., t_n)) = c(t_0) |> ... |> c(t_n) |> f  if FV(f(t_0, ..., t_n)) != empty
         for (auto& argument : appl)
         {
-          build_construction_stack_impl(argument, stack);
+          build_construction_stack_impl(argument);
         }
 
         m_stack.push_back(function_symbol_arity(appl.head(), appl.size()));

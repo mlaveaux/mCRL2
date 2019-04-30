@@ -15,8 +15,6 @@
 #include "mcrl2/utilities/unordered_map.h"
 #include "mcrl2/data/detail/rewrite/utility.h"
 
-#include <stack>
-
 namespace mcrl2
 {
 namespace data
