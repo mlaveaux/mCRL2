@@ -209,6 +209,19 @@ void InnermostRewriter::mark_normal_form(const data_expression& term)
   }
 }
 
+template<typename Substitution>
+static inline data_expression apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack)
+{
+  if (EnableConstructionStack)
+  {
+    return stack.construct_term(sigma);
+  }
+  else
+  {
+    return capture_avoiding_substitution(term, sigma);
+  }
+}
+
 bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
 {
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
@@ -216,6 +229,8 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
   for (const auto& tuple : m_rewrite_system[static_cast<const application&>(term).head()])
   {
     const auto& equation = std::get<0>(tuple);
+    const auto& condition_stack = std::get<1>(tuple);
+    const auto& rhs_stack = std::get<2>(tuple);
 
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
     m_matching_sigma.clear();
@@ -226,35 +241,13 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
         mCRL2log(info) << "Matched rule " << equation << " to term " << term << "\n";
       }
 
-      if (EnableConstructionStack)
-      {
-        // Construct the right-hand by using a construction stack.
-        const auto& rhs_stack = std::get<2>(tuple);
-        rhs = rhs_stack.construct_term(m_matching_sigma);
-      }
-      else
-      {
-        rhs = capture_avoiding_substitution(equation.rhs(), m_matching_sigma);
-      }
+      rhs = apply_substitution(equation.rhs(), m_matching_sigma, rhs_stack);
 
       // Delaying rewriting the conditions ensures that the matching substitution does not have to be saved.
-      if (equation.condition() != sort_bool::true_())
+      if (equation.condition() != sort_bool::true_() &&
+        rewrite_impl(apply_substitution(equation.condition(), m_matching_sigma, condition_stack), m_identity) != sort_bool::true_())
       {
-        if (EnableConstructionStack)
-        {
-          const auto& condition_stack = std::get<1>(tuple);
-          if (rewrite_impl(condition_stack.construct_term(m_matching_sigma), m_identity) != sort_bool::true_())
-          {
-            continue;
-          }
-        }
-        else
-        {
-          if (rewrite_impl(capture_avoiding_substitution(equation.condition(), m_matching_sigma), m_identity) != sort_bool::true_())
-          {
-            continue;
-          }
-        }
+        continue;
       }
 
       return true;
