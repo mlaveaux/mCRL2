@@ -65,8 +65,6 @@ private:
   /// A mapping from function symbols to rewrite rules and their correspondign construction stack.
   mcrl2::utilities::unordered_map_large<data_expression, std::vector<std::pair<data_equation, ConstructionStack>>> m_rewrite_system;
 
-  mcrl2::utilities::unordered_map_large<variable, data_expression> matching_sigma; ///< The matching substitution, only stored here to prevent reallocations.
-
   mcrl2::utilities::unordered_set_large<data_expression> m_normal_forms; ///< Keeps track of terms that are in normal form.
 
   substitution_type m_identity; ///< The identity substitution.

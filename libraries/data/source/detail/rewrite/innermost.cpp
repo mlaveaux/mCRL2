@@ -235,7 +235,7 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
     const auto& stack = pair.second;
 
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
-    matching_sigma.clear();
+    mcrl2::utilities::unordered_map<variable, data_expression> matching_sigma;
     if (match_lhs(term, equation.lhs(), matching_sigma)
         && (equation.condition() == sort_bool::true_()
             || rewrite_impl(capture_avoiding_substitution(equation.condition(), matching_sigma), m_identity) == sort_bool::true_()))
