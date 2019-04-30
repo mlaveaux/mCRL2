@@ -13,6 +13,9 @@
 #include "mcrl2/data/detail/rewrite.h"
 #include "mcrl2/utilities/unordered_set.h"
 #include "mcrl2/utilities/unordered_map.h"
+#include "mcrl2/data/detail/rewrite/utility.h"
+
+#include <stack>
 
 namespace mcrl2
 {
@@ -61,7 +64,8 @@ private:
   /// \returns A boolean indicated that matching has succeeded (could be replaced by optional).
   bool match(const data_expression& term, data_expression& rhs);
 
-  mcrl2::utilities::unordered_map_large<data_expression, std::vector<data_equation>> m_rewrite_system; ///< A mapping from function symbols to rewrite rules.
+  /// A mapping from function symbols to rewrite rules and their correspondign construction stack.
+  mcrl2::utilities::unordered_map_large<data_expression, std::vector<std::pair<data_equation, ConstructionStack>>> m_rewrite_system;
 
   mcrl2::utilities::unordered_map_large<variable, data_expression> matching_sigma; ///< The matching substitution, only stored here to prevent reallocations.
 

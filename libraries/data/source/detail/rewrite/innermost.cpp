@@ -11,7 +11,6 @@
 
 #include "mcrl2/utilities/logger.h"
 #include "mcrl2/data/bool.h"
-#include "mcrl2/data/detail/rewrite/utility.h"
 
 #include <assert.h>
 
@@ -21,6 +20,9 @@ constexpr bool PrintMatchSteps   = false;
 
 /// \brief Keep track of terms that are in normal form during rewriting.
 constexpr bool EnableNormalForms = true;
+
+/// \brief Enables construction stacks to reconstruct the right-hand sides bottom up.
+constexpr bool EnableConstructionStack = false;
 
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
@@ -45,9 +47,9 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
         continue;
       }
 
-      // Insert the left-hand side into the rewrite rule mapping.
+      // Insert the left-hand side into the rewrite rule mapping and a construction stack for its right-hand side.
       const application& lhs_appl = static_cast<const application&>(equation.lhs());
-      m_rewrite_system[lhs_appl.head()].emplace_back(equation);
+      m_rewrite_system[lhs_appl.head()].emplace_back(equation, ConstructionStack(equation.rhs()));
     }
     else
     {
@@ -101,7 +103,15 @@ data_expression InnermostRewriter::rewrite_function_symbol(const function_symbol
   if (match(symbol, rhs))
   {
     // Return rewrite(r^sigma', sigma)
-    return rhs;
+    if (EnableConstructionStack)
+    {
+      // Now, match has already rewritten the right-hand side.
+      return rhs;
+    }
+    else
+    {
+      return rewrite_impl(rhs, m_identity);
+    }
   }
 
   return symbol;
@@ -180,11 +190,19 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
     // (R, sigma') := match(h'(u_1', ..., u_n')),
     data_expression rhs;
 
-    // If R not empty, this match function already applies the substitution.
+    // If R not empty, this match function already applies the substitution and rewrite steps.
     if (match(appl, rhs))
     {
       // Return rewrite(r^sigma', sigma)
-      return rewrite_impl(rhs, m_identity);
+      if (EnableConstructionStack)
+      {
+        // Here, match has already rewritten the right-hand side.
+        return rhs;
+      }
+      else
+      {
+        return rewrite_impl(rhs, sigma);
+      }
     }
     else
     {
@@ -211,8 +229,11 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
 {
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
   // to the given term.
-  for (auto& equation : m_rewrite_system[static_cast<const application&>(term).head()])
+  for (const auto& pair : m_rewrite_system[static_cast<const application&>(term).head()])
   {
+    const auto& equation = pair.first;
+    const auto& stack = pair.second;
+
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
     matching_sigma.clear();
     if (match_lhs(term, equation.lhs(), matching_sigma)
@@ -224,7 +245,38 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
         mCRL2log(info) << "Matched rule " << equation << " to term " << term << "\n";
       }
 
-      rhs = capture_avoiding_substitution(equation.rhs(), matching_sigma);
+      if (EnableConstructionStack)
+      {
+        // Construct the right-hand by using a construction stack.
+        rhs = stack.construct_term(matching_sigma,
+          [&](const data_expression& term)
+          {
+            if (is_function_symbol(term))
+            {
+              return rewrite_function_symbol(static_cast<const function_symbol&>(term));
+            }
+
+            // (R, sigma') := match(h'(u_1', ..., u_n')),
+            data_expression rhs;
+
+            // If R not empty, this match function already applies the substitution.
+            if (match(term, rhs))
+            {
+              // Return rewrite(r^sigma', sigma)
+              return rhs;
+            }
+            else
+            {
+              // Return h'(u_1', ..., u_n')
+              return term;
+            }
+
+          });
+      }
+      else
+      {
+        rhs = capture_avoiding_substitution(equation.rhs(), matching_sigma);
+      }
       return true;
     }
     else if (PrintMatchSteps)

@@ -11,7 +11,10 @@
 #define MCRL2_DATA_DETAIL_REWRITE_UTILITY_H
 
 #include "mcrl2/data/data_expression.h"
+#include "mcrl2/data/function_symbol.h"
 #include "mcrl2/data/variable.h"
+
+#include <assert.h>
 
 namespace mcrl2
 {
@@ -111,6 +114,130 @@ static bool match_lhs(const data_expression& term,  const data_expression& lhs, 
     return true;
   }
 }
+
+/// \brief A construction stack is a data structure that can be initialized from a given term to quickly reconstruct this term
+///        bottom-up while applied a given substitution. A typical usecase is the right-hand side of a rewrite rule. Here, the structure
+///        of the term is known beforehand.
+class ConstructionStack
+{
+private:
+  /// \brief A function symbol with arity (data_expression and an arity)
+  class function_symbol_arity : public atermpp::aterm_appl
+  {
+  public:
+    static atermpp::function_symbol& g_function_symbol_arity()
+    {
+      static atermpp::function_symbol constant("@@function_symbol_arity@@", 2);
+      return constant;
+    }
+
+    function_symbol_arity(const data_expression& expression, std::size_t arity)
+      : atermpp::aterm_appl(g_function_symbol_arity(), expression, atermpp::aterm_int(arity))
+    {}
+
+    const data_expression& head() const { return static_cast<const data_expression&>(this->operator[](0)); }
+
+    std::size_t arity() const { return static_cast<const atermpp::aterm_int&>(this->operator[](1)).value(); }
+  };
+
+  /// \returns True when the given term is of type function_symbol_arity.
+  static inline bool is_function_symbol_arity(const atermpp::aterm& term)
+  {
+    return term.function() == function_symbol_arity::g_function_symbol_arity();
+  }
+
+public:
+  /// \brief Constructs a stack that can be used to reconstruct the given term without traversing it top-down.
+  ConstructionStack(const data_expression& term)
+  {
+    build_construction_stack_impl(term);
+  }
+
+  /// \returns The evaluation of the construction stack, defined by e(Q, S, sigma).
+  template<typename Substitution, typename Rewrite>
+  data_expression construct_term(const Substitution& sigma, Rewrite rewrite) const
+  {
+    // Define an iterative version to prevent a large number of nested calls before returning the value.
+    std::stack<data_expression> argument_stack;
+    for (const auto& term : m_stack)
+    {
+      if (is_variable(term))
+      {
+        // e(x |> Q, S, sigma) = e(Q, S |> sigma(x), sigma)
+        const auto& var = static_cast<const variable&>(term);
+        argument_stack.push(sigma.at(var));
+      }
+      else if (is_function_symbol_arity(term))
+      {
+        // e(f |> Q, S |> t_0 |> ... |> t_{arity(f)}, sigma) = e(Q, S |> MATCH_APPLY(f(t_0, ..., t__{arity(f)}), sigma)
+        const auto& symbol = static_cast<const function_symbol_arity&>(term);
+
+        // Remove arity(f) number of arguments from the stack and copy them into the arguments.
+        std::vector<data_expression> arguments(symbol.arity());
+        for (std::size_t index = 0; index < symbol.arity(); ++index)
+        {
+          arguments[index] = argument_stack.top();
+          argument_stack.pop();
+        }
+
+        argument_stack.push(rewrite(application(symbol.head(), arguments.begin(), arguments.end())));
+      }
+      else
+      {
+        // e(t |> Q, S, sigma) = e(Q, S |> t, sigma)
+        argument_stack.push(static_cast<const data_expression>(term));
+      }
+    }
+
+    // e([], t |> [], sigma) = t
+    assert(argument_stack.size() == 1);
+    return argument_stack.top();
+  }
+
+private:
+
+  /// \brief Updates the stack directly, to prevent unnecessary copying and stack concatenation.
+  void build_construction_stack_impl(const data_expression& term)
+  {
+    if (is_variable(term))
+    {
+      // c(x) = x
+      m_stack.push_back(term);
+    }
+    else if (is_function_symbol(term))
+    {
+      // c(f) = f   as FV(f) = empty (normally handled by the f(t_0, ..., t_n) case)
+      m_stack.push_back(term);
+    }
+    else if (is_abstraction(term))
+    {
+      // Ignored for now.
+    }
+    else
+    {
+      assert(is_application(term));
+      const auto& appl = static_cast<const application&>(term);
+
+      if (find_free_variables(term).empty())
+      {
+        // c(f(t_0, ..., t_n)) = f(t_0, ..., t_n)  if FV(f(t_0, ..., t_n)) = empty
+        m_stack.push_back(term);
+      }
+      else
+      {
+        // c(f(t_0, ..., t_n)) = c(t_0) |> ... |> c(t_n) |> f  if FV(f(t_0, ..., t_n)) != empty
+        for (auto& argument : appl)
+        {
+          build_construction_stack_impl(argument, stack);
+        }
+
+        m_stack.push_back(function_symbol_arity(appl.head(), appl.size()));
+      }
+    }
+  }
+
+  std::vector<atermpp::aterm_appl> m_stack;
+};
 
 } // namespace detail
 } // namespace data
