@@ -154,8 +154,8 @@ public:
   }
 
   /// \returns The evaluation of the construction stack, defined by e(Q, S, sigma).
-  template<typename Substitution, typename Rewrite>
-  data_expression construct_term(const Substitution& sigma, Rewrite rewrite) const
+  template<typename Substitution>
+  data_expression construct_term(const Substitution& sigma) const
   {
     // We use a vector to be able to iterate over the arity number of arguments directly.
     std::vector<data_expression> argument_stack;
@@ -173,10 +173,10 @@ public:
       {
         // e(f |> Q, S |> t_0 |> ... |> t_{arity(f)}, sigma) = e(Q, S |> MATCH_APPLY(f(t_0, ..., t__{arity(f)}), sigma)
         const auto& symbol = static_cast<const function_symbol_arity&>(term);
-        data_expression result = rewrite(application(symbol.head(), argument_stack.end() - symbol.arity(), argument_stack.end()));
+        data_expression result = application(symbol.head(), argument_stack.end() - symbol.arity(), argument_stack.end());
 
         // Remove arity(f) number of arguments from the stack
-        argument_stack.erase(argument_stack.end() - symbol.arity());
+        argument_stack.erase(argument_stack.end() - symbol.arity(), argument_stack.end());
         argument_stack.push_back(result);
       }
       else

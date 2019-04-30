@@ -63,7 +63,9 @@ private:
   bool match(const data_expression& term, data_expression& rhs);
 
   /// A mapping from function symbols to rewrite rules and their correspondign construction stack.
-  mcrl2::utilities::unordered_map_large<data_expression, std::vector<std::pair<data_equation, ConstructionStack>>> m_rewrite_system;
+  mcrl2::utilities::unordered_map_large<data_expression, std::vector<std::tuple<data_equation, ConstructionStack, ConstructionStack>>> m_rewrite_system;
+
+  mcrl2::utilities::unordered_map_large<variable, data_expression> m_matching_sigma; ///< A local substitution to prevent reallocations.
 
   mcrl2::utilities::unordered_set_large<data_expression> m_normal_forms; ///< Keeps track of terms that are in normal form.
 

@@ -22,7 +22,7 @@ constexpr bool PrintMatchSteps   = false;
 constexpr bool EnableNormalForms = true;
 
 /// \brief Enables construction stacks to reconstruct the right-hand sides bottom up.
-constexpr bool EnableConstructionStack = false;
+constexpr bool EnableConstructionStack = true;
 
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
@@ -49,7 +49,7 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
 
       // Insert the left-hand side into the rewrite rule mapping and a construction stack for its right-hand side.
       const application& lhs_appl = static_cast<const application&>(equation.lhs());
-      m_rewrite_system[lhs_appl.head()].emplace_back(equation, ConstructionStack(equation.rhs()));
+      m_rewrite_system[lhs_appl.head()].emplace_back(equation, ConstructionStack(equation.condition()), ConstructionStack(equation.rhs()));
     }
     else
     {
@@ -103,15 +103,7 @@ data_expression InnermostRewriter::rewrite_function_symbol(const function_symbol
   if (match(symbol, rhs))
   {
     // Return rewrite(r^sigma', sigma)
-    if (EnableConstructionStack)
-    {
-      // Now, match has already rewritten the right-hand side.
-      return rhs;
-    }
-    else
-    {
-      return rewrite_impl(rhs, m_identity);
-    }
+    return rewrite_impl(rhs, m_identity);
   }
 
   return symbol;
@@ -194,15 +186,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
     if (match(appl, rhs))
     {
       // Return rewrite(r^sigma', sigma)
-      if (EnableConstructionStack)
-      {
-        // Here, match has already rewritten the right-hand side.
-        return rhs;
-      }
-      else
-      {
-        return rewrite_impl(rhs, sigma);
-      }
+      return rewrite_impl(rhs, sigma);
     }
     else
     {
@@ -229,16 +213,13 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
 {
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
   // to the given term.
-  for (const auto& pair : m_rewrite_system[static_cast<const application&>(term).head()])
+  for (const auto& tuple : m_rewrite_system[static_cast<const application&>(term).head()])
   {
-    const auto& equation = pair.first;
-    const auto& stack = pair.second;
+    const auto& equation = std::get<0>(tuple);
 
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
-    mcrl2::utilities::unordered_map<variable, data_expression> matching_sigma;
-    if (match_lhs(term, equation.lhs(), matching_sigma)
-        && (equation.condition() == sort_bool::true_()
-            || rewrite_impl(capture_avoiding_substitution(equation.condition(), matching_sigma), m_identity) == sort_bool::true_()))
+    m_matching_sigma.clear();
+    if (match_lhs(term, equation.lhs(), m_matching_sigma))
     {
       if(PrintMatchSteps)
       {
@@ -248,35 +229,34 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
       if (EnableConstructionStack)
       {
         // Construct the right-hand by using a construction stack.
-        rhs = stack.construct_term(matching_sigma,
-          [&](const data_expression& term)
-          {
-            if (is_function_symbol(term))
-            {
-              return rewrite_function_symbol(static_cast<const function_symbol&>(term));
-            }
-
-            // (R, sigma') := match(h'(u_1', ..., u_n')),
-            data_expression rhs;
-
-            // If R not empty, this match function already applies the substitution.
-            if (match(term, rhs))
-            {
-              // Return rewrite(r^sigma', sigma)
-              return rhs;
-            }
-            else
-            {
-              // Return h'(u_1', ..., u_n')
-              return term;
-            }
-
-          });
+        const auto& rhs_stack = std::get<2>(tuple);
+        rhs = rhs_stack.construct_term(m_matching_sigma);
       }
       else
       {
-        rhs = capture_avoiding_substitution(equation.rhs(), matching_sigma);
+        rhs = capture_avoiding_substitution(equation.rhs(), m_matching_sigma);
       }
+
+      // Delaying rewriting the conditions ensures that the matching substitution does not have to be saved.
+      if (equation.condition() != sort_bool::true_())
+      {
+        if (EnableConstructionStack)
+        {
+          const auto& condition_stack = std::get<1>(tuple);
+          if (rewrite_impl(condition_stack.construct_term(m_matching_sigma), m_identity) != sort_bool::true_())
+          {
+            continue;
+          }
+        }
+        else
+        {
+          if (rewrite_impl(capture_avoiding_substitution(equation.condition(), m_matching_sigma), m_identity) != sort_bool::true_())
+          {
+            continue;
+          }
+        }
+      }
+
       return true;
     }
     else if (PrintMatchSteps)
