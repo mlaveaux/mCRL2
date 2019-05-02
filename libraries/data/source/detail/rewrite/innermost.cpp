@@ -10,6 +10,7 @@
 #include "mcrl2/data/detail/rewrite/innermost.h"
 
 #include "mcrl2/utilities/logger.h"
+#include "mcrl2/utilities/stack_array.h"
 #include "mcrl2/data/bool.h"
 #include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
 
@@ -142,7 +143,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
   mark_normal_form(head_rewritten);
 
   // For i in {1, ..., n} do u' := rewrite(u, sigma)
-  std::vector<data_expression> arguments(appl.size());
+  MCRL2_DECLARE_STACK_ARRAY(arguments, data_expression, appl.size());
   for (std::size_t index = 0; index < appl.size(); ++index)
   {
     if (is_normal_form(appl[index]))

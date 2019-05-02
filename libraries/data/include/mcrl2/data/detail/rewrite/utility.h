@@ -13,6 +13,7 @@
 #include "mcrl2/data/data_expression.h"
 #include "mcrl2/data/function_symbol.h"
 #include "mcrl2/data/variable.h"
+#include "mcrl2/utilities/stack_array.h"
 
 #include <assert.h>
 
@@ -51,7 +52,7 @@ static data_expression capture_avoiding_substitution(const data_expression& term
     const auto& appl = static_cast<const application&>(term);
 
     // Substitution of all arguments.
-    std::vector<data_expression> arguments(appl.size());
+    MCRL2_DECLARE_STACK_ARRAY(arguments, data_expression, appl.size());
     for (std::size_t index = 0; index < appl.size(); ++index)
     {
       arguments[index] = capture_avoiding_substitution(appl[index], sigma);
