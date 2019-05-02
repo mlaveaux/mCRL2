@@ -186,7 +186,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
     data_expression rhs;
 
     // If R not empty, this match function already applies the substitution and rewrite steps.
-    if (match(appl, rhs))
+    if (!is_normal_form(appl) && match(appl, rhs))
     {
       // Return rewrite(r^sigma', sigma)
       return rewrite_impl(rhs, sigma);
