@@ -33,7 +33,7 @@ public:
   // Begin of the Rewriter interface.
   data_expression rewrite(const data_expression &term, substitution_type &sigma) override;
 
-  rewrite_strategy getStrategy() override { return innermost; };
+  rewrite_strategy getStrategy() override { return innermost; }
   // End of the Rewriter interface.
 
 private:
@@ -58,11 +58,11 @@ private:
   void mark_normal_form(const data_expression& term);
 
   /// \brief The match function defined in the document. However, instead of returning a set of right-hand sides it makes a (arbitrary)
-  ///        choice of which right-hand side to return and applied the matching substitution to it. The given term must be in normal form.
+  ///        choice of which right-hand side to return and applies the matching substitution to it. The given term must be in normal form.
   /// \returns A boolean indicated that matching has succeeded (could be replaced by optional).
   bool match(const data_expression& term, data_expression& rhs);
 
-  /// A mapping from function symbols to rewrite rules and their correspondign construction stack.
+  /// A mapping from function symbols to rewrite rules and their corresponding construction stack.
   mcrl2::utilities::unordered_map_large<data_expression, std::vector<std::tuple<data_equation, ConstructionStack, ConstructionStack>>> m_rewrite_system;
 
   mcrl2::utilities::unordered_map_large<variable, data_expression> m_matching_sigma; ///< A local substitution to prevent reallocations.
