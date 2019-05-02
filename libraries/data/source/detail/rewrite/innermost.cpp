@@ -152,8 +152,12 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 data_expression InnermostRewriter::rewrite_application(const application& appl, substitution_type& sigma)
 {
   // h' := rewrite(h, sigma)
-  auto head_rewritten = is_normal_form(appl.head()) ? appl.head() : rewrite_impl(appl.head(), sigma);
-  mark_normal_form(head_rewritten);
+  auto head_rewritten = appl.head();
+  if (!is_normal_form(head_rewritten))
+  {
+    head_rewritten = rewrite_impl(head_rewritten, sigma);
+    mark_normal_form(head_rewritten);
+  }
 
   // For i in {1, ..., n} do u' := rewrite(u, sigma)
   MCRL2_DECLARE_STACK_ARRAY(arguments, data_expression, appl.size());
