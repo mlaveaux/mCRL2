@@ -186,7 +186,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
     data_expression rhs;
 
     // If R not empty, this match function already applies the substitution and rewrite steps.
-    if (!is_normal_form(appl) && match(appl, rhs))
+    if (match(appl, rhs))
     {
       // Return rewrite(r^sigma', sigma)
       return rewrite_impl(rhs, sigma);
@@ -227,6 +227,9 @@ data_expression InnermostRewriter::apply_substitution(const data_expression& ter
 
 bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
 {
+  // By definition a normal form does not match any rewrite rule.
+  if (is_normal_form(term)) { return false; }
+
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
   // to the given term.
   for (const auto& tuple : m_rewrite_system[get_nested_head(term)])
