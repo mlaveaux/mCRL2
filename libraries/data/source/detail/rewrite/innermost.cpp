@@ -11,6 +11,7 @@
 
 #include "mcrl2/utilities/logger.h"
 #include "mcrl2/data/bool.h"
+#include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
 
 #include <assert.h>
 
@@ -48,8 +49,9 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
       }
 
       // Insert the left-hand side into the rewrite rule mapping and a construction stack for its right-hand side.
-      const application& lhs_appl = static_cast<const application&>(equation.lhs());
-      m_rewrite_system[lhs_appl.head()].emplace_back(equation, ConstructionStack(equation.condition()), ConstructionStack(equation.rhs()));
+      m_rewrite_system[get_nested_head(equation.lhs())].emplace_back(equation,
+        ConstructionStack(equation.condition()),
+        ConstructionStack(equation.rhs()));
     }
     else
     {
@@ -226,7 +228,7 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
 {
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
   // to the given term.
-  for (const auto& tuple : m_rewrite_system[static_cast<const application&>(term).head()])
+  for (const auto& tuple : m_rewrite_system[get_nested_head(term)])
   {
     const auto& equation = std::get<0>(tuple);
     const auto& condition_stack = std::get<1>(tuple);
