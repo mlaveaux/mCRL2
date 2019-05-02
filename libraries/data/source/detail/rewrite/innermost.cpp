@@ -26,10 +26,17 @@ constexpr bool EnableNormalForms = true;
 /// \brief Enables construction stacks to reconstruct the right-hand sides bottom up.
 constexpr bool EnableConstructionStack = true;
 
+using namespace mcrl2;
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
 
 using namespace mcrl2::log;
+
+/// \returns A unique index for the head symbol that the given term starts with.
+static inline std::size_t get_head_index(const data_expression& term)
+{
+  return core::index_traits<data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(get_nested_head(term)));
+}
 
 InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const used_data_equation_selector& selector)
   : Rewriter(data_spec, selector)
@@ -49,8 +56,12 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
         continue;
       }
 
+      // Make sure that it is possible to insert the match data for head_index left-hand side.
+      std::size_t head_index = get_head_index(equation.lhs());
+      if (head_index >= m_rewrite_system.size()) { m_rewrite_system.resize(head_index + 1); }
+
       // Insert the left-hand side into the rewrite rule mapping and a construction stack for its right-hand side.
-      m_rewrite_system[get_nested_head(equation.lhs())].emplace_back(equation,
+      m_rewrite_system[head_index].emplace_back(equation,
         ConstructionStack(equation.condition()),
         ConstructionStack(equation.rhs()));
     }
@@ -105,11 +116,13 @@ data_expression InnermostRewriter::rewrite_function_symbol(const function_symbol
   // If R not empty, this match function already applies the substitution.
   if (match(symbol, rhs))
   {
-    // Return rewrite(r^sigma', sigma)
+    // Return rewrite(r^sigma', id)
     return rewrite_impl(rhs, m_identity);
   }
-
-  return symbol;
+  else
+  {
+    return symbol;
+  }
 }
 
 data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstraction, substitution_type& sigma)
@@ -227,12 +240,22 @@ data_expression InnermostRewriter::apply_substitution(const data_expression& ter
 
 bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
 {
-  // By definition a normal form does not match any rewrite rule.
-  if (is_normal_form(term)) { return false; }
+  if (is_normal_form(term))
+  {
+    // By definition a normal form does not match any rewrite rule.
+    return false;
+  }
+
+  std::size_t head_index = get_head_index(term);
+  if (head_index >= m_rewrite_system.size())
+  {
+    // No left-hand side starts with this head symbol, so it cannot match.
+    return false;
+  }
 
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
-  // to the given term.
-  for (const auto& tuple : m_rewrite_system[get_nested_head(term)])
+  // to the given term. However, only tries rewrite rules that start with the correct head symbol.
+  for (const auto& tuple : m_rewrite_system[head_index])
   {
     const auto& equation = std::get<0>(tuple);
     const auto& condition_stack = std::get<1>(tuple);
@@ -249,7 +272,7 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
 
       rhs = apply_substitution(equation.rhs(), m_matching_sigma, rhs_stack);
 
-      // Delaying rewriting the conditions ensures that the matching substitution does not have to be saved.
+      // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
       if (equation.condition() != sort_bool::true_() &&
         rewrite_impl(apply_substitution(equation.condition(), m_matching_sigma, condition_stack), m_identity) != sort_bool::true_())
       {

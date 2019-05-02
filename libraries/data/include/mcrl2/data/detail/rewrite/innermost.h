@@ -64,8 +64,9 @@ private:
   /// \returns A boolean indicated that matching has succeeded (could be replaced by optional).
   bool match(const data_expression& term, data_expression& rhs);
 
-  /// A mapping from function symbols to rewrite rules and their corresponding construction stack.
-  mcrl2::utilities::unordered_map_large<data_expression, std::vector<std::tuple<data_equation, ConstructionStack, ConstructionStack>>> m_rewrite_system;
+  /// A mapping from head symbols to rewrite rules and their corresponding construction stacks. A unique index is used for each head symbol to achieve
+  /// this mapping without an unordered_map for performance reasons.
+  std::vector<std::vector<std::tuple<data_equation, ConstructionStack, ConstructionStack>>> m_rewrite_system;
 
   mcrl2::utilities::unordered_set_large<data_expression> m_normal_forms; ///< Keeps track of terms that are in normal form.
 
