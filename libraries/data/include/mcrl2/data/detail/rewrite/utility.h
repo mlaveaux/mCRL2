@@ -153,13 +153,20 @@ public:
     build_construction_stack_impl(term);
   }
 
-  /// \returns The evaluation of the construction stack, defined by e(Q, S, sigma).
+  /// \returns The evaluation of the construction stack, defined by e(Q, S, sigma), equivalent to capture_avoiding_substitution(term, sigma); where
+  ///          term is the term that was used for construction of this object.
   template<typename Substitution>
   data_expression construct_term(const Substitution& sigma) const
   {
-    // We use a vector to be able to iterate over the arity number of arguments directly.
     std::vector<data_expression> argument_stack;
+    return construct_term(sigma, argument_stack);
+  }
 
+  /// \brief The same function as above, but reuses an existing argument stack to prevent reallocations. This "stack" is a vector
+  ///        to be able to iterate over the arity number of arguments directly.
+  template<typename Substitution>
+  data_expression construct_term(const Substitution& sigma, std::vector<data_expression>& argument_stack) const
+  {
     // Define an iterative version to prevent a large number of nested calls before returning the value.
     for (const auto& term : m_stack)
     {
@@ -188,7 +195,11 @@ public:
 
     // e([], t |> [], sigma) = t
     assert(argument_stack.size() == 1);
-    return argument_stack.back();
+
+    // Clear the argument stack to be able to reuse it.
+    data_expression term = argument_stack.back();
+    argument_stack.clear();
+    return term;
   }
 
 private:

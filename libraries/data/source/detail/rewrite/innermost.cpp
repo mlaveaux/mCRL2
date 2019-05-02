@@ -136,7 +136,7 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 data_expression InnermostRewriter::rewrite_application(const application& appl, substitution_type& sigma)
 {
   // h' := rewrite(h, sigma, V)
-  auto head_rewritten = m_normal_forms.count(appl.head()) ? appl.head() : rewrite_impl(appl.head(), sigma);
+  auto head_rewritten = is_normal_form(appl.head()) ? appl.head() : rewrite_impl(appl.head(), sigma);
   mark_normal_form(head_rewritten);
 
   // For i in {1, ..., n} do u' := rewrite(u, sigma)
@@ -210,11 +210,11 @@ void InnermostRewriter::mark_normal_form(const data_expression& term)
 }
 
 template<typename Substitution>
-static inline data_expression apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack)
+data_expression InnermostRewriter::apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack)
 {
   if (EnableConstructionStack)
   {
-    return stack.construct_term(sigma);
+    return stack.construct_term(sigma, m_argument_stack);
   }
   else
   {

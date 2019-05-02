@@ -57,6 +57,8 @@ private:
   /// \brief Marks the given term as being in normal form.
   void mark_normal_form(const data_expression& term);
 
+  template<typename Substitution>
+  data_expression apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack);
   /// \brief The match function defined in the document. However, instead of returning a set of right-hand sides it makes a (arbitrary)
   ///        choice of which right-hand side to return and applies the matching substitution to it. The given term must be in normal form.
   /// \returns A boolean indicated that matching has succeeded (could be replaced by optional).
@@ -65,9 +67,13 @@ private:
   /// A mapping from function symbols to rewrite rules and their corresponding construction stack.
   mcrl2::utilities::unordered_map_large<data_expression, std::vector<std::tuple<data_equation, ConstructionStack, ConstructionStack>>> m_rewrite_system;
 
+  mcrl2::utilities::unordered_set_large<data_expression> m_normal_forms; ///< Keeps track of terms that are in normal form.
+
+  // These are shared data structures to prevent unnecessary reallocations.
+
   mcrl2::utilities::unordered_map_large<variable, data_expression> m_matching_sigma; ///< A local substitution to prevent reallocations.
 
-  mcrl2::utilities::unordered_set_large<data_expression> m_normal_forms; ///< Keeps track of terms that are in normal form.
+  std::vector<data_expression> m_argument_stack; ///< A reused argument stack
 
   substitution_type m_identity; ///< The identity substitution.
 };
