@@ -37,9 +37,8 @@ public:
   // End of the Rewriter interface.
 
 private:
-  /// \brief The rewrite function defined in the document. Takes a term t, a substitution sigma and a set of free
-  ///        variables V.
-  /// \returns The rewritten term according to the term rewrite system passed in the constructor.
+  /// \brief The rewrite function defined in the document. Takes a term t and a substitution sigma and returns the normal
+  ///        form of sigma applied to t with respect to the term rewrite system passed in the constructor.
   data_expression rewrite_impl(const data_expression& term, substitution_type& sigma);
 
   /// \returns The normal form of a function symbol.
@@ -51,7 +50,7 @@ private:
   /// \returns The normal form of a term of the shape h(u_1, ..., u_n).
   data_expression rewrite_application(const application& appl, substitution_type& sigma);
 
-  /// \returns True if and only if the given term is in normal form.
+  /// \returns True if and only if the given term has been marked as being in normal form.
   bool is_normal_form(const data_expression& term) const;
 
   /// \brief Marks the given term as being in normal form.
@@ -59,6 +58,7 @@ private:
 
   template<typename Substitution>
   data_expression apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack);
+
   /// \brief The match function defined in the document. However, instead of returning a set of right-hand sides it makes a (arbitrary)
   ///        choice of which right-hand side to return and applies the matching substitution to it. The given term must be in normal form.
   /// \returns A boolean indicated that matching has succeeded (could be replaced by optional).

@@ -137,7 +137,7 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 
 data_expression InnermostRewriter::rewrite_application(const application& appl, substitution_type& sigma)
 {
-  // h' := rewrite(h, sigma, V)
+  // h' := rewrite(h, sigma)
   auto head_rewritten = is_normal_form(appl.head()) ? appl.head() : rewrite_impl(appl.head(), sigma);
   mark_normal_form(head_rewritten);
 
