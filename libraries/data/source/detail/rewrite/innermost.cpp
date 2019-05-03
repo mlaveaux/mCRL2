@@ -26,6 +26,9 @@ constexpr bool EnableNormalForms = true;
 /// \brief Enables construction stacks to reconstruct the right-hand sides bottom up.
 constexpr bool EnableConstructionStack = true;
 
+/// \brief Enable caching of rewrite results.
+constexpr bool EnableCaching = true;
+
 using namespace mcrl2;
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
@@ -155,6 +158,16 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 
 data_expression InnermostRewriter::rewrite_application(const application& appl, const substitution_type& sigma)
 {
+  if (EnableCaching)
+  {
+    // If the cache already contains the normal form for the given term return the result immediately.
+    auto it = m_rewrite_cache.find(appl);
+    if (it != m_rewrite_cache.end())
+    {
+      return (*it).second;
+    }
+  }
+
   // h' := rewrite(h, sigma)
   auto head_rewritten = appl.head();
   if (!is_normal_form(head_rewritten))
@@ -215,7 +228,14 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
     if (match(appl, rhs))
     {
       // Return rewrite(r^sigma', sigma)
-      return rewrite_impl(rhs, sigma);
+      auto result = rewrite_impl(rhs, sigma);
+
+      if (EnableCaching)
+      {
+        m_rewrite_cache[appl] = result;
+      }
+
+      return result;
     }
     else
     {

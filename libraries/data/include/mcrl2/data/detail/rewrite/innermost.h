@@ -11,9 +11,9 @@
 #define MCRL2_DATA_DETAIL_INNERMOST_H
 
 #include "mcrl2/data/detail/rewrite.h"
+#include "mcrl2/data/detail/rewrite/utility.h"
 #include "mcrl2/utilities/unordered_set.h"
 #include "mcrl2/utilities/unordered_map.h"
-#include "mcrl2/data/detail/rewrite/utility.h"
 
 namespace mcrl2
 {
@@ -69,6 +69,8 @@ private:
   std::vector<std::vector<std::tuple<data_equation, ConstructionStack, ConstructionStack>>> m_rewrite_system;
 
   mcrl2::utilities::unordered_set_large<data_expression> m_normal_forms; ///< Keeps track of terms that are in normal form.
+
+  mcrl2::utilities::unordered_map_large<data_expression, data_expression> m_rewrite_cache; ///< Cache the normal forms of certain data expressions.
 
   // These are shared data structures to prevent unnecessary reallocations.
 
