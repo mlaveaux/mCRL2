@@ -69,10 +69,6 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
         ConstructionStack(equation.condition()),
         ConstructionStack(equation.rhs()));
     }
-    else
-    {
-      mCRL2log(info) << "Rule " << equation << " ignored by selector.\n";
-    }
   }
 }
 

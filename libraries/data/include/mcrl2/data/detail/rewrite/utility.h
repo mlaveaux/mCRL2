@@ -69,7 +69,7 @@ static bool match_lhs(const data_expression& term,  const data_expression& lhs, 
 {
   if (term == lhs)
   {
-    // If both sides are equivalent, then they match under the identity substitution. If one contains
+    // If both sides are equivalent, then they match under any substitution. If one contains
     // a variable then that variable is also not bound in the other term.
     return true;
   }
@@ -83,12 +83,12 @@ static bool match_lhs(const data_expression& term,  const data_expression& lhs, 
 
     if (sigma.count(var) != 0)
     {
-      // If the variable was already assigned they must match.
+      // If the variable was already assigned it must match the previously assigned value.
       return sigma.at(var) == term;
     }
     else
     {
-      // Else substitute the given term for the current variable.
+      // Else substitute the current term for this variable.
       sigma[var] = term;
       return true;
     }
