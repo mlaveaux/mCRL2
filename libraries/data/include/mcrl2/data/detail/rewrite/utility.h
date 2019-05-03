@@ -67,7 +67,13 @@ static data_expression capture_avoiding_substitution(const data_expression& term
 template<typename Substitution>
 static bool match_lhs(const data_expression& term,  const data_expression& lhs, Substitution& sigma)
 {
-  if (is_function_symbol(lhs))
+  if (term == lhs)
+  {
+    // If both sides are equivalent, then they match under the identity substitution. If one contains
+    // a variable then that variable is also not bound in the other term.
+    return true;
+  }
+  else if (is_function_symbol(lhs))
   {
     return term == lhs;
   }
