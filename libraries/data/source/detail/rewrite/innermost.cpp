@@ -42,7 +42,8 @@ static inline std::size_t get_head_index(const data_expression& term)
 }
 
 InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const used_data_equation_selector& selector)
-  : Rewriter(data_spec, selector)
+  : Rewriter(data_spec, selector),
+    m_rewrite_cache(1000)
 {
   // This probably belongs inside the Rewriter class, checks for all the selected equations whether they are valid rewrite rules.
   for (const data_equation& equation : data_spec.equations())
@@ -232,7 +233,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
 
       if (EnableCaching)
       {
-        m_rewrite_cache[appl] = result;
+        m_rewrite_cache.emplace(appl, result);
       }
 
       return result;

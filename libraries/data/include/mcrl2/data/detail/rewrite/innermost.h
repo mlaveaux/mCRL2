@@ -14,6 +14,7 @@
 #include "mcrl2/data/detail/rewrite/utility.h"
 #include "mcrl2/utilities/unordered_set.h"
 #include "mcrl2/utilities/unordered_map.h"
+#include "mcrl2/utilities/fixed_size_cache.h"
 
 namespace mcrl2
 {
@@ -56,6 +57,7 @@ private:
   /// \brief Marks the given term as being in normal form.
   void mark_normal_form(const data_expression& term);
 
+  /// \brief Applies the substitution sigma to the term, optionally using the construction stack (depending on EnableConstructionStacks).
   template<typename Substitution>
   data_expression apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack) const;
 
@@ -70,7 +72,7 @@ private:
 
   mcrl2::utilities::unordered_set_large<data_expression> m_normal_forms; ///< Keeps track of terms that are in normal form.
 
-  mcrl2::utilities::unordered_map_large<data_expression, data_expression> m_rewrite_cache; ///< Cache the normal forms of certain data expressions.
+  mcrl2::utilities::fixed_size_cache<data_expression, data_expression> m_rewrite_cache; ///< Cache the normal forms of certain data expressions.
 
   // These are shared data structures to prevent unnecessary reallocations.
 
