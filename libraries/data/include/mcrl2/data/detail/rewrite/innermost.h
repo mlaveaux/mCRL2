@@ -39,16 +39,16 @@ public:
 private:
   /// \brief The rewrite function defined in the document. Takes a term t and a substitution sigma and returns the normal
   ///        form of sigma applied to t with respect to the term rewrite system passed in the constructor.
-  data_expression rewrite_impl(const data_expression& term, substitution_type& sigma);
+  data_expression rewrite_impl(const data_expression& term, const substitution_type& sigma);
 
   /// \returns The normal form of a function symbol.
   data_expression rewrite_function_symbol(const function_symbol& symbol);
 
   /// \returns The normal form of a term of the shape lambda x . u.
-  data_expression rewrite_abstraction(const abstraction& abstraction, substitution_type& sigma);
+  data_expression rewrite_abstraction(const abstraction& abstraction, const substitution_type& sigma);
 
   /// \returns The normal form of a term of the shape h(u_1, ..., u_n).
-  data_expression rewrite_application(const application& appl, substitution_type& sigma);
+  data_expression rewrite_application(const application& appl, const substitution_type& sigma);
 
   /// \returns True if and only if the given term has been marked as being in normal form.
   bool is_normal_form(const data_expression& term) const;
@@ -57,7 +57,7 @@ private:
   void mark_normal_form(const data_expression& term);
 
   template<typename Substitution>
-  data_expression apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack);
+  data_expression apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack) const;
 
   /// \brief The match function defined in the document. However, instead of returning a set of right-hand sides it makes a (arbitrary)
   ///        choice of which right-hand side to return and applies the matching substitution to it. The given term must be in normal form.
@@ -72,9 +72,9 @@ private:
 
   // These are shared data structures to prevent unnecessary reallocations.
 
-  mcrl2::utilities::unordered_map_large<variable, data_expression> m_matching_sigma; ///< A local substitution to prevent reallocations.
+  mutable mcrl2::utilities::unordered_map_large<variable, data_expression> m_local_sigma; ///< A local substitution to prevent reallocations.
 
-  std::vector<data_expression> m_argument_stack; ///< A reused argument stack
+  mutable std::vector<data_expression> m_argument_stack; ///< A reused argument stack
 
   substitution_type m_identity; ///< The identity substitution.
 };

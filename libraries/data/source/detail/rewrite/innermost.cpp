@@ -81,7 +81,7 @@ data_expression InnermostRewriter::rewrite(const data_expression& term, substitu
 
 // Private functions
 
-data_expression InnermostRewriter::rewrite_impl(const data_expression& term, substitution_type& sigma)
+data_expression InnermostRewriter::rewrite_impl(const data_expression& term, const substitution_type& sigma)
 {
   // If t in variables
   if (is_variable(term))
@@ -125,18 +125,22 @@ data_expression InnermostRewriter::rewrite_function_symbol(const function_symbol
   }
 }
 
-data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstraction, substitution_type& sigma)
+data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstraction, const substitution_type& sigma)
 {
   // u' := rewrite(u, sigma[x := y]) where y are fresh variables.
   data::variable_list new_variables;
+  m_local_sigma.clear();
+
+  // Construct a list of variables and construct the substitution.
   for (const auto& var : abstraction.variables())
   {
     const variable fresh_variable(m_generator(), var.sort());
     new_variables.push_front(fresh_variable);
-    sigma[var] = fresh_variable;
+    m_local_sigma[var] = fresh_variable;
   }
 
-  data_expression body_rewritten = rewrite_impl(abstraction.body(), sigma);
+  // rewrite(u, sigma[x := y]) is equivalent to rewrite(u^[x := y], sigma);
+  data_expression body_rewritten = rewrite_impl(capture_avoiding_substitution(abstraction.body(), m_local_sigma), sigma);
 
   // Return lambda y . u'
   auto result = data::abstraction(abstraction.binding_operator(), new_variables, body_rewritten);
@@ -149,7 +153,7 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
   return static_cast<data_expression>(result);
 }
 
-data_expression InnermostRewriter::rewrite_application(const application& appl, substitution_type& sigma)
+data_expression InnermostRewriter::rewrite_application(const application& appl, const substitution_type& sigma)
 {
   // h' := rewrite(h, sigma)
   auto head_rewritten = appl.head();
@@ -174,19 +178,24 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
     }
   }
 
-  // If h' is of the form lambda x . u
+  // If h' is of the form lambda x . w
   if (is_abstraction(head_rewritten))
   {
     const auto& abstraction = static_cast<const data::abstraction&>(head_rewritten);
 
-    // sigma := sigma[x gets u']
+    // rewrite(w, sigma[x gets u']) is equivalent to rewrite(w^[x := u'], id).
+    std::size_t index = 0;
+    m_local_sigma.clear();
+
     for (auto& variable : abstraction.variables())
     {
       assert(false);
-      sigma[variable] = arguments[0];
+      m_local_sigma[variable] = arguments[index];
+      ++index;
     }
 
-    data_expression result = rewrite_impl(abstraction.body(), sigma);
+    // Return rewrite(w, sigma[x := u'])
+    data_expression result = rewrite_impl(capture_avoiding_substitution(abstraction.body(), m_local_sigma), m_identity);
 
     if (PrintRewriteSteps)
     {
@@ -230,7 +239,7 @@ void InnermostRewriter::mark_normal_form(const data_expression& term)
 }
 
 template<typename Substitution>
-data_expression InnermostRewriter::apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack)
+data_expression InnermostRewriter::apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack) const
 {
   if (EnableConstructionStack)
   {
@@ -266,19 +275,19 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
     const auto& rhs_stack = std::get<2>(tuple);
 
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
-    m_matching_sigma.clear();
-    if (match_lhs(term, equation.lhs(), m_matching_sigma))
+    m_local_sigma.clear();
+    if (match_lhs(term, equation.lhs(), m_local_sigma))
     {
       if(PrintMatchSteps)
       {
         mCRL2log(info) << "Matched rule " << equation << " to term " << term << "\n";
       }
 
-      rhs = apply_substitution(equation.rhs(), m_matching_sigma, rhs_stack);
+      rhs = apply_substitution(equation.rhs(), m_local_sigma, rhs_stack);
 
       // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
       if (equation.condition() != sort_bool::true_() &&
-        rewrite_impl(apply_substitution(equation.condition(), m_matching_sigma, condition_stack), m_identity) != sort_bool::true_())
+        rewrite_impl(apply_substitution(equation.condition(), m_local_sigma, condition_stack), m_identity) != sort_bool::true_())
       {
         continue;
       }
