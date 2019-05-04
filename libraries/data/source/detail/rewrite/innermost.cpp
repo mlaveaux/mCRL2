@@ -211,15 +211,15 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
   }
   else
   {
-    application appl(head_rewritten, arguments.begin(), arguments.end());
+    application new_appl(head_rewritten, arguments.begin(), arguments.end());
 
     // (R, sigma') := match(h'(u_1', ..., u_n')),
     data_expression rhs;
 
     // If R not empty, this match function already applies the substitution and rewrite steps.
-    if (match(appl, rhs))
+    if (match(new_appl, rhs))
     {
-      // Return rewrite(r^sigma', sigma)
+      // Return rewrite(r^sigma', id)
       auto result = rewrite_impl(rhs, m_identity);
 
       if (EnableCaching)
@@ -232,7 +232,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
     else
     {
       // Return h'(u_1', ..., u_n')
-      return static_cast<data_expression>(appl);
+      return static_cast<data_expression>(new_appl);
     }
   }
 }

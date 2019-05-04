@@ -26,7 +26,7 @@ namespace detail
 
 /// \brief A capture-avoiding substitution of sigma applied to the given term.
 template<typename Substitution>
-static data_expression capture_avoiding_substitution(const data_expression& term, const Substitution& sigma)
+static inline data_expression capture_avoiding_substitution(const data_expression& term, const Substitution& sigma)
 {
   // C(x, sigma, V) = sigma(x), where x is a variable
   if (is_variable(term))
@@ -42,8 +42,9 @@ static data_expression capture_avoiding_substitution(const data_expression& term
   // C(lambda x . t, sigma, V) = lambda y . C(t, sigma[x := y], V), where x and y are variables.
   else if (is_abstraction(term))
   {
-    const auto& abstraction = static_cast<const class abstraction&>(term);
+    //const auto& abstraction = static_cast<const class abstraction&>(term);
     assert(false);
+    return term;
   }
   // C(t(t_1, ..., t_n, sigma, V) = C(t, sigma, V) ( C(t_1, sigma, V), ..., C(t_n, sigma, V) )
   else
@@ -65,7 +66,7 @@ static data_expression capture_avoiding_substitution(const data_expression& term
 
 /// \brief Matches a single left-hand side with the given term and creates the substitution.
 template<typename Substitution>
-static bool match_lhs(const data_expression& term,  const data_expression& lhs, Substitution& sigma)
+static inline bool match_lhs(const data_expression& term,  const data_expression& lhs, Substitution& sigma)
 {
   if (term == lhs)
   {
@@ -187,10 +188,10 @@ public:
       {
         // e(f |> Q, S |> t_0 |> ... |> t_{arity(f)}, sigma) = e(Q, S |> MATCH_APPLY(f(t_0, ..., t__{arity(f)}), sigma)
         const auto& symbol = static_cast<const function_symbol_arity&>(term);
-        data_expression result = application(symbol.head(), argument_stack.end() - symbol.arity(), argument_stack.end());
+        data_expression result = application(symbol.head(), argument_stack.end() - static_cast<long>(symbol.arity()), argument_stack.end());
 
         // Remove arity(f) number of arguments from the stack
-        argument_stack.erase(argument_stack.end() - symbol.arity(), argument_stack.end());
+        argument_stack.erase(argument_stack.end() - static_cast<long>(symbol.arity()), argument_stack.end());
         argument_stack.push_back(result);
       }
       else
