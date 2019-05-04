@@ -106,6 +106,22 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
   {
     assert(is_application(term));
     const auto& appl = static_cast<const data::application&>(term);
+
+    if (is_normal_form(appl))
+    {
+      return appl;
+    }
+
+    if (EnableCaching)
+    {
+      // If the cache already contains the normal form for the given term return the result immediately.
+      auto it = m_rewrite_cache.find(appl);
+      if (it != m_rewrite_cache.end())
+      {
+        return (*it).second;
+      }
+    }
+
     return rewrite_application(appl, sigma);
   }
 }
@@ -155,37 +171,16 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 
 data_expression InnermostRewriter::rewrite_application(const application& appl, const substitution_type& sigma)
 {
-  if (EnableCaching)
-  {
-    // If the cache already contains the normal form for the given term return the result immediately.
-    auto it = m_rewrite_cache.find(appl);
-    if (it != m_rewrite_cache.end())
-    {
-      return (*it).second;
-    }
-  }
-
   // h' := rewrite(h, sigma)
-  auto head_rewritten = appl.head();
-  if (!is_normal_form(head_rewritten))
-  {
-    head_rewritten = rewrite_impl(head_rewritten, sigma);
-    mark_normal_form(head_rewritten);
-  }
+  auto head_rewritten = rewrite_impl(appl.head(), sigma);
+  mark_normal_form(head_rewritten);
 
   // For i in {1, ..., n} do u' := rewrite(u, sigma)
   MCRL2_DECLARE_STACK_ARRAY(arguments, data_expression, appl.size());
   for (std::size_t index = 0; index < appl.size(); ++index)
   {
-    if (is_normal_form(appl[index]))
-    {
-      arguments[index] = appl[index];
-    }
-    else
-    {
-      arguments[index] = rewrite_impl(appl[index], sigma);
-      mark_normal_form(arguments[index]);
-    }
+    arguments[index] = rewrite_impl(appl[index], sigma);
+    mark_normal_form(arguments[index]);
   }
 
   // If h' is of the form lambda x . w
@@ -225,7 +220,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
     if (match(appl, rhs))
     {
       // Return rewrite(r^sigma', sigma)
-      auto result = rewrite_impl(rhs, sigma);
+      auto result = rewrite_impl(rhs, m_identity);
 
       if (EnableCaching)
       {
