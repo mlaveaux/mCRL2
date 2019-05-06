@@ -72,7 +72,7 @@ private:
 
   mcrl2::utilities::unordered_set_large<data_expression> m_normal_forms; ///< Keeps track of terms that are in normal form.
 
-  mcrl2::utilities::fixed_size_cache<data_expression, data_expression> m_rewrite_cache; ///< Cache the normal forms of certain data expressions.
+  mcrl2::utilities::fifo_cache<data_expression, data_expression> m_rewrite_cache; ///< Cache the normal forms of certain data expressions.
 
   // These are shared data structures to prevent unnecessary reallocations.
 

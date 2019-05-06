@@ -224,7 +224,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
 
       if (EnableCaching)
       {
-        m_rewrite_cache.emplace(appl, result);
+        m_rewrite_cache.emplace(new_appl, result);
       }
 
       return result;
