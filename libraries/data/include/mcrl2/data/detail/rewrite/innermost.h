@@ -12,9 +12,10 @@
 
 #include "mcrl2/data/detail/rewrite.h"
 #include "mcrl2/data/detail/rewrite/utility.h"
-#include "mcrl2/utilities/unordered_set.h"
-#include "mcrl2/utilities/unordered_map.h"
+#include "mcrl2/utilities/cache_metric.h"
 #include "mcrl2/utilities/fixed_size_cache.h"
+#include "mcrl2/utilities/unordered_map.h"
+#include "mcrl2/utilities/unordered_set.h"
 
 namespace mcrl2
 {
@@ -51,6 +52,9 @@ private:
   /// \returns The normal form of a term of the shape h(u_1, ..., u_n).
   data_expression rewrite_application(const application& appl, const substitution_type& sigma);
 
+  /// \brief Prints the various collected performance metrics after a rewrite() call.
+  void print_rewrite_metrics();
+
   /// \returns True if and only if the given term has been marked as being in normal form.
   bool is_normal_form(const data_expression& term) const;
 
@@ -85,6 +89,8 @@ private:
   // These members are only used to keep track of underlying metrics.
 
   std::unordered_map<data_equation, std::size_t, std::hash<atermpp::aterm_appl>> m_application_count; ///< For every rewrite rule, counts the number of times that it was applied.
+
+  mcrl2::utilities::cache_metric m_rewrite_cache_metric;
 };
 
 }

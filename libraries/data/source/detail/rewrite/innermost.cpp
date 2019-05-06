@@ -26,6 +26,9 @@ constexpr bool PrintMatchSteps   = false;
 /// \brief Keep track of the number of times each rule is applied (and print it after each rewrite).
 constexpr bool CountRewriteSteps = false;
 
+/// \brief Counts the number of times that the cache was used succesfull, its size and the number of insertions.
+constexpr bool CountRewriteCacheMetric = false;
+
 // The following options toggle performance features.
 
 /// \brief Keep track of terms that are in normal form during rewriting.
@@ -83,44 +86,8 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
 data_expression InnermostRewriter::rewrite(const data_expression& term, substitution_type& sigma)
 {
   auto result = rewrite_impl(term, sigma);
+  print_rewrite_metrics();
   m_normal_forms.clear();
-
-  if (CountRewriteSteps)
-  {
-    mCRL2log(info) << "Rewrote " << term << " -->* " << result << ".\n";
-
-    // We are going to sort them by the number of times applied.
-    std::vector<std::pair<data_equation, std::size_t>> counts;
-    for (auto& result : m_application_count)
-    {
-      counts.push_back(result);
-    }
-
-    std::sort(counts.begin(),
-      counts.end(),
-      [](const std::pair<data_equation, std::size_t>& left, std::pair<data_equation, std::size_t>& right) -> bool
-      {
-        return left.second > right.second;
-      }
-    );
-
-    // Count the total number of rewrite steps applied
-    std::size_t total_count = 0;
-    for (auto& result : counts)
-    {
-      total_count += result.second;
-    }
-
-    mCRL2log(info) << "Applied " << total_count << " single rewrite steps.\n";
-
-    for (auto& result : counts)
-    {
-      mCRL2log(info) << "Applied rule " << result.first << " " << result.second << " times.\n";
-    }
-
-    m_application_count.clear();
-  }
-
   return result;
 }
 
@@ -163,7 +130,12 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
       auto it = m_rewrite_cache.find(appl);
       if (it != m_rewrite_cache.end())
       {
+        if (CountRewriteCacheMetric) { m_rewrite_cache_metric.hit(); }
         return (*it).second;
+      }
+      else if (CountRewriteCacheMetric)
+      {
+        m_rewrite_cache_metric.miss();
       }
     }
 
@@ -279,6 +251,43 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
       // Return h'(u_1', ..., u_n')
       return static_cast<data_expression>(new_appl);
     }
+  }
+}
+
+void InnermostRewriter::print_rewrite_metrics()
+{
+  if (CountRewriteSteps)
+  {
+    // We are going to sort them by the number of times applied.
+    std::vector<std::pair<data_equation, std::size_t>> counts;
+    for (auto& result : m_application_count)
+    {
+      counts.push_back(result);
+    }
+
+    std::sort(counts.begin(),
+      counts.end(),
+      [](const std::pair<data_equation, std::size_t>& left, std::pair<data_equation, std::size_t>& right) -> bool
+      {
+        return left.second > right.second;
+      }
+    );
+
+    // Count the total number of rewrite steps applied
+    std::size_t total_count = 0;
+    for (auto& result : counts)
+    {
+      total_count += result.second;
+    }
+
+    mCRL2log(info) << "Applied " << total_count << " single rewrite steps.\n";
+
+    for (auto& result : counts)
+    {
+      mCRL2log(info) << "Applied rule " << result.first << " " << result.second << " times.\n";
+    }
+
+    m_application_count.clear();
   }
 }
 
