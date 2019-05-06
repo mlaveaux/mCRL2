@@ -16,9 +16,17 @@
 
 #include <assert.h>
 
-constexpr bool PrintRewriteSteps = false;
+// These are debug related options.
 
+constexpr bool PrintRewriteSteps = false;
 constexpr bool PrintMatchSteps   = false;
+
+// The following options toggle tracking metrics.
+
+/// \brief Keep track of the number of times each rule is applied (and print it after each rewrite).
+constexpr bool CountRewriteSteps = false;
+
+// The following options toggle performance features.
 
 /// \brief Keep track of terms that are in normal form during rewriting.
 constexpr bool EnableNormalForms = true;
@@ -76,6 +84,43 @@ data_expression InnermostRewriter::rewrite(const data_expression& term, substitu
 {
   auto result = rewrite_impl(term, sigma);
   m_normal_forms.clear();
+
+  if (CountRewriteSteps)
+  {
+    mCRL2log(info) << "Rewrote " << term << " -->* " << result << ".\n";
+
+    // We are going to sort them by the number of times applied.
+    std::vector<std::pair<data_equation, std::size_t>> counts;
+    for (auto& result : m_application_count)
+    {
+      counts.push_back(result);
+    }
+
+    std::sort(counts.begin(),
+      counts.end(),
+      [](const std::pair<data_equation, std::size_t>& left, std::pair<data_equation, std::size_t>& right) -> bool
+      {
+        return left.second > right.second;
+      }
+    );
+
+    // Count the total number of rewrite steps applied
+    std::size_t total_count = 0;
+    for (auto& result : counts)
+    {
+      total_count += result.second;
+    }
+
+    mCRL2log(info) << "Applied " << total_count << " single rewrite steps.\n";
+
+    for (auto& result : counts)
+    {
+      mCRL2log(info) << "Applied rule " << result.first << " " << result.second << " times.\n";
+    }
+
+    m_application_count.clear();
+  }
+
   return result;
 }
 
@@ -302,6 +347,11 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
         rewrite_impl(apply_substitution(equation.condition(), m_local_sigma, condition_stack), m_identity) != sort_bool::true_())
       {
         continue;
+      }
+
+      if (CountRewriteSteps)
+      {
+        ++m_application_count[equation];
       }
 
       return true;
