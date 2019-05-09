@@ -131,6 +131,12 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
       if (it != m_rewrite_cache.end())
       {
         if (CountRewriteCacheMetric) { m_rewrite_cache_metric.hit(); }
+
+        if (PrintRewriteSteps)
+        {
+          mCRL2log(info) << "Found " << term << " to " << (*it).second << " in the rewrite cache.\n";
+        }
+
         return (*it).second;
       }
       else if (CountRewriteCacheMetric)
@@ -289,6 +295,11 @@ void InnermostRewriter::print_rewrite_metrics()
 
     m_application_count.clear();
   }
+
+  if (CountRewriteCacheMetric)
+  {
+    mCRL2log(info) << "Rewrite cache " << m_rewrite_cache_metric.message() << ".\n";
+  }
 }
 
 bool InnermostRewriter::is_normal_form(const data_expression& term) const
@@ -344,7 +355,7 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
     m_local_sigma.clear();
     if (match_lhs(term, equation.lhs(), m_local_sigma))
     {
-      if(PrintMatchSteps)
+      if(PrintRewriteSteps)
       {
         mCRL2log(info) << "Matched rule " << equation << " to term " << term << "\n";
       }
