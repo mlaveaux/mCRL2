@@ -25,8 +25,8 @@ namespace detail
 {
 
 /// \brief A capture-avoiding substitution of sigma applied to the given term.
-template<typename Substitution>
-static inline data_expression capture_avoiding_substitution(const data_expression& term, const Substitution& sigma)
+template<typename Substitution, typename Generator>
+static inline data_expression capture_avoiding_substitution(const data_expression& term, Substitution& sigma, Generator& generator)
 {
   // C(x, sigma, V) = sigma(x), where x is a variable
   if (is_variable(term))
@@ -39,12 +39,21 @@ static inline data_expression capture_avoiding_substitution(const data_expressio
   {
     return term;
   }
-  // C(lambda x . t, sigma, V) = lambda y . C(t, sigma[x := y], V), where x and y are variables.
+  // C(lambda x . t, sigma, V) = lambda y . C(t, sigma[x := y], V), where x are variables and y are fresh variables.
   else if (is_abstraction(term))
   {
-    //const auto& abstraction = static_cast<const class abstraction&>(term);
-    assert(false);
-    return term;
+    const auto& abstract = static_cast<const class abstraction&>(term);
+
+    // Construct a list of variables and construct the substitution.
+    data::variable_list new_variables;
+    for (auto& var : abstract.variables())
+    {
+      variable fresh_variable(generator(), var.sort());
+      new_variables.push_front(fresh_variable);
+      sigma[var] = fresh_variable;
+    }
+
+    return abstraction(abstract.binding_operator(), new_variables, capture_avoiding_substitution(abstract.body(), sigma, generator));
   }
   // C(t(t_1, ..., t_n, sigma, V) = C(t, sigma, V) ( C(t_1, sigma, V), ..., C(t_n, sigma, V) )
   else
@@ -56,11 +65,11 @@ static inline data_expression capture_avoiding_substitution(const data_expressio
     MCRL2_DECLARE_STACK_ARRAY(arguments, data_expression, appl.size());
     for (std::size_t index = 0; index < appl.size(); ++index)
     {
-      arguments[index] = capture_avoiding_substitution(appl[index], sigma);
+      arguments[index] = capture_avoiding_substitution(appl[index], sigma, generator);
     }
 
     // Construct the application, also subsituting the head.
-    return application(capture_avoiding_substitution(appl.head(), sigma), arguments.begin(), arguments.end());
+    return application(capture_avoiding_substitution(appl.head(), sigma, generator), arguments.begin(), arguments.end());
   }
 }
 

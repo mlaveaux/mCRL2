@@ -168,9 +168,8 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 {
   // u' := rewrite(u, sigma[x := y]) where y are fresh variables.
   data::variable_list new_variables;
-  m_local_sigma.clear();
 
-  // Construct a list of variables and construct the substitution.
+  m_local_sigma.clear();
   for (const auto& var : abstraction.variables())
   {
     const variable fresh_variable(m_generator(), var.sort());
@@ -179,7 +178,7 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
   }
 
   // rewrite(u, sigma[x := y]) is equivalent to rewrite(u^[x := y], sigma);
-  data_expression body_rewritten = rewrite_impl(capture_avoiding_substitution(abstraction.body(), m_local_sigma), sigma);
+  data_expression body_rewritten = rewrite_impl(capture_avoiding_substitution(abstraction.body(), m_local_sigma, m_generator), sigma);
 
   // Return lambda y . u'
   auto result = data::abstraction(abstraction.binding_operator(), new_variables, body_rewritten);
@@ -217,13 +216,12 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
 
     for (auto& variable : abstraction.variables())
     {
-      assert(false);
       m_local_sigma[variable] = arguments[index];
       ++index;
     }
 
     // Return rewrite(w, sigma[x := u'])
-    data_expression result = rewrite_impl(capture_avoiding_substitution(abstraction.body(), m_local_sigma), m_identity);
+    data_expression result = rewrite_impl(capture_avoiding_substitution(abstraction.body(), m_local_sigma, m_generator), m_identity);
 
     if (PrintRewriteSteps)
     {
@@ -316,7 +314,7 @@ void InnermostRewriter::mark_normal_form(const data_expression& term)
 }
 
 template<typename Substitution>
-data_expression InnermostRewriter::apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack) const
+data_expression InnermostRewriter::apply_substitution(const data_expression& term, Substitution& sigma, const ConstructionStack& stack)
 {
   if (EnableConstructionStack)
   {
@@ -324,7 +322,7 @@ data_expression InnermostRewriter::apply_substitution(const data_expression& ter
   }
   else
   {
-    return capture_avoiding_substitution(term, sigma);
+    return capture_avoiding_substitution(term, sigma, m_generator);
   }
 }
 

@@ -63,7 +63,7 @@ private:
 
   /// \brief Applies the substitution sigma to the term, optionally using the construction stack (depending on EnableConstructionStacks).
   template<typename Substitution>
-  data_expression apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack) const;
+  data_expression apply_substitution(const data_expression& term, Substitution& sigma, const ConstructionStack& stack);
 
   /// \brief The match function defined in the document. However, instead of returning a set of right-hand sides it makes a (arbitrary)
   ///        choice of which right-hand side to return and applies the matching substitution to it. The given term must be in normal form.
