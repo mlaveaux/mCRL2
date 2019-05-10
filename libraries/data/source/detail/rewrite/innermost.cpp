@@ -170,17 +170,18 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
   // u' := rewrite(u, sigma[x := y]) where y are fresh variables.
   m_local_sigma.clear();
   data::variable_list new_variables = rename_bound_variables(abstraction, m_local_sigma, m_generator);
-
-  // rewrite(u, sigma[x := y]) is equivalent to rewrite(u^[x := y], sigma);
-  data_expression body_rewritten = rewrite_impl(capture_avoiding_substitution(abstraction.body(), m_local_sigma, m_generator), sigma);
-
-  // Return lambda y . u'
-  auto result = data::abstraction(abstraction.binding_operator(), new_variables, body_rewritten);
+  data_expression u = capture_avoiding_substitution(abstraction.body(), m_local_sigma, m_generator);
 
   if (PrintRewriteSteps)
   {
-    mCRL2log(info) << "Applied alpha-conversion to " << abstraction << " resulting in " << result << "\n";
+    mCRL2log(info) << "Applied alpha-conversion to " << abstraction << " resulting in " << data::abstraction(abstraction.binding_operator(), new_variables, u) << "\n";
   }
+
+  // rewrite(u, sigma[x := y]) is equivalent to rewrite(u^[x := y], sigma);
+  data_expression body_rewritten = rewrite_impl(u, sigma);
+
+  // Return lambda y . u'
+  auto result = data::abstraction(abstraction.binding_operator(), new_variables, body_rewritten);
 
   return static_cast<data_expression>(result);
 }
@@ -376,7 +377,7 @@ bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
 
   if (PrintMatchSteps)
   {
-    mCRL2log(info) << "Term " << term << " is in normal-form.\n";
+    mCRL2log(info) << "Term " << term << " is in normal form.\n";
   }
 
   return false;
