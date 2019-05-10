@@ -80,7 +80,7 @@ private:
 
   // These are shared data structures to prevent unnecessary reallocations.
 
-  mutable mcrl2::utilities::unordered_map_large<variable, data_expression> m_local_sigma; ///< A local substitution to prevent reallocations.
+  mutable mutable_indexed_substitution<variable, data_expression> m_local_sigma; ///< A local substitution to prevent reallocations.
 
   mutable std::vector<data_expression> m_argument_stack; ///< A reused argument stack
 

@@ -10,9 +10,11 @@
 #ifndef MCRL2_DATA_DETAIL_REWRITE_UTILITY_H
 #define MCRL2_DATA_DETAIL_REWRITE_UTILITY_H
 
+#include "mcrl2/data/abstraction.h"
 #include "mcrl2/data/data_expression.h"
 #include "mcrl2/data/function_symbol.h"
 #include "mcrl2/data/variable.h"
+#include "mcrl2/data/detail/rewrite/substitute.h"
 #include "mcrl2/utilities/stack_array.h"
 
 #include <assert.h>
@@ -23,55 +25,6 @@ namespace data
 {
 namespace detail
 {
-
-/// \brief A capture-avoiding substitution of sigma applied to the given term.
-template<typename Substitution, typename Generator>
-static inline data_expression capture_avoiding_substitution(const data_expression& term, Substitution& sigma, Generator& generator)
-{
-  // C(x, sigma, V) = sigma(x), where x is a variable
-  if (is_variable(term))
-  {
-    const auto& var = static_cast<const variable&>(term);
-    return sigma.at(var);
-  }
-  // C(f, sigma, V) = f, where f is a function symbol.
-  else if (is_function_symbol(term))
-  {
-    return term;
-  }
-  // C(lambda x . t, sigma, V) = lambda y . C(t, sigma[x := y], V), where x are variables and y are fresh variables.
-  else if (is_abstraction(term))
-  {
-    const auto& abstract = static_cast<const class abstraction&>(term);
-
-    // Construct a list of variables and construct the substitution.
-    data::variable_list new_variables;
-    for (auto& var : abstract.variables())
-    {
-      variable fresh_variable(generator(), var.sort());
-      new_variables.push_front(fresh_variable);
-      sigma[var] = fresh_variable;
-    }
-
-    return abstraction(abstract.binding_operator(), new_variables, capture_avoiding_substitution(abstract.body(), sigma, generator));
-  }
-  // C(t(t_1, ..., t_n, sigma, V) = C(t, sigma, V) ( C(t_1, sigma, V), ..., C(t_n, sigma, V) )
-  else
-  {
-    assert(is_application(term));
-    const auto& appl = static_cast<const application&>(term);
-
-    // Substitution of all arguments.
-    MCRL2_DECLARE_STACK_ARRAY(arguments, data_expression, appl.size());
-    for (std::size_t index = 0; index < appl.size(); ++index)
-    {
-      arguments[index] = capture_avoiding_substitution(appl[index], sigma, generator);
-    }
-
-    // Construct the application, also subsituting the head.
-    return application(capture_avoiding_substitution(appl.head(), sigma, generator), arguments.begin(), arguments.end());
-  }
-}
 
 /// \brief Matches a single left-hand side with the given term and creates the substitution.
 template<typename Substitution>
@@ -91,10 +44,10 @@ static inline bool match_lhs(const data_expression& term,  const data_expression
   {
     const auto& var = static_cast<const variable&>(lhs);
 
-    if (sigma.count(var) != 0)
+    if (sigma(var) != var)
     {
       // If the variable was already assigned it must match the previously assigned value.
-      return sigma.at(var) == term;
+      return sigma(var) == term;
     }
     else
     {
@@ -191,7 +144,7 @@ public:
       {
         // e(x |> Q, S, sigma) = e(Q, S |> sigma(x), sigma)
         const auto& var = static_cast<const variable&>(term);
-        argument_stack.push_back(sigma.at(var));
+        argument_stack.push_back(sigma(var));
       }
       else if (is_function_symbol_arity(term))
       {
@@ -236,7 +189,8 @@ private:
     }
     else if (is_abstraction(term))
     {
-      // Ignored for now.
+      const auto& abstract = static_cast<const abstraction&>(term);
+      m_stack.push_back(term);
     }
     else
     {

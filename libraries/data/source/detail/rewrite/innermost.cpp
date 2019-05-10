@@ -13,6 +13,7 @@
 #include "mcrl2/utilities/stack_array.h"
 #include "mcrl2/data/bool.h"
 #include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
+#include "mcrl2/data/detail/rewrite/substitute.h"
 
 #include <assert.h>
 
@@ -167,15 +168,8 @@ data_expression InnermostRewriter::rewrite_function_symbol(const function_symbol
 data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstraction, const substitution_type& sigma)
 {
   // u' := rewrite(u, sigma[x := y]) where y are fresh variables.
-  data::variable_list new_variables;
-
   m_local_sigma.clear();
-  for (const auto& var : abstraction.variables())
-  {
-    const variable fresh_variable(m_generator(), var.sort());
-    new_variables.push_front(fresh_variable);
-    m_local_sigma[var] = fresh_variable;
-  }
+  data::variable_list new_variables = rename_bound_variables(abstraction, m_local_sigma, m_generator);
 
   // rewrite(u, sigma[x := y]) is equivalent to rewrite(u^[x := y], sigma);
   data_expression body_rewritten = rewrite_impl(capture_avoiding_substitution(abstraction.body(), m_local_sigma, m_generator), sigma);
@@ -185,7 +179,7 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 
   if (PrintRewriteSteps)
   {
-    mCRL2log(info) << "Applied alpha-reduction to " << abstraction << " resulting in " << result << "\n";
+    mCRL2log(info) << "Applied alpha-conversion to " << abstraction << " resulting in " << result << "\n";
   }
 
   return static_cast<data_expression>(result);
