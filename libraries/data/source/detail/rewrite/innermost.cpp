@@ -20,7 +20,6 @@
 // These are debug related options.
 
 constexpr bool PrintRewriteSteps = false;
-constexpr bool PrintMatchSteps   = false;
 
 // The following options toggle tracking metrics.
 
@@ -35,11 +34,11 @@ constexpr bool CountRewriteCacheMetric = false;
 /// \brief Keep track of terms that are in normal form during rewriting.
 constexpr bool EnableNormalForms = true;
 
-/// \brief Enables construction stacks to reconstruct the right-hand sides bottom up.
-constexpr bool EnableConstructionStack = true;
-
 /// \brief Enable caching of rewrite results.
 constexpr bool EnableCaching = true;
+
+/// \brief Enables construction stacks to reconstruct the right-hand sides bottom up.
+constexpr bool EnableConstructionStack = false;
 
 using namespace mcrl2;
 using namespace mcrl2::data;
@@ -47,17 +46,12 @@ using namespace mcrl2::data::detail;
 
 using namespace mcrl2::log;
 
-/// \returns A unique index for the head symbol that the given term starts with.
-static inline std::size_t get_head_index(const data_expression& term)
+/// \brief Checks every equation in the given data specification.
+/// \returns A vector of equations from the data specifications that pass the given selector.
+data_equation_vector filter_data_specification(const data_specification& data_spec, const used_data_equation_selector& selector)
 {
-  return core::index_traits<data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(get_nested_head(term)));
-}
+  data_equation_vector equations;
 
-InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const used_data_equation_selector& selector)
-  : Rewriter(data_spec, selector),
-    m_rewrite_cache(1024)
-{
-  // This probably belongs inside the Rewriter class, checks for all the selected equations whether they are valid rewrite rules.
   for (const data_equation& equation : data_spec.equations())
   {
     if (selector(equation))
@@ -72,17 +66,19 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
         continue;
       }
 
-      // Make sure that it is possible to insert the match data for head_index left-hand side.
-      std::size_t head_index = get_head_index(equation.lhs());
-      if (head_index >= m_rewrite_system.size()) { m_rewrite_system.resize(head_index + 1); }
-
-      // Insert the left-hand side into the rewrite rule mapping and a construction stack for its right-hand side.
-      m_rewrite_system[head_index].emplace_back(equation,
-        ConstructionStack(equation.condition()),
-        ConstructionStack(equation.rhs()));
+      equations.push_back(equation);
     }
   }
+
+  return equations;
 }
+
+
+InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const used_data_equation_selector& selector)
+  : Rewriter(data_spec, selector),
+    m_rewrite_cache(1024),
+    m_matcher(filter_data_specification(data_spec, selector))
+{}
 
 data_expression InnermostRewriter::rewrite(const data_expression& term, substitution_type& sigma)
 {
@@ -93,6 +89,19 @@ data_expression InnermostRewriter::rewrite(const data_expression& term, substitu
 }
 
 // Private functions
+
+template<typename Substitution>
+data_expression InnermostRewriter::apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack)
+{
+  if (EnableConstructionStack)
+  {
+    return stack.construct_term(sigma, m_argument_stack);
+  }
+  else
+  {
+    return capture_avoiding_substitution(term, sigma, m_generator);
+  }
+}
 
 data_expression InnermostRewriter::rewrite_impl(const data_expression& term, const substitution_type& sigma)
 {
@@ -106,7 +115,7 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
   else if (is_function_symbol(term))
   {
     const auto& function_symbol = static_cast<const data::function_symbol&>(term);
-    return rewrite_function_symbol(function_symbol);
+    return rewrite_single(function_symbol);
   }
   // Else if t is of the form lambda x . u
   else if (is_abstraction(term))
@@ -147,21 +156,6 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
     }
 
     return rewrite_application(appl, sigma);
-  }
-}
-
-data_expression InnermostRewriter::rewrite_function_symbol(const function_symbol& symbol)
-{
-  data_expression rhs;
-  // If R not empty, this match function already applies the substitution.
-  if (match(symbol, rhs))
-  {
-    // Return rewrite(r^sigma', id)
-    return rewrite_impl(rhs, m_identity);
-  }
-  else
-  {
-    return symbol;
   }
 }
 
@@ -227,30 +221,61 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
   }
   else
   {
-    application new_appl(head_rewritten, arguments.begin(), arguments.end());
-
-    // (R, sigma') := match(h'(u_1', ..., u_n')),
-    data_expression rhs;
-
-    // If R not empty, this match function already applies the substitution and rewrite steps.
-    if (match(new_appl, rhs))
-    {
-      // Return rewrite(r^sigma', id)
-      auto result = rewrite_impl(rhs, m_identity);
-
-      if (EnableCaching)
-      {
-        m_rewrite_cache.emplace(new_appl, result);
-      }
-
-      return result;
-    }
-    else
-    {
-      // Return h'(u_1', ..., u_n')
-      return static_cast<data_expression>(new_appl);
-    }
+    return rewrite_single(application(head_rewritten, arguments.begin(), arguments.end()));
   }
+}
+
+data_expression InnermostRewriter::rewrite_single(const data_expression& expression)
+{
+  if (is_normal_form(expression))
+  {
+    // By definition a normal form does not match any rewrite rule.
+    return expression;
+  }
+
+  // (R, sigma') := match(h'(u_1', ..., u_n')),
+  m_local_sigma.clear();
+  auto match_result = m_matcher.match(expression, m_local_sigma);
+
+  // If R not empty
+  for (const auto& match : match_result)
+  {
+    const auto& equation = std::get<0>(match.get());
+
+    // Compute rhs^sigma'.
+    auto rhs = apply_substitution(equation.rhs(), m_local_sigma, std::get<1>(match.get()));
+
+    // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
+    if (equation.condition() != sort_bool::true_())
+    {
+      throw std::runtime_error("Only trivial conditions are supported");
+    }
+
+    //if (equation.condition() != sort_bool::true_() &&
+    //  rewrite_impl(apply_substitution(equation.condition(), m_local_sigma, std::get<2>(equation)), m_identity) != sort_bool::true_())
+    //{
+    //  continue;
+    //}
+
+    if (CountRewriteSteps)
+    {
+      ++m_application_count[equation];
+    }
+
+    // Choose a rewrite rule and return rewrite(, m_identity).
+    auto result = rewrite_impl(rhs, m_identity);
+
+    if (EnableCaching)
+    {
+      m_rewrite_cache.emplace(expression, result);
+    }
+
+    // Return rewrite(r^sigma', id)
+    return result;
+  }
+
+  // Return h'(u_1', ..., u_n')
+  return expression;
 }
 
 void InnermostRewriter::print_rewrite_metrics()
@@ -306,79 +331,4 @@ void InnermostRewriter::mark_normal_form(const data_expression& term)
   {
     m_normal_forms.emplace(term);
   }
-}
-
-template<typename Substitution>
-data_expression InnermostRewriter::apply_substitution(const data_expression& term, Substitution& sigma, const ConstructionStack& stack)
-{
-  if (EnableConstructionStack)
-  {
-    return stack.construct_term(sigma, m_argument_stack);
-  }
-  else
-  {
-    return capture_avoiding_substitution(term, sigma, m_generator);
-  }
-}
-
-bool InnermostRewriter::match(const data_expression& term, data_expression& rhs)
-{
-  if (is_normal_form(term))
-  {
-    // By definition a normal form does not match any rewrite rule.
-    return false;
-  }
-
-  std::size_t head_index = get_head_index(term);
-  if (head_index >= m_rewrite_system.size())
-  {
-    // No left-hand side starts with this head symbol, so it cannot match.
-    return false;
-  }
-
-  // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
-  // to the given term. However, only tries rewrite rules that start with the correct head symbol.
-  for (const auto& tuple : m_rewrite_system[head_index])
-  {
-    const auto& equation = std::get<0>(tuple);
-    const auto& condition_stack = std::get<1>(tuple);
-    const auto& rhs_stack = std::get<2>(tuple);
-
-    // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
-    m_local_sigma.clear();
-    if (match_lhs(term, equation.lhs(), m_local_sigma))
-    {
-      if(PrintRewriteSteps)
-      {
-        mCRL2log(info) << "Matched rule " << equation << " to term " << term << "\n";
-      }
-
-      rhs = apply_substitution(equation.rhs(), m_local_sigma, rhs_stack);
-
-      // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
-      if (equation.condition() != sort_bool::true_() &&
-        rewrite_impl(apply_substitution(equation.condition(), m_local_sigma, condition_stack), m_identity) != sort_bool::true_())
-      {
-        continue;
-      }
-
-      if (CountRewriteSteps)
-      {
-        ++m_application_count[equation];
-      }
-
-      return true;
-    }
-    else if (PrintMatchSteps)
-    {
-      mCRL2log(info) << "Tried rule " << equation << " to term " << term << "\n";
-    }
-  }
-
-  if (PrintMatchSteps)
-  {
-    mCRL2log(info) << "Term " << term << " is in normal form.\n";
-  }
-
-  return false;
 }
