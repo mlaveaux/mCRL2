@@ -75,8 +75,9 @@ public:
 
   /// \brief The same function as above, but reuses an existing argument stack to prevent reallocations. This "stack" is a vector
   ///        to be able to iterate over the arity number of arguments directly.
-  template<typename Substitution>
-  data_expression construct_term(const Substitution& sigma, std::vector<data_expression>& argument_stack) const
+  template<typename Substitution,
+    typename Generator>
+  data_expression construct_term(Substitution& sigma, Generator& generator, std::vector<data_expression>& argument_stack) const
   {
     // Define an iterative version to prevent a large number of nested calls before returning the value.
     for (const atermpp::aterm_appl& term : m_stack)
@@ -99,7 +100,8 @@ public:
       }
       else if (is_abstraction(term))
       {
-        argument_stack.push_back(static_cast<const data_expression>(term));
+        // e(lambda x . t |> Q, S, sigma) = e(Q, S |> (lambda x . t)^sigma, sigma)
+        argument_stack.push_back(capture_avoiding_substitution(static_cast<const data_expression>(term), sigma, generator));
       }
       else
       {

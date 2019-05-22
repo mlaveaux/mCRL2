@@ -41,7 +41,7 @@ public:
 private:
   /// \brief Applies the substitution sigma to the term, optionally using the construction stack (depending on EnableConstructionStacks).
   template<typename Substitution>
-  data_expression apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack);
+  data_expression apply_substitution(const data_expression& term, Substitution& sigma, const ConstructionStack& stack);
 
   /// \brief The rewrite function defined in the document. Takes a term t and a substitution sigma and returns the normal
   ///        form of sigma applied to t with respect to the term rewrite system passed in the constructor.

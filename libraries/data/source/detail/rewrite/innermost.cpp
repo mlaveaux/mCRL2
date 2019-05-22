@@ -91,11 +91,11 @@ data_expression InnermostRewriter::rewrite(const data_expression& term, substitu
 // Private functions
 
 template<typename Substitution>
-data_expression InnermostRewriter::apply_substitution(const data_expression& term, const Substitution& sigma, const ConstructionStack& stack)
+data_expression InnermostRewriter::apply_substitution(const data_expression& term, Substitution& sigma, const ConstructionStack& stack)
 {
   if (EnableConstructionStack)
   {
-    return stack.construct_term(sigma, m_argument_stack);
+    return stack.construct_term(sigma, m_generator, m_argument_stack);
   }
   else
   {
