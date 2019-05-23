@@ -145,7 +145,7 @@ std::vector<std::reference_wrapper<const data_equation_extended>> NaiveMatcher::
     }
   }
 
-  if (PrintMatchSteps)
+  if (results.empty() && PrintMatchSteps)
   {
     mCRL2log(info) << "Term " << term << " is in normal form.\n";
   }

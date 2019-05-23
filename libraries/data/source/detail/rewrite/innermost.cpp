@@ -279,7 +279,7 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
       ++m_application_count[equation];
     }
 
-    // Choose a rewrite rule and return rewrite(, m_identity).
+    // Return rewrite(r^sigma', id)
     auto result = rewrite_impl(rhs, m_identity);
 
     if (EnableCaching)
@@ -287,7 +287,11 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
       m_rewrite_cache.emplace(expression, result);
     }
 
-    // Return rewrite(r^sigma', id)
+    if (PrintRewriteSteps)
+    {
+      mCRL2log(info) << "Rewrote  " << expression << " to " << result << " using rule " << equation << "\n";
+    }
+
     return result;
   }
 
