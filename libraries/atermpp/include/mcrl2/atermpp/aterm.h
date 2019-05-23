@@ -40,7 +40,7 @@ public:
 
   /// \brief Constructor.
   /// \param term The term from which the new term is constructed.
-  unprotected_aterm(const detail::_aterm* term) noexcept
+  explicit unprotected_aterm(const detail::_aterm* term) noexcept
    : m_term(term)
   {}
 
