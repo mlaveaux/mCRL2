@@ -12,6 +12,7 @@
 #include "mcrl2/utilities/logger.h"
 #include "mcrl2/utilities/stack_array.h"
 #include "mcrl2/data/bool.h"
+#include "mcrl2/data/replace.h"
 #include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
 #include "mcrl2/data/detail/rewrite/substitute.h"
 
@@ -46,11 +47,27 @@ using namespace mcrl2::data::detail;
 
 using namespace mcrl2::log;
 
+/// \returns The same data equation with all variables renamed to meta-variables that can not occur in the terms on which is matched.
+template<typename Generator>
+data_equation rename_meta_variables(const data_equation& equation, Generator& generator)
+{
+  auto variables = find_all_variables(equation);
+
+  mutable_indexed_substitution<variable> sigma;
+  for (auto& var: variables)
+  {
+    sigma[var] = variable(generator(), var.sort());
+  }
+
+  return replace_variables(equation, sigma);
+}
+
 /// \brief Checks every equation in the given data specification.
 /// \returns A vector of equations from the data specifications that pass the given selector.
 data_equation_vector filter_data_specification(const data_specification& data_spec, const used_data_equation_selector& selector)
 {
   data_equation_vector equations;
+  enumerator_identifier_generator generator("@");
 
   for (const data_equation& equation : data_spec.equations())
   {
@@ -66,7 +83,7 @@ data_equation_vector filter_data_specification(const data_specification& data_sp
         continue;
       }
 
-      equations.push_back(equation);
+      equations.emplace_back(rename_meta_variables(equation, generator));
     }
   }
 
