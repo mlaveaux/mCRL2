@@ -9,6 +9,7 @@
 
 #include "mcrl2/data/detail/rewrite/innermost.h"
 
+#include "mcrl2/atermpp/algorithm.h"
 #include "mcrl2/utilities/logger.h"
 #include "mcrl2/utilities/stack_array.h"
 #include "mcrl2/data/bool.h"
@@ -251,7 +252,7 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
   }
 
   // (R, sigma') := match(h'(u_1', ..., u_n')),
-  m_local_sigma.clear();
+  mutable_indexed_substitution<variable, data_expression> m_local_sigma;
   auto match_result = m_matcher.match(expression, m_local_sigma);
 
   // If R not empty
@@ -263,16 +264,11 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
     auto rhs = apply_substitution(equation.rhs(), m_local_sigma, std::get<1>(match.get()));
 
     // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
-    if (equation.condition() != sort_bool::true_())
+    if (equation.condition() != sort_bool::true_() &&
+      rewrite_impl(apply_substitution(equation.condition(), m_local_sigma, std::get<2>(match.get())), m_identity) != sort_bool::true_())
     {
-      throw std::runtime_error("Only trivial conditions are supported");
+      continue;
     }
-
-    //if (equation.condition() != sort_bool::true_() &&
-    //  rewrite_impl(apply_substitution(equation.condition(), m_local_sigma, std::get<2>(equation)), m_identity) != sort_bool::true_())
-    //{
-    //  continue;
-    //}
 
     if (CountRewriteSteps)
     {
