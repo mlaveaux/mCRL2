@@ -11,6 +11,7 @@
 
 #include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
 
+/// \brief Print the intermediate matches that succeeded.
 constexpr bool PrintMatchSteps   = false;
 
 /// \brief When enabled, index each rewrite rule based on its head symbol for fast lookup of relevant rules.

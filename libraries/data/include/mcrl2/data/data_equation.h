@@ -147,5 +147,20 @@ std::set<data::function_symbol> find_function_symbols(const data::data_equation&
 
 } // namespace mcrl2
 
+namespace std
+{
+
+template<>
+struct hash<mcrl2::data::data_equation>
+{
+    std::size_t operator()(const mcrl2::data::data_equation& v) const
+    {
+      const hash<atermpp::aterm> hasher;
+      return hasher(v);
+    }
+};
+
+} // namespace std
+
 #endif // MCRL2_DATA_DATA_EQUATION_H
 

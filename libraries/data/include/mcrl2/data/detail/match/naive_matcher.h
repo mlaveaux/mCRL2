@@ -10,10 +10,7 @@
 #ifndef MCRL2_DATA_DETAIL_NAIVE_MATCHER_H
 #define MCRL2_DATA_DETAIL_NAIVE_MATCHER_H
 
-#include "mcrl2/data/data_expression.h"
-#include "mcrl2/data/data_equation.h"
-#include "mcrl2/data/detail/match/construction_stack.h"
-#include "mcrl2/data/substitutions/mutable_indexed_substitution.h"
+#include "mcrl2/data/detail/match/matcher.h"
 
 #include <vector>
 
@@ -24,18 +21,14 @@ namespace data
 namespace detail
 {
 
-using data_equation_extended = std::tuple<data_equation, ConstructionStack, ConstructionStack>;
-
-class NaiveMatcher
+class NaiveMatcher : public Matcher
 {
 public:
   /// \brief Initialize a naive matcher with a number of equations.
   NaiveMatcher(const data_equation_vector& equations);
+  virtual ~NaiveMatcher() {}
 
-  /// \brief The match function defined in the document. However, instead of returning a set of right-hand sides it makes a (arbitrary)
-  ///        choice of which right-hand side to return and applies the matching substitution to it. The given term must be in normal form.
-  /// \returns A number of equations that match the given term, under the updated (passed through) substitution sigma.
-  std::vector<std::reference_wrapper<const data_equation_extended>> match(const data_expression& term, mutable_indexed_substitution<>& matching_sigma);
+  std::vector<std::reference_wrapper<const data_equation_extended>> match(const data_expression& term, mutable_indexed_substitution<>& matching_sigma) override;
 
 private:
   /// A mapping from head symbols to rewrite rules and their corresponding construction stacks. A unique index is used for each head symbol to achieve
