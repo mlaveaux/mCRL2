@@ -18,6 +18,7 @@ add_mcrl2_library(data
     detail/rewrite/jitty.cpp
     detail/rewrite/rewrite.cpp
     detail/rewrite/strategy.cpp
+    detail/match/automaton_matcher.cpp
     detail/match/naive_matcher.cpp
     ${COMPILING_REWRITER_SRC}
   DEPENDS

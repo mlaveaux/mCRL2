@@ -11,6 +11,7 @@
 #define MCRL2_DATA_DETAIL_INNERMOST_H
 
 #include "mcrl2/data/detail/rewrite.h"
+#include "mcrl2/data/detail/match/automaton_matcher.h"
 #include "mcrl2/data/detail/match/naive_matcher.h"
 #include "mcrl2/utilities/cache_metric.h"
 #include "mcrl2/utilities/fixed_size_cache.h"
@@ -69,7 +70,7 @@ private:
 
   mcrl2::utilities::fifo_cache<data_expression, data_expression> m_rewrite_cache; ///< Cache the normal forms of certain data expressions.
 
-  mcrl2::data::detail::NaiveMatcher m_matcher;
+  mcrl2::data::detail::AutomatonMatcher m_matcher;
 
   // These are shared data structures to prevent unnecessary reallocations.
 
