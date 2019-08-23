@@ -52,9 +52,10 @@ public:
 
   std::size_t count(const key_type& key) const { return m_map.count(key); }
 
-  iterator find(const key_type& key)
+  template<typename ...Args>
+  const_iterator find(const Args&... key) const
   {
-    return m_map.find(key);
+    return m_map.find(key...);
   }
 
   /// \brief Stores the given key-value pair in the cache. Depending on the cache policy and capacity an existing element
@@ -65,7 +66,7 @@ public:
     // The reason to split the find and emplace is that when we insert an element the replacement_candidate should not be
     // the key that we just inserted. The other way around, when an element that we are looking for was first removed and
     // then searched for also leads to unnecessary inserts.
-    auto result = find(args...);
+    auto result = m_map.find(args...);
     if (result == m_map.end())
     {
       // If the cache would be full after an inserted.

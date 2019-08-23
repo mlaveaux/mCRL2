@@ -118,14 +118,14 @@ std::vector<std::reference_wrapper<const data_equation_extended>> NaiveMatcher::
   std::vector<std::reference_wrapper<const data_equation_extended>> results;
 
   std::size_t head_index = get_head_index(term);
-  if (head_index >= m_rewrite_system.size())
+  if (EnableHeadIndexing && head_index >= m_rewrite_system.size())
   {
     // No left-hand side starts with this head symbol, so it cannot match.
     return results;
   }
 
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
-  // to the given term. However, only tries rewrite rules that start with the correct head symbol.
+  // to the given term. Only tries rewrite rules that start with the correct head symbol when EnableHeadIndexing is true.
   for (const auto& tuple : (EnableHeadIndexing ? m_rewrite_system[head_index] : m_equations))
   {
     const auto& equation = std::get<0>(tuple);
@@ -142,7 +142,7 @@ std::vector<std::reference_wrapper<const data_equation_extended>> NaiveMatcher::
     }
     else if (PrintMatchSteps)
     {
-      mCRL2log(info) << "Tried rule " << equation << " to term " << term << "\n";
+      mCRL2log(info) << "Tried rule " << equation << " on term " << term << "\n";
     }
   }
 
