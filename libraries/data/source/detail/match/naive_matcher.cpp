@@ -25,8 +25,7 @@ using namespace mcrl2::log;
 
 /// \brief Matches a single left-hand side with the given term and creates the substitution.
 template<typename Substitution>
-static inline
-bool match_lhs(const data_expression& term,  const data_expression& lhs, Substitution& sigma)
+inline bool match_lhs(const data_expression& term,  const data_expression& lhs, Substitution& sigma)
 {
   if (term == lhs)
   {
@@ -85,12 +84,13 @@ bool match_lhs(const data_expression& term,  const data_expression& lhs, Substit
 
 
 /// \returns A unique index for the head symbol that the given term starts with.
-static inline std::size_t get_head_index(const data_expression& term)
+inline std::size_t get_head_index(const data_expression& term)
 {
   return core::index_traits<data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(get_nested_head(term)));
 }
 
-NaiveMatcher::NaiveMatcher(const data_equation_vector& equations)
+template<typename Substitution>
+NaiveMatcher<Substitution>::NaiveMatcher(const data_equation_vector& equations)
 {
   for (auto&& equation : equations)
   {
@@ -109,47 +109,49 @@ NaiveMatcher::NaiveMatcher(const data_equation_vector& equations)
     m_rewrite_system[head_index].emplace_back(equation,
       ConstructionStack(equation.condition()),
       ConstructionStack(equation.rhs()));
-
   }
 }
 
-std::vector<std::reference_wrapper<const data_equation_extended>> NaiveMatcher::match(const data_expression& term, mutable_indexed_substitution<>& matching_sigma)
+template<typename Substitution>
+void NaiveMatcher<Substitution>::match(const data_expression& term)
 {
-  std::vector<std::reference_wrapper<const data_equation_extended>> results;
+  m_head_index = get_head_index(term);
+  m_term = term;
+}
 
-  std::size_t head_index = get_head_index(term);
-  if (EnableHeadIndexing && head_index >= m_rewrite_system.size())
+template<typename Substitution>
+const data_equation_extended* NaiveMatcher<Substitution>::next(Substitution& matching_sigma)
+{
+  if (EnableHeadIndexing && m_head_index >= m_rewrite_system.size())
   {
     // No left-hand side starts with this head symbol, so it cannot match.
-    return results;
+    return nullptr;
   }
 
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
   // to the given term. Only tries rewrite rules that start with the correct head symbol when EnableHeadIndexing is true.
-  for (const auto& tuple : (EnableHeadIndexing ? m_rewrite_system[head_index] : m_equations))
+  for (std::size_t index = m_current_index; index < (EnableHeadIndexing ? m_rewrite_system[m_head_index].size() : m_equations.size()); ++index)
   {
+    const auto& tuple = (EnableHeadIndexing ? m_rewrite_system[m_head_index][index] : m_equations[index]);
     const auto& equation = std::get<0>(tuple);
 
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
-    if (match_lhs(term, equation.lhs(), matching_sigma))
+    if (match_lhs(m_term, equation.lhs(), matching_sigma))
     {
       if(PrintMatchSteps)
       {
-        mCRL2log(info) << "Matched rule " << equation << " to term " << term << "\n";
+        mCRL2log(info) << "Matched rule " << equation << " to term " << m_term << "\n";
       }
 
-      results.push_back(tuple);
+      return &tuple;
     }
     else if (PrintMatchSteps)
     {
-      mCRL2log(info) << "Tried rule " << equation << " on term " << term << "\n";
+      mCRL2log(info) << "Tried rule " << equation << " on term " << m_term << "\n";
     }
   }
 
-  if (results.empty() && PrintMatchSteps)
-  {
-    mCRL2log(info) << "Term " << term << " is in normal form.\n";
-  }
-
-  return results;
+  return nullptr;
 }
+
+template class mcrl2::data::detail::NaiveMatcher<mutable_indexed_substitution<>>;

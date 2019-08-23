@@ -24,13 +24,17 @@ namespace detail
 
 using data_equation_extended = std::tuple<data_equation, ConstructionStack, ConstructionStack>;
 
+/// \brief The interface for matching algorithms.
+template<typename Substitution>
 class Matcher : public mcrl2::utilities::noncopyable
 {
 public:
-  /// \brief The match function defined in the document. However, instead of returning a set of right-hand sides it makes a (arbitrary)
-  ///        choice of which right-hand side to return and applies the matching substitution to it. The given term must be in normal form.
-  /// \returns A number of equations that match the given term, under the updated (passed through) substitution sigma.
-  virtual std::vector<std::reference_wrapper<const data_equation_extended>> match(const data_expression& term, mutable_indexed_substitution<>& matching_sigma) = 0;
+
+  /// \brief Start matching the given term, use next() to obtain the results per index.
+  virtual void match(const data_expression& term);
+
+  /// \returns The matching equation and adapts matching_sigma accordingly.
+  virtual const data_equation_extended* next(Substitution& matching_sigma) = 0;
 };
 
 }

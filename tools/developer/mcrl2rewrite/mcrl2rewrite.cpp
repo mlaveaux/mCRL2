@@ -40,29 +40,6 @@ bool mcrl2rewriter_tool::run()
   {
     // Load the data specification and create a suitable rewriter for it.
     data::data_specification data_specification = data::parse_data_specification(text);
-
-    // Strip out all the system defined constructors, mappings and sorts. This doesn't seem to change the performance
-    // as the unused rewrite rules are removed somewhere else.
-    /*
-    std::set<data::sort_expression> sorts;
-    std::set<data::function_symbol> constructors;
-    std::set<data::function_symbol> mappings;
-    data_specification.get_system_defined_sorts_constructors_and_mappings(sorts, constructors, mappings);
-    for (auto& sort : sorts)
-    {
-      data_specification.remove_sort(sort);
-    }
-
-    for (auto& constructor : constructors)
-    {
-      data_specification.remove_constructor(constructor);
-    }
-
-    for (auto& mapping : mappings)
-    {
-      data_specification.remove_mapping(mapping);
-    }
-    */
     data::rewriter rewriter = create_rewriter(data_specification);
 
     // Read and parse the data expressions to a vector.

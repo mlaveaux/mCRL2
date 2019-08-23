@@ -105,7 +105,8 @@ PatternSet omega_derivatives(const PatternSet& P)
 
 // Public functions
 
-AutomatonMatcher::AutomatonMatcher(const data_equation_vector& equations)
+template<typename Substitution>
+AutomatonMatcher<Substitution>::AutomatonMatcher(const data_equation_vector& equations)
 {
   // Compute the root by converting all terms to string representations.
   PatternSet root;
@@ -130,8 +131,13 @@ AutomatonMatcher::AutomatonMatcher(const data_equation_vector& equations)
   construct_rec(root, m_root_state);
 }
 
-std::vector<std::reference_wrapper<const data_equation_extended>> AutomatonMatcher::match(const data_expression& term, mutable_indexed_substitution<>& matching_sigma)
+template<typename Substitution>
+void AutomatonMatcher<Substitution>::match(const data_expression& term)
 {
+  m_matching_sigma.clear();
+  m_match_set = nullptr;
+  m_match_index = 0;
+
   // Start with the root state.
   pma_state* current_state = m_root_state;
 
@@ -152,7 +158,7 @@ std::vector<std::reference_wrapper<const data_equation_extended>> AutomatonMatch
     // sigma := sigma \cup { (x, a) | x in L(s0) }
     for (const variable& variable : current_state->variables)
     {
-      matching_sigma[variable] = term;
+      m_matching_sigma[variable] = term;
     }
 
     bool found_transition = false;
@@ -222,7 +228,6 @@ std::vector<std::reference_wrapper<const data_equation_extended>> AutomatonMatch
       {
         mCRL2log(info) << "Matching failed, deadlock.\n";
       }
-      return {};
     }
   }
 
@@ -230,19 +235,38 @@ std::vector<std::reference_wrapper<const data_equation_extended>> AutomatonMatch
   {
     mCRL2log(info) << "Matching succeeded.\n";
   }
-  return current_state->match_set;
+
+  m_match_set = &current_state->match_set;
+}
+
+template<typename Substitution>
+const data_equation_extended* AutomatonMatcher<Substitution>::next(Substitution& matching_sigma)
+{
+  matching_sigma = m_matching_sigma;
+
+  if (m_match_set != nullptr)
+  {
+    if (m_match_index < m_match_set->size())
+    {
+      return m_match_set[m_match_index++];
+    }
+  }
+
+  return nullptr;
 }
 
 // Private functions
 
-AutomatonMatcher::pma_state* AutomatonMatcher::add_fresh_state()
+template<typename Substitution>
+typename AutomatonMatcher<Substitution>::pma_state* AutomatonMatcher<Substitution>::add_fresh_state()
 {
   // Create a fresh state s0
   m_states.push_back(std::unique_ptr<pma_state>(new pma_state()));
   return m_states.back().get();
 }
 
-void AutomatonMatcher::construct_rec(const PatternSet& L, pma_state* s0)
+template<typename Substitution>
+void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_state* s0)
 {
   if (PrintConstructionSteps)
   {
@@ -364,7 +388,8 @@ void AutomatonMatcher::construct_rec(const PatternSet& L, pma_state* s0)
   }
 }
 
-std::set<data_expression> AutomatonMatcher::get_head_symbols(const PatternSet& P) const
+template<typename Substitution>
+std::set<data_expression> AutomatonMatcher<Substitution>::get_head_symbols(const PatternSet& P) const
 {
   std::set<data_expression> result;
 
@@ -379,7 +404,8 @@ std::set<data_expression> AutomatonMatcher::get_head_symbols(const PatternSet& P
   return result;
 }
 
-PatternSet AutomatonMatcher::prepend_omegas(const PatternSet& L, const application& f) const
+template<typename Substitution>
+PatternSet AutomatonMatcher<Substitution>::prepend_omegas(const PatternSet& L, const application& f) const
 {
   PatternSet result;
 
@@ -397,7 +423,8 @@ PatternSet AutomatonMatcher::prepend_omegas(const PatternSet& L, const applicati
   return result;
 }
 
-void AutomatonMatcher::print_pattern_set(const PatternSet& set) const
+template<typename Substitution>
+void AutomatonMatcher<Substitution>::print_pattern_set(const PatternSet& set) const
 {
   mCRL2log(info) << "{ ";
   bool first = true;

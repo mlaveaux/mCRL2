@@ -34,10 +34,10 @@ constexpr bool CountRewriteCacheMetric = false;
 // The following options toggle performance features.
 
 /// \brief Keep track of terms that are in normal form during rewriting.
-constexpr bool EnableNormalForms = true;
+constexpr bool EnableNormalForms = false;
 
 /// \brief Enable caching of rewrite results.
-constexpr bool EnableCaching = true;
+constexpr bool EnableCaching = false;
 
 /// \brief Enables construction stacks to reconstruct the right-hand sides bottom up.
 constexpr bool EnableConstructionStack = false;
@@ -252,43 +252,58 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
   }
 
   // (R, sigma') := match(h'(u_1', ..., u_n')),
-  mutable_indexed_substitution<variable, data_expression> m_local_sigma;
-  auto match_result = m_matcher.match(expression, m_local_sigma);
+   m_matcher.match(expression);
 
   // If R not empty
-  for (const auto& match : match_result)
+  mutable_indexed_substitution<variable, data_expression> m_local_sigma;
+
+  while(true)
   {
-    const auto& equation = std::get<0>(match.get());
-
-    // Compute rhs^sigma'.
-    auto rhs = apply_substitution(equation.rhs(), m_local_sigma, std::get<1>(match.get()));
-
-    // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
-    if (equation.condition() != sort_bool::true_() &&
-      rewrite_impl(apply_substitution(equation.condition(), m_local_sigma, std::get<2>(match.get())), m_identity) != sort_bool::true_())
+    const data_equation_extended* result = m_matcher.next(m_local_sigma);
+    if (result != nullptr)
     {
-      continue;
-    }
+      const data_equation_extended& match = *result;
+      const data_equation& equation = std::get<0>(match);
 
-    if (CountRewriteSteps)
+      // Compute rhs^sigma'.
+      auto rhs = apply_substitution(equation.rhs(), m_local_sigma, std::get<1>(match));
+
+      // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
+      if (equation.condition() != sort_bool::true_() &&
+        rewrite_impl(apply_substitution(equation.condition(), m_local_sigma, std::get<2>(match)), m_identity) != sort_bool::true_())
+      {
+        continue;
+      }
+
+      if (CountRewriteSteps)
+      {
+        ++m_application_count[equation];
+      }
+
+      // Return rewrite(r^sigma', id)
+      auto result = rewrite_impl(rhs, m_identity);
+
+      if (EnableCaching)
+      {
+        m_rewrite_cache.emplace(expression, result);
+      }
+
+      if (PrintRewriteSteps)
+      {
+        mCRL2log(info) << "Rewrote " << expression << " to " << result << " using rule " << equation << "\n";
+      }
+
+      return result;
+    }
+    else
     {
-      ++m_application_count[equation];
+      break;
     }
+  }
 
-    // Return rewrite(r^sigma', id)
-    auto result = rewrite_impl(rhs, m_identity);
-
-    if (EnableCaching)
-    {
-      m_rewrite_cache.emplace(expression, result);
-    }
-
-    if (PrintRewriteSteps)
-    {
-      mCRL2log(info) << "Rewrote  " << expression << " to " << result << " using rule " << equation << "\n";
-    }
-
-    return result;
+  if (PrintRewriteSteps)
+  {
+    mCRL2log(info) << "Term " << expression << " is in normal form.\n";
   }
 
   // Return h'(u_1', ..., u_n')

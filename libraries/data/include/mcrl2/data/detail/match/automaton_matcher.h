@@ -27,14 +27,19 @@ namespace detail
 using Pattern = std::vector<data_expression>;
 using PatternSet = std::set<Pattern>;
 
-class AutomatonMatcher : public Matcher
+template<typename Substitution>
+class AutomatonMatcher final : public Matcher<Substitution>
 {
 public:
   /// \brief Initialize the automaton matcher with a number of equations.
   AutomatonMatcher(const data_equation_vector& equations);
   virtual ~AutomatonMatcher() {}
 
-  std::vector<std::reference_wrapper<const data_equation_extended>> match(const data_expression& term, mutable_indexed_substitution<>& matching_sigma);
+  // Matcher interface.
+
+  void match(const data_expression& term) override;
+
+  const data_equation_extended* next(Substitution& matching_sigma) override;
 
 private:
 
@@ -115,6 +120,7 @@ private:
   std::unordered_map<data_equation, data_equation_extended> m_mapping;
 
   // The underlying automaton.
+
   pma_state* m_root_state;
 
   std::vector<std::unique_ptr<pma_state>> m_states;
@@ -122,6 +128,14 @@ private:
   std::unordered_map<std::pair<pma_state*, pma_transition>, pma_state*> m_transitions;
 
   data_expression m_omega = omega();
+
+  // Store information about the match.
+
+  Substitution m_matching_sigma;
+
+  std::vector<std::reference_wrapper<const data_equation_extended>>* m_match_set = nullptr;
+
+  std::size_t m_match_index; ///< The index of the equation that should be returned by the call to next.
 };
 
 } // namespace detail

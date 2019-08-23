@@ -21,14 +21,19 @@ namespace data
 namespace detail
 {
 
-class NaiveMatcher : public Matcher
+template<typename Substitution>
+class NaiveMatcher final : public Matcher<Substitution>
 {
 public:
   /// \brief Initialize a naive matcher with a number of equations.
   NaiveMatcher(const data_equation_vector& equations);
   virtual ~NaiveMatcher() {}
 
-  std::vector<std::reference_wrapper<const data_equation_extended>> match(const data_expression& term, mutable_indexed_substitution<>& matching_sigma) override;
+  // Matcher interface
+
+  void match(const data_expression& term) override;
+
+  const data_equation_extended* next(Substitution& matching_sigma) override;
 
 private:
   /// A mapping from head symbols to rewrite rules and their corresponding construction stacks. A unique index is used for each head symbol to achieve
@@ -37,6 +42,12 @@ private:
 
   /// The original list of equations to use for matching.
   std::vector<data_equation_extended> m_equations;
+
+  // Information about the matched term.
+
+  std::size_t m_current_index = 0;
+  std::size_t m_head_index;
+  data_expression m_term;
 };
 
 } // namespace detail
