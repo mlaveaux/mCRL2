@@ -31,7 +31,7 @@ class Matcher : public mcrl2::utilities::noncopyable
 public:
 
   /// \brief Start matching the given term, use next() to obtain the results per index.
-  virtual void match(const data_expression& term);
+  virtual void match(const data_expression& term) = 0;
 
   /// \returns The matching equation and adapts matching_sigma accordingly.
   virtual const data_equation_extended* next(Substitution& matching_sigma) = 0;

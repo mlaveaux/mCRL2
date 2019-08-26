@@ -158,7 +158,7 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
     // sigma := sigma \cup { (x, a) | x in L(s0) }
     for (const variable& variable : current_state->variables)
     {
-      m_matching_sigma[variable] = term;
+      m_matching_sigma[variable] = subterm;
     }
 
     bool found_transition = false;
@@ -172,11 +172,11 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
       {
         if (PrintMatchSteps)
         {
-          mCRL2log(info) << "Took transition from " << current_state << " to " << (*result).second << " with label " << appl.head() << "\n";
+          mCRL2log(info) << "Took transition from " << current_state << " to " << result->second << " with label " << appl.head() << "\n";
         }
 
         found_transition = true;
-        current_state = (*result).second;
+        current_state = result->second;
 
         // Insert in reverse order.
         for (int index = static_cast<int>(appl.size() - 1); index >= 0; --index)
@@ -196,11 +196,11 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
       {
         if (PrintMatchSteps)
         {
-          mCRL2log(info) << "Took transition " << current_state << " to " << (*result).second << " with label " << symbol << "\n";
+          mCRL2log(info) << "Took transition " << current_state << " to " << result->second << " with label " << symbol << "\n";
         }
 
         found_transition = true;
-        current_state = (*result).second;
+        current_state = result->second;
       }
     }
 
@@ -213,20 +213,16 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
         // PMAMatch(delta(s0, omega)), t', sigma)
         if (PrintMatchSteps)
         {
-          mCRL2log(info) << "Took transition from " << current_state << " to " << (*result).second << " with omega.\n";
+          mCRL2log(info) << "Took transition from " << current_state << " to " << result->second << " with label omega.\n";
         }
 
-        found_transition = true;
-        current_state = (*result).second;
+        current_state = result->second;
       }
-    }
-
-    if (!found_transition)
-    {
       // else return (emptyset, emptyset).
-      if (PrintMatchSteps)
+      else if (PrintMatchSteps)
       {
         mCRL2log(info) << "Matching failed, deadlock.\n";
+        return;
       }
     }
   }
@@ -242,13 +238,15 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
 template<typename Substitution>
 const data_equation_extended* AutomatonMatcher<Substitution>::next(Substitution& matching_sigma)
 {
-  matching_sigma = m_matching_sigma;
-
   if (m_match_set != nullptr)
   {
     if (m_match_index < m_match_set->size())
     {
-      return m_match_set[m_match_index++];
+      matching_sigma = m_matching_sigma;
+
+      std::reference_wrapper<const data_equation_extended>& result = (*m_match_set)[m_match_index];
+      ++m_match_index;
+      return &result.get();
     }
   }
 
@@ -288,7 +286,7 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_stat
 
       auto result = m_mapping.find(static_cast<const end_of_string&>(p.front()).equation());
       assert(result != m_mapping.end());
-      match_set.push_back((*result).second);
+      match_set.push_back(result->second);
     }
   }
 
@@ -451,3 +449,7 @@ void AutomatonMatcher<Substitution>::print_pattern_set(const PatternSet& set) co
 
   mCRL2log(info) << "} \n";
 }
+
+// Explicit instantiations.
+
+template class mcrl2::data::detail::AutomatonMatcher<mutable_indexed_substitution<>>;

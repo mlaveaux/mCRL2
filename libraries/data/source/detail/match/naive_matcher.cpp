@@ -132,6 +132,8 @@ const data_equation_extended* NaiveMatcher<Substitution>::next(Substitution& mat
   // to the given term. Only tries rewrite rules that start with the correct head symbol when EnableHeadIndexing is true.
   for (std::size_t index = m_current_index; index < (EnableHeadIndexing ? m_rewrite_system[m_head_index].size() : m_equations.size()); ++index)
   {
+    matching_sigma.clear();
+
     const auto& tuple = (EnableHeadIndexing ? m_rewrite_system[m_head_index][index] : m_equations[index]);
     const auto& equation = std::get<0>(tuple);
 
@@ -153,5 +155,7 @@ const data_equation_extended* NaiveMatcher<Substitution>::next(Substitution& mat
 
   return nullptr;
 }
+
+// Explicit instantiations.
 
 template class mcrl2::data::detail::NaiveMatcher<mutable_indexed_substitution<>>;

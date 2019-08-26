@@ -37,7 +37,7 @@ class rewriter_tool: public Tool
     /// rewriter options.
     /// \param desc An interface description.
     /// \param suppress_jittyp Boolean that if true will prevent showing that jittyp is an option for rewriting.
-    void add_options(utilities::interface_description& desc, bool suppress_jittyp = false)
+    void add_options(utilities::interface_description& desc, bool suppress_jittyp)
     {
       Tool::add_options(desc);
 

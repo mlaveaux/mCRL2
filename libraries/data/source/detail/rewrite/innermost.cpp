@@ -34,7 +34,7 @@ constexpr bool CountRewriteCacheMetric = false;
 // The following options toggle performance features.
 
 /// \brief Keep track of terms that are in normal form during rewriting.
-constexpr bool EnableNormalForms = false;
+constexpr bool EnableNormalForms = true;
 
 /// \brief Enable caching of rewrite results.
 constexpr bool EnableCaching = false;
@@ -252,13 +252,11 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
   }
 
   // (R, sigma') := match(h'(u_1', ..., u_n')),
-   m_matcher.match(expression);
-
-  // If R not empty
-  mutable_indexed_substitution<variable, data_expression> m_local_sigma;
+  m_matcher.match(expression);
 
   while(true)
   {
+    // If R not empty
     const data_equation_extended* result = m_matcher.next(m_local_sigma);
     if (result != nullptr)
     {
