@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
   auto nested_function = [iterations, number_of_arguments, size, number_of_threads](void) -> void
     {
       // Track the time that the first iteration (when the term is created) takes.
-      stopwatch stopwatch;
+      mcrl2::utilities::stopwatch stopwatch;
       bool first_run = true;
 
       aterm_appl f;

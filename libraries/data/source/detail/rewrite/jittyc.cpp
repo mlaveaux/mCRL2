@@ -2757,7 +2757,7 @@ void RewriterCompilingJitty::BuildRewriteSystem()
   //   $PATH environment variable.
   std::string compile_script;
   const char* env_compile_script = std::getenv("MCRL2_COMPILEREWRITER");
-  if (env_compile_script != NULL)
+  if (env_compile_script != nullptr)
   {
     compile_script = env_compile_script;
   }
@@ -2773,7 +2773,7 @@ void RewriterCompilingJitty::BuildRewriteSystem()
    rewriter_so = std::shared_ptr<uncompiled_library>(new uncompiled_library(compile_script));
 
   mCRL2log(verbose) << "using '" << compile_script << "' to compile rewriter." << std::endl;
-  stopwatch time;
+  mcrl2::utilities::stopwatch time;
 
   jittyc_eqns.clear();
   for(std::set < data_equation >::const_iterator it = rewrite_rules.begin(); it != rewrite_rules.end(); ++it)
@@ -2800,7 +2800,7 @@ void RewriterCompilingJitty::BuildRewriteSystem()
   mCRL2log(verbose) << "compiled in " << time.time() << "ms, loading rewriter..." << std::endl;
 
   bool (*init)(rewriter_interface*, RewriterCompilingJitty* this_rewriter);
-  rewriter_interface interface = { mcrl2::utilities::get_toolset_version(), "Unknown error when loading rewriter.", this, NULL, NULL };
+  rewriter_interface interface = { mcrl2::utilities::get_toolset_version(), "Unknown error when loading rewriter.", this, nullptr, nullptr };
   try
   {
     typedef bool rewrite_function_type(rewriter_interface*, RewriterCompilingJitty*);

@@ -30,7 +30,7 @@ int main(int, char*[])
 
   for (std::size_t i = 0; i < iterations; ++i)
   {
-    stopwatch stopwatch;
+    mcrl2::utilities::stopwatch stopwatch;
     {
       // These will be cleaned up every iteration.
       aterm_appl f2 = create_nested_function("j", "g", 2, 4 * amount);

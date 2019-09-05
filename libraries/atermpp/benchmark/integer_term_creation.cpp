@@ -27,7 +27,7 @@ int main(int, char*[])
       std::vector<aterm_int> integers(amount);
 
       // Track the time that the first iteration (when the terms are created) takes.
-      stopwatch stopwatch;
+      mcrl2::utilities::stopwatch stopwatch;
       bool first_run = true;
 
       for (std::size_t i = 0; i < iterations / number_of_threads; ++i)

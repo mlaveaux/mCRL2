@@ -27,7 +27,7 @@ int main(int, char*[])
       aterm_appl c_term(c);
 
       // Track the time that the first iteration (when the term is created) takes.
-      stopwatch stopwatch;
+      mcrl2::utilities::stopwatch stopwatch;
       bool first_run = true;
 
       aterm_list list;

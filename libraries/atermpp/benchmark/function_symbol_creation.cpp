@@ -27,7 +27,7 @@ int main(int, char*[])
       std::vector<function_symbol> symbols(amount);
 
       // Track the time that the first iteration (when the terms are created) takes.
-      stopwatch stopwatch;
+      mcrl2::utilities::stopwatch stopwatch;
       bool first_run = true;
 
       // Generate function symbols f + suffix, where suffix from 0 to amount.

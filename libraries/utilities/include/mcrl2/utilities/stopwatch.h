@@ -12,6 +12,11 @@
 
 #include <chrono>
 
+namespace mcrl2
+{
+namespace utilities
+{
+
 /// \brief Implements a simple stopwatch that starts on construction.
 class stopwatch
 {
@@ -36,5 +41,8 @@ public:
 private:
   std::chrono::time_point<std::chrono::system_clock> m_timestamp;
 };
+
+} // namespace utilities
+} // namespace mcrl2
 
 #endif // MCRL2_UTILITIES_STOPWATCH_H_

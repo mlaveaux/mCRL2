@@ -24,7 +24,7 @@ int main(int, char*[])
 
   for (std::size_t i = 0; i < iterations; ++i)
   {
-    stopwatch stopwatch;
+    mcrl2::utilities::stopwatch stopwatch;
 
     // This block is to ensure that they are unprotected when garbage collection is triggered explicitly.
     {
