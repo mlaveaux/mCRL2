@@ -15,7 +15,7 @@
 constexpr bool PrintMatchSteps   = false;
 
 /// \brief When enabled, index each rewrite rule based on its head symbol for fast lookup of relevant rules.
-constexpr bool EnableHeadIndexing = false;
+constexpr bool EnableHeadIndexing = true;
 
 using namespace mcrl2;
 using namespace mcrl2::data;
@@ -94,9 +94,7 @@ NaiveMatcher<Substitution>::NaiveMatcher(const data_equation_vector& equations)
 {
   for (auto&& equation : equations)
   {
-    m_equations.emplace_back(equation,
-      ConstructionStack(equation.condition()),
-      ConstructionStack(equation.rhs()));
+    m_equations.emplace_back(equation);
   }
 
   for (auto&& equation : equations)
@@ -106,9 +104,7 @@ NaiveMatcher<Substitution>::NaiveMatcher(const data_equation_vector& equations)
     if (head_index >= m_rewrite_system.size()) { m_rewrite_system.resize(head_index + 1); }
 
     // Insert the left-hand side into the rewrite rule mapping and a construction stack for its right-hand side.
-    m_rewrite_system[head_index].emplace_back(equation,
-      ConstructionStack(equation.condition()),
-      ConstructionStack(equation.rhs()));
+    m_rewrite_system[head_index].emplace_back(equation);
   }
 }
 
@@ -134,22 +130,21 @@ const data_equation_extended* NaiveMatcher<Substitution>::next(Substitution& mat
   {
     matching_sigma.clear();
 
-    const auto& tuple = (EnableHeadIndexing ? m_rewrite_system[m_head_index][index] : m_equations[index]);
-    const auto& equation = std::get<0>(tuple);
+    const auto& equation = (EnableHeadIndexing ? m_rewrite_system[m_head_index][index] : m_equations[index]);
 
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
-    if (match_lhs(m_term, equation.lhs(), matching_sigma))
+    if (match_lhs(m_term, equation.equation().lhs(), matching_sigma))
     {
       if(PrintMatchSteps)
       {
-        mCRL2log(info) << "Matched rule " << equation << " to term " << m_term << "\n";
+        mCRL2log(info) << "Matched rule " << equation.equation() << " to term " << m_term << "\n";
       }
 
-      return &tuple;
+      return &equation;
     }
     else if (PrintMatchSteps)
     {
-      mCRL2log(info) << "Tried rule " << equation << " on term " << m_term << "\n";
+      mCRL2log(info) << "Tried rule " << equation.equation() << " on term " << m_term << "\n";
     }
   }
 

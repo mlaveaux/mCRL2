@@ -13,7 +13,6 @@
 #include "mcrl2/utilities/logger.h"
 #include "mcrl2/utilities/stack_array.h"
 #include "mcrl2/data/bool.h"
-#include "mcrl2/data/replace.h"
 #include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
 #include "mcrl2/data/detail/rewrite/substitute.h"
 
@@ -48,27 +47,11 @@ using namespace mcrl2::data::detail;
 
 using namespace mcrl2::log;
 
-/// \returns The same data equation with all variables renamed to meta-variables that can not occur in the terms on which is matched.
-template<typename Generator>
-data_equation rename_meta_variables(const data_equation& equation, Generator& generator)
-{
-  auto variables = find_all_variables(equation);
-
-  mutable_indexed_substitution<variable> sigma;
-  for (auto& var: variables)
-  {
-    sigma[var] = variable(generator(), var.sort());
-  }
-
-  return replace_variables(equation, sigma);
-}
-
 /// \brief Checks every equation in the given data specification.
 /// \returns A vector of equations from the data specifications that pass the given selector.
 data_equation_vector filter_data_specification(const data_specification& data_spec, const used_data_equation_selector& selector)
 {
   data_equation_vector equations;
-  enumerator_identifier_generator generator("@");
 
   for (const data_equation& equation : data_spec.equations())
   {
@@ -84,7 +67,7 @@ data_equation_vector filter_data_specification(const data_specification& data_sp
         continue;
       }
 
-      equations.emplace_back(rename_meta_variables(equation, generator));
+      equations.emplace_back(equation);
     }
   }
 
@@ -261,21 +244,20 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
     if (result != nullptr)
     {
       const data_equation_extended& match = *result;
-      const data_equation& equation = std::get<0>(match);
 
       // Compute rhs^sigma'.
-      auto rhs = apply_substitution(equation.rhs(), m_local_sigma, std::get<1>(match));
+      auto rhs = apply_substitution(match.equation().rhs(), m_local_sigma, match.rhs_stack());
 
       // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
-      if (equation.condition() != sort_bool::true_() &&
-        rewrite_impl(apply_substitution(equation.condition(), m_local_sigma, std::get<2>(match)), m_identity) != sort_bool::true_())
+      if (match.equation().condition() != sort_bool::true_() &&
+        rewrite_impl(apply_substitution(match.equation().condition(), m_local_sigma, match.condition_stack()), m_identity) != sort_bool::true_())
       {
         continue;
       }
 
       if (CountRewriteSteps)
       {
-        ++m_application_count[equation];
+        ++m_application_count[match.equation()];
       }
 
       // Return rewrite(r^sigma', id)
@@ -288,7 +270,7 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
 
       if (PrintRewriteSteps)
       {
-        mCRL2log(info) << "Rewrote " << expression << " to " << result << " using rule " << equation << "\n";
+        mCRL2log(info) << "Rewrote " << expression << " to " << result << " using rule " << match.equation() << "\n";
       }
 
       return result;

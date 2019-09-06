@@ -14,6 +14,7 @@
 #include "mcrl2/data/data_equation.h"
 #include "mcrl2/data/detail/match/matcher.h"
 #include "mcrl2/data/substitutions/mutable_indexed_substitution.h"
+#include "mcrl2/utilities/unordered_map.h"
 
 #include <vector>
 
@@ -117,15 +118,15 @@ private:
   void print_pattern_set(const PatternSet& set) const;
 
   /// \brief A local copy of the equations to keep the references to equations stable.
-  std::unordered_map<data_equation, data_equation_extended> m_mapping;
+  mcrl2::utilities::unordered_map<data_equation, data_equation_extended> m_mapping;
 
   // The underlying automaton.
 
   pma_state* m_root_state;
 
-  std::vector<std::unique_ptr<pma_state>> m_states;
+  std::deque<pma_state> m_states;
 
-  std::unordered_map<std::pair<pma_state*, pma_transition>, pma_state*> m_transitions;
+  mcrl2::utilities::unordered_map<std::pair<pma_state*, pma_transition>, pma_state*> m_transitions;
 
   data_expression m_omega = omega();
 

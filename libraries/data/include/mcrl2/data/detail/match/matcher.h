@@ -22,7 +22,26 @@ namespace data
 namespace detail
 {
 
-using data_equation_extended = std::tuple<data_equation, ConstructionStack, ConstructionStack>;
+/// \brief Extend a data equation with additional constructs used after matching.
+class data_equation_extended
+{
+public:
+  data_equation_extended(data_equation equation)
+    : m_condition(equation.condition()),
+      m_righthandside(equation.rhs()),
+      m_equation(equation)
+  {}
+
+  const data_equation& equation() const { return m_equation; }
+
+  const ConstructionStack& condition_stack() const { return m_condition; }
+  const ConstructionStack& rhs_stack() const { return m_righthandside; }
+
+private:
+  ConstructionStack m_condition;
+  ConstructionStack m_righthandside;
+  data_equation m_equation;
+};
 
 /// \brief The interface for matching algorithms.
 template<typename Substitution>
@@ -40,5 +59,6 @@ public:
 }
 }
 }
+
 
 #endif // MCRL2_DATA_DETAIL_MATCHER_H

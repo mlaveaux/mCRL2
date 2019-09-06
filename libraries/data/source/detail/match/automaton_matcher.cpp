@@ -10,6 +10,8 @@
 #include "mcrl2/data/detail/match/automaton_matcher.h"
 
 #include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
+#include "mcrl2/utilities/stopwatch.h"
+#include "mcrl2/data/replace.h"
 
 #include <vector>
 
@@ -23,6 +25,22 @@ using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
 
 using namespace mcrl2::log;
+
+
+/// \returns The same data equation with all variables renamed to meta-variables that can not occur in the terms on which is matched.
+template<typename Generator>
+data_equation rename_meta_variables(const data_equation& equation, Generator& generator)
+{
+  auto variables = find_all_variables(equation);
+
+  mutable_indexed_substitution<variable> sigma;
+  for (auto& var: variables)
+  {
+    sigma[var] = variable(generator(), var.sort());
+  }
+
+  return replace_variables(equation, sigma);
+}
 
 void convert_to_string(const data_expression& expression, Pattern& pattern)
 {
@@ -108,20 +126,22 @@ PatternSet omega_derivatives(const PatternSet& P)
 template<typename Substitution>
 AutomatonMatcher<Substitution>::AutomatonMatcher(const data_equation_vector& equations)
 {
+  mcrl2::utilities::stopwatch construction;
+  enumerator_identifier_generator generator("@");
+
   // Compute the root by converting all terms to string representations.
   PatternSet root;
 
-  for (auto& equation : equations)
+  for (auto& old_equation : equations)
   {
+    // Rename the variables in the equation
+    data_equation equation = rename_meta_variables(old_equation, generator);
+
     Pattern string = convert_to_string(equation.lhs());
 
     // Add the index of the equation
     string.push_back(end_of_string(equation));
-    m_mapping.insert(std::make_pair(equation,
-      data_equation_extended(equation,
-        ConstructionStack(equation.condition()),
-        ConstructionStack(equation.rhs())))
-    );
+    m_mapping.insert(std::make_pair(equation, data_equation_extended(equation)));
 
     root.insert(string);
   }
@@ -129,6 +149,8 @@ AutomatonMatcher<Substitution>::AutomatonMatcher(const data_equation_vector& equ
   // Construct the automaton.
   m_root_state = add_fresh_state();
   construct_rec(root, m_root_state);
+
+  mCRL2log(info) << "Matching automaton (states: " << m_states.size() << ", transitions: " << m_transitions.size() << ") construction took " << construction.time() << " milliseconds.\n";
 }
 
 template<typename Substitution>
@@ -259,8 +281,8 @@ template<typename Substitution>
 typename AutomatonMatcher<Substitution>::pma_state* AutomatonMatcher<Substitution>::add_fresh_state()
 {
   // Create a fresh state s0
-  m_states.push_back(std::unique_ptr<pma_state>(new pma_state()));
-  return m_states.back().get();
+  m_states.emplace_back();
+  return &m_states.back();
 }
 
 template<typename Substitution>
@@ -274,6 +296,10 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_stat
 
   // L := (s0, omega / L) can be represented by giving s0 the label omega / L.
   s0->variables = get_head_variables(L);
+  if (s0->variables.size() > 1)
+  {
+    mCRL2log(info) << "Multiple variables at same position leads to inefficient time complexity.\n";
+  }
 
   // If L = { e_i | i in I for some I subset N }, i.e. it only consists of final matches.
   std::vector<std::reference_wrapper<const data_equation_extended>> match_set;
