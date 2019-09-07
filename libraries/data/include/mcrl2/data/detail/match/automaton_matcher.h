@@ -27,6 +27,8 @@ namespace detail
 
 using Pattern = std::vector<data_expression>;
 using PatternSet = std::set<Pattern>;
+using equivalence_classes = std::vector<std::vector<variable>>;
+using linear_data_equation = std::pair<data_equation_extended, equivalence_classes>;
 
 template<typename Substitution>
 class AutomatonMatcher final : public Matcher<Substitution>
@@ -49,7 +51,7 @@ private:
   {
   public:
     std::set<variable> variables;
-    std::vector<std::reference_wrapper<const data_equation_extended>> match_set;
+    std::vector<std::reference_wrapper<const linear_data_equation>> match_set;
   };
 
   /// \brief Each transition is either a function symbol, or labelled with the unnamed variable omega.
@@ -118,7 +120,10 @@ private:
   void print_pattern_set(const PatternSet& set) const;
 
   /// \brief A local copy of the equations to keep the references to equations stable.
-  mcrl2::utilities::unordered_map<data_equation, data_equation_extended> m_mapping;
+  mcrl2::utilities::unordered_map<data_equation, linear_data_equation> m_mapping;
+
+  /// \returns True iff the given equivalence classes are consistent w.r.t. the substitution
+  bool is_consistent(const equivalence_classes& classes, const Substitution& sigma);
 
   // The underlying automaton.
 
@@ -134,7 +139,7 @@ private:
 
   Substitution m_matching_sigma;
 
-  std::vector<std::reference_wrapper<const data_equation_extended>>* m_match_set = nullptr;
+  std::vector<std::reference_wrapper<const linear_data_equation>>* m_match_set = nullptr;
 
   std::size_t m_match_index; ///< The index of the equation that should be returned by the call to next.
 };

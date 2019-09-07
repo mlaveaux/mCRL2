@@ -12,6 +12,7 @@
 #include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
 #include "mcrl2/utilities/stopwatch.h"
 #include "mcrl2/data/replace.h"
+#include "mcrl2/data/builder.h"
 
 #include <vector>
 
@@ -26,20 +27,95 @@ using namespace mcrl2::data::detail;
 
 using namespace mcrl2::log;
 
-
-/// \returns The same data equation with all variables renamed to meta-variables that can not occur in the terms on which is matched.
-template<typename Generator>
-data_equation rename_meta_variables(const data_equation& equation, Generator& generator)
+template <template <typename> class Builder, typename Generator>
+class linearize_builder : public Builder<linearize_builder<Builder, Generator>>
 {
-  auto variables = find_all_variables(equation);
+public:
+  typedef Builder<linearize_builder<Builder, Generator>> super;
 
+  using super::enter;
+  using super::leave;
+  using super::apply;
+  using super::update;
+
+  linearize_builder(Generator& gen)
+    : m_generator(gen)
+  {}
+
+  variable apply(const variable& var)
+  {
+    if (m_variables.find(var) != m_variables.end())
+    {
+      // The variable occurs in a different place.
+      variable new_var(m_generator(), var.sort());
+
+      // Add the new variable to the equivalence class and return it.
+      m_equivalence_classes[var].emplace_back(new_var);
+      return new_var;
+    }
+    else
+    {
+      m_variables.emplace(var);
+    }
+
+    return var;
+  }
+
+  equivalence_classes get_equivalence_classes()
+  {
+    // A set of sets (guaranteed no duplicates) of equivalence classes that must be checked for consistency.
+    equivalence_classes result;
+
+    for (auto& element : m_equivalence_classes)
+    {
+      result.emplace_back(element.second);
+    }
+
+    return result;
+  }
+
+private:
+  std::set<variable> m_variables; ///< The set of variables that we have already seen.
+  std::unordered_map<variable, std::vector<variable>> m_equivalence_classes; ///< For each original variable the set of variables that must be consistent.
+  Generator& m_generator;
+};
+
+/// \brief Given an equation renames multiple occurrences of the same variable to different (unique) variables and returns the
+///        equivalence class that must be checked for consistency.
+template<typename Generator>
+std::pair<data_equation, equivalence_classes> make_linear(const data_equation& equation, Generator& generator)
+{
+  // This makes the left-hand side linear, the right-hand side and condition can be the same as one instance of each variable did not change.
+  linearize_builder<data_expression_builder, Generator> builder(generator);
+  data_expression lhs = builder.apply(equation.lhs());
+
+  // Obtain the new free variables (after renamings) to define the new equation.
+  std::set<variable> variables = find_free_variables(lhs);
+
+  // Generate new variables for each equation to ensure that they are unique.
   mutable_indexed_substitution<variable> sigma;
-  for (auto& var: variables)
+  for (auto& var : variables)
   {
     sigma[var] = variable(generator(), var.sort());
   }
 
-  return replace_variables(equation, sigma);
+  // Create the new data equation.
+  data_equation linear_equation(variables, equation.condition(), lhs, equation.rhs());
+
+  // Rename the meta variables in this equation to ensure uniqueness.
+  data_equation renamed_equation = replace_variables(linear_equation, sigma);
+
+  // Rename the variables in the same way in the equivalence classes.
+  auto equivalence_classes = builder.get_equivalence_classes();
+  for (auto& eq_class : equivalence_classes)
+  {
+    for (auto& var : variables)
+    {
+      std::replace(eq_class.begin(), eq_class.end(), var, static_cast<variable>(sigma(var)));
+    }
+  }
+
+  return std::make_pair(renamed_equation, equivalence_classes);
 }
 
 void convert_to_string(const data_expression& expression, Pattern& pattern)
@@ -135,13 +211,20 @@ AutomatonMatcher<Substitution>::AutomatonMatcher(const data_equation_vector& equ
   for (auto& old_equation : equations)
   {
     // Rename the variables in the equation
-    data_equation equation = rename_meta_variables(old_equation, generator);
+    auto result = make_linear(old_equation, generator);
+
+    auto& equation = result.first;
+    if (!result.second.empty())
+    {
+      // For now, print the now linear equations.
+      mCRL2log(info) << "Renamed non-linear equation " << equation << ".\n";
+    }
 
     Pattern string = convert_to_string(equation.lhs());
 
     // Add the index of the equation
     string.push_back(end_of_string(equation));
-    m_mapping.insert(std::make_pair(equation, data_equation_extended(equation)));
+    m_mapping.insert(std::make_pair(equation, std::make_pair(data_equation_extended(equation), result.second)));
 
     root.insert(string);
   }
@@ -262,13 +345,19 @@ const data_equation_extended* AutomatonMatcher<Substitution>::next(Substitution&
 {
   if (m_match_set != nullptr)
   {
-    if (m_match_index < m_match_set->size())
+    while (m_match_index < m_match_set->size())
     {
       matching_sigma = m_matching_sigma;
-
-      std::reference_wrapper<const data_equation_extended>& result = (*m_match_set)[m_match_index];
+      std::reference_wrapper<const linear_data_equation>& result = (*m_match_set)[m_match_index];
       ++m_match_index;
-      return &result.get();
+
+      if (!is_consistent(result.get().second, matching_sigma))
+      {
+        // This rule matched, but its variables are not consistent w.r.t. the substitution.
+        continue;
+      }
+
+      return &result.get().first;
     }
   }
 
@@ -302,7 +391,7 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_stat
   }
 
   // If L = { e_i | i in I for some I subset N }, i.e. it only consists of final matches.
-  std::vector<std::reference_wrapper<const data_equation_extended>> match_set;
+  std::vector<std::reference_wrapper<const linear_data_equation>> match_set;
 
   for (const Pattern& p : L)
   {
@@ -474,6 +563,25 @@ void AutomatonMatcher<Substitution>::print_pattern_set(const PatternSet& set) co
   }
 
   mCRL2log(info) << "} \n";
+}
+
+template<typename Substitution>
+bool AutomatonMatcher<Substitution>::is_consistent(const equivalence_classes& classes, const Substitution& sigma)
+{
+   // We also need to check consistency of the matched rule.
+   for (auto& equivalence_class : classes)
+   {
+     auto& subst = sigma(equivalence_class.front());
+     for (auto& variable : equivalence_class)
+     {
+       if (sigma(variable) != subst)
+       {
+         return false;
+       }
+     }
+   }
+
+   return true;
 }
 
 // Explicit instantiations.
