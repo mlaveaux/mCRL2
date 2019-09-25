@@ -13,6 +13,7 @@
 #include "mcrl2/data/data_expression.h"
 #include "mcrl2/data/data_equation.h"
 #include "mcrl2/data/detail/match/matcher.h"
+#include "mcrl2/data/detail/match/consistency.h"
 #include "mcrl2/data/substitutions/mutable_indexed_substitution.h"
 #include "mcrl2/utilities/unordered_map.h"
 
@@ -27,7 +28,6 @@ namespace detail
 
 using Pattern = std::vector<data_expression>;
 using PatternSet = std::set<Pattern>;
-using equivalence_classes = std::vector<std::vector<variable>>;
 using linear_data_equation = std::pair<data_equation_extended, equivalence_classes>;
 
 template<typename Substitution>

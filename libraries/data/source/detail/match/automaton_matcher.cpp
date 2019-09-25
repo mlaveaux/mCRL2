@@ -10,7 +10,6 @@
 #include "mcrl2/data/detail/match/automaton_matcher.h"
 
 #include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
-#include "mcrl2/data/detail/match/consistency.h"
 #include "mcrl2/utilities/stopwatch.h"
 
 #include <vector>
