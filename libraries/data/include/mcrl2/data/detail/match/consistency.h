@@ -119,6 +119,26 @@ std::pair<data_equation, equivalence_classes> make_linear(const data_equation& e
   return std::make_pair(renamed_equation, equivalence_classes);
 }
 
+/// \brief Check whether the given substitution sigma is consistent w.r.t. the given equivalence classes.
+template<typename Substitution>
+bool is_consistent(const equivalence_classes& classes, const Substitution& sigma)
+{
+   // We also need to check consistency of the matched rule.
+   for (auto& equivalence_class : classes)
+   {
+     auto& subst = sigma(equivalence_class.front());
+     for (auto& variable : equivalence_class)
+     {
+       if (sigma(variable) != subst)
+       {
+         return false;
+       }
+     }
+   }
+
+   return true;
+}
+
 } // namespace detail
 } // namespace data
 } // namespace mcrl2

@@ -472,25 +472,6 @@ void AutomatonMatcher<Substitution>::print_pattern_set(const PatternSet& set) co
   mCRL2log(info) << "} \n";
 }
 
-template<typename Substitution>
-bool AutomatonMatcher<Substitution>::is_consistent(const equivalence_classes& classes, const Substitution& sigma)
-{
-   // We also need to check consistency of the matched rule.
-   for (auto& equivalence_class : classes)
-   {
-     auto& subst = sigma(equivalence_class.front());
-     for (auto& variable : equivalence_class)
-     {
-       if (sigma(variable) != subst)
-       {
-         return false;
-       }
-     }
-   }
-
-   return true;
-}
-
 // Explicit instantiations.
 
 template class mcrl2::data::detail::AutomatonMatcher<mutable_indexed_substitution<>>;

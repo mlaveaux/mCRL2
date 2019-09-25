@@ -122,9 +122,6 @@ private:
   /// \brief A local copy of the equations to keep the references to equations stable.
   mcrl2::utilities::unordered_map<data_equation, linear_data_equation> m_mapping;
 
-  /// \returns True iff the given equivalence classes are consistent w.r.t. the substitution
-  bool is_consistent(const equivalence_classes& classes, const Substitution& sigma);
-
   // The underlying automaton.
 
   pma_state* m_root_state;

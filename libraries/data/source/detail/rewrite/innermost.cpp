@@ -13,7 +13,6 @@
 #include "mcrl2/utilities/logger.h"
 #include "mcrl2/utilities/stack_array.h"
 #include "mcrl2/data/bool.h"
-#include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
 #include "mcrl2/data/detail/rewrite/substitute.h"
 
 #include <assert.h>
