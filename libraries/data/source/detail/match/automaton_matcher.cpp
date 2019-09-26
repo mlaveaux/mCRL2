@@ -11,6 +11,7 @@
 
 #include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
 #include "mcrl2/utilities/stopwatch.h"
+#include "mcrl2/core/index_traits.h"
 
 #include <vector>
 
@@ -104,10 +105,17 @@ PatternSet omega_derivatives(const PatternSet& P)
   return result;
 }
 
+/// \returns A unique index for the head symbol that the given term starts with.
+inline std::size_t get_head_index(const data_expression& term)
+{
+  return mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(get_nested_head(term)));
+}
+
 // Public functions
 
 template<typename Substitution>
 AutomatonMatcher<Substitution>::AutomatonMatcher(const data_equation_vector& equations)
+  : m_automaton()
 {
   mcrl2::utilities::stopwatch construction;
   enumerator_identifier_generator generator("@");
@@ -136,11 +144,13 @@ AutomatonMatcher<Substitution>::AutomatonMatcher(const data_equation_vector& equ
     root.insert(string);
   }
 
-  // Construct the automaton.
-  m_root_state = add_fresh_state();
-  construct_rec(root, m_root_state);
+  // Determine the index of omega.
+  m_omega_index = mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(omega()));
 
-  mCRL2log(info) << "Matching automaton (states: " << m_states.size() << ", transitions: " << m_transitions.size() << ") construction took " << construction.time() << " milliseconds.\n";
+  // Construct the automaton.
+  construct_rec(root, m_automaton.root());
+
+  mCRL2log(info) << "Matching automaton (states: " << m_automaton.states() << ", transitions: " << m_automaton.transitions() << ") construction took " << construction.time() << " milliseconds.\n";
 }
 
 template<typename Substitution>
@@ -151,7 +161,7 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
   m_match_index = 0;
 
   // Start with the root state.
-  pma_state* current_state = m_root_state;
+  std::size_t current_state = m_automaton.root();
 
   // Implemented iteratively to return the matching set.
   std::stack<data_expression> m_stack;
@@ -168,7 +178,7 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
     }
 
     // sigma := sigma \cup { (x, a) | x in L(s0) }
-    for (const variable& variable : current_state->variables)
+    for (const variable& variable : m_automaton.label(current_state).variables)
     {
       m_matching_sigma[variable] = subterm;
     }
@@ -179,16 +189,16 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
       const auto& appl = static_cast<const application&>(subterm);
 
       // If delta(s0, a) is defined for some term a followed by suffix t'.
-      auto result = m_transitions.find(std::make_pair(current_state, appl.head()));
-      if (result != m_transitions.end())
+      auto result = m_automaton.transition(current_state, get_head_index(appl.head()));
+      if (result.second)
       {
         if (PrintMatchSteps)
         {
-          mCRL2log(info) << "Took transition from " << current_state << " to " << result->second << " with label " << appl.head() << "\n";
+          mCRL2log(info) << "Took transition from " << current_state << " to " << result.first << " with label " << appl.head() << "\n";
         }
 
         found_transition = true;
-        current_state = result->second;
+        current_state = result.first;
 
         // Insert in reverse order.
         for (int index = static_cast<int>(appl.size() - 1); index >= 0; --index)
@@ -200,35 +210,33 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
     }
     else if (is_function_symbol(subterm))
     {
-      const auto& symbol = static_cast<const function_symbol&>(subterm);
-
       // If delta(s0, a) is defined for some term a followed by suffix t'.
-      auto result = m_transitions.find(std::make_pair(current_state, symbol));
-      if (result != m_transitions.end())
+      auto result = m_automaton.transition(current_state, get_head_index(subterm));
+      if (result.second)
       {
         if (PrintMatchSteps)
         {
-          mCRL2log(info) << "Took transition " << current_state << " to " << result->second << " with label " << symbol << "\n";
+          mCRL2log(info) << "Took transition " << current_state << " to " << result.first << " with label " << static_cast<function_symbol>(subterm) << "\n";
         }
 
         found_transition = true;
-        current_state = result->second;
+        current_state = result.first;
       }
     }
 
     if (!found_transition)
     {
       // If delta(s0, omega) is defined then
-      auto result = m_transitions.find(std::make_pair(current_state, m_omega));
-      if (result != m_transitions.end())
+      auto result = m_automaton.transition(current_state, m_omega_index);
+      if (result.second)
       {
         // PMAMatch(delta(s0, omega)), t', sigma)
         if (PrintMatchSteps)
         {
-          mCRL2log(info) << "Took transition from " << current_state << " to " << result->second << " with label omega.\n";
+          mCRL2log(info) << "Took transition from " << current_state << " to " << result.first << " with label omega.\n";
         }
 
-        current_state = result->second;
+        current_state = result.first;
       }
       // else return (emptyset, emptyset).
       else if (PrintMatchSteps)
@@ -244,7 +252,7 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
     mCRL2log(info) << "Matching succeeded.\n";
   }
 
-  m_match_set = &current_state->match_set;
+  m_match_set = &m_automaton.label(current_state).match_set;
 }
 
 template<typename Substitution>
@@ -274,15 +282,7 @@ const data_equation_extended* AutomatonMatcher<Substitution>::next(Substitution&
 // Private functions
 
 template<typename Substitution>
-typename AutomatonMatcher<Substitution>::pma_state* AutomatonMatcher<Substitution>::add_fresh_state()
-{
-  // Create a fresh state s0
-  m_states.emplace_back();
-  return &m_states.back();
-}
-
-template<typename Substitution>
-void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_state* s0)
+void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, std::size_t s0)
 {
   if (PrintConstructionSteps)
   {
@@ -291,8 +291,8 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_stat
   }
 
   // L := (s0, omega / L) can be represented by giving s0 the label omega / L.
-  s0->variables = get_head_variables(L);
-  if (s0->variables.size() > 1)
+  m_automaton.label(s0).variables = get_head_variables(L);
+  if (m_automaton.label(s0).variables.size() > 1)
   {
     mCRL2log(info) << "Multiple variables at same position leads to inefficient time complexity.\n";
   }
@@ -315,7 +315,7 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_stat
   if (!match_set.empty())
   {
     // Return F[s0] := {r in R | the epsilon of r is labelled with some i in I }
-    s0->match_set = match_set;
+    m_automaton.label(s0).match_set = match_set;
     return;
   }
 
@@ -346,7 +346,7 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_stat
       L_f.insert(L2.begin(), L2.end());
 
       // RecConstruct(L_f, R)
-      pma_state* s0_prime = add_fresh_state();
+      std::size_t s0_prime = m_automaton.add_state();
 
       if (PrintConstructionSteps)
       {
@@ -358,7 +358,7 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_stat
       construct_rec(L_f, s0_prime);
 
       // delta := delta cup delta' cup { (s0, f, s'0) }
-      m_transitions.insert(std::make_pair(std::make_pair(s0, appl.head()), s0_prime));
+      m_automaton.add_transition(s0, get_head_index(appl.head()), s0_prime);
     }
     else
     {
@@ -366,7 +366,7 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_stat
       PatternSet L_f = a_derivatives(L, f);
 
       // RecConstruct(L_f, R)
-      pma_state* s0_prime = add_fresh_state();
+      std::size_t s0_prime = m_automaton.add_state();
 
       if (PrintConstructionSteps)
       {
@@ -378,7 +378,7 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_stat
       construct_rec(L_f, s0_prime);
 
       // delta := delta cup delta' cup { (s0, f, s'0) }
-      m_transitions.insert(std::make_pair(std::make_pair(s0, f), s0_prime));
+      m_automaton.add_transition(s0, get_head_index(f), s0_prime);
     }
 
     // the automata are merged by having a global transition system and a labelling local to each state.
@@ -387,7 +387,7 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_stat
   if (!L_omega.empty())
   {
     // RecConstruct(L_omega, R)
-    pma_state* s0_prime = add_fresh_state();
+    std::size_t s0_prime = m_automaton.add_state();
     construct_rec(L_omega, s0_prime);
 
     // delta := delta cup delta' cup { (s0, omega, s'0) }
@@ -396,7 +396,7 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, pma_stat
       mCRL2log(info) << "Added transition from " << s0 << " to " << s0_prime << " with label omega.\n";
     }
 
-    m_transitions.insert(std::make_pair(std::make_pair(s0, m_omega), s0_prime));
+    m_automaton.add_transition(s0, m_omega_index, s0_prime);
 
     // the automata are merged by having a global transition system and a labelling local to each state.
   }

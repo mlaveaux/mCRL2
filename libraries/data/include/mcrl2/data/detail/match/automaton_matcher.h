@@ -14,6 +14,7 @@
 #include "mcrl2/data/data_equation.h"
 #include "mcrl2/data/detail/match/matcher.h"
 #include "mcrl2/data/detail/match/consistency.h"
+#include "mcrl2/data/detail/match/automaton.h"
 #include "mcrl2/data/substitutions/mutable_indexed_substitution.h"
 #include "mcrl2/utilities/unordered_map.h"
 
@@ -54,21 +55,24 @@ private:
     std::vector<std::reference_wrapper<const linear_data_equation>> match_set;
   };
 
-  /// \brief Each transition is either a function symbol, or labelled with the unnamed variable omega.
-  using pma_transition = data_expression;
-
   /// \brief Represents the unnamed variable omega.
-  class omega : public data_expression
+  class omega : public function_symbol
   {
   public:
     static atermpp::function_symbol& g_function_symbol()
     {
-      static atermpp::function_symbol constant("@@omega@@", 0);
+      static atermpp::function_symbol constant("@@omega@@", 3);
       return constant;
     }
 
     omega()
-      : data_expression(atermpp::aterm_appl(g_function_symbol()))
+      : function_symbol(atermpp::aterm_appl(g_function_symbol(),
+        aterm(), // These are dummies to ensure that omega has the same arity as a data::function_symbol.
+        aterm(),
+        atermpp::aterm_int(core::index_traits<function_symbol, function_symbol_key_type, 2>::insert(std::make_pair(
+          core::identifier_string(g_function_symbol().name()),
+          aterm()))))
+        )
     {}
   };
 
@@ -104,11 +108,8 @@ private:
     return expression.function() == end_of_string::g_function_symbol();
   }
 
-  /// \returns A fresh state.
-  pma_state* add_fresh_state();
-
   /// \brief Computes the necessary transitions for the automaton that is stored in this class.
-  void construct_rec(const PatternSet& patterns, pma_state* from);
+  void construct_rec(const PatternSet& patterns, std::size_t from);
 
   /// \returns The set of function symbols such that P / f != empty for f in Sigma \ V.
   std::set<data_expression> get_head_symbols(const PatternSet& P) const;
@@ -124,13 +125,9 @@ private:
 
   // The underlying automaton.
 
-  pma_state* m_root_state;
+  IndexedAutomaton<pma_state> m_automaton;
 
-  std::deque<pma_state> m_states;
-
-  mcrl2::utilities::unordered_map<std::pair<pma_state*, pma_transition>, pma_state*> m_transitions;
-
-  data_expression m_omega = omega();
+  std::size_t m_omega_index;
 
   // Store information about the match.
 
