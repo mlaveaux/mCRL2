@@ -133,6 +133,8 @@ private:
 
   // Store information about the match.
 
+  std::vector<data_expression> m_stack;
+
   Substitution m_matching_sigma;
 
   std::vector<std::reference_wrapper<const linear_data_equation>>* m_match_set = nullptr;

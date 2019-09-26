@@ -158,13 +158,13 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
   std::size_t current_state = m_automaton.root();
 
   // Implemented iteratively to return the matching set.
-  std::stack<data_expression> m_stack;
-  m_stack.push(term);
+  m_stack.clear();
+  m_stack.push_back(term);
 
   while (!m_stack.empty())
   {
-    data_expression subterm = m_stack.top();
-    m_stack.pop();
+    data_expression subterm = m_stack.back();
+    m_stack.erase(m_stack.end() - 1);
 
     if (PrintMatchSteps)
     {
@@ -198,7 +198,7 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
         for (int index = static_cast<int>(appl.size() - 1); index >= 0; --index)
         {
           assert(index >= 0);
-          m_stack.push(appl[static_cast<std::size_t>(index)]);
+          m_stack.emplace_back(appl[static_cast<std::size_t>(index)]);
         }
       }
     }
