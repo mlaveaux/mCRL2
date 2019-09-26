@@ -31,6 +31,8 @@ using Pattern = std::vector<data_expression>;
 using PatternSet = std::set<Pattern>;
 using linear_data_equation = std::pair<data_equation_extended, partition>;
 
+/// \brief A pattern matching automata based on the construction presented in "Efficient Pattern Matching for Term Rewriting" by
+///        A. Graf.
 template<typename Substitution>
 class AutomatonMatcher final : public Matcher<Substitution>
 {
@@ -46,14 +48,6 @@ public:
   const data_equation_extended* next(Substitution& matching_sigma) override;
 
 private:
-
-  /// \brief Each state in the pattern match automaton is labelled with a set of variables.
-  class pma_state
-  {
-  public:
-    variable variable;
-    std::vector<std::reference_wrapper<const linear_data_equation>> match_set;
-  };
 
   /// \brief Represents the unnamed variable omega.
   class omega : public function_symbol
@@ -124,6 +118,14 @@ private:
   mcrl2::utilities::unordered_map<data_equation, linear_data_equation> m_mapping;
 
   // The underlying automaton.
+
+  /// \brief Each state in the pattern match automaton is labelled with a set of variables.
+  class pma_state
+  {
+  public:
+    variable variable;
+    std::vector<std::reference_wrapper<const linear_data_equation>> match_set;
+  };
 
   IndexedAutomaton<pma_state> m_automaton;
 

@@ -84,6 +84,7 @@ private:
 /// \brief Given an equation renames multiple occurrences of the same variable to different (unique) variables and returns the
 ///        equivalence class that must be checked for consistency.
 template<typename Generator>
+inline
 std::pair<data_equation, partition> make_linear(const data_equation& equation, Generator& generator)
 {
   // This makes the left-hand side linear, the right-hand side and condition can be the same as one instance of each variable did not change.
@@ -121,6 +122,7 @@ std::pair<data_equation, partition> make_linear(const data_equation& equation, G
 
 /// \brief Check whether the given substitution sigma is consistent w.r.t. the given equivalence classes.
 template<typename Substitution>
+inline
 bool is_consistent(const partition& classes, const Substitution& sigma)
 {
    // We also need to check consistency of the matched rule.
@@ -137,6 +139,89 @@ bool is_consistent(const partition& classes, const Substitution& sigma)
    }
 
    return true;
+}
+
+using position = std::vector<std::size_t>;
+
+/// \returns A position [1,2,3,4] as the string 1.2.3.4
+inline
+std::string to_variable_name(const position& position)
+{
+  std::string result("v");
+
+  bool first = true;
+  for (std::size_t index : position)
+  {
+    if (!first)
+    {
+      result += ".";
+    }
+
+    result += std::to_string(index);
+
+    first = false;
+  }
+
+  return result;
+}
+
+/// \brief Create a variable named after the current position with no type.
+inline
+variable position_variable(const position& position)
+{
+  return variable(mcrl2::core::identifier_string(to_variable_name(position)), untyped_sort());
+}
+
+/// \brief Renames every variable to a unique name by using its position as identifier.
+template<typename Substitution>
+inline
+void rename_variables_position(const atermpp::aterm_appl& appl, position current, Substitution& sigma)
+{
+  if (is_variable(appl))
+  {
+    // Rename the current variable to a corresponding position variable.
+    sigma[static_cast<variable>(appl)] = position_variable(current);
+  }
+  else
+  {
+    // Extend the position to be one deeper into the subterm.
+    current.emplace_back(0);
+    for (const atermpp::aterm& argument : appl)
+    {
+      rename_variables_position(static_cast<const atermpp::aterm_appl&>(argument), current, sigma);
+      ++current.back();
+    }
+  }
+}
+
+/// \brief Renames every variable to a unique name by using its position as identifier.
+template<typename Substitution>
+inline
+void rename_variables_position(const atermpp::aterm_appl& appl, Substitution& sigma)
+{
+  rename_variables_position(appl, position(), sigma);
+}
+
+/// \brief Rename the variables in the data_equation such that at each position they are unique and adapt the equivalence classes.
+inline
+std::pair<data_equation, partition> rename_variables_unique(std::pair<data_equation, partition> rules)
+{
+  mutable_indexed_substitution<variable, variable> sigma;
+  rename_variables_position(rules.first.lhs(), sigma);
+
+  // Rename all variables in the resulting partition to the name indicated by sigma.
+  partition result;
+  for (const std::vector<variable>& set : rules.second)
+  {
+    std::vector<variable> new_vars;
+    for (const variable& var : set)
+    {
+      new_vars.push_back(sigma(var));
+    }
+    result.push_back(new_vars);
+  }
+
+  return std::make_pair(replace_variables(rules.first, sigma), result);
 }
 
 } // namespace detail
