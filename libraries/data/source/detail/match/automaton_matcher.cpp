@@ -111,6 +111,77 @@ inline std::size_t get_head_index(const data_expression& term)
   return mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(get_nested_head(term)));
 }
 
+using position = std::vector<std::size_t>;
+
+
+/// \returns A position [1,2,3,4] as the string 1.2.3.4
+std::string to_text(const position& position)
+{
+  std::string result;
+
+  bool first = true;
+  for (std::size_t index : position)
+  {
+    if (!first)
+    {
+      result += ".";
+    }
+
+    result += std::to_string(index);
+
+    first = false;
+  }
+
+  return result;
+}
+
+/// \brief Renames every variable to a unique name by using its position as identifier.
+template<typename Substitution>
+void rename_variables_position(const atermpp::aterm_appl& appl, position current, Substitution& sigma)
+{
+  if (is_variable(appl))
+  {
+    const auto& var = variable{appl};
+    sigma[var] = variable(mcrl2::core::identifier_string(to_text(current)), var.sort());
+  }
+  else
+  {
+    current.emplace_back(0);
+    for (const atermpp::aterm& argument : appl)
+    {
+      rename_variables_position(static_cast<const atermpp::aterm_appl&>(argument), current, sigma);
+      ++current.back();
+    }
+  }
+}
+
+template<typename Substitution>
+void rename_variables_position(const atermpp::aterm_appl& appl, Substitution& sigma)
+{
+  rename_variables_position(appl, position(), sigma);
+}
+
+/// \brief Rename the variables in the data_equation such that at each position they are unique and adapt the equivalence classes.
+std::pair<data_equation, partition> rename_variables_unique(std::pair<data_equation, partition> rules)
+{
+  mutable_indexed_substitution<variable, variable> sigma;
+  rename_variables_position(rules.first.lhs(), sigma);
+
+  // Rename all variables in the resulting partition to the name indicated by sigma.
+  partition result;
+  for (const std::vector<variable>& set : rules.second)
+  {
+    std::vector<variable> new_vars;
+    for (const variable& var : set)
+    {
+      new_vars.push_back(sigma(var));
+    }
+    result.push_back(new_vars);
+  }
+
+  return std::make_pair(replace_variables(rules.first, sigma), result);
+}
+
 // Public functions
 
 template<typename Substitution>
@@ -126,7 +197,7 @@ AutomatonMatcher<Substitution>::AutomatonMatcher(const data_equation_vector& equ
   for (auto& old_equation : equations)
   {
     // Rename the variables in the equation
-    auto result = make_linear(old_equation, generator);
+    std::pair<data_equation, partition> result = rename_variables_unique(make_linear(old_equation, generator));
 
     auto& equation = result.first;
     if (!result.second.empty())
@@ -178,9 +249,9 @@ void AutomatonMatcher<Substitution>::match(const data_expression& term)
     }
 
     // sigma := sigma \cup { (x, a) | x in L(s0) }
-    for (const variable& variable : m_automaton.label(current_state).variables)
+    if (m_automaton.label(current_state).variable.defined())
     {
-      m_matching_sigma[variable] = subterm;
+      m_matching_sigma[m_automaton.label(current_state).variable] = subterm;
     }
 
     bool found_transition = false;
@@ -291,10 +362,12 @@ void AutomatonMatcher<Substitution>::construct_rec(const PatternSet& L, std::siz
   }
 
   // L := (s0, omega / L) can be represented by giving s0 the label omega / L.
-  m_automaton.label(s0).variables = get_head_variables(L);
-  if (m_automaton.label(s0).variables.size() > 1)
+  std::set<variable> variables = get_head_variables(L);
+
+  if (variables.size() > 0)
   {
-    mCRL2log(info) << "Multiple variables at same position leads to inefficient time complexity.\n";
+    assert(variables.size() == 1);
+    m_automaton.label(s0).variable = *variables.begin();
   }
 
   // If L = { e_i | i in I for some I subset N }, i.e. it only consists of final matches.

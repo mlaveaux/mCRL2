@@ -46,6 +46,13 @@ public:
     // Ensure that the mapping for state 'from' can index the label.
     auto& mapping = m_transitions[from];
     mapping.resize(std::max(mapping.size(), label+1));
+
+    if (mapping[label] != to)
+    {
+      // Only a new transition whenever its (from, label, to) tuple is different.
+      ++m_noftransitions;
+    }
+
     mapping[label] = to;
   }
 
@@ -70,13 +77,15 @@ public:
 
   std::size_t states() const { return m_states.size(); }
 
-  std::size_t transitions() const { return m_transitions.size(); }
+  std::size_t transitions() const { return m_noftransitions; }
 
 private:
   std::deque<StateLabel> m_states;
 
   // A mapping from states to (label, state) pairs.
   std::vector<std::vector<std::size_t>> m_transitions;
+
+  std::size_t m_noftransitions = 0;
 };
 
 } // namespace detail

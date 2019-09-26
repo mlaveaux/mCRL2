@@ -26,7 +26,7 @@ namespace data
 namespace detail
 {
 
-using equivalence_classes = std::vector<std::vector<variable>>;
+using partition = std::vector<std::vector<variable>>;
 
 template <template <typename> class Builder, typename Generator>
 class linearize_builder : public Builder<linearize_builder<Builder, Generator>>
@@ -62,10 +62,10 @@ public:
     return var;
   }
 
-  equivalence_classes get_equivalence_classes()
+  partition get_equivalence_classes()
   {
     // A set of sets (guaranteed no duplicates) of equivalence classes that must be checked for consistency.
-    equivalence_classes result;
+    partition result;
 
     for (auto& element : m_equivalence_classes)
     {
@@ -84,7 +84,7 @@ private:
 /// \brief Given an equation renames multiple occurrences of the same variable to different (unique) variables and returns the
 ///        equivalence class that must be checked for consistency.
 template<typename Generator>
-std::pair<data_equation, equivalence_classes> make_linear(const data_equation& equation, Generator& generator)
+std::pair<data_equation, partition> make_linear(const data_equation& equation, Generator& generator)
 {
   // This makes the left-hand side linear, the right-hand side and condition can be the same as one instance of each variable did not change.
   linearize_builder<data_expression_builder, Generator> builder(generator);
@@ -121,7 +121,7 @@ std::pair<data_equation, equivalence_classes> make_linear(const data_equation& e
 
 /// \brief Check whether the given substitution sigma is consistent w.r.t. the given equivalence classes.
 template<typename Substitution>
-bool is_consistent(const equivalence_classes& classes, const Substitution& sigma)
+bool is_consistent(const partition& classes, const Substitution& sigma)
 {
    // We also need to check consistency of the matched rule.
    for (auto& equivalence_class : classes)

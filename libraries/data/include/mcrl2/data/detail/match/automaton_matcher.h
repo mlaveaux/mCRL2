@@ -29,7 +29,7 @@ namespace detail
 
 using Pattern = std::vector<data_expression>;
 using PatternSet = std::set<Pattern>;
-using linear_data_equation = std::pair<data_equation_extended, equivalence_classes>;
+using linear_data_equation = std::pair<data_equation_extended, partition>;
 
 template<typename Substitution>
 class AutomatonMatcher final : public Matcher<Substitution>
@@ -51,7 +51,7 @@ private:
   class pma_state
   {
   public:
-    std::set<variable> variables;
+    variable variable;
     std::vector<std::reference_wrapper<const linear_data_equation>> match_set;
   };
 
