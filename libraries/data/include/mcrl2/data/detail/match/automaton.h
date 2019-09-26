@@ -26,39 +26,47 @@ template<typename StateLabel>
 class IndexedAutomaton
 {
 public:
-  IndexedAutomaton() { add_state(); }
+  IndexedAutomaton()
+  {
+    add_state(); // This is the zero state used to indicate no outgoing transition.
+    add_state(); // This is the root state (root() == 1)
+  }
 
   /// \brief Adds a state to the set of states and returns its index.
   std::size_t add_state()
   {
     m_states.emplace_back();
+    m_transitions.emplace_back();
     return m_states.size() - 1;
   }
 
   /// \brief Add a transition (from, label, to) such that (to, true) = transition(from, label).
   void add_transition(std::size_t from, std::size_t label, std::size_t to)
   {
-    m_transitions.insert(std::make_pair(std::make_pair(from, label), to));
+    // Ensure that the mapping for state 'from' can index the label.
+    auto& mapping = m_transitions[from];
+    mapping.resize(std::max(mapping.size(), label+1));
+    mapping[label] = to;
   }
 
   /// \returns A pair (to, true) indicating that (from, label, to) in m_transitions or (x, false) otherwise.
   std::pair<std::size_t, bool> transition(std::size_t from, const std::size_t label)
   {
-    auto it = m_transitions.find(std::make_pair(from, label));
-    if (it == m_transitions.end())
+    const auto& mapping = m_transitions[from];
+    if (label >= mapping.size())
     {
       return std::make_pair(0, false);
     }
     else
     {
-      return std::make_pair(it->second, true);
+      return std::make_pair(mapping[label], mapping[label] != 0);
     }
   }
 
   /// \returns The state label of the given state index.
   StateLabel& label(std::size_t state) { return m_states[state]; }
 
-  std::size_t root() const { return 0; }
+  std::size_t root() const { return 1; }
 
   std::size_t states() const { return m_states.size(); }
 
@@ -67,7 +75,8 @@ public:
 private:
   std::deque<StateLabel> m_states;
 
-  mcrl2::utilities::unordered_map<std::pair<std::size_t, std::size_t>, std::size_t> m_transitions;
+  // A mapping from states to (label, state) pairs.
+  std::vector<std::vector<std::size_t>> m_transitions;
 };
 
 } // namespace detail
