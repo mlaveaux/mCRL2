@@ -147,7 +147,7 @@ using position = std::vector<std::size_t>;
 inline
 std::string to_variable_name(const position& position)
 {
-  std::string result("v");
+  std::string result("@");
 
   bool first = true;
   for (std::size_t index : position)

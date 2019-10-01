@@ -15,8 +15,7 @@
 #include "mcrl2/data/detail/match/matcher.h"
 #include "mcrl2/data/detail/match/automaton.h"
 #include "mcrl2/data/detail/match/consistency.h"
-#include "mcrl2/data/substitutions/mutable_indexed_substitution.h"
-#include "mcrl2/utilities/unordered_map.h"
+#include "mcrl2/utilities/indexed_set.h"
 
 #include <vector>
 
@@ -51,28 +50,22 @@ private:
   class not_equal : public function_symbol
   {
   public:
-    static atermpp::function_symbol& g_function_symbol()
-    {
-      static atermpp::function_symbol constant("@@not_equal@@", 0);
-      return constant;
-    }
-
     not_equal()
-      : function_symbol(atermpp::aterm_appl(g_function_symbol()))
+      : function_symbol(core::identifier_string("@@not_equal"), data::sort_expression())
     {}
   };
 
   /// \returns True iff the given data expression is of type omega.
   static inline bool is_not_equal(const data_expression& expression)
   {
-    return expression.function() == not_equal::g_function_symbol();
+    return expression == not_equal();
   }
 
   /// \brief Adds states and transitions to the APMA for the given state and prefix.
   void construct_apma(std::size_t s, data_expression pref);
 
   /// \brief A local copy of the equations to keep the references to equations stable.
-  mcrl2::utilities::unordered_map<data_equation, linear_data_equation> m_mapping;
+  std::deque<linear_data_equation> m_linear_equations;
 
   // The underlying automaton.
 
@@ -83,11 +76,14 @@ private:
     variable variable;
     std::size_t position; ///< The index of the position to be inspected.
     std::vector<std::reference_wrapper<const linear_data_equation>> match_set;
+    std::vector<std::size_t> argument_positions;
   };
 
   // Information about the underlying automata.
 
   IndexedAutomaton<apma_state> m_automaton;
+
+  mcrl2::utilities::indexed_set<position> m_positions;
 
   std::size_t m_not_equal_index;
 
