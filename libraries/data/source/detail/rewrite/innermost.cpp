@@ -239,10 +239,10 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
   while(true)
   {
     // If R not empty
-    const data_equation_extended* result = m_matcher.next(m_local_sigma);
+    const extended_data_equation* result = m_matcher.next(m_local_sigma);
     if (result != nullptr)
     {
-      const data_equation_extended& match = *result;
+      const extended_data_equation& match = *result;
 
       // Compute rhs^sigma'.
       auto rhs = apply_substitution(match.equation().rhs(), m_local_sigma, match.rhs_stack());

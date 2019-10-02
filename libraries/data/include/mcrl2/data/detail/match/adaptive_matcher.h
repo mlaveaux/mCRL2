@@ -26,7 +26,20 @@ namespace data
 namespace detail
 {
 
-using linear_data_equation = std::pair<data_equation_extended, partition>;
+/// \brief Represents the unnamed variable omega.
+class not_equal : public function_symbol
+{
+public:
+  not_equal()
+    : function_symbol(core::identifier_string("@@not_equal"), data::sort_expression())
+  {}
+};
+
+/// \returns True iff the given data expression is of type omega.
+inline bool is_not_equal(const data_expression& expression)
+{
+  return expression == not_equal();
+}
 
 /// \brief An adaptive pattern matching automata based on the construction of "Adaptive Pattern Matching" by
 ///        R. C. Sekar et al. This has been extended with a postprocessing to obtain the matching subsitution.
@@ -42,24 +55,9 @@ public:
 
   void match(const data_expression& term) override;
 
-  const data_equation_extended* next(Substitution& matching_sigma) override;
+  const extended_data_equation* next(Substitution& matching_sigma) override;
 
 private:
-
-  /// \brief Represents the unnamed variable omega.
-  class not_equal : public function_symbol
-  {
-  public:
-    not_equal()
-      : function_symbol(core::identifier_string("@@not_equal"), data::sort_expression())
-    {}
-  };
-
-  /// \returns True iff the given data expression is of type omega.
-  static inline bool is_not_equal(const data_expression& expression)
-  {
-    return expression == not_equal();
-  }
 
   /// \brief Adds states and transitions to the APMA for the given state and prefix.
   void construct_apma(std::size_t s, data_expression pref);

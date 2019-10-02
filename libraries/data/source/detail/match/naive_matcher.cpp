@@ -116,7 +116,7 @@ void NaiveMatcher<Substitution>::match(const data_expression& term)
 }
 
 template<typename Substitution>
-const data_equation_extended* NaiveMatcher<Substitution>::next(Substitution& matching_sigma)
+const extended_data_equation* NaiveMatcher<Substitution>::next(Substitution& matching_sigma)
 {
   if (EnableHeadIndexing && m_head_index >= m_rewrite_system.size())
   {

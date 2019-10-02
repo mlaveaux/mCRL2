@@ -13,6 +13,7 @@
 #include "mcrl2/data/data_expression.h"
 #include "mcrl2/data/data_equation.h"
 #include "mcrl2/data/detail/match/construction_stack.h"
+#include "mcrl2/data/detail/match/consistency.h"
 #include "mcrl2/data/substitutions/mutable_indexed_substitution.h"
 
 namespace mcrl2
@@ -23,10 +24,10 @@ namespace detail
 {
 
 /// \brief Extend a data equation with additional constructs used after matching.
-class data_equation_extended
+class extended_data_equation
 {
 public:
-  data_equation_extended(data_equation equation)
+  extended_data_equation(data_equation equation)
     : m_condition(equation.condition()),
       m_righthandside(equation.rhs()),
       m_equation(equation)
@@ -43,6 +44,21 @@ private:
   data_equation m_equation;
 };
 
+
+/// \brief The combination of a linear data equation and a consistency partition.
+struct linear_data_equation : public extended_data_equation
+{
+public:
+  linear_data_equation(data_equation equation, consistency_partition partition)
+    : extended_data_equation(equation),
+      m_partition(partition)
+  {}
+
+  const consistency_partition& partition() const { return m_partition; }
+private:
+  consistency_partition m_partition;
+};
+
 /// \brief The interface for matching algorithms.
 template<typename Substitution>
 class Matcher : public mcrl2::utilities::noncopyable
@@ -53,7 +69,7 @@ public:
   virtual void match(const data_expression& term) = 0;
 
   /// \returns The matching equation and adapts matching_sigma accordingly.
-  virtual const data_equation_extended* next(Substitution& matching_sigma) = 0;
+  virtual const extended_data_equation* next(Substitution& matching_sigma) = 0;
 };
 
 }

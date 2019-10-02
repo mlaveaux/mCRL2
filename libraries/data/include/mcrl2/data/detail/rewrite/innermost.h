@@ -11,7 +11,6 @@
 #define MCRL2_DATA_DETAIL_INNERMOST_H
 
 #include "mcrl2/data/detail/rewrite.h"
-#include "mcrl2/data/detail/match/automaton_matcher.h"
 #include "mcrl2/data/detail/match/adaptive_matcher.h"
 #include "mcrl2/data/detail/match/naive_matcher.h"
 #include "mcrl2/utilities/cache_metric.h"

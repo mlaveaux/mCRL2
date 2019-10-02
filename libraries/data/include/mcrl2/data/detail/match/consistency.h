@@ -26,7 +26,9 @@ namespace data
 namespace detail
 {
 
-using partition = std::vector<std::vector<variable>>;
+/// \brief The consistency partition is a set of consistency classes, the underlying vectors should be sets.
+using consistency_partition = std::vector<std::vector<variable>>;
+
 
 template <template <typename> class Builder, typename Generator>
 class linearize_builder : public Builder<linearize_builder<Builder, Generator>>
@@ -62,10 +64,10 @@ public:
     return var;
   }
 
-  partition get_equivalence_classes()
+  consistency_partition get_equivalence_classes()
   {
     // A set of sets (guaranteed no duplicates) of equivalence classes that must be checked for consistency.
-    partition result;
+    consistency_partition result;
 
     for (auto& element : m_equivalence_classes)
     {
@@ -85,7 +87,7 @@ private:
 ///        equivalence class that must be checked for consistency.
 template<typename Generator>
 inline
-std::pair<data_equation, partition> make_linear(const data_equation& equation, Generator& generator)
+std::pair<data_equation, consistency_partition> make_linear(const data_equation& equation, Generator& generator)
 {
   // This makes the left-hand side linear, the right-hand side and condition can be the same as one instance of each variable did not change.
   linearize_builder<data_expression_builder, Generator> builder(generator);
@@ -123,7 +125,7 @@ std::pair<data_equation, partition> make_linear(const data_equation& equation, G
 /// \brief Check whether the given substitution sigma is consistent w.r.t. the given equivalence classes.
 template<typename Substitution>
 inline
-bool is_consistent(const partition& classes, const Substitution& sigma)
+bool is_consistent(const consistency_partition& classes, const Substitution& sigma)
 {
    // We also need to check consistency of the matched rule.
    for (auto& equivalence_class : classes)
@@ -143,26 +145,34 @@ bool is_consistent(const partition& classes, const Substitution& sigma)
 
 using position = std::vector<std::size_t>;
 
-/// \returns A position [1,2,3,4] as the string 1.2.3.4
+/// \brief Print a position to a stream.
 inline
-std::string to_variable_name(const position& position)
+std::ostream& operator<<(std::ostream& stream, const position& position)
 {
-  std::string result("@");
-
   bool first = true;
   for (std::size_t index : position)
   {
     if (!first)
     {
-      result += ".";
+      stream << "." << std::to_string(index);
     }
-
-    result += std::to_string(index);
-
+    else
+    {
+      stream << std::to_string(index);
+    }
     first = false;
   }
 
-  return result;
+  return stream;
+}
+
+/// \returns A position [1,2,3,4] as the string 1.2.3.4
+inline
+std::string to_variable_name(const position& position)
+{
+  std::stringstream result;
+  result << "@" << position;
+  return result.str();
 }
 
 /// \brief Create a variable named after the current position with no type.
@@ -204,13 +214,13 @@ void rename_variables_position(const atermpp::aterm_appl& appl, Substitution& si
 
 /// \brief Rename the variables in the data_equation such that at each position they are unique and adapt the equivalence classes.
 inline
-std::pair<data_equation, partition> rename_variables_unique(std::pair<data_equation, partition> rules)
+std::pair<data_equation, consistency_partition> rename_variables_unique(std::pair<data_equation, consistency_partition> rules)
 {
   mutable_indexed_substitution<variable, variable> sigma;
   rename_variables_position(rules.first.lhs(), sigma);
 
   // Rename all variables in the resulting partition to the name indicated by sigma.
-  partition result;
+  consistency_partition result;
   for (const std::vector<variable>& set : rules.second)
   {
     std::vector<variable> new_vars;

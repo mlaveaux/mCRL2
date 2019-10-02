@@ -33,15 +33,15 @@ public:
 
   void match(const data_expression& term) override;
 
-  const data_equation_extended* next(Substitution& matching_sigma) override;
+  const extended_data_equation* next(Substitution& matching_sigma) override;
 
 private:
   /// A mapping from head symbols to rewrite rules and their corresponding construction stacks. A unique index is used for each head symbol to achieve
   /// this mapping without an unordered_map for performance reasons.
-  std::vector<std::vector<data_equation_extended>> m_rewrite_system;
+  std::vector<std::vector<extended_data_equation>> m_rewrite_system;
 
   /// The original list of equations to use for matching.
-  std::vector<data_equation_extended> m_equations;
+  std::vector<extended_data_equation> m_equations;
 
   // Information about the matched term.
 
