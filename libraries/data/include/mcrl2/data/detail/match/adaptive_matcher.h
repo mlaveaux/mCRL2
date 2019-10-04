@@ -71,10 +71,14 @@ private:
   class apma_state
   {
   public:
+    // Other states:
     variable variable;
-    std::size_t position; ///< The index of the position to be inspected.
-    std::vector<std::reference_wrapper<const linear_data_equation>> match_set;
-    std::vector<std::size_t> argument_positions;
+    std::size_t position = std::numeric_limits<std::size_t>::max(); ///< L, the index of the position to be inspected.
+    std::vector<std::size_t> argument_positions; ///< These are the positions where arguments must be stored in the subterm table.
+
+    // Final states:
+    std::vector<std::reference_wrapper<const linear_data_equation>> match_set; ///< L, the equations that matched.
+    std::vector<std::pair<data::variable, std::size_t>> variables; ///< P, the variables that still must be assigned and their position.
   };
 
   // Information about the underlying automata.

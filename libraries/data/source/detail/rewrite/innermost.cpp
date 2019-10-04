@@ -259,17 +259,17 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
         ++m_application_count[match.equation()];
       }
 
+      if (PrintRewriteSteps)
+      {
+        mCRL2log(info) << "Rewrote " << expression << " to " << rhs << " using rule " << match.equation() << "\n";
+      }
+
       // Return rewrite(r^sigma', id)
       auto result = rewrite_impl(rhs, m_identity);
 
       if (EnableCaching)
       {
         m_rewrite_cache.emplace(expression, result);
-      }
-
-      if (PrintRewriteSteps)
-      {
-        mCRL2log(info) << "Rewrote " << expression << " to " << result << " using rule " << match.equation() << "\n";
       }
 
       return result;
