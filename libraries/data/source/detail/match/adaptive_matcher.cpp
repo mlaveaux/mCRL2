@@ -289,8 +289,8 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
     }
 
     // t[p] is given by the subterm table at the current position.
-    const data_expression& subterm = m_subterms[state.position];
-    if (subterm == data_expression())
+    const data_expression& subterm = static_cast<const data_expression&>(m_subterms[state.position]);
+    if (!subterm.defined())
     {
       // head(t[p]) is not defined so matching is finished.
       return;
@@ -310,8 +310,8 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
       const auto& appl = static_cast<const application&>(subterm);
 
       // If delta(s, f) = (s', update)
-      auto [s_prime, found] = m_automaton.transition(s, get_head_index(appl.head()));
-      if (found)
+      std::size_t s_prime = m_automaton.transition(s, get_head_index(appl.head()));
+      if (s_prime != 0)
       {
         if (PrintMatchSteps) { mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label " << appl.head() << "\n"; }
 
@@ -324,7 +324,7 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
         {
           assert(it != state.argument_positions.end());
           assert(*it < m_subterms.size());
-          m_subterms[*it] = static_cast<const data_expression&>(argument);
+          m_subterms[*it] = argument;
           ++it;
         }
       }
@@ -332,8 +332,8 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
     else if (is_function_symbol(subterm))
     {
       // If delta(s0, a) is defined for some term a followed by suffix t'.
-      auto [s_prime, found] = m_automaton.transition(s, get_head_index(subterm));
-      if (found)
+      std::size_t s_prime = m_automaton.transition(s, get_head_index(subterm));
+      if (s_prime != 0)
       {
         if (PrintMatchSteps) { mCRL2log(info) << "Took transition " << s << " to " << s_prime << " with label " << static_cast<function_symbol>(subterm) << "\n"; }
 
@@ -345,8 +345,8 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
     if (!found_transition)
     {
       // If delta(s, \neq)
-      auto [s_prime, found] = m_automaton.transition(s, m_not_equal_index);
-      if (found)
+      std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
+      if (s_prime != 0)
       {
         if (PrintMatchSteps)
         {
@@ -361,7 +361,7 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
     }
 
     // Reset this position as we will not inspect it again.
-    m_subterms[state.position] = data_expression();
+    m_subterms[state.position] = atermpp::unprotected_aterm();
   }
 
   if (PrintMatchSteps) { mCRL2log(info) << "Matching succeeded.\n"; }
@@ -369,8 +369,8 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
   // for p in P do sigma := sigma[x_p -> t[p]]
   for (const auto& [var, pos] : m_automaton.label(s).variables)
   {
-    assert(m_subterms[pos] != data_expression());
-    m_matching_sigma[var] = m_subterms[pos];
+    assert(m_subterms[pos].defined());
+    m_matching_sigma[var] = static_cast<const data_expression&>(m_subterms[pos]);
   }
 
   m_match_set = &m_automaton.label(s).match_set;

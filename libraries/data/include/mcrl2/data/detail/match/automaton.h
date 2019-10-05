@@ -57,16 +57,16 @@ public:
   }
 
   /// \returns A pair (to, true) indicating that (from, label, to) in m_transitions or (x, false) otherwise.
-  std::pair<std::size_t, bool> transition(std::size_t from, const std::size_t label)
+  std::size_t transition(std::size_t from, const std::size_t label)
   {
     const auto& mapping = m_transitions[from];
     if (label >= mapping.size())
     {
-      return std::make_pair(0, false);
+      return 0;
     }
     else
     {
-      return std::make_pair(mapping[label], mapping[label] != 0);
+      return mapping[label];
     }
   }
 

@@ -128,10 +128,10 @@ inline
 bool is_consistent(const consistency_partition& classes, const Substitution& sigma)
 {
    // We also need to check consistency of the matched rule.
-   for (auto& equivalence_class : classes)
+   for (const auto& equivalence_class : classes)
    {
-     auto& subst = sigma(equivalence_class.front());
-     for (auto& variable : equivalence_class)
+     const auto& subst = sigma(equivalence_class.front());
+     for (const auto& variable : equivalence_class)
      {
        if (sigma(variable) != subst)
        {

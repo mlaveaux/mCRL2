@@ -93,7 +93,7 @@ private:
 
   Substitution m_matching_sigma;
 
-  std::vector<data_expression> m_subterms; ///< A mapping from indices to subterms.
+  std::vector<atermpp::unprotected_aterm> m_subterms; ///< A mapping from indices to subterms.
 
   std::vector<std::reference_wrapper<const linear_data_equation>>* m_match_set = nullptr;
 
