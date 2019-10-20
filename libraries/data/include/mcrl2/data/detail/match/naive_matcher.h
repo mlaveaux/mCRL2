@@ -11,6 +11,7 @@
 #define MCRL2_DATA_DETAIL_NAIVE_MATCHER_H
 
 #include "mcrl2/data/detail/match/matcher.h"
+#include "mcrl2/data/detail/match/consistency.h"
 
 #include <vector>
 
@@ -38,10 +39,10 @@ public:
 private:
   /// A mapping from head symbols to rewrite rules and their corresponding construction stacks. A unique index is used for each head symbol to achieve
   /// this mapping without an unordered_map for performance reasons.
-  std::vector<std::vector<extended_data_equation>> m_rewrite_system;
+  std::vector<std::vector<linear_data_equation>> m_rewrite_system;
 
   /// The original list of equations to use for matching.
-  std::vector<extended_data_equation> m_equations;
+  std::vector<linear_data_equation> m_equations;
 
   // Information about the matched term.
 

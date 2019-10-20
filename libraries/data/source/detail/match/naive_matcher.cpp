@@ -17,6 +17,9 @@ constexpr bool PrintMatchSteps   = false;
 /// \brief When enabled, index each rewrite rule based on its head symbol for fast lookup of relevant rules.
 constexpr bool EnableHeadIndexing = true;
 
+/// \brief When enabled, enable consistency checking on the fly.
+constexpr bool EnableOnTheFlyConsistencyCheck = false;
+
 using namespace mcrl2;
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
@@ -35,7 +38,7 @@ inline bool match_lhs(const data_expression& term,  const data_expression& lhs, 
   {
     const auto& var = static_cast<const variable&>(lhs);
 
-    if (sigma(var) != var)
+    if (sigma(var) != var && EnableOnTheFlyConsistencyCheck)
     {
       // If the variable was already assigned it must match the previously assigned value.
       return sigma(var) == term;
@@ -76,7 +79,6 @@ inline bool match_lhs(const data_expression& term,  const data_expression& lhs, 
   }
 }
 
-
 /// \returns A unique index for the head symbol that the given term starts with.
 inline std::size_t get_head_index(const data_expression& term)
 {
@@ -86,19 +88,47 @@ inline std::size_t get_head_index(const data_expression& term)
 template<typename Substitution>
 NaiveMatcher<Substitution>::NaiveMatcher(const data_equation_vector& equations)
 {
-  for (auto&& equation : equations)
+  enumerator_identifier_generator generator("@");
+
+  // Preprocess the term rewrite system.
+  for (const data_equation& old_equation : equations)
   {
-    m_equations.emplace_back(equation);
+    // Only rename the variables when the consistency check if performed afterwards.
+    if (!EnableOnTheFlyConsistencyCheck)
+    {
+      // Rename the variables in the equation
+      auto [equation, partition] = rename_variables_unique(make_linear(old_equation, generator));
+
+      // Add the index of the equation
+      m_equations.emplace_back(linear_data_equation(equation, partition));
+    }
+    else
+    {
+      m_equations.emplace_back(linear_data_equation(old_equation, {}));
+    }
   }
 
-  for (auto&& equation : equations)
+  for (const data_equation& old_equation : equations)
   {
     // Make sure that it is possible to insert the match data for head_index left-hand side.
-    std::size_t head_index = get_head_index(equation.lhs());
+    std::size_t head_index = get_head_index(old_equation.lhs());
     if (head_index >= m_rewrite_system.size()) { m_rewrite_system.resize(head_index + 1); }
 
     // Insert the left-hand side into the rewrite rule mapping and a construction stack for its right-hand side.
-    m_rewrite_system[head_index].emplace_back(equation);
+
+    // Only rename the variables when the consistency check if performed afterwards.
+    if (!EnableOnTheFlyConsistencyCheck)
+    {
+      // Rename the variables in the equation
+      auto [equation, partition] = rename_variables_unique(make_linear(old_equation, generator));
+
+      // Add the index of the equation
+      m_rewrite_system[head_index].emplace_back(linear_data_equation(equation, partition));
+    }
+    else
+    {
+      m_rewrite_system[head_index].emplace_back(linear_data_equation(old_equation, {}));
+    }
   }
 }
 
@@ -124,12 +154,12 @@ const extended_data_equation* NaiveMatcher<Substitution>::next(Substitution& mat
   {
     matching_sigma.clear();
 
-    const auto& equation = (EnableHeadIndexing ? m_rewrite_system[m_head_index][index] : m_equations[index]);
+    const linear_data_equation& equation = (EnableHeadIndexing ? m_rewrite_system[m_head_index][index] : m_equations[index]);
 
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
-    if (match_lhs(m_term, equation.equation().lhs(), matching_sigma))
+    if (match_lhs(m_term, equation.equation().lhs(), matching_sigma) && (EnableOnTheFlyConsistencyCheck || is_consistent(equation.partition(), matching_sigma)))
     {
-      if(PrintMatchSteps)
+      if (PrintMatchSteps)
       {
         mCRL2log(info) << "Matched rule " << equation.equation() << " to term " << m_term << "\n";
       }

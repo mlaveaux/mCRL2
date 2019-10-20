@@ -26,8 +26,11 @@ namespace data
 namespace detail
 {
 
+/// \brief The consistency class is a set of variables, must ensure unique entries for optimal performance..
+using consistency_class = std::vector<variable>;
+
 /// \brief The consistency partition is a set of consistency classes, the underlying vectors should be sets.
-using consistency_partition = std::vector<std::vector<variable>>;
+using consistency_partition = std::vector<consistency_class>;
 
 
 template <template <typename> class Builder, typename Generator>
@@ -53,7 +56,7 @@ public:
       variable new_var(m_generator(), var.sort());
 
       // Add the new variable to the equivalence class and return it.
-      m_equivalence_classes[var].emplace_back(new_var);
+      m_mapping[var].emplace_back(new_var);
       return new_var;
     }
     else
@@ -64,14 +67,14 @@ public:
     return var;
   }
 
-  consistency_partition get_equivalence_classes()
+  consistency_partition get_partition()
   {
     // A set of sets (guaranteed no duplicates) of equivalence classes that must be checked for consistency.
     consistency_partition result;
 
-    for (auto& element : m_equivalence_classes)
+    for (const auto& [var, partition] : m_mapping)
     {
-      result.emplace_back(element.second);
+      result.emplace_back(partition);
     }
 
     return result;
@@ -79,7 +82,7 @@ public:
 
 private:
   std::set<variable> m_variables; ///< The set of variables that we have already seen.
-  std::unordered_map<variable, std::vector<variable>> m_equivalence_classes; ///< For each original variable the set of variables that must be consistent.
+  std::unordered_map<variable, consistency_class> m_mapping; ///< For each original variable the set of variables that must be consistent.
   Generator& m_generator;
 };
 
@@ -98,7 +101,7 @@ std::pair<data_equation, consistency_partition> make_linear(const data_equation&
 
   // Generate new variables for each equation to ensure that they are unique.
   mutable_indexed_substitution<variable> sigma;
-  for (auto& var : variables)
+  for (const variable& var : variables)
   {
     sigma[var] = variable(generator(), var.sort());
   }
@@ -110,30 +113,30 @@ std::pair<data_equation, consistency_partition> make_linear(const data_equation&
   data_equation renamed_equation = replace_variables(linear_equation, sigma);
 
   // Rename the variables in the same way in the equivalence classes.
-  auto equivalence_classes = builder.get_equivalence_classes();
-  for (auto& eq_class : equivalence_classes)
+  consistency_partition partition = builder.get_partition();
+  for (consistency_class& eq_class : partition)
   {
-    for (auto& var : variables)
+    for (const variable& var : variables)
     {
       std::replace(eq_class.begin(), eq_class.end(), var, static_cast<variable>(sigma(var)));
     }
   }
 
-  return std::make_pair(renamed_equation, equivalence_classes);
+  return std::make_pair(renamed_equation, partition);
 }
 
 /// \brief Check whether the given substitution sigma is consistent w.r.t. the given equivalence classes.
 template<typename Substitution>
 inline
-bool is_consistent(const consistency_partition& classes, const Substitution& sigma)
+bool is_consistent(const consistency_partition& partition, const Substitution& sigma)
 {
    // We also need to check consistency of the matched rule.
-   for (const auto& equivalence_class : classes)
+   for (const consistency_class& consistency_class : partition)
    {
-     const auto& subst = sigma(equivalence_class.front());
-     for (const auto& variable : equivalence_class)
+     const auto& assigned = sigma(consistency_class.front());
+     for (const variable& variable : consistency_class)
      {
-       if (sigma(variable) != subst)
+       if (sigma(variable) != assigned)
        {
          return false;
        }
