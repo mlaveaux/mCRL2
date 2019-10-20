@@ -171,13 +171,13 @@ bool has_variable_higher_impl(const data_expression& t, const position& pos, std
   }
   else
   {
-    assert(index < t.size());
+    assert(pos[index] < t.size());
     return has_variable_higher_impl(static_cast<data_expression>(t[pos[index]]), pos, index + 1);
   }
 }
 
 /// \returns True iff (exists pos' <= pos : head(l[pos']) in V
-bool has_variable_higher(const application& appl, const position& pos)
+bool has_variable_higher(const data_expression& appl, const position& pos)
 {
   return has_variable_higher_impl(appl, pos, 0);
 }
@@ -273,6 +273,7 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
 
   // Start with the root state.
   std::size_t s = m_automaton.root();
+  std::size_t s_old;
 
   // The empty position is the first index.
   m_subterms[0] = term;
@@ -282,6 +283,9 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
     // Store the labelling of the current state for convenience.
     const apma_state& state = m_automaton.label(s);
 
+    // Keep track of the current state.
+    s_old = s;
+
     // If L(s) = L' for some pattern set L'.
     if (state.match_set.size() > 0)
     {
@@ -290,11 +294,7 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
 
     // t[p] is given by the subterm table at the current position.
     const data_expression& subterm = static_cast<const data_expression&>(m_subterms[state.position]);
-    if (!subterm.defined())
-    {
-      // head(t[p]) is not defined so matching is finished.
-      return;
-    }
+    assert (subterm.defined());
 
     if (PrintMatchSteps) { mCRL2log(info) << "Matching m_subterms[" << state.position << "] = " << subterm << "\n"; }
 
@@ -304,7 +304,7 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
       m_matching_sigma[state.variable] = subterm;
     }
 
-    bool found_transition = false;
+    // The number of arguments must match the current state.
     if (is_application(subterm))
     {
       const auto& appl = static_cast<const application&>(subterm);
@@ -314,8 +314,6 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
       if (s_prime != 0)
       {
         if (PrintMatchSteps) { mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label " << appl.head() << "\n"; }
-
-        found_transition = true;
         s = s_prime;
 
         // Insert the subterms onto the position mapping.
@@ -328,7 +326,22 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
           ++it;
         }
       }
+      else
+      {
+        // If delta(s, \neq)
+        std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
+        if (s_prime != 0)
+        {
+          if (PrintMatchSteps)
+          {
+            mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n";
+          }
+
+          s = s_prime;
+        }
+      }
     }
+    // This transition can only be taken for constant function symbols.
     else if (is_function_symbol(subterm))
     {
       // If delta(s0, a) is defined for some term a followed by suffix t'.
@@ -336,26 +349,27 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
       if (s_prime != 0)
       {
         if (PrintMatchSteps) { mCRL2log(info) << "Took transition " << s << " to " << s_prime << " with label " << static_cast<function_symbol>(subterm) << "\n"; }
-
-        found_transition = true;
         s = s_prime;
+      }
+      else
+      {
+        // If delta(s, \neq)
+        std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
+        if (s_prime != 0)
+        {
+          if (PrintMatchSteps)
+          {
+            mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n";
+          }
+
+          s = s_prime;
+        }
       }
     }
 
-    if (!found_transition)
+    // If we are stuck in the current state then matching failed.
+    if (s == s_old)
     {
-      // If delta(s, \neq)
-      std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
-      if (s_prime != 0)
-      {
-        if (PrintMatchSteps)
-        {
-          mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n";
-        }
-
-        s = s_prime;
-      }
-
       if (PrintMatchSteps) { mCRL2log(info) << "Matching failed.\n"; }
       return;
     }
@@ -403,9 +417,13 @@ const extended_data_equation* AdaptiveMatcher<Substitution>::next(Substitution& 
 // Private functions
 
 template<typename Substitution>
+//IndexedAutomaton<typename AdaptiveMatcher<Substitution>::apma_state>
 void AdaptiveMatcher<Substitution>::construct_apma(std::size_t s, data_expression pref)
 {
   if (PrintConstructionSteps) { mCRL2log(info) << "state = " << s << "("; }
+
+  // The labelling for the current state.
+  apma_state& state = m_automaton.label(s);
 
   // L := {l in L | l unifies with pref}
   std::vector<std::reference_wrapper<const linear_data_equation>> L;
@@ -417,31 +435,8 @@ void AdaptiveMatcher<Substitution>::construct_apma(std::size_t s, data_expressio
     }
   }
 
-  // intersection := intersection_{l in L} fringe(l)
-  std::set<position> intersection;
-  bool first = true;
-  for (const linear_data_equation& equation : L)
-  {
-    std::set<position> local;
-    std::set<position> fringe_l = fringe(equation.equation().lhs());
-
-    if (first)
-    {
-      intersection = fringe_l;
-    }
-
-    std::set_intersection(intersection.begin(), intersection.end(), fringe_l.begin(), fringe_l.end(), std::inserter(local, local.begin()));
-    intersection = local;
-    first = false;
-  }
-
-  // F := fringe(pref) \ intersection_{l in L} fringe(l)
-  std::set<position> F;
-  std::set<position> fringe_pref = fringe(pref);
-  std::set_difference(fringe_pref.begin(), fringe_pref.end(), intersection.begin(), intersection.end(), std::inserter(F, F.begin()));
-
-  // The labelling for the current state.
-  apma_state& state = m_automaton.label(s);
+  // F := restrict(fringe(pref), pref).
+  std::set<position> F = restrict(fringe(pref), L);
 
   // if F = emptyset
   if (F.empty())
@@ -479,12 +474,15 @@ void AdaptiveMatcher<Substitution>::construct_apma(std::size_t s, data_expressio
   }
   else
   {
-    // pos := select(F). For now the left-most position (left-to-right automaton).
-    position pos = *std::min_element(F.begin(), F.end(), less_than);
+    // pos := select(F).
+    position pos = select(F);
 
     // M := M[L := L[s -> pos]]
     state.position = m_positions.insert(pos).first;
     if (PrintConstructionSteps) { mCRL2log(info) << "L = " << pos << ")\n"; }
+
+    // Remember the subterm for the current position in the corresponding variable.
+    state.variable = position_variable(pos);
 
     // for f in F s.t. exist l in L : head(l[pos]) = f
     std::set<std::pair<mcrl2::data::function_symbol, std::size_t>> symbols;
@@ -492,7 +490,7 @@ void AdaptiveMatcher<Substitution>::construct_apma(std::size_t s, data_expressio
     for (const linear_data_equation& equation : L)
     {
       // t := l[pos]
-      std::optional<data_expression> t = at_position(static_cast<const application&>(equation.equation().lhs()), pos);
+      std::optional<data_expression> t = at_position(equation.equation().lhs(), pos);
 
       if (t && (is_function_symbol(t.value()) || is_application_robust(t.value())))
       {
@@ -551,7 +549,7 @@ void AdaptiveMatcher<Substitution>::construct_apma(std::size_t s, data_expressio
       L.end(),
       [&](const linear_data_equation& equation)
       {
-        return has_variable_higher(static_cast<application>(equation.equation().lhs()), pos);
+        return has_variable_higher(equation.equation().lhs(), pos);
       }) != L.end())
     {
       // M := M[S := (S cup {s'})], where s' is a fresh state.
@@ -565,6 +563,70 @@ void AdaptiveMatcher<Substitution>::construct_apma(std::size_t s, data_expressio
       construct_apma(s_prime, assign_at_position(pref, pos, not_equal()));
     }
   }
+}
+
+template<typename Substitution>
+std::set<position> AdaptiveMatcher<Substitution>::restrict(const std::set<position>& F, std::vector<std::reference_wrapper<const linear_data_equation>>& L)
+{
+  // intersection := intersection_{l in L} fringe(l)
+  std::set<position> intersection;
+  bool first = true;
+  for (const linear_data_equation& equation : L)
+  {
+    std::set<position> local;
+    std::set<position> fringe_l = fringe(equation.equation().lhs());
+
+    if (first)
+    {
+      intersection = fringe_l;
+    }
+
+    std::set_intersection(intersection.begin(), intersection.end(), fringe_l.begin(), fringe_l.end(), std::inserter(local, local.begin()));
+    intersection = local;
+    first = false;
+  }
+
+  // F := F \ intersection_{l in L} fringe(l)
+  std::set<position> result;
+  std::set_difference(F.begin(), F.end(), intersection.begin(), intersection.end(), std::inserter(result, result.begin()));
+
+  // Compute a set of indices.
+  std::set<position> indices;
+  for (const position& position : result)
+  {
+    if (std::all_of(L.begin(), L.end(),
+      [&](const linear_data_equation& equation)
+      {
+        std::optional<data_expression> result = at_position(equation.equation().lhs(), position);
+        if (result)
+        {
+          return !is_variable(result.value());
+        }
+        else
+        {
+          return true;
+        }
+      }))
+    {
+      indices.insert(position);
+    }
+  }
+
+  if (indices.empty())
+  {
+    return result;
+  }
+  else
+  {
+    return indices;
+  }
+}
+
+template<typename Substitution>
+position AdaptiveMatcher<Substitution>::select(const std::set<position>& F)
+{
+  // This corresponds to the left-to-right depth-first traversal order.
+  return *std::min_element(F.begin(), F.end(), less_than);
 }
 
 // Explicit instantiations.

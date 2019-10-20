@@ -59,14 +59,6 @@ public:
 
 private:
 
-  /// \brief Adds states and transitions to the APMA for the given state and prefix.
-  void construct_apma(std::size_t s, data_expression pref);
-
-  /// \brief A local copy of the equations to keep the references to equations stable.
-  std::deque<linear_data_equation> m_linear_equations;
-
-  // The underlying automaton.
-
   /// \brief Each state in the pattern match automaton is labelled with a set of variables.
   class apma_state
   {
@@ -80,6 +72,21 @@ private:
     std::vector<std::reference_wrapper<const linear_data_equation>> match_set; ///< L, the equations that matched.
     std::vector<std::pair<data::variable, std::size_t>> variables; ///< P, the variables that still must be assigned and their position.
   };
+
+  /// \brief Adds states and transitions to the APMA for the given state and prefix.
+  //IndexedAutomaton<apma_state>
+  void construct_apma(std::size_t s, data_expression pref);
+
+  /// \returns A subset of the given positions, filtering out unecessary positions.
+  std::set<position> restrict(const std::set<position>& positions, std::vector<std::reference_wrapper<const linear_data_equation>>& L);
+
+  /// \returns A single position selected from a set of positions.
+  position select(const std::set<position>& positions);
+
+  /// \brief A local copy of the equations to keep the references to equations stable.
+  std::deque<linear_data_equation> m_linear_equations;
+
+  // The underlying automaton.
 
   // Information about the underlying automata.
 
