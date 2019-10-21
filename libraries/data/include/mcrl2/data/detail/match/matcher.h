@@ -14,7 +14,6 @@
 #include "mcrl2/data/data_equation.h"
 #include "mcrl2/data/detail/match/construction_stack.h"
 #include "mcrl2/data/detail/match/consistency.h"
-#include "mcrl2/data/substitutions/mutable_indexed_substitution.h"
 
 namespace mcrl2
 {
