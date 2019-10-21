@@ -20,6 +20,14 @@ constexpr bool PrintMatchSteps = false;
 /// \brief Print the intermediate steps performed during construction.
 constexpr bool PrintConstructionSteps = false;
 
+// Various optimizations.
+
+/// \brief Compute index positions in restrict and return a set of positions when available.
+constexpr bool EnableIndexPositions = true;
+
+/// \brief Remove positions where every pattern contains a variable.
+constexpr bool EnableRemoveVariables = true;
+
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
 
@@ -231,18 +239,30 @@ template<typename Substitution>
 AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equations)
   : m_automaton()
 {
+  // Keep track of the construction time.
   mcrl2::utilities::stopwatch construction;
+
+  // This identifier generator is used to linearise the equations.
   enumerator_identifier_generator generator("@");
 
   // Preprocess the term rewrite system.
+  std::size_t nof_nonlinear_equations = 0;
   for (const data_equation& old_equation : equations)
   {
     // Rename the variables in the equation
     auto [equation, partition] = rename_variables_unique(make_linear(old_equation, generator));
 
+    // If the partition is not empty then this equation is nonlinear.
+    if (!partition.empty())
+    {
+      ++nof_nonlinear_equations;
+    }
+
     // Add the index of the equation
     m_linear_equations.emplace_back(linear_data_equation(equation, partition));
   }
+
+  mCRL2log(info) << "EAPMA: There are " << nof_nonlinear_equations << " nonlinear left-hand sides out of " << m_linear_equations.size() << " rewrite rules.\n";
 
   // Determine the index of not_equal.
   m_not_equal_index = mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(not_equal()));
@@ -250,10 +270,12 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
   // Construct the automaton.
   try
   {
-    construct_apma(m_automaton.root(), position_variable(position()));
+    construct_apma(Automaton(), m_automaton.root(), position_variable(position()));
 
     mCRL2log(info) << "EAPMA (states: " << m_automaton.states() << ", transitions: " << m_automaton.transitions() << ") construction took " << construction.time() << " milliseconds.\n"
       << " there are " << m_positions.size() << " positions indexed.\n";
+
+    mCRL2log(info) << "EAPMA: There are " << m_nof_ambiguous_matches << " ambiguous match sets.\n";
 
     // Ensure that the subterm indexing can store all possible terms in the required places.
     m_subterms.resize(m_positions.size());
@@ -287,7 +309,7 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
     s_old = s;
 
     // If L(s) = L' for some pattern set L'.
-    if (state.match_set.size() > 0)
+    if (!state.match_set.empty())
     {
       break;
     }
@@ -299,10 +321,8 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
     if (PrintMatchSteps) { mCRL2log(info) << "Matching m_subterms[" << state.position << "] = " << subterm << "\n"; }
 
     // Update the (position) variable for the current subterm.
-    if (state.variable.defined())
-    {
-      m_matching_sigma[state.variable] = subterm;
-    }
+    if (PrintMatchSteps) { mCRL2log(info) << "sigma(" << state.variable << ") := " << subterm << ".\n"; }
+    m_matching_sigma[state.variable] = subterm;
 
     // The number of arguments must match the current state.
     if (is_application(subterm))
@@ -384,7 +404,9 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
   for (const auto& [var, pos] : m_automaton.label(s).variables)
   {
     assert(m_subterms[pos].defined());
-    m_matching_sigma[var] = static_cast<const data_expression&>(m_subterms[pos]);
+    auto& expression = static_cast<const data_expression&>(m_subterms[pos]);
+    if (PrintMatchSteps) { mCRL2log(info) << "sigma(" << var << ") := " << expression << ".\n"; }
+    m_matching_sigma[var] = expression;
   }
 
   m_match_set = &m_automaton.label(s).match_set;
@@ -416,8 +438,10 @@ matching_result<Substitution> AdaptiveMatcher<Substitution>::next()
 // Private functions
 
 template<typename Substitution>
-//IndexedAutomaton<typename AdaptiveMatcher<Substitution>::apma_state>
-void AdaptiveMatcher<Substitution>::construct_apma(std::size_t s, data_expression pref)
+typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>::construct_apma(
+  const Automaton& automaton,
+  std::size_t s,
+  data_expression pref)
 {
   if (PrintConstructionSteps) { mCRL2log(info) << "state = " << s << "("; }
 
@@ -444,6 +468,11 @@ void AdaptiveMatcher<Substitution>::construct_apma(std::size_t s, data_expressio
 
     // Postprocessing: R := {r_i | l_i in L(s)}
     state.match_set.insert(state.match_set.begin(), L.begin(), L.end());
+
+    if (state.match_set.size() >= 1)
+    {
+      ++m_nof_ambiguous_matches;
+    }
 
     // Postprocessing: P := union r_i in R : fringe(r_i) \ {L(s') in path(s)}
     // This is equivalent? to (union r_i in R : vars(r_i)) intersection vars(pref).
@@ -524,13 +553,13 @@ void AdaptiveMatcher<Substitution>::construct_apma(std::size_t s, data_expressio
           arguments.push_back(position_variable(var_position));
         }
 
-        construct_apma(s_prime, assign_at_position(pref, pos, application(symbol, arguments.begin(), arguments.end())));
+        construct_apma(automaton, s_prime, assign_at_position(pref, pos, application(symbol, arguments.begin(), arguments.end())));
         max_arity = std::max(max_arity, arity);
       }
       else
       {
         // In this case the symbol is just a function symbol.
-        construct_apma(s_prime, assign_at_position(pref, pos, symbol));
+        construct_apma(automaton, s_prime, assign_at_position(pref, pos, symbol));
       }
     }
 
@@ -559,66 +588,79 @@ void AdaptiveMatcher<Substitution>::construct_apma(std::size_t s, data_expressio
 
       if (PrintConstructionSteps) { mCRL2log(info) << "added transition from " << s << " with label " << static_cast<atermpp::aterm>(not_equal()) << " to state " << s_prime << ".\n"; }
 
-      construct_apma(s_prime, assign_at_position(pref, pos, not_equal()));
+      construct_apma(automaton, s_prime, assign_at_position(pref, pos, not_equal()));
     }
   }
+
+  return automaton;
 }
 
 template<typename Substitution>
 std::set<position> AdaptiveMatcher<Substitution>::restrict(const std::set<position>& F, std::vector<std::reference_wrapper<const linear_data_equation>>& L)
 {
-  // intersection := intersection_{l in L} fringe(l)
-  std::set<position> intersection;
-  bool first = true;
-  for (const linear_data_equation& equation : L)
-  {
-    std::set<position> local;
-    std::set<position> fringe_l = fringe(equation.equation().lhs());
-
-    if (first)
-    {
-      intersection = fringe_l;
-    }
-
-    std::set_intersection(intersection.begin(), intersection.end(), fringe_l.begin(), fringe_l.end(), std::inserter(local, local.begin()));
-    intersection = local;
-    first = false;
-  }
-
-  // F := F \ intersection_{l in L} fringe(l)
+  // A restriction on F.
   std::set<position> result;
-  std::set_difference(F.begin(), F.end(), intersection.begin(), intersection.end(), std::inserter(result, result.begin()));
 
-  // Compute a set of indices.
-  std::set<position> indices;
-  for (const position& position : result)
+  if constexpr (EnableRemoveVariables)
   {
-    if (std::all_of(L.begin(), L.end(),
-      [&](const linear_data_equation& equation)
-      {
-        std::optional<data_expression> result = at_position(equation.equation().lhs(), position);
-        if (result)
-        {
-          return !is_variable(result.value());
-        }
-        else
-        {
-          return true;
-        }
-      }))
+    // intersection := intersection_{l in L} fringe(l)
+    std::set<position> intersection;
+    bool first = true;
+    for (const linear_data_equation& equation : L)
     {
-      indices.insert(position);
-    }
-  }
+      std::set<position> local;
+      std::set<position> fringe_l = fringe(equation.equation().lhs());
 
-  if (indices.empty())
-  {
-    return result;
+      if (first)
+      {
+        intersection = fringe_l;
+      }
+
+      std::set_intersection(intersection.begin(), intersection.end(), fringe_l.begin(), fringe_l.end(), std::inserter(local, local.begin()));
+      intersection = local;
+      first = false;
+    }
+
+    // F := F \ intersection_{l in L} fringe(l)
+    std::set_difference(F.begin(), F.end(), intersection.begin(), intersection.end(), std::inserter(result, result.begin()));
   }
   else
   {
-    return indices;
+    // Set F for further computations.
+    result = F;
   }
+
+  // Compute a set of indices.
+  if constexpr(EnableIndexPositions)
+  {
+    std::set<position> indices;
+    for (const position& position : result)
+    {
+      if (std::all_of(L.begin(), L.end(),
+        [&](const linear_data_equation& equation)
+        {
+          std::optional<data_expression> result = at_position(equation.equation().lhs(), position);
+          if (result)
+          {
+            return !is_variable(result.value());
+          }
+          else
+          {
+            return true;
+          }
+        }))
+      {
+        indices.insert(position);
+      }
+    }
+
+    if (!indices.empty())
+    {
+      return indices;
+    }
+  }
+
+  return result;
 }
 
 template<typename Substitution>
@@ -627,7 +669,5 @@ position AdaptiveMatcher<Substitution>::select(const std::set<position>& F)
   // This corresponds to the left-to-right depth-first traversal order.
   return *std::min_element(F.begin(), F.end(), less_than);
 }
-
-// Explicit instantiations.
 
 template class mcrl2::data::detail::AdaptiveMatcher<mutable_indexed_substitution<>>;

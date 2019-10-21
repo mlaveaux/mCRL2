@@ -77,8 +77,7 @@ private:
   using Automaton = IndexedAutomaton<apma_state>;
 
   /// \brief Adds states and transitions to the APMA for the given state and prefix.
-  //IndexedAutomaton<apma_state>
-  void construct_apma(std::size_t s, data_expression pref);
+  Automaton construct_apma(const Automaton& automaton, std::size_t s, data_expression pref);
 
   /// \returns A subset of the given positions, filtering out unecessary positions.
   std::set<position> restrict(const std::set<position>& positions, std::vector<std::reference_wrapper<const linear_data_equation>>& L);
@@ -89,15 +88,15 @@ private:
   /// \brief A local copy of the equations to keep the references to equations stable.
   std::deque<linear_data_equation> m_linear_equations;
 
-  // The underlying automaton.
-
   // Information about the underlying automata.
 
-  IndexedAutomaton<apma_state> m_automaton;
+  Automaton m_automaton;
 
   mcrl2::utilities::indexed_set<position> m_positions;
 
   std::size_t m_not_equal_index;
+
+  std::size_t m_nof_ambiguous_matches = 0; ///< The number of final states with multiple matches.
 
   // Store information about the match.
 
@@ -113,5 +112,8 @@ private:
 } // namespace detail
 } // namespace data
 } // namespace mcrl2
+
+// Explicit instantiations.
+
 
 #endif // MCRL2_DATA_DETAIL_ADAPTIVE_MATCHER_H
