@@ -28,6 +28,9 @@ constexpr bool EnableIndexPositions = true;
 /// \brief Remove positions where every pattern contains a variable.
 constexpr bool EnableRemoveVariables = true;
 
+/// \brief Stop whenever the prefix matches on of the left-hand sides already.
+constexpr bool EnableGreedyMatching = true;
+
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
 
@@ -98,6 +101,46 @@ bool unify(const atermpp::aterm_appl& left, const atermpp::aterm_appl& right)
     for (std::size_t i = 0; i < term_appl.size(); i++)
     {
       if (!unify(term_appl[i], lhs_appl[i]))
+      {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}
+
+/// \brief Return true iff the given term matches the left-hand side.
+bool matches(const data_expression& term,  const data_expression& lhs)
+{
+  if (is_function_symbol(lhs))
+  {
+    return term == lhs;
+  }
+  else if (is_variable(lhs))
+  {
+    return true;
+  }
+  else
+  {
+    // The term and lhs are applications.
+    const application& lhs_appl  = static_cast<const application&>(lhs);
+    const application& term_appl = static_cast<const application&>(term);
+
+    // Both must have the same arity, the head symbol must match and their arguments must match.
+    if (lhs_appl.size() != term_appl.size())
+    {
+      return false;
+    }
+
+    if (!matches(term_appl.head(), lhs_appl.head()))
+    {
+      return false;
+    }
+
+    for (std::size_t i = 0; i < term_appl.size(); i++)
+    {
+      if (!matches(term_appl[i], lhs_appl[i]))
       {
         return false;
       }
@@ -457,6 +500,19 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
   // F := restrict(fringe(pref), pref).
   std::set<position> F = restrict(fringe(pref), L);
 
+  // Greedy: If any of the elements in L match then we can chose that one.
+  if constexpr (EnableGreedyMatching)
+  {
+    for (const linear_data_equation& equation : L)
+    {
+      if (matches(pref, equation.equation().lhs()))
+      {
+        F.clear();
+        L = {equation};
+      }
+    }
+  }
+
   // if F = emptyset
   if (F.empty())
   {
@@ -465,6 +521,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     // Postprocessing: R := { r_i | l_i in L(s) }
     state.match_set.insert(state.match_set.begin(), L.begin(), L.end());
 
+    // Keep track of some information about final states.
     if (state.match_set.size() > 1)
     {
       ++m_nof_ambiguous_matches;
