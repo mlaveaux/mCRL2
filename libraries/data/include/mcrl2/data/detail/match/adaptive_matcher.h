@@ -60,11 +60,9 @@ public:
 private:
 
   /// \brief Each state in the pattern match automaton is labelled with a set of variables.
-  class apma_state
+  struct apma_state
   {
-  public:
     // Other states:
-    variable variable;
     std::size_t position = std::numeric_limits<std::size_t>::max(); ///< L, the index of the position to be inspected.
     std::vector<std::size_t> argument_positions; ///< These are the positions where arguments must be stored in the subterm table.
 
@@ -97,6 +95,7 @@ private:
   std::size_t m_not_equal_index;
 
   std::size_t m_nof_ambiguous_matches = 0; ///< The number of final states with multiple matches.
+  std::size_t m_nof_final_states = 0; ///< The number of final states.
 
   // Store information about the match.
 

@@ -275,7 +275,7 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
     mCRL2log(info) << "EAPMA (states: " << m_automaton.states() << ", transitions: " << m_automaton.transitions() << ") construction took " << construction.time() << " milliseconds.\n"
       << " there are " << m_positions.size() << " positions indexed.\n";
 
-    mCRL2log(info) << "EAPMA: There are " << m_nof_ambiguous_matches << " ambiguous match sets.\n";
+    mCRL2log(info) << "EAPMA: There are " << m_nof_ambiguous_matches << " ambiguous match sets out of " << m_nof_final_states << " final states.\n";
 
     // Ensure that the subterm indexing can store all possible terms in the required places.
     m_subterms.resize(m_positions.size());
@@ -319,10 +319,6 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
     assert (subterm.defined());
 
     if (PrintMatchSteps) { mCRL2log(info) << "Matching m_subterms[" << state.position << "] = " << subterm << "\n"; }
-
-    // Update the (position) variable for the current subterm.
-    if (PrintMatchSteps) { mCRL2log(info) << "sigma(" << state.variable << ") := " << subterm << ".\n"; }
-    m_matching_sigma[state.variable] = subterm;
 
     // The number of arguments must match the current state.
     if (is_application(subterm))
@@ -448,7 +444,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
   // The labelling for the current state.
   apma_state& state = m_automaton.label(s);
 
-  // L := {l in L | l unifies with pref}
+  // L := { l in L | l unifies with pref }
   std::vector<std::reference_wrapper<const linear_data_equation>> L;
   for (const linear_data_equation& equation : m_linear_equations)
   {
@@ -466,28 +462,30 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
   {
     // M := M[L := L[s -> L]
 
-    // Postprocessing: R := {r_i | l_i in L(s)}
+    // Postprocessing: R := { r_i | l_i in L(s) }
     state.match_set.insert(state.match_set.begin(), L.begin(), L.end());
 
-    if (state.match_set.size() >= 1)
+    if (state.match_set.size() > 1)
     {
       ++m_nof_ambiguous_matches;
     }
+    ++m_nof_final_states;
 
-    // Postprocessing: P := union r_i in R : fringe(r_i) \ {L(s') in path(s)}
-    // This is equivalent? to (union r_i in R : vars(r_i)) intersection vars(pref).
-    std::set<variable> vars_in_rhs;
+    // Postprocessing: P := union r_i in R : fringe(r_i) \ { L(s') in path(s) }
+    if (PrintConstructionSteps) { mCRL2log(info) << "P = "; }
+
+    // fringe_rhs := { fringe(r_i) | l_i in L }.
+    std::set<position> fringe_rhs;
     std::for_each(L.begin(), L.end(),
       [&](const linear_data_equation& equation)
       {
-        std::set<variable> vars = data::find_free_variables(equation.equation().rhs());
-        vars_in_rhs.insert(vars.begin(), vars.end());
+        std::set<position> vars = fringe(equation.equation().rhs());
+        fringe_rhs.insert(vars.begin(), vars.end());
       });
+    std::set<position> P = fringe_rhs;
 
-    // Convert the resulting set to a vector for fast evaluation.
-    if (PrintConstructionSteps) { mCRL2log(info) << "P = "; }
-    std::set<position> F = fringe(pref);
-    for (const position& pos : F)
+    // Convert P to a vector for faster access.
+    for (const position& pos : P)
     {
       if (PrintConstructionSteps) { mCRL2log(info) << pos << ", "; }
       std::optional<data_expression> var = at_position(pref, pos);
@@ -508,9 +506,6 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     // M := M[L := L[s -> pos]]
     state.position = m_positions.insert(pos).first;
     if (PrintConstructionSteps) { mCRL2log(info) << "L = " << pos << ")\n"; }
-
-    // Remember the subterm for the current position in the corresponding variable.
-    state.variable = position_variable(pos);
 
     // for f in F s.t. exist l in L : head(l[pos]) = f
     std::set<std::pair<mcrl2::data::function_symbol, std::size_t>> symbols;
