@@ -474,25 +474,40 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     // Postprocessing: P := union r_i in R : fringe(r_i) \ { L(s') in path(s) }
     if (PrintConstructionSteps) { mCRL2log(info) << "P = "; }
 
-    // fringe_rhs := { fringe(r_i) | l_i in L }.
-    std::set<position> fringe_rhs;
+    // positions_rhs := { fringe(r_i) | l_i in L }.
+    std::set<position> P;
     std::for_each(L.begin(), L.end(),
       [&](const linear_data_equation& equation)
       {
-        std::set<position> vars = fringe(equation.equation().rhs());
-        fringe_rhs.insert(vars.begin(), vars.end());
+        // Find the variables and convert them to the positions.
+        std::set<variable> vars = data::find_all_variables(equation.equation().rhs());
+
+        // Find where these variables occur in the left-hand side (equivalently in the prefix)
+        std::set<position> lhs_fringe = fringe(equation.equation().lhs());
+
+        // This seems ugly, but we need to find the corresponding position in the lhs, for each rhs variable.
+        for (const variable& var : vars)
+        {
+          for(const position& pos : lhs_fringe)
+          {
+            std::optional<data_expression> expr = at_position(equation.equation().lhs(), pos);
+            if (expr)
+            {
+              assert(is_variable(expr.value()));
+              if (expr.value() == var)
+              {
+                P.insert(pos);
+              }
+            }
+          }
+        }
       });
-    std::set<position> P = fringe_rhs;
 
     // Convert P to a vector for faster access.
     for (const position& pos : P)
     {
       if (PrintConstructionSteps) { mCRL2log(info) << pos << ", "; }
-      std::optional<data_expression> var = at_position(pref, pos);
-      assert(var);
-      assert(is_variable(var.value()));
-
-      state.variables.emplace_back(std::make_pair(static_cast<variable>(var.value()), m_positions.insert(pos).first));
+      state.variables.emplace_back(std::make_pair(position_variable(pos), m_positions.insert(pos).first));
     }
 
     // L' := L'[s -> (R, P)]
