@@ -25,7 +25,7 @@ namespace data
 namespace detail
 {
 
-constexpr bool NaiveSubstitution = false;
+constexpr bool NaiveSubstitution = true;
 
 /// \brief Renames (by adapting the substitution sigma) the bound variables of the given abstraction.
 /// \returns The list of new variables.
@@ -34,7 +34,7 @@ static inline
 data::variable_list rename_bound_variables(const data::abstraction& abstract, Substitution& sigma, Generator& generator)
 {
   data::variable_list new_variables;
-  if (NaiveSubstitution)
+  if constexpr (NaiveSubstitution)
   {
     // For every variable introduce a fresh variable.
     for (auto& var : abstract.variables())

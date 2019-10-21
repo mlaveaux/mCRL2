@@ -13,6 +13,7 @@
 #include "mcrl2/utilities/stopwatch.h"
 #include "mcrl2/core/index_traits.h"
 #include "mcrl2/data/detail/enumerator_identifier_generator.h"
+#include "mcrl2/data/substitutions/mutable_map_substitution.h"
 
 /// \brief Print the intermediate matches that succeeded.
 constexpr bool PrintMatchSteps = false;
@@ -432,9 +433,6 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
       if (PrintMatchSteps) { mCRL2log(info) << "Matching failed.\n"; }
       return;
     }
-
-    // Reset this position as we will not inspect it again.
-    m_subterms[state.position] = atermpp::unprotected_aterm();
   }
 
   if (PrintMatchSteps) { mCRL2log(info) << "Matching succeeded.\n"; }
@@ -505,7 +503,8 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
   {
     for (const linear_data_equation& equation : L)
     {
-      if (matches(pref, equation.equation().lhs()))
+      // If the prefix matches some left-hand side that was already linear.
+      if (matches(pref, equation.equation().lhs()) && equation.partition().empty())
       {
         F.clear();
         L = {equation};
@@ -737,4 +736,4 @@ position AdaptiveMatcher<Substitution>::select(const std::set<position>& F)
   return *std::min_element(F.begin(), F.end(), less_than);
 }
 
-template class mcrl2::data::detail::AdaptiveMatcher<mutable_indexed_substitution<>>;
+template class mcrl2::data::detail::AdaptiveMatcher<mutable_map_substitution<>>;

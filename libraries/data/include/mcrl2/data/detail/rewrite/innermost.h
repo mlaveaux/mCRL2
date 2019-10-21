@@ -13,6 +13,7 @@
 #include "mcrl2/data/detail/rewrite.h"
 #include "mcrl2/data/detail/match/adaptive_matcher.h"
 #include "mcrl2/data/detail/match/naive_matcher.h"
+#include "mcrl2/data/substitutions/mutable_map_substitution.h"
 #include "mcrl2/utilities/cache_metric.h"
 #include "mcrl2/utilities/fixed_size_cache.h"
 #include "mcrl2/utilities/unordered_map.h"
@@ -70,7 +71,7 @@ private:
 
   mcrl2::utilities::fifo_cache<data_expression, data_expression> m_rewrite_cache; ///< Cache the normal forms of certain data expressions.
 
-  mcrl2::data::detail::NaiveMatcher<mutable_indexed_substitution<>> m_matcher;
+  mcrl2::data::detail::AdaptiveMatcher<mutable_map_substitution<>> m_matcher;
 
   // These are shared data structures to prevent unnecessary reallocations.
 
