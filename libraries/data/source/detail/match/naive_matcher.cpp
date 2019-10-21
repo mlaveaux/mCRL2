@@ -18,7 +18,7 @@ constexpr bool PrintMatchSteps   = false;
 constexpr bool EnableHeadIndexing = true;
 
 /// \brief When enabled, enable consistency checking on the fly.
-constexpr bool EnableOnTheFlyConsistencyCheck = false;
+constexpr bool EnableOnTheFlyConsistencyCheck = true;
 
 using namespace mcrl2;
 using namespace mcrl2::data;
@@ -140,31 +140,31 @@ void NaiveMatcher<Substitution>::match(const data_expression& term)
 }
 
 template<typename Substitution>
-const extended_data_equation* NaiveMatcher<Substitution>::next(Substitution& matching_sigma)
+matching_result<Substitution> NaiveMatcher<Substitution>::next()
 {
   if (EnableHeadIndexing && m_head_index >= m_rewrite_system.size())
   {
     // No left-hand side starts with this head symbol, so it cannot match.
-    return nullptr;
+    return {nullptr, m_matching_sigma};
   }
 
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
   // to the given term. Only tries rewrite rules that start with the correct head symbol when EnableHeadIndexing is true.
   for (std::size_t index = m_current_index; index < (EnableHeadIndexing ? m_rewrite_system[m_head_index].size() : m_equations.size()); ++index)
   {
-    matching_sigma.clear();
+    m_matching_sigma.clear();
 
     const linear_data_equation& equation = (EnableHeadIndexing ? m_rewrite_system[m_head_index][index] : m_equations[index]);
 
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
-    if (match_lhs(m_term, equation.equation().lhs(), matching_sigma) && (EnableOnTheFlyConsistencyCheck || is_consistent(equation.partition(), matching_sigma)))
+    if (match_lhs(m_term, equation.equation().lhs(), m_matching_sigma) && (EnableOnTheFlyConsistencyCheck || is_consistent(equation.partition(), m_matching_sigma)))
     {
       if (PrintMatchSteps)
       {
         mCRL2log(info) << "Matched rule " << equation.equation() << " to term " << m_term << "\n";
       }
 
-      return &equation;
+      return {&equation, m_matching_sigma};
     }
     else if (PrintMatchSteps)
     {
@@ -172,7 +172,7 @@ const extended_data_equation* NaiveMatcher<Substitution>::next(Substitution& mat
     }
   }
 
-  return nullptr;
+  return {nullptr, m_matching_sigma};
 }
 
 // Explicit instantiations.

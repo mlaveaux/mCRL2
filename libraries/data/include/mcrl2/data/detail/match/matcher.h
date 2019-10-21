@@ -46,7 +46,7 @@ private:
 
 
 /// \brief The combination of a linear data equation and a consistency partition.
-struct linear_data_equation : public extended_data_equation
+class linear_data_equation : public extended_data_equation
 {
 public:
   linear_data_equation(data_equation equation, consistency_partition partition)
@@ -59,6 +59,13 @@ private:
   consistency_partition m_partition;
 };
 
+template<typename Substitution>
+struct matching_result
+{
+  const extended_data_equation* equation;
+  const Substitution& matching_sigma;
+};
+
 /// \brief The interface for matching algorithms.
 template<typename Substitution>
 class Matcher : public mcrl2::utilities::noncopyable
@@ -69,7 +76,7 @@ public:
   virtual void match(const data_expression& term) = 0;
 
   /// \returns The matching equation and adapts matching_sigma accordingly.
-  virtual const extended_data_equation* next(Substitution& matching_sigma) = 0;
+  virtual matching_result<Substitution> next() = 0;
 };
 
 }

@@ -239,17 +239,17 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
   while(true)
   {
     // If R not empty
-    const extended_data_equation* result = m_matcher.next(m_local_sigma);
+    const auto& [result, matching_sigma] = m_matcher.next();
     if (result != nullptr)
     {
       const extended_data_equation& match = *result;
 
       // Compute rhs^sigma'.
-      auto rhs = apply_substitution(match.equation().rhs(), m_local_sigma, match.rhs_stack());
+      auto rhs = apply_substitution(match.equation().rhs(), matching_sigma, match.rhs_stack());
 
       // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
       if (match.equation().condition() != sort_bool::true_() &&
-        rewrite_impl(apply_substitution(match.equation().condition(), m_local_sigma, match.condition_stack()), m_identity) != sort_bool::true_())
+        rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack()), m_identity) != sort_bool::true_())
       {
         continue;
       }

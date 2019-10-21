@@ -55,7 +55,7 @@ public:
 
   void match(const data_expression& term) override;
 
-  const extended_data_equation* next(Substitution& matching_sigma) override;
+  matching_result<Substitution> next() override;
 
 private:
 
@@ -72,6 +72,9 @@ private:
     std::vector<std::reference_wrapper<const linear_data_equation>> match_set; ///< L, the equations that matched.
     std::vector<std::pair<data::variable, std::size_t>> variables; ///< P, the variables that still must be assigned and their position.
   };
+
+  // The underlying automaton.
+  using Automaton = IndexedAutomaton<apma_state>;
 
   /// \brief Adds states and transitions to the APMA for the given state and prefix.
   //IndexedAutomaton<apma_state>

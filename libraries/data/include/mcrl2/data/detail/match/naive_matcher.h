@@ -34,15 +34,18 @@ public:
 
   void match(const data_expression& term) override;
 
-  const extended_data_equation* next(Substitution& matching_sigma) override;
+  matching_result<Substitution> next() override;
 
 private:
-  /// A mapping from head symbols to rewrite rules and their corresponding construction stacks. A unique index is used for each head symbol to achieve
-  /// this mapping without an unordered_map for performance reasons.
+  /// \brief A mapping from head symbols to rewrite rules and their corresponding construction stacks. A unique index is used for each head symbol to achieve
+  ///        this mapping without an unordered_map for performance reasons.
   std::vector<std::vector<linear_data_equation>> m_rewrite_system;
 
-  /// The original list of equations to use for matching.
+  /// \brief The original list of equations to use for matching.
   std::vector<linear_data_equation> m_equations;
+
+  /// \brief The matching substitution computed in next.
+  Substitution m_matching_sigma;
 
   // Information about the matched term.
 

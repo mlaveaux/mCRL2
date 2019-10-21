@@ -391,27 +391,26 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
 }
 
 template<typename Substitution>
-const extended_data_equation* AdaptiveMatcher<Substitution>::next(Substitution& matching_sigma)
+matching_result<Substitution> AdaptiveMatcher<Substitution>::next()
 {
   if (m_match_set != nullptr)
   {
     while (m_match_index < m_match_set->size())
     {
-      matching_sigma = m_matching_sigma;
       const linear_data_equation& result = (*m_match_set)[m_match_index];
       ++m_match_index;
 
-      if (!is_consistent(result.partition(), matching_sigma))
+      if (!is_consistent(result.partition(), m_matching_sigma))
       {
         // This rule matched, but its variables are not consistent w.r.t. the substitution.
         continue;
       }
 
-      return &result;
+      return { &result, m_matching_sigma };
     }
   }
 
-  return nullptr;
+  return { nullptr, m_matching_sigma };
 }
 
 // Private functions
