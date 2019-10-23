@@ -58,6 +58,9 @@ private:
   }
 
 public:
+  /// \brief Default constructor.
+  ConstructionStack() {}
+
   /// \brief Constructs a stack that can be used to reconstruct the given term without traversing it top-down.
   ConstructionStack(const data_expression& term)
   {

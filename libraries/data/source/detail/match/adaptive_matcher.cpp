@@ -16,10 +16,10 @@
 #include "mcrl2/data/detail/match/linearise.h"
 
 /// \brief Print the intermediate matches that succeeded.
-constexpr bool PrintMatchSteps = true;
+constexpr bool PrintMatchSteps = false;
 
 /// \brief Print the intermediate steps performed during construction.
-constexpr bool PrintConstructionSteps = true;
+constexpr bool PrintConstructionSteps = false;
 
 // Various optimizations.
 
@@ -30,7 +30,7 @@ constexpr bool EnableIndexPositions = true;
 constexpr bool EnableRemoveVariables = true;
 
 /// \brief Stop whenever the prefix matches on of the left-hand sides already.
-constexpr bool EnableGreedyMatching = true;
+constexpr bool EnableGreedyMatching = false;
 
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
@@ -242,8 +242,8 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
   std::size_t s = m_automaton.root();
   std::size_t s_old;
 
-  // The empty position is the first index.
-  m_subterms[0] = term;
+  // Store the root position where it is expected.
+  m_subterms[m_automaton.label(m_automaton.root()).position] = term;
 
   while (true)
   {
@@ -408,13 +408,23 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
   // Greedy: If any of the elements in L match then we can chose that one.
   if constexpr (EnableGreedyMatching)
   {
+    std::optional<indexed_linear_data_equation> matching_equation;
     for (const indexed_linear_data_equation& equation : L)
     {
       // If the prefix matches some left-hand side that was already linear.
       if (matches(pref, equation.equation().lhs()) && equation.partition().empty())
       {
         F.clear();
-        L = {equation};
+
+        // We cannot change L inside the loop.
+        matching_equation.emplace(equation);
+      }
+
+      // Change L to only be this equation.
+      if (matching_equation)
+      {
+        L.clear();
+        L.emplace_back(matching_equation.value());
       }
     }
   }
@@ -443,8 +453,8 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     for (const indexed_linear_data_equation& equation : L)
     {
       // Find the variables of the rhs and condition.
-      std::set<variable> vars = data::find_all_variables(equation.equation().rhs());
-      std::set<variable> condition_vars = data::find_all_variables(equation.equation().rhs());
+      std::set<variable> vars = data::find_free_variables(equation.equation().rhs());
+      std::set<variable> condition_vars = data::find_free_variables(equation.equation().condition());
       vars.insert(condition_vars.begin(), condition_vars.end());
 
       // Find where these variables occur in the left-hand side (equivalently in the prefix)
@@ -466,6 +476,8 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
           }
         }
       }
+
+      assert(vars.size() <= P.size());
     }
 
     // Convert P to a vector for faster access.
@@ -481,7 +493,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
   else
   {
     // pos := select(F).
-    position pos = select(F);
+    position pos = select(F, L);
 
     // M := M[L := L[s -> pos]]
     state.position = m_positions.insert(pos).first;
@@ -605,11 +617,17 @@ std::set<position> AdaptiveMatcher<Substitution>::restrict(const std::set<positi
     result = F;
   }
 
+  return result;
+}
+
+template<typename Substitution>
+position AdaptiveMatcher<Substitution>::select(const std::set<position>& F, const std::vector<indexed_linear_data_equation>& L)
+{
   // Compute a set of indices.
   if constexpr(EnableIndexPositions)
   {
     std::set<position> indices;
-    for (const position& position : result)
+    for (const position& position : F)
     {
       if (std::all_of(L.begin(), L.end(),
         [&](const indexed_linear_data_equation& equation)
@@ -629,18 +647,13 @@ std::set<position> AdaptiveMatcher<Substitution>::restrict(const std::set<positi
       }
     }
 
+    // If there is an index then return it.
     if (!indices.empty())
     {
-      return indices;
+      return *indices.begin();
     }
   }
 
-  return result;
-}
-
-template<typename Substitution>
-position AdaptiveMatcher<Substitution>::select(const std::set<position>& F)
-{
   // This corresponds to the left-to-right depth-first traversal order.
   return *std::min_element(F.begin(), F.end(), less_than);
 }

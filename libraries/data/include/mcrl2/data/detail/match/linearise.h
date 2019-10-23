@@ -72,7 +72,7 @@ std::pair<data_equation, consistency_partition> make_linear(const data_equation&
 
   // Replace the variables in the right-hand side and the condition.
   data_expression rhs = data::replace_variables(equation.rhs(), sigma);
-  data_expression condition = data::replace_variables(equation.rhs(), sigma);
+  data_expression condition = data::replace_variables(equation.condition(), sigma);
 
   // Create the new data equation.
   data_equation linear_equation(variables, condition, lhs, rhs);

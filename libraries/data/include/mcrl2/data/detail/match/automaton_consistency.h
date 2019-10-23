@@ -24,6 +24,8 @@ using indexed_partition = std::vector<std::vector<std::size_t>>;
 class indexed_linear_data_equation : public extended_data_equation
 {
 public:
+  /// \brief Default constructor.
+  indexed_linear_data_equation() {}
 
   /// \brief Converts the positions of the partition to indexed position partitions using the given positions set.
   indexed_linear_data_equation(data_equation equation, const consistency_partition& partition, mcrl2::utilities::indexed_set<position>& indices)

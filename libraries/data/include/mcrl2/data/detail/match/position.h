@@ -136,12 +136,38 @@ variable position_variable(const position& position)
 }
 
 /// \brief Replace the position variable at the given position by the expression c.
+/// \details index indicates the position in pos.
+inline
+atermpp::aterm assign_at_position_impl(const atermpp::aterm_appl& term, const position& pos, const data_expression& c, std::size_t index)
+{
+  if (pos.size() == index)
+  {
+    return c;
+  }
+  else
+  {
+    std::vector<atermpp::aterm> arguments(term.begin(), term.end());
+
+    std::size_t arg_index = pos[index];
+    if (arg_index < arguments.size())
+    {
+      arguments[arg_index] = assign_at_position_impl(static_cast<atermpp::aterm_appl&>(arguments[arg_index]), pos, c, index + 1);
+
+      // Create a new term with that argument changed.
+      return atermpp::aterm_appl(term.function(), arguments.begin(), arguments.end());
+    }
+    else
+    {
+      return term;
+    }
+  }
+}
+
+/// \brief Replace the position variable at the given position by the expression c.
 inline
 data_expression assign_at_position(const data_expression& term, const position& pos, const data_expression& c)
 {
-  mutable_map_substitution<std::map<variable, data_expression>> sigma;
-  sigma[position_variable(pos)] = c;
-  return replace_variables(term, sigma);
+  return static_cast<data_expression>(assign_at_position_impl(static_cast<const atermpp::aterm_appl&>(term), pos, c, 0));
 }
 
 /// \returns True iff there exists l in L : (exists pos' <= pos : head(l[pos']) in V

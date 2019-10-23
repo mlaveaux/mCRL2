@@ -85,7 +85,7 @@ private:
   std::set<position> restrict(const std::set<position>& positions, const std::vector<indexed_linear_data_equation>& L);
 
   /// \returns A single position selected from a set of positions.
-  position select(const std::set<position>& positions);
+  position select(const std::set<position>& positions, const std::vector<indexed_linear_data_equation>& L);
 
   // Information about the underlying automata.
 

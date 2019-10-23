@@ -25,6 +25,9 @@ namespace detail
 class extended_data_equation
 {
 public:
+  /// \brief Default constructor.
+  extended_data_equation() {}
+
   extended_data_equation(data_equation equation)
     : m_condition(equation.condition()),
       m_righthandside(equation.rhs()),
