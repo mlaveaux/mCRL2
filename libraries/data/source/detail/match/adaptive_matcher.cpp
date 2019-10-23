@@ -13,7 +13,7 @@
 #include "mcrl2/utilities/stopwatch.h"
 #include "mcrl2/core/index_traits.h"
 #include "mcrl2/data/detail/enumerator_identifier_generator.h"
-#include "mcrl2/data/substitutions/mutable_map_substitution.h"
+#include "mcrl2/data/detail/match/linearise.h"
 
 /// \brief Print the intermediate matches that succeeded.
 constexpr bool PrintMatchSteps = false;
@@ -436,8 +436,10 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     std::for_each(L.begin(), L.end(),
       [&](const linear_data_equation& equation)
       {
-        // Find the variables and convert them to the positions.
+        // Find the variables of the rhs and condition.
         std::set<variable> vars = data::find_all_variables(equation.equation().rhs());
+        std::set<variable> condition_vars = data::find_all_variables(equation.equation().rhs());
+        vars.insert(condition_vars.begin(), condition_vars.end());
 
         // Find where these variables occur in the left-hand side (equivalently in the prefix)
         std::set<position> lhs_fringe = fringe(equation.equation().lhs());

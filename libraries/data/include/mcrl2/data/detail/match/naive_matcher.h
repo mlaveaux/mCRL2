@@ -11,7 +11,7 @@
 #define MCRL2_DATA_DETAIL_NAIVE_MATCHER_H
 
 #include "mcrl2/data/detail/match/matcher.h"
-#include "mcrl2/data/detail/match/consistency.h"
+#include "mcrl2/data/detail/match/naive_consistency.h"
 
 #include <vector>
 
@@ -37,6 +37,9 @@ public:
   matching_result<Substitution> next() override;
 
 private:
+
+  using variable_partition = std::vector<variable>;
+
   /// \brief A mapping from head symbols to rewrite rules and their corresponding construction stacks. A unique index is used for each head symbol to achieve
   ///        this mapping without an unordered_map for performance reasons.
   std::vector<std::vector<linear_data_equation>> m_rewrite_system;

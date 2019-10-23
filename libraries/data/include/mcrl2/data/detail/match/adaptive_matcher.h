@@ -14,7 +14,7 @@
 #include "mcrl2/data/data_equation.h"
 #include "mcrl2/data/detail/match/matcher.h"
 #include "mcrl2/data/detail/match/automaton.h"
-#include "mcrl2/data/detail/match/consistency.h"
+#include "mcrl2/data/detail/match/position.h"
 #include "mcrl2/utilities/indexed_set.h"
 
 #include <vector>
