@@ -96,18 +96,25 @@ std::optional<data_expression> at_position(const data_expression& t, const posit
 inline
 std::ostream& operator<<(std::ostream& stream, const position& position)
 {
-  bool first = true;
-  for (std::size_t index : position)
+  if (position.empty())
   {
-    if (!first)
+    stream << "epsilon";
+  }
+  else
+  {
+    bool first = true;
+    for (std::size_t index : position)
     {
-      stream << "." << std::to_string(index);
+      if (!first)
+      {
+        stream << "." << std::to_string(index);
+      }
+      else
+      {
+        stream << std::to_string(index);
+      }
+      first = false;
     }
-    else
-    {
-      stream << std::to_string(index);
-    }
-    first = false;
   }
 
   return stream;
@@ -138,6 +145,7 @@ data_expression assign_at_position(const data_expression& term, const position& 
 }
 
 /// \returns True iff there exists l in L : (exists pos' <= pos : head(l[pos']) in V
+inline
 bool has_variable_higher_impl(const data_expression& t, const position& pos, std::size_t index)
 {
   // These two conditions check pos' <= pos.
@@ -157,6 +165,7 @@ bool has_variable_higher_impl(const data_expression& t, const position& pos, std
 }
 
 /// \returns True iff (exists pos' <= pos : head(l[pos']) in V
+inline
 bool has_variable_higher(const data_expression& appl, const position& pos)
 {
   return has_variable_higher_impl(appl, pos, 0);

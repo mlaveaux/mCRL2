@@ -16,10 +16,10 @@
 #include "mcrl2/data/detail/match/linearise.h"
 
 /// \brief Print the intermediate matches that succeeded.
-constexpr bool PrintMatchSteps = false;
+constexpr bool PrintMatchSteps = true;
 
 /// \brief Print the intermediate steps performed during construction.
-constexpr bool PrintConstructionSteps = false;
+constexpr bool PrintConstructionSteps = true;
 
 // Various optimizations.
 
@@ -190,8 +190,9 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
   // Keep track of the construction time.
   mcrl2::utilities::stopwatch construction;
 
-  // Preprocess the term rewrite system.
+  // Preprocess the term rewrite system to be linear.
   std::size_t nof_nonlinear_equations = 0;
+  std::vector<indexed_linear_data_equation> linear_equations;
   for (const data_equation& old_equation : equations)
   {
     // Rename the variables in the equation
@@ -204,10 +205,10 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
     }
 
     // Add the index of the equation
-    m_linear_equations.emplace_back(linear_data_equation(equation, partition));
+    linear_equations.emplace_back(indexed_linear_data_equation(equation, partition, m_positions));
   }
 
-  mCRL2log(info) << "EAPMA: There are " << nof_nonlinear_equations << " nonlinear left-hand sides out of " << m_linear_equations.size() << " rewrite rules.\n";
+  mCRL2log(info) << "EAPMA: There are " << nof_nonlinear_equations << " nonlinear left-hand sides out of " << linear_equations.size() << " rewrite rules.\n";
 
   // Determine the index of not_equal.
   m_not_equal_index = mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(not_equal()));
@@ -215,7 +216,7 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
   // Construct the automaton.
   try
   {
-    construct_apma(Automaton(), m_automaton.root(), position_variable(position()));
+    construct_apma(Automaton(), m_automaton.root(), position_variable(position()), linear_equations);
 
     mCRL2log(info) << "EAPMA (states: " << m_automaton.states() << ", transitions: " << m_automaton.transitions() << ") construction took " << construction.time() << " milliseconds.\n"
       << " there are " << m_positions.size() << " positions indexed.\n";
@@ -234,7 +235,6 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
 template<typename Substitution>
 void AdaptiveMatcher<Substitution>::match(const data_expression& term)
 {
-  m_matching_sigma.clear();
   m_match_set = nullptr;
   m_match_index = 0;
 
@@ -253,10 +253,28 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
     // Keep track of the current state.
     s_old = s;
 
-    // If L(s) = L' for some pattern set L'.
+    // 1. If s in Sfin then return Lfin(s).
     if (!state.match_set.empty())
     {
-      break;
+      if (PrintMatchSteps) { mCRL2log(info) << "Matching succeeded.\n"; }
+
+      // 3.1 (R, P) := Lfin(s)
+
+      // 3.2 sigma := id
+      m_matching_sigma.clear();
+
+      // 3.3 for p in P do sigma := sigma[x_p -> t[p]]
+      for (const auto& [var, pos] : m_automaton.label(s).variables)
+      {
+        assert(m_subterms[pos].defined());
+        auto& expression = static_cast<const data_expression&>(m_subterms[pos]);
+        if (PrintMatchSteps) { mCRL2log(info) << "sigma(" << var << ") := " << expression << ".\n"; }
+        m_matching_sigma[var] = expression;
+      }
+
+      // 3.5 Return (R, sigma)
+      m_match_set = &m_automaton.label(s).match_set;
+      return;
     }
 
     // t[p] is given by the subterm table at the current position.
@@ -335,19 +353,6 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
       return;
     }
   }
-
-  if (PrintMatchSteps) { mCRL2log(info) << "Matching succeeded.\n"; }
-
-  // for p in P do sigma := sigma[x_p -> t[p]]
-  for (const auto& [var, pos] : m_automaton.label(s).variables)
-  {
-    assert(m_subterms[pos].defined());
-    auto& expression = static_cast<const data_expression&>(m_subterms[pos]);
-    if (PrintMatchSteps) { mCRL2log(info) << "sigma(" << var << ") := " << expression << ".\n"; }
-    m_matching_sigma[var] = expression;
-  }
-
-  m_match_set = &m_automaton.label(s).match_set;
 }
 
 template<typename Substitution>
@@ -357,10 +362,10 @@ matching_result<Substitution> AdaptiveMatcher<Substitution>::next()
   {
     while (m_match_index < m_match_set->size())
     {
-      const linear_data_equation& result = (*m_match_set)[m_match_index];
+      const indexed_linear_data_equation& result = (*m_match_set)[m_match_index];
       ++m_match_index;
 
-      if (!is_consistent(result.partition(), m_matching_sigma))
+      if (!is_consistent(result, m_subterms))
       {
         // This rule matched, but its variables are not consistent w.r.t. the substitution.
         continue;
@@ -379,16 +384,17 @@ template<typename Substitution>
 typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>::construct_apma(
   const Automaton& automaton,
   std::size_t s,
-  data_expression pref)
+  data_expression pref,
+  const std::vector<indexed_linear_data_equation>& old_L)
 {
   if (PrintConstructionSteps) { mCRL2log(info) << "state = " << s << "("; }
 
   // The labelling for the current state.
   apma_state& state = m_automaton.label(s);
 
-  // L := { l in L | l unifies with pref }
-  std::vector<std::reference_wrapper<const linear_data_equation>> L;
-  for (const linear_data_equation& equation : m_linear_equations)
+  // 2. L := { l in L | l unifies with pref }
+  std::vector<indexed_linear_data_equation> L;
+  for (const indexed_linear_data_equation& equation : old_L)
   {
     if (unify(equation.equation().lhs(), pref))
     {
@@ -396,13 +402,13 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     }
   }
 
-  // F := restrict(fringe(pref), pref).
+  // 3. F := restrict(fringe(pref), pref).
   std::set<position> F = restrict(fringe(pref), L);
 
   // Greedy: If any of the elements in L match then we can chose that one.
   if constexpr (EnableGreedyMatching)
   {
-    for (const linear_data_equation& equation : L)
+    for (const indexed_linear_data_equation& equation : L)
     {
       // If the prefix matches some left-hand side that was already linear.
       if (matches(pref, equation.equation().lhs()) && equation.partition().empty())
@@ -433,34 +439,34 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
 
     // positions_rhs := { fringe(r_i) | l_i in L }.
     std::set<position> P;
-    std::for_each(L.begin(), L.end(),
-      [&](const linear_data_equation& equation)
+
+    for (const indexed_linear_data_equation& equation : L)
+    {
+      // Find the variables of the rhs and condition.
+      std::set<variable> vars = data::find_all_variables(equation.equation().rhs());
+      std::set<variable> condition_vars = data::find_all_variables(equation.equation().rhs());
+      vars.insert(condition_vars.begin(), condition_vars.end());
+
+      // Find where these variables occur in the left-hand side (equivalently in the prefix)
+      std::set<position> lhs_fringe = fringe(equation.equation().lhs());
+
+      // This seems ugly, but we need to find the corresponding position in the lhs, for each variable.
+      for (const variable& var : vars)
       {
-        // Find the variables of the rhs and condition.
-        std::set<variable> vars = data::find_all_variables(equation.equation().rhs());
-        std::set<variable> condition_vars = data::find_all_variables(equation.equation().rhs());
-        vars.insert(condition_vars.begin(), condition_vars.end());
-
-        // Find where these variables occur in the left-hand side (equivalently in the prefix)
-        std::set<position> lhs_fringe = fringe(equation.equation().lhs());
-
-        // This seems ugly, but we need to find the corresponding position in the lhs, for each rhs variable.
-        for (const variable& var : vars)
+        for(const position& pos : lhs_fringe)
         {
-          for(const position& pos : lhs_fringe)
+          std::optional<data_expression> expr = at_position(equation.equation().lhs(), pos);
+          if (expr)
           {
-            std::optional<data_expression> expr = at_position(equation.equation().lhs(), pos);
-            if (expr)
+            assert(is_variable(expr.value()));
+            if (expr.value() == var)
             {
-              assert(is_variable(expr.value()));
-              if (expr.value() == var)
-              {
-                P.insert(pos);
-              }
+              P.insert(pos);
             }
           }
         }
-      });
+      }
+    }
 
     // Convert P to a vector for faster access.
     for (const position& pos : P)
@@ -484,7 +490,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     // for f in F s.t. exist l in L : head(l[pos]) = f
     std::set<std::pair<mcrl2::data::function_symbol, std::size_t>> symbols;
 
-    for (const linear_data_equation& equation : L)
+    for (const indexed_linear_data_equation& equation : L)
     {
       // t := l[pos]
       std::optional<data_expression> t = at_position(equation.equation().lhs(), pos);
@@ -522,13 +528,13 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
           arguments.push_back(position_variable(var_position));
         }
 
-        construct_apma(automaton, s_prime, assign_at_position(pref, pos, application(symbol, arguments.begin(), arguments.end())));
+        construct_apma(automaton, s_prime, assign_at_position(pref, pos, application(symbol, arguments.begin(), arguments.end())), L);
         max_arity = std::max(max_arity, arity);
       }
       else
       {
         // In this case the symbol is just a function symbol.
-        construct_apma(automaton, s_prime, assign_at_position(pref, pos, symbol));
+        construct_apma(automaton, s_prime, assign_at_position(pref, pos, symbol), L);
       }
     }
 
@@ -544,7 +550,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     // if exists l in L : (exists pos' <= pos : head(l[pos']) in V then
     if (std::find_if(L.begin(),
       L.end(),
-      [&](const linear_data_equation& equation)
+      [&](const indexed_linear_data_equation& equation)
       {
         return has_variable_higher(equation.equation().lhs(), pos);
       }) != L.end())
@@ -557,7 +563,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
 
       if (PrintConstructionSteps) { mCRL2log(info) << "added transition from " << s << " with label " << static_cast<atermpp::aterm>(not_equal()) << " to state " << s_prime << ".\n"; }
 
-      construct_apma(automaton, s_prime, assign_at_position(pref, pos, not_equal()));
+      construct_apma(automaton, s_prime, assign_at_position(pref, pos, not_equal()), L);
     }
   }
 
@@ -565,7 +571,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
 }
 
 template<typename Substitution>
-std::set<position> AdaptiveMatcher<Substitution>::restrict(const std::set<position>& F, std::vector<std::reference_wrapper<const linear_data_equation>>& L)
+std::set<position> AdaptiveMatcher<Substitution>::restrict(const std::set<position>& F, const std::vector<indexed_linear_data_equation>& L)
 {
   // A restriction on F.
   std::set<position> result;
@@ -575,7 +581,7 @@ std::set<position> AdaptiveMatcher<Substitution>::restrict(const std::set<positi
     // intersection := intersection_{l in L} fringe(l)
     std::set<position> intersection;
     bool first = true;
-    for (const linear_data_equation& equation : L)
+    for (const indexed_linear_data_equation& equation : L)
     {
       std::set<position> local;
       std::set<position> fringe_l = fringe(equation.equation().lhs());
@@ -606,7 +612,7 @@ std::set<position> AdaptiveMatcher<Substitution>::restrict(const std::set<positi
     for (const position& position : result)
     {
       if (std::all_of(L.begin(), L.end(),
-        [&](const linear_data_equation& equation)
+        [&](const indexed_linear_data_equation& equation)
         {
           std::optional<data_expression> result = at_position(equation.equation().lhs(), position);
           if (result)

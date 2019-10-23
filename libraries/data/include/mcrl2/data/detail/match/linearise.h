@@ -13,6 +13,7 @@
 #include "mcrl2/data/data_equation.h"
 #include "mcrl2/data/detail/match/position.h"
 #include "mcrl2/data/variable.h"
+#include "mcrl2/atermpp/aterm_io.h"
 
 #include <set>
 #include <unordered_map>
@@ -42,12 +43,12 @@ std::pair<data_equation, consistency_partition> make_linear(const data_equation&
   mutable_map_substitution<std::map<variable, variable>> sigma;
 
   // Replace each variable by its position variable (making it a position annotated term).
-  data_expression lhs;
-
+  data_expression lhs = equation.lhs();
   for (const position& pos : var_positions)
   {
     // This should always be a valid variable by definition of fringe.
     variable var = static_cast<variable>(at_position(equation.lhs(), pos).value());
+    assert(is_variable(var));
 
     // Keep track of the mapping to consistency classes, and the substitution of var to position_variable(pos).
     mapping[var].push_back(pos);
@@ -55,13 +56,18 @@ std::pair<data_equation, consistency_partition> make_linear(const data_equation&
     lhs = assign_at_position(lhs, pos, position_variable(pos));
   }
 
-  // Construct the partition
+  // Construct the partition and collect the variables.
   variable_list variables;
   consistency_partition partition;
   for (const auto& [var, consistency] : mapping)
   {
     variables.push_front(var);
-    partition.push_back(consistency);
+
+    // Ignore trivial classes.
+    if (consistency.size() >= 2)
+    {
+      partition.push_back(consistency);
+    }
   }
 
   // Replace the variables in the right-hand side and the condition.

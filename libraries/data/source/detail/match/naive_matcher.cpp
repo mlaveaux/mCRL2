@@ -176,4 +176,4 @@ matching_result<Substitution> NaiveMatcher<Substitution>::next()
 
 // Explicit instantiations.
 
-template class mcrl2::data::detail::NaiveMatcher<mutable_indexed_substitution<>>;
+template class mcrl2::data::detail::NaiveMatcher<mutable_map_substitution<>>;

@@ -15,6 +15,7 @@
 #include "mcrl2/data/detail/match/matcher.h"
 #include "mcrl2/data/detail/match/automaton.h"
 #include "mcrl2/data/detail/match/position.h"
+#include "mcrl2/data/detail/match/automaton_consistency.h"
 #include "mcrl2/utilities/indexed_set.h"
 
 #include <vector>
@@ -67,7 +68,7 @@ private:
     std::vector<std::size_t> argument_positions; ///< These are the positions where arguments must be stored in the subterm table.
 
     // Final states:
-    std::vector<std::reference_wrapper<const linear_data_equation>> match_set; ///< L, the equations that matched.
+    std::vector<indexed_linear_data_equation> match_set; ///< L, the equations that matched.
     std::vector<std::pair<data::variable, std::size_t>> variables; ///< P, the variables that still must be assigned and their position.
   };
 
@@ -75,16 +76,16 @@ private:
   using Automaton = IndexedAutomaton<apma_state>;
 
   /// \brief Adds states and transitions to the APMA for the given state and prefix.
-  Automaton construct_apma(const Automaton& automaton, std::size_t s, data_expression pref);
+  Automaton construct_apma(const Automaton& automaton,
+    std::size_t s,
+    data_expression pref,
+    const std::vector<indexed_linear_data_equation>& L);
 
   /// \returns A subset of the given positions, filtering out unecessary positions.
-  std::set<position> restrict(const std::set<position>& positions, std::vector<std::reference_wrapper<const linear_data_equation>>& L);
+  std::set<position> restrict(const std::set<position>& positions, const std::vector<indexed_linear_data_equation>& L);
 
   /// \returns A single position selected from a set of positions.
   position select(const std::set<position>& positions);
-
-  /// \brief A local copy of the equations to keep the references to equations stable.
-  std::deque<linear_data_equation> m_linear_equations;
 
   // Information about the underlying automata.
 
@@ -92,7 +93,9 @@ private:
 
   mcrl2::utilities::indexed_set<position> m_positions;
 
-  std::size_t m_not_equal_index;
+  std::size_t m_not_equal_index = 0; ///< The index of the not_equal data_expression.
+
+  // Metrics for the automaton.
 
   std::size_t m_nof_ambiguous_matches = 0; ///< The number of final states with multiple matches.
   std::size_t m_nof_final_states = 0; ///< The number of final states.
@@ -103,7 +106,7 @@ private:
 
   std::vector<atermpp::unprotected_aterm> m_subterms; ///< A mapping from indices to subterms.
 
-  std::vector<std::reference_wrapper<const linear_data_equation>>* m_match_set = nullptr;
+  std::vector<indexed_linear_data_equation>* m_match_set = nullptr;
 
   std::size_t m_match_index; ///< The index of the equation that should be returned by the call to next.
 };
