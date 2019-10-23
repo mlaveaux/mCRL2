@@ -408,24 +408,19 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
   // Greedy: If any of the elements in L match then we can chose that one.
   if constexpr (EnableGreedyMatching)
   {
-    std::optional<indexed_linear_data_equation> matching_equation;
-    for (const indexed_linear_data_equation& equation : L)
+    // If the prefix matches some left-hand side that was already linear.
+    auto it = std::find_if(L.begin(),
+      L.end(),
+      [&pref](const indexed_linear_data_equation& equation)
+      {
+        return matches(pref, equation.equation().lhs()) && equation.partition().empty();
+      });
+
+    if (it != L.end())
     {
-      // If the prefix matches some left-hand side that was already linear.
-      if (matches(pref, equation.equation().lhs()) && equation.partition().empty())
-      {
-        F.clear();
-
-        // We cannot change L inside the loop.
-        matching_equation.emplace(equation);
-      }
-
       // Change L to only be this equation.
-      if (matching_equation)
-      {
-        L.clear();
-        L.emplace_back(matching_equation.value());
-      }
+      F.clear();
+      L = {*it};
     }
   }
 
@@ -460,7 +455,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
       // Find where these variables occur in the left-hand side (equivalently in the prefix)
       std::set<position> lhs_fringe = fringe(equation.equation().lhs());
 
-      // This seems ugly, but we need to find the corresponding position in the lhs, for each variable.
+      // This seems ugly, but we need to find the corresponding position in the lhs for each variable.
       for (const variable& var : vars)
       {
         for(const position& pos : lhs_fringe)
