@@ -39,7 +39,7 @@ inline bool match_lhs(const data_expression& term,  const data_expression& lhs, 
   {
     const auto& var = static_cast<const variable&>(lhs);
 
-    if (sigma(var) != var && EnableOnTheFlyConsistencyCheck)
+    if (EnableOnTheFlyConsistencyCheck && sigma(var) != var)
     {
       // If the variable was already assigned it must match the previously assigned value.
       return sigma(var) == term;
