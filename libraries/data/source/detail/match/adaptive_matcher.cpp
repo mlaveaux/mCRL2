@@ -190,15 +190,12 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
   // Keep track of the construction time.
   mcrl2::utilities::stopwatch construction;
 
-  // This identifier generator is used to linearise the equations.
-  enumerator_identifier_generator generator("@");
-
   // Preprocess the term rewrite system.
   std::size_t nof_nonlinear_equations = 0;
   for (const data_equation& old_equation : equations)
   {
     // Rename the variables in the equation
-    auto [equation, partition] = rename_variables_unique(make_linear(old_equation, generator));
+    auto [equation, partition] = make_linear(old_equation);
 
     // If the partition is not empty then this equation is nonlinear.
     if (!partition.empty())

@@ -30,8 +30,7 @@ constexpr bool NaiveSubstitution = true;
 /// \brief Renames (by adapting the substitution sigma) the bound variables of the given abstraction.
 /// \returns The list of new variables.
 template<typename Substitution, typename Generator>
-static inline
-data::variable_list rename_bound_variables(const data::abstraction& abstract, Substitution& sigma, Generator& generator)
+inline data::variable_list rename_bound_variables(const data::abstraction& abstract, Substitution& sigma, Generator& generator)
 {
   data::variable_list new_variables;
   if constexpr (NaiveSubstitution)
@@ -69,8 +68,7 @@ data::variable_list rename_bound_variables(const data::abstraction& abstract, Su
 
 /// \brief A capture-avoiding substitution of sigma applied to the given term.
 template<typename Substitution, typename Generator>
-static inline
-data_expression capture_avoiding_substitution(const data_expression& term, Substitution& sigma, Generator& generator)
+inline data_expression capture_avoiding_substitution(const data_expression& term, Substitution& sigma, Generator& generator)
 {
   // C(x, sigma, V) = sigma(x), where x is a variable
   if (is_variable(term))

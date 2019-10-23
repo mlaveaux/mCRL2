@@ -13,7 +13,6 @@
 #include "mcrl2/data/data_expression.h"
 #include "mcrl2/data/data_equation.h"
 #include "mcrl2/data/detail/match/construction_stack.h"
-#include "mcrl2/data/detail/match/consistency.h"
 
 namespace mcrl2
 {
@@ -43,26 +42,12 @@ private:
   data_equation m_equation;
 };
 
-
-/// \brief The combination of a linear data equation and a consistency partition.
-class linear_data_equation : public extended_data_equation
-{
-public:
-  linear_data_equation(data_equation equation, consistency_partition partition)
-    : extended_data_equation(equation),
-      m_partition(partition)
-  {}
-
-  const consistency_partition& partition() const { return m_partition; }
-private:
-  consistency_partition m_partition;
-};
-
+/// \brief The result of the matching procedure, nullptr indicates no match.
 template<typename Substitution>
 struct matching_result
 {
   const extended_data_equation* equation;
-  const Substitution& matching_sigma;
+  Substitution& matching_sigma;
 };
 
 /// \brief The interface for matching algorithms.

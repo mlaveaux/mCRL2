@@ -10,6 +10,7 @@
 #include "mcrl2/data/detail/match/naive_matcher.h"
 
 #include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
+#include "mcrl2/data/detail/match/linearise.h"
 
 /// \brief Print the intermediate matches that succeeded.
 constexpr bool PrintMatchSteps   = false;
@@ -88,8 +89,6 @@ inline std::size_t get_head_index(const data_expression& term)
 template<typename Substitution>
 NaiveMatcher<Substitution>::NaiveMatcher(const data_equation_vector& equations)
 {
-  enumerator_identifier_generator generator("@");
-
   // Preprocess the term rewrite system.
   for (const data_equation& old_equation : equations)
   {
@@ -97,7 +96,7 @@ NaiveMatcher<Substitution>::NaiveMatcher(const data_equation_vector& equations)
     if (!EnableOnTheFlyConsistencyCheck)
     {
       // Rename the variables in the equation
-      auto [equation, partition] = rename_variables_unique(make_linear(old_equation, generator));
+      auto [equation, partition] = make_linear(old_equation);
 
       // Add the index of the equation
       m_equations.emplace_back(linear_data_equation(equation, partition));
@@ -120,7 +119,7 @@ NaiveMatcher<Substitution>::NaiveMatcher(const data_equation_vector& equations)
     if (!EnableOnTheFlyConsistencyCheck)
     {
       // Rename the variables in the equation
-      auto [equation, partition] = rename_variables_unique(make_linear(old_equation, generator));
+      auto [equation, partition] = make_linear(old_equation);
 
       // Add the index of the equation
       m_rewrite_system[head_index].emplace_back(linear_data_equation(equation, partition));
@@ -157,7 +156,7 @@ matching_result<Substitution> NaiveMatcher<Substitution>::next()
     const linear_data_equation& equation = (EnableHeadIndexing ? m_rewrite_system[m_head_index][index] : m_equations[index]);
 
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
-    if (match_lhs(m_term, equation.equation().lhs(), m_matching_sigma) && (EnableOnTheFlyConsistencyCheck || is_consistent(equation.partition(), m_matching_sigma)))
+    if (match_lhs(m_term, equation.equation().lhs(), m_matching_sigma) && (EnableOnTheFlyConsistencyCheck || is_consistent(equation, m_matching_sigma)))
     {
       if (PrintMatchSteps)
       {
