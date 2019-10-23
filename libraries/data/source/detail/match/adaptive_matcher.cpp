@@ -37,34 +37,6 @@ using namespace mcrl2::data::detail;
 
 using namespace mcrl2::log;
 
-/// \brief Compute the set of positions of t such that t[p] is a variable for all p in fringe.
-void fringe_impl(const atermpp::aterm_appl& appl, position current, std::set<position>& fringe)
-{
-  if (is_variable(appl))
-  {
-    // The current position has a variable.
-    fringe.insert(current);
-  }
-  else
-  {
-    // Extend the position to be one deeper into the subterm.
-    current.emplace_back(0);
-    for (const atermpp::aterm& argument : appl)
-    {
-      fringe_impl(static_cast<const atermpp::aterm_appl&>(argument), current, fringe);
-      ++current.back();
-    }
-  }
-}
-
-/// \brief Compute the set of positions of t such that t[p] is a variable for all p in fringe(t).
-std::set<position> fringe(const atermpp::aterm_appl& appl)
-{
-  std::set<position> result;
-  fringe_impl(appl, position(), result);
-  return result;
-}
-
 /// \brief Decides whether the left and right terms unify, assuming that vars(left) and vars(right) are disjoint.
 bool unify(const atermpp::aterm_appl& left, const atermpp::aterm_appl& right)
 {
@@ -151,41 +123,6 @@ bool matches(const data_expression& term,  const data_expression& lhs)
   }
 }
 
-/// \brief Returns t[pos], i.e., the term at the given position using a index to keep track of the pos.
-std::optional<data_expression> at_position_impl(const data_expression& t, const position& pos, std::size_t index)
-{
-  if (pos.empty())
-  {
-    // t[emptypos] = t
-    return t;
-  }
-  else
-  {
-    std::size_t arg = pos[index];
-
-    if (arg < t.size())
-    {
-      const data_expression& u = static_cast<const data_expression&>(static_cast<atermpp::aterm_appl>(t)[arg]);
-      if (pos.size() == index + 1)
-      {
-        return u;
-      }
-      else
-      {
-        return at_position_impl(u, pos, index + 1);
-      }
-    }
-  }
-
-  return {};
-}
-
-/// \brief Returns t[pos], i.e., the term at the given position.
-std::optional<data_expression> at_position(const data_expression& t, const position& pos)
-{
-  return at_position_impl(t, pos, 0);
-}
-
 /// \brief Lexicographical comparisons of left < right.
 bool less_than(const position& left, const position& right)
 {
@@ -199,39 +136,6 @@ bool less_than(const position& left, const position& right)
   }
 
   return true;
-}
-
-/// \brief Replace the position variable at the given position by the expression c.
-data_expression assign_at_position(const data_expression& term, const position& pos, const data_expression& c)
-{
-  mutable_indexed_substitution<variable, data_expression> sigma;
-  sigma[position_variable(pos)] = c;
-  return replace_variables(term, sigma);
-}
-
-/// \returns True iff there exists l in L : (exists pos' <= pos : head(l[pos']) in V
-bool has_variable_higher_impl(const data_expression& t, const position& pos, std::size_t index)
-{
-  // These two conditions check pos' <= pos.
-  if (pos.empty() || index >= pos.size())
-  {
-    return false;
-  }
-  else if (is_variable(static_cast<data_expression>(t[pos[index]])))
-  {
-    return true;
-  }
-  else
-  {
-    assert(pos[index] < t.size());
-    return has_variable_higher_impl(static_cast<data_expression>(t[pos[index]]), pos, index + 1);
-  }
-}
-
-/// \returns True iff (exists pos' <= pos : head(l[pos']) in V
-bool has_variable_higher(const data_expression& appl, const position& pos)
-{
-  return has_variable_higher_impl(appl, pos, 0);
 }
 
 /// \returns The number of arguments for the given data expressions.
