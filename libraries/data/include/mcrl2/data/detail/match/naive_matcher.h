@@ -33,14 +33,16 @@ public:
   class const_iterator
   {
   public:
-    const_iterator(NaiveMatcher& matcher,
+    const_iterator(const NaiveMatcher& matcher,
       const data_expression& term,
       std::size_t head_index,
-      std::size_t current_index)
+      std::size_t current_index,
+      Substitution& matching_sigma)
       : m_matcher(matcher),
         m_term(term),
         m_head_index(head_index),
-        m_current_index(current_index)
+        m_current_index(current_index),
+        m_matching_sigma(matching_sigma)
     {}
 
     void operator++()
@@ -48,15 +50,16 @@ public:
       ++m_current_index;
     }
 
-    matching_result<Substitution> operator*()
+    const extended_data_equation* operator*() const
     {
-      return m_matcher.next(m_term, m_head_index, m_current_index);
+      return m_matcher.next(m_term, m_head_index, m_current_index, m_matching_sigma);
     }
 
   private:
-    NaiveMatcher& m_matcher;
+    const NaiveMatcher& m_matcher;
     const data_expression& m_term;
 
+    Substitution& m_matching_sigma;
     std::size_t m_head_index = 0;
     std::size_t m_current_index;
   };
@@ -66,11 +69,11 @@ public:
   virtual ~NaiveMatcher() {}
 
   /// \brief Returns an iterator to the set of matching results.
-  const_iterator match(const data_expression&);
+  const_iterator match(const data_expression& term, Substitution& matching_sigma) const;
 
 private:
   /// \brief A function that is used to obtain the next matching result.
-  matching_result<Substitution> next(const data_expression& term, std::size_t head_index, std::size_t index);
+  const extended_data_equation* next(const data_expression& term, std::size_t head_index, std::size_t index, Substitution& matching_sigma) const;
 
   using variable_partition = std::vector<variable>;
 
@@ -80,9 +83,6 @@ private:
 
   /// \brief The original list of equations to use for matching.
   std::vector<linear_data_equation> m_equations;
-
-  /// \brief The matching substitution computed in next.
-  Substitution m_matching_sigma;
 };
 
 } // namespace detail

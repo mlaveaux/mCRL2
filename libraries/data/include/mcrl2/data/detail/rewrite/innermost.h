@@ -71,7 +71,7 @@ private:
 
   mcrl2::utilities::fifo_cache<data_expression, data_expression> m_rewrite_cache; ///< Cache the normal forms of certain data expressions.
 
-  mcrl2::data::detail::NaiveMatcher<mutable_map_substitution<>> m_matcher;
+  mcrl2::data::detail::AdaptiveMatcher<mutable_map_substitution<>> m_matcher;
 
   // These are shared data structures to prevent unnecessary reallocations.
 

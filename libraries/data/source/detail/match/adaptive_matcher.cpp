@@ -30,7 +30,7 @@ constexpr bool EnableIndexPositions = true;
 constexpr bool EnableRemoveVariables = true;
 
 /// \brief Stop whenever the prefix matches on of the left-hand sides already.
-constexpr bool EnableGreedyMatching = false;
+constexpr bool EnableGreedyMatching = true;
 
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
@@ -40,13 +40,7 @@ using namespace mcrl2::log;
 /// \brief Decides whether the left and right terms unify, assuming that vars(left) and vars(right) are disjoint.
 bool unify(const atermpp::aterm_appl& left, const atermpp::aterm_appl& right)
 {
-  if (left == right)
-  {
-    // If both sides are equivalent, then they match under any substitution. If one contains
-    // a variable then that variable is also not bound in the other term.
-    return true;
-  }
-  else if (is_variable(left) || is_variable(right))
+  if (is_variable(left) || is_variable(right))
   {
     return true;
   }
@@ -233,7 +227,7 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
 }
 
 template<typename Substitution>
-typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitution>::match(const data_expression& term)
+typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitution>::match(const data_expression& term, Substitution& matching_sigma)
 {
   // Start with the root state.
   std::size_t s = m_automaton.root();
@@ -253,12 +247,9 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
     // 1. If s in Sfin then return Lfin(s).
     if (!state.match_set.empty())
     {
-      if (PrintMatchSteps) { mCRL2log(info) << "Matching succeeded.\n"; }
-
       // 3.1 (R, P) := Lfin(s)
-
       // 3.2 sigma := id
-      m_matching_sigma.clear();
+      matching_sigma.clear();
 
       // 3.3 for p in P do sigma := sigma[x_p -> t[p]]
       for (const auto& [var, pos] : m_automaton.label(s).variables)
@@ -266,87 +257,90 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
         assert(m_subterms[pos].defined());
         auto& expression = static_cast<const data_expression&>(m_subterms[pos]);
         if (PrintMatchSteps) { mCRL2log(info) << "sigma(" << var << ") := " << expression << ".\n"; }
-        m_matching_sigma[var] = expression;
+        matching_sigma[var] = expression;
       }
 
       // 3.5 Return (R, sigma)
-      const_iterator(&m_automaton.label(s).match_set, m_subterms, m_matching_sigma);
+      if (PrintMatchSteps) { mCRL2log(info) << "Matching succeeded.\n"; }
+      return const_iterator(&m_automaton.label(s).match_set, m_subterms, matching_sigma);
     }
-
-    // t[p] is given by the subterm table at the current position.
-    const data_expression& subterm = static_cast<const data_expression&>(m_subterms[state.position]);
-    assert (subterm.defined());
-
-    if (PrintMatchSteps) { mCRL2log(info) << "Matching m_subterms[" << state.position << "] = " << subterm << "\n"; }
-
-    // The number of arguments must match the current state.
-    if (is_application(subterm))
+    else
     {
-      const auto& appl = static_cast<const application&>(subterm);
+      // t[p] is given by the subterm table at the current position.
+      const data_expression& subterm = static_cast<const data_expression&>(m_subterms[state.position]);
+      assert (subterm.defined());
 
-      // If delta(s, f) = (s', update)
-      std::size_t s_prime = m_automaton.transition(s, get_head_index(appl.head()));
-      if (s_prime != 0)
-      {
-        if (PrintMatchSteps) { mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label " << appl.head() << "\n"; }
-        s = s_prime;
+      if (PrintMatchSteps) { mCRL2log(info) << "Matching m_subterms[" << state.position << "] = " << subterm << "\n"; }
 
-        // Insert the subterms onto the position mapping.
-        auto it = state.argument_positions.begin();
-        for (const atermpp::aterm& argument : appl)
-        {
-          assert(it != state.argument_positions.end());
-          assert(*it < m_subterms.size());
-          m_subterms[*it] = argument;
-          ++it;
-        }
-      }
-      else
+      // The number of arguments must match the current state.
+      if (is_application(subterm))
       {
-        // If delta(s, \neq)
-        std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
+        const auto& appl = static_cast<const application&>(subterm);
+
+        // If delta(s, f) = (s', update)
+        std::size_t s_prime = m_automaton.transition(s, get_head_index(appl.head()));
         if (s_prime != 0)
         {
-          if (PrintMatchSteps)
-          {
-            mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n";
-          }
-
+          if (PrintMatchSteps) { mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label " << appl.head() << "\n"; }
           s = s_prime;
+
+          // Insert the subterms onto the position mapping.
+          auto it = state.argument_positions.begin();
+          for (const atermpp::aterm& argument : appl)
+          {
+            assert(it != state.argument_positions.end());
+            assert(*it < m_subterms.size());
+            m_subterms[*it] = argument;
+            ++it;
+          }
+        }
+        else
+        {
+          // If delta(s, \neq)
+          std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
+          if (s_prime != 0)
+          {
+            if (PrintMatchSteps)
+            {
+              mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n";
+            }
+
+            s = s_prime;
+          }
         }
       }
-    }
-    // This transition can only be taken for constant function symbols.
-    else if (is_function_symbol(subterm))
-    {
-      // If delta(s0, a) is defined for some term a followed by suffix t'.
-      std::size_t s_prime = m_automaton.transition(s, get_head_index(subterm));
-      if (s_prime != 0)
+      // This transition can only be taken for constant function symbols.
+      else if (is_function_symbol(subterm))
       {
-        if (PrintMatchSteps) { mCRL2log(info) << "Took transition " << s << " to " << s_prime << " with label " << static_cast<function_symbol>(subterm) << "\n"; }
-        s = s_prime;
-      }
-      else
-      {
-        // If delta(s, \neq)
-        std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
+        // If delta(s0, a) is defined for some term a followed by suffix t'.
+        std::size_t s_prime = m_automaton.transition(s, get_head_index(subterm));
         if (s_prime != 0)
         {
-          if (PrintMatchSteps)
-          {
-            mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n";
-          }
-
+          if (PrintMatchSteps) { mCRL2log(info) << "Took transition " << s << " to " << s_prime << " with label " << static_cast<function_symbol>(subterm) << "\n"; }
           s = s_prime;
         }
-      }
-    }
+        else
+        {
+          // If delta(s, \neq)
+          std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
+          if (s_prime != 0)
+          {
+            if (PrintMatchSteps)
+            {
+              mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n";
+            }
 
-    // If we are stuck in the current state then matching failed.
-    if (s == s_old)
-    {
-      if (PrintMatchSteps) { mCRL2log(info) << "Matching failed.\n"; }
-      return const_iterator(m_matching_sigma);
+            s = s_prime;
+          }
+        }
+      }
+
+      // If we are stuck in the current state then matching failed.
+      if (s == s_old)
+      {
+        if (PrintMatchSteps) { mCRL2log(info) << "Matching failed.\n"; }
+        return const_iterator(matching_sigma);
+      }
     }
   }
 }

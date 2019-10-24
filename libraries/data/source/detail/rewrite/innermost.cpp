@@ -19,7 +19,7 @@
 
 // These are debug related options.
 
-constexpr bool PrintRewriteSteps = true;
+constexpr bool PrintRewriteSteps = false;
 
 /// \brief Enable higher-order rewriting (also the head symbols).
 constexpr bool EnableHigherOrder = false;
@@ -240,10 +240,11 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
   }
 
   // (R, sigma') := match(h'(u_1', ..., u_n')),
-  for(auto it = m_matcher.match(expression); ; ++it)
+  mutable_map_substitution<> matching_sigma;
+  for(auto it = m_matcher.match(expression, matching_sigma); ; ++it)
   {
     // If R not empty
-    const auto& [result, matching_sigma] = *it;
+    const extended_data_equation* result = *it;
     if (result != nullptr)
     {
       const extended_data_equation& match = *result;
@@ -252,18 +253,20 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
       auto rhs = apply_substitution(match.equation().rhs(), matching_sigma, match.rhs_stack());
 
       // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
-      if (match.equation().condition() == sort_bool::true_())
+      if (match.equation().condition() != sort_bool::true_())
       {
-        // Trivial conditions are always valid.
-        continue;
-      }
-      else if (EnableConditions && rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack()), m_identity) == sort_bool::true_())
-      {
-        continue;
-      }
-      else if (!EnableConditions)
-      {
-        throw mcrl2::runtime_error("Conditional rewriting (EnableConditions) is disabled.");
+        if (EnableConditions)
+        {
+          if (PrintRewriteSteps) { mCRL2log(info) << "Rewriting condition " << match.equation().condition() << "\n"; }
+          if (rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack()), m_identity) != sort_bool::true_())
+          {
+            continue;
+          }
+        }
+        else
+        {
+          throw mcrl2::runtime_error("Conditional rewriting (EnableConditions) is disabled.");
+        }
       }
 
       if (CountRewriteSteps)
@@ -271,19 +274,12 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
         ++m_application_count[match.equation()];
       }
 
-      if (PrintRewriteSteps)
-      {
-        mCRL2log(info) << "Rewrote " << expression << " to " << rhs << " using rule " << match.equation() << "\n";
-      }
+      if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << " using rule " << match.equation() << "\n"; }
 
       // Return rewrite(r^sigma', id)
       auto result = rewrite_impl(rhs, m_identity);
 
-      if (EnableCaching)
-      {
-        m_rewrite_cache.emplace(expression, result);
-      }
-
+      if (EnableCaching) { m_rewrite_cache.emplace(expression, result); }
       return result;
     }
     else
@@ -292,10 +288,7 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
     }
   }
 
-  if (PrintRewriteSteps)
-  {
-    mCRL2log(info) << "Term " << expression << " is in normal form.\n";
-  }
+  if (PrintRewriteSteps) { mCRL2log(info) << "Term " << expression << " is in normal form.\n"; }
 
   // Return h'(u_1', ..., u_n')
   return expression;

@@ -60,25 +60,39 @@ public:
       : m_matching_sigma(sigma)
     {}
 
+    /// \brief Construct an iterator over the match_set, computing the consistent patterns from the subterm indexing
     const_iterator(std::vector<indexed_linear_data_equation>* match_set,
       const std::vector<atermpp::unprotected_aterm>& subterms,
       Substitution& sigma)
-      : m_matching_sigma(sigma)
+      : m_match_set(match_set),
+        m_matching_sigma(sigma)
     {
-      if (match_set != nullptr)
+      if (m_match_set != nullptr)
       {
-        for (const indexed_linear_data_equation& equation : *match_set)
+        // Find the consistent patterns.
+        for (const indexed_linear_data_equation& equation : *m_match_set)
         {
           m_consistent.push_back(is_consistent(equation, subterms));
+        }
+
+        // Find the first consistent index.
+        while (m_current_index < m_consistent.size())
+        {
+          if (m_consistent[m_current_index])
+          {
+            return;
+          }
+          ++m_current_index;
         }
       }
     }
 
     void operator++()
     {
+      // Find the next consistent match.
+      ++m_current_index;
       while (m_current_index < m_consistent.size())
       {
-        ++m_current_index;
         if (m_consistent[m_current_index])
         {
           return;
@@ -86,19 +100,18 @@ public:
       }
     }
 
-    matching_result<Substitution> operator*()
+    const extended_data_equation* operator*()
     {
+      // Return the current match or an empty match.
       if (m_match_set != nullptr && m_current_index < m_match_set->size())
       {
-        if (m_current_index < m_match_set->size())
-        {
-          const indexed_linear_data_equation& result = (*m_match_set)[m_current_index];
-
-          return { &result, m_matching_sigma };
-        }
+        const indexed_linear_data_equation& result = (*m_match_set)[m_current_index];
+        return &result;
       }
-
-      return { nullptr, m_matching_sigma };
+      else
+      {
+        return nullptr;
+      }
     }
 
   private:
@@ -106,12 +119,12 @@ public:
     Substitution& m_matching_sigma;
 
     std::vector<bool> m_consistent;
-    std::size_t m_current_index;
+    std::size_t m_current_index = 0;
   };
 
   // Matcher interface.
 
-  const_iterator match(const data_expression& term);
+  const_iterator match(const data_expression& term, Substitution& matching_sigma);
 
 private:
 
@@ -155,13 +168,9 @@ private:
   std::size_t m_nof_ambiguous_matches = 0; ///< The number of final states with multiple matches.
   std::size_t m_nof_final_states = 0; ///< The number of final states.
 
-  // Store information about the match.
-
-  Substitution m_matching_sigma;
+  // Store (temporary) information about the match that can be invalidated.
 
   std::vector<atermpp::unprotected_aterm> m_subterms; ///< A mapping from indices to subterms.
-
-  std::size_t m_match_index; ///< The index of the equation that should be returned by the call to next.
 };
 
 } // namespace detail
