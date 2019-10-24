@@ -252,21 +252,18 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
       auto rhs = apply_substitution(match.equation().rhs(), matching_sigma, match.rhs_stack());
 
       // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
-      if (match.equation().condition() != sort_bool::true_())
+      if (match.equation().condition() == sort_bool::true_())
       {
-        if (EnableConditions && rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack()), m_identity) != sort_bool::true_())
-        {
-          continue;
-        }
-        else if (!EnableConditions)
-        {
-          throw mcrl2::runtime_error("Conditional rewriting (EnableConditions) is disabled.");
-        }
-      }
-      else
-      {
-        // Trivial conditions remain valid.
+        // Trivial conditions are always valid.
         continue;
+      }
+      else if (EnableConditions && rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack()), m_identity) == sort_bool::true_())
+      {
+        continue;
+      }
+      else if (!EnableConditions)
+      {
+        throw mcrl2::runtime_error("Conditional rewriting (EnableConditions) is disabled.");
       }
 
       if (CountRewriteSteps)
