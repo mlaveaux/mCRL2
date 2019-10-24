@@ -22,21 +22,55 @@ namespace data
 namespace detail
 {
 
+/// \brief Implements the naive matching algorithm with several (simple) extensions.
+/// \details Can enable head symbol indexing as an optimization.
 template<typename Substitution>
-class NaiveMatcher final : public Matcher<Substitution>
+class NaiveMatcher
 {
 public:
+
+  /// \brief A (simplistic) iterator over the matching results.
+  class const_iterator
+  {
+  public:
+    const_iterator(NaiveMatcher& matcher,
+      const data_expression& term,
+      std::size_t head_index,
+      std::size_t current_index)
+      : m_matcher(matcher),
+        m_term(term),
+        m_head_index(head_index),
+        m_current_index(current_index)
+    {}
+
+    void operator++()
+    {
+      ++m_current_index;
+    }
+
+    matching_result<Substitution> operator*()
+    {
+      return m_matcher.next(m_term, m_head_index, m_current_index);
+    }
+
+  private:
+    NaiveMatcher& m_matcher;
+    const data_expression& m_term;
+
+    std::size_t m_head_index = 0;
+    std::size_t m_current_index;
+  };
+
   /// \brief Initialize a naive matcher with a number of equations.
   NaiveMatcher(const data_equation_vector& equations);
   virtual ~NaiveMatcher() {}
 
-  // Matcher interface
-
-  void match(const data_expression& term) override;
-
-  matching_result<Substitution> next() override;
+  /// \brief Returns an iterator to the set of matching results.
+  const_iterator match(const data_expression&);
 
 private:
+  /// \brief A function that is used to obtain the next matching result.
+  matching_result<Substitution> next(const data_expression& term, std::size_t head_index, std::size_t index);
 
   using variable_partition = std::vector<variable>;
 
@@ -49,12 +83,6 @@ private:
 
   /// \brief The matching substitution computed in next.
   Substitution m_matching_sigma;
-
-  // Information about the matched term.
-
-  std::size_t m_current_index = 0;
-  std::size_t m_head_index;
-  data_expression m_term;
 };
 
 } // namespace detail

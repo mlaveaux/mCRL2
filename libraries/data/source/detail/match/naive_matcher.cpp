@@ -13,7 +13,7 @@
 #include "mcrl2/data/detail/match/linearise.h"
 
 /// \brief Print the intermediate matches that succeeded.
-constexpr bool PrintMatchSteps   = false;
+constexpr bool PrintMatchSteps   = true;
 
 /// \brief When enabled, index each rewrite rule based on its head symbol for fast lookup of relevant rules.
 constexpr bool EnableHeadIndexing = true;
@@ -132,16 +132,21 @@ NaiveMatcher<Substitution>::NaiveMatcher(const data_equation_vector& equations)
 }
 
 template<typename Substitution>
-void NaiveMatcher<Substitution>::match(const data_expression& term)
+typename NaiveMatcher<Substitution>::const_iterator NaiveMatcher<Substitution>::match(const data_expression& term)
 {
-  m_head_index = get_head_index(term);
-  m_term = term;
+  std::size_t head_index = 0;
+  if (EnableHeadIndexing)
+  {
+    head_index = get_head_index(term);
+  }
+
+  return const_iterator(*this, term, head_index, 0);
 }
 
 template<typename Substitution>
-matching_result<Substitution> NaiveMatcher<Substitution>::next()
+matching_result<Substitution> NaiveMatcher<Substitution>::next(const data_expression& term, std::size_t head_index, std::size_t current_index)
 {
-  if (EnableHeadIndexing && m_head_index >= m_rewrite_system.size())
+  if (EnableHeadIndexing && head_index >= m_rewrite_system.size())
   {
     // No left-hand side starts with this head symbol, so it cannot match.
     return {nullptr, m_matching_sigma};
@@ -149,25 +154,25 @@ matching_result<Substitution> NaiveMatcher<Substitution>::next()
 
   // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
   // to the given term. Only tries rewrite rules that start with the correct head symbol when EnableHeadIndexing is true.
-  for (std::size_t index = m_current_index; index < (EnableHeadIndexing ? m_rewrite_system[m_head_index].size() : m_equations.size()); ++index)
+  for (std::size_t index = current_index; index < (EnableHeadIndexing ? m_rewrite_system[head_index].size() : m_equations.size()); ++index)
   {
     m_matching_sigma.clear();
 
-    const linear_data_equation& equation = (EnableHeadIndexing ? m_rewrite_system[m_head_index][index] : m_equations[index]);
+    const linear_data_equation& equation = (EnableHeadIndexing ? m_rewrite_system[head_index][index] : m_equations[index]);
 
     // Compute a matching substitution for each rule and check that the condition associated with that rule is true, either trivially or by rewrite(c^sigma, identity).
-    if (match_lhs(m_term, equation.equation().lhs(), m_matching_sigma) && (EnableOnTheFlyConsistencyCheck || is_consistent(equation, m_matching_sigma)))
+    if (match_lhs(term, equation.equation().lhs(), m_matching_sigma) && (EnableOnTheFlyConsistencyCheck || is_consistent(equation, m_matching_sigma)))
     {
       if (PrintMatchSteps)
       {
-        mCRL2log(info) << "Matched rule " << equation.equation() << " to term " << m_term << "\n";
+        mCRL2log(info) << "Matched rule " << equation.equation() << " to term " << term << "\n";
       }
 
       return {&equation, m_matching_sigma};
     }
     else if (PrintMatchSteps)
     {
-      mCRL2log(info) << "Tried rule " << equation.equation() << " on term " << m_term << "\n";
+      mCRL2log(info) << "Tried rule " << equation.equation() << " on term " << term << "\n";
     }
   }
 

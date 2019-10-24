@@ -19,7 +19,13 @@
 
 // These are debug related options.
 
-constexpr bool PrintRewriteSteps = false;
+constexpr bool PrintRewriteSteps = true;
+
+/// \brief Enable higher-order rewriting (also the head symbols).
+constexpr bool EnableHigherOrder = false;
+
+/// \brief Enable conditional rewriting, otherwise conditions cause exceptions.
+constexpr bool EnableConditions = true;
 
 // The following options toggle tracking metrics.
 
@@ -183,8 +189,8 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 data_expression InnermostRewriter::rewrite_application(const application& appl, const substitution_type& sigma)
 {
   // h' := rewrite(h, sigma)
-  auto head_rewritten = rewrite_impl(appl.head(), sigma);
-  mark_normal_form(head_rewritten);
+  auto head_rewritten = (EnableHigherOrder ? rewrite_impl(appl.head(), sigma) : appl.head());
+  if (EnableHigherOrder) { mark_normal_form(head_rewritten); }
 
   // For i in {1, ..., n} do u' := rewrite(u, sigma)
   MCRL2_DECLARE_STACK_ARRAY(arguments, data_expression, appl.size());
@@ -234,12 +240,10 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
   }
 
   // (R, sigma') := match(h'(u_1', ..., u_n')),
-  m_matcher.match(expression);
-
-  while(true)
+  for(auto it = m_matcher.match(expression); ; ++it)
   {
     // If R not empty
-    const auto& [result, matching_sigma] = m_matcher.next();
+    const auto& [result, matching_sigma] = *it;
     if (result != nullptr)
     {
       const extended_data_equation& match = *result;
@@ -248,9 +252,20 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
       auto rhs = apply_substitution(match.equation().rhs(), matching_sigma, match.rhs_stack());
 
       // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
-      if (match.equation().condition() != sort_bool::true_() &&
-        rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack()), m_identity) != sort_bool::true_())
+      if (match.equation().condition() != sort_bool::true_())
       {
+        if (EnableConditions && rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack()), m_identity) != sort_bool::true_())
+        {
+          continue;
+        }
+        else if (!EnableConditions)
+        {
+          throw mcrl2::runtime_error("Conditional rewriting (EnableConditions) is disabled.");
+        }
+      }
+      else
+      {
+        // Trivial conditions remain valid.
         continue;
       }
 

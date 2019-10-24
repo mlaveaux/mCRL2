@@ -46,24 +46,12 @@ private:
 };
 
 /// \brief The result of the matching procedure, nullptr indicates no match.
+/// \details The substitution remains valid to the next call to match.
 template<typename Substitution>
 struct matching_result
 {
   const extended_data_equation* equation;
   Substitution& matching_sigma;
-};
-
-/// \brief The interface for matching algorithms.
-template<typename Substitution>
-class Matcher : public mcrl2::utilities::noncopyable
-{
-public:
-
-  /// \brief Start matching the given term, use next() to obtain the results per index.
-  virtual void match(const data_expression& term) = 0;
-
-  /// \returns The matching equation and adapts matching_sigma accordingly.
-  virtual matching_result<Substitution> next() = 0;
 };
 
 }

@@ -45,18 +45,73 @@ inline bool is_not_equal(const data_expression& expression)
 /// \brief An adaptive pattern matching automata based on the construction of "Adaptive Pattern Matching" by
 ///        R. C. Sekar et al. This has been extended with a postprocessing to obtain the matching subsitution.
 template<typename Substitution>
-class AdaptiveMatcher final : public Matcher<Substitution>
+class AdaptiveMatcher final
 {
 public:
   /// \brief Initialize the automaton matcher with a number of equations.
   AdaptiveMatcher(const data_equation_vector& equations);
   virtual ~AdaptiveMatcher() {}
 
+  /// \brief A (simplistic) iterator over the matching results.
+  class const_iterator
+  {
+  public:
+    const_iterator(Substitution& sigma)
+      : m_matching_sigma(sigma)
+    {}
+
+    const_iterator(std::vector<indexed_linear_data_equation>* match_set,
+      const std::vector<atermpp::unprotected_aterm>& subterms,
+      Substitution& sigma)
+      : m_matching_sigma(sigma)
+    {
+      if (match_set != nullptr)
+      {
+        for (const indexed_linear_data_equation& equation : *match_set)
+        {
+          m_consistent.push_back(is_consistent(equation, subterms));
+        }
+      }
+    }
+
+    void operator++()
+    {
+      while (m_current_index < m_consistent.size())
+      {
+        ++m_current_index;
+        if (m_consistent[m_current_index])
+        {
+          return;
+        }
+      }
+    }
+
+    matching_result<Substitution> operator*()
+    {
+      if (m_match_set != nullptr && m_current_index < m_match_set->size())
+      {
+        if (m_current_index < m_match_set->size())
+        {
+          const indexed_linear_data_equation& result = (*m_match_set)[m_current_index];
+
+          return { &result, m_matching_sigma };
+        }
+      }
+
+      return { nullptr, m_matching_sigma };
+    }
+
+  private:
+    std::vector<indexed_linear_data_equation>* m_match_set = nullptr;
+    Substitution& m_matching_sigma;
+
+    std::vector<bool> m_consistent;
+    std::size_t m_current_index;
+  };
+
   // Matcher interface.
 
-  void match(const data_expression& term) override;
-
-  matching_result<Substitution> next() override;
+  const_iterator match(const data_expression& term);
 
 private:
 
@@ -105,8 +160,6 @@ private:
   Substitution m_matching_sigma;
 
   std::vector<atermpp::unprotected_aterm> m_subterms; ///< A mapping from indices to subterms.
-
-  std::vector<indexed_linear_data_equation>* m_match_set = nullptr;
 
   std::size_t m_match_index; ///< The index of the equation that should be returned by the call to next.
 };

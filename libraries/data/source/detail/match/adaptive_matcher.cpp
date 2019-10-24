@@ -233,11 +233,8 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
 }
 
 template<typename Substitution>
-void AdaptiveMatcher<Substitution>::match(const data_expression& term)
+typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitution>::match(const data_expression& term)
 {
-  m_match_set = nullptr;
-  m_match_index = 0;
-
   // Start with the root state.
   std::size_t s = m_automaton.root();
   std::size_t s_old;
@@ -273,8 +270,7 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
       }
 
       // 3.5 Return (R, sigma)
-      m_match_set = &m_automaton.label(s).match_set;
-      return;
+      const_iterator(&m_automaton.label(s).match_set, m_subterms, m_matching_sigma);
     }
 
     // t[p] is given by the subterm table at the current position.
@@ -350,32 +346,9 @@ void AdaptiveMatcher<Substitution>::match(const data_expression& term)
     if (s == s_old)
     {
       if (PrintMatchSteps) { mCRL2log(info) << "Matching failed.\n"; }
-      return;
+      return const_iterator(m_matching_sigma);
     }
   }
-}
-
-template<typename Substitution>
-matching_result<Substitution> AdaptiveMatcher<Substitution>::next()
-{
-  if (m_match_set != nullptr)
-  {
-    while (m_match_index < m_match_set->size())
-    {
-      const indexed_linear_data_equation& result = (*m_match_set)[m_match_index];
-      ++m_match_index;
-
-      if (!is_consistent(result, m_subterms))
-      {
-        // This rule matched, but its variables are not consistent w.r.t. the substitution.
-        continue;
-      }
-
-      return { &result, m_matching_sigma };
-    }
-  }
-
-  return { nullptr, m_matching_sigma };
 }
 
 // Private functions
