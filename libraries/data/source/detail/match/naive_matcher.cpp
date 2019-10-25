@@ -129,6 +129,8 @@ NaiveMatcher<Substitution>::NaiveMatcher(const data_equation_vector& equations)
       m_rewrite_system[head_index].emplace_back(linear_data_equation(old_equation, {}));
     }
   }
+
+  mCRL2log(debug) << "NaiveMatcher (EnableHeadIndexing = " << EnableHeadIndexing << ", EnableOnTheFlyConsistencyCheck = " << EnableOnTheFlyConsistencyCheck << ")\n";
 }
 
 template<typename Substitution>
@@ -140,7 +142,7 @@ typename NaiveMatcher<Substitution>::const_iterator NaiveMatcher<Substitution>::
     head_index = get_head_index(term);
   }
 
-  return const_iterator(*this, term, head_index, 0, matching_sigma);
+  return const_iterator(*this, term, head_index, matching_sigma);
 }
 
 template<typename Substitution>

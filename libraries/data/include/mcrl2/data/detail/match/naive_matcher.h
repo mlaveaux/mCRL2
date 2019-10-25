@@ -36,13 +36,11 @@ public:
     const_iterator(const NaiveMatcher& matcher,
       const data_expression& term,
       std::size_t head_index,
-      std::size_t current_index,
       Substitution& matching_sigma)
       : m_matcher(matcher),
         m_term(term),
-        m_head_index(head_index),
-        m_current_index(current_index),
-        m_matching_sigma(matching_sigma)
+        m_matching_sigma(matching_sigma),
+        m_head_index(head_index)
     {}
 
     void operator++()
@@ -61,7 +59,7 @@ public:
 
     Substitution& m_matching_sigma;
     std::size_t m_head_index = 0;
-    std::size_t m_current_index;
+    std::size_t m_current_index = 0;
   };
 
   /// \brief Initialize a naive matcher with a number of equations.

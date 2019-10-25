@@ -167,6 +167,12 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
 
 data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstraction, const substitution_type& sigma)
 {
+  if (!EnableHigherOrder)
+  {
+    mCRL2log(error) << "Term " << abstraction << " is higher-order.\n";
+    throw mcrl2::runtime_error("Higher-order rewriting is disabled (EnableHigherOrder = false).");
+  }
+
   // u' := rewrite(u, sigma[x := y]) where y are fresh variables.
   m_local_sigma.clear();
   data::variable_list new_variables = rename_bound_variables(abstraction, m_local_sigma, m_generator);
@@ -190,7 +196,18 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
 {
   // h' := rewrite(h, sigma)
   auto head_rewritten = (EnableHigherOrder ? rewrite_impl(appl.head(), sigma) : appl.head());
-  if (EnableHigherOrder) { mark_normal_form(head_rewritten); }
+  if (EnableHigherOrder)
+  {
+    mark_normal_form(head_rewritten);
+  }
+  else
+  {
+    if (!is_function_symbol(head_rewritten))
+    {
+      mCRL2log(error) << "Term " << appl << " is higher-order.\n";
+      throw mcrl2::runtime_error("Higher-order rewriting is disabled (EnableHigherOrder = false).");
+    }
+  }
 
   // For i in {1, ..., n} do u' := rewrite(u, sigma)
   MCRL2_DECLARE_STACK_ARRAY(arguments, data_expression, appl.size());
@@ -269,12 +286,9 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
         }
       }
 
-      if (CountRewriteSteps)
-      {
-        ++m_application_count[match.equation()];
-      }
+      if (CountRewriteSteps) { ++m_application_count[match.equation()]; }
 
-      if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << " using rule " << match.equation() << "\n"; }
+      if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << ".\n"; } // using rule " << match.equation() << "\n"; }
 
       // Return rewrite(r^sigma', id)
       auto result = rewrite_impl(rhs, m_identity);

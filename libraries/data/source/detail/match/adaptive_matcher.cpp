@@ -202,8 +202,6 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
     linear_equations.emplace_back(indexed_linear_data_equation(equation, partition, m_positions));
   }
 
-  mCRL2log(info) << "EAPMA: There are " << nof_nonlinear_equations << " nonlinear left-hand sides out of " << linear_equations.size() << " rewrite rules.\n";
-
   // Determine the index of not_equal.
   m_not_equal_index = mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(not_equal()));
 
@@ -212,17 +210,23 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
   {
     construct_apma(Automaton(), m_automaton.root(), position_variable(position()), linear_equations);
 
-    mCRL2log(info) << "EAPMA (states: " << m_automaton.states() << ", transitions: " << m_automaton.transitions() << ") construction took " << construction.time() << " milliseconds.\n"
-      << " there are " << m_positions.size() << " positions indexed.\n";
+    mCRL2log(debug) << "AdaptiveMatcher: (EnableIndexPositions = " << EnableIndexPositions
+      << ", EnableRemoveVariables = " << EnableRemoveVariables
+      << ", EnableGreedyMatching = " << EnableGreedyMatching << ")\n";
+    mCRL2log(debug) << "  There are " << nof_nonlinear_equations << " nonlinear left-hand sides out of " << linear_equations.size() << " rewrite rules.\n";
 
-    mCRL2log(info) << "EAPMA: There are " << m_nof_ambiguous_matches << " ambiguous match sets out of " << m_nof_final_states << " final states.\n";
+    mCRL2log(debug) << "  Automaton (states: " << m_automaton.states() << ", transitions: " << m_automaton.transitions() << ") construction took " << construction.time() << " milliseconds.\n";
+
+    mCRL2log(debug) << "  There are " << m_positions.size() << " positions indexed.\n";
+
+    mCRL2log(debug) << "  There are " << m_nof_ambiguous_matches << " ambiguous match sets out of " << m_nof_final_states << " final states.\n";
 
     // Ensure that the subterm indexing can store all possible terms in the required places.
     m_subterms.resize(m_positions.size());
   }
   catch (const std::exception& ex)
   {
-    mCRL2log(info) << "Construction failed with " << ex.what() << ".\n";
+    mCRL2log(debug) << "AdaptiveMatcher: construction failed with " << ex.what() << ".\n";
   }
 }
 
@@ -380,7 +384,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
       L.end(),
       [&pref](const indexed_linear_data_equation& equation)
       {
-        return matches(pref, equation.equation().lhs()) && equation.partition().empty();
+        return matches(pref, equation.equation().lhs()) && equation.partition().empty() && equation.equation().condition() == sort_bool::true_();
       });
 
     if (it != L.end())
