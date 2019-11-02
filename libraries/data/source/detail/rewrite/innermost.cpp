@@ -21,11 +21,16 @@
 
 constexpr bool PrintRewriteSteps = false;
 
+// Enable term rewrite engine features.
+
 /// \brief Enable higher-order rewriting (also the head symbols).
 constexpr bool EnableHigherOrder = false;
 
 /// \brief Enable conditional rewriting, otherwise conditions cause exceptions.
 constexpr bool EnableConditions = true;
+
+/// \brief Obtain all normal forms to check that the term rewrite system is confluent.
+constexpr bool EnableCheckConfluence = true;
 
 // The following options toggle tracking metrics.
 
@@ -253,10 +258,13 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
   if (is_normal_form(expression))
   {
     // By definition a normal form does not match any rewrite rule.
+    if (PrintRewriteSteps) { mCRL2log(info) << "Term " << expression << " is in normal form.\n"; }
     return expression;
   }
 
   // (R, sigma') := match(h'(u_1', ..., u_n')),
+  std::set<data_expression> results;
+
   mutable_map_substitution<> matching_sigma;
   for(auto it = m_matcher.match(expression, matching_sigma); ; ++it)
   {
@@ -291,10 +299,12 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
       if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << ".\n"; } // using rule " << match.equation() << "\n"; }
 
       // Return rewrite(r^sigma', id)
-      auto result = rewrite_impl(rhs, m_identity);
+      results.insert(rewrite_impl(rhs, m_identity));
 
-      if (EnableCaching) { m_rewrite_cache.emplace(expression, result); }
-      return result;
+      if (!EnableCheckConfluence)
+      {
+        break;
+      }
     }
     else
     {
@@ -302,10 +312,30 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
     }
   }
 
-  if (PrintRewriteSteps) { mCRL2log(info) << "Term " << expression << " is in normal form.\n"; }
+  if (results.empty())
+  {
+    if (PrintRewriteSteps) { mCRL2log(info) << "Term " << expression << " is in normal form.\n"; }
+    return expression;
+  }
+  else
+  {
+    if (EnableCaching) { m_rewrite_cache.emplace(expression, *results.begin()); }
 
-  // Return h'(u_1', ..., u_n')
-  return expression;
+    if (EnableCheckConfluence)
+    {
+      if (results.size() > 1)
+      {
+        mCRL2log(info) << "Term rewrite system is not confluent as term " << expression << " has the following normal forms:.\n";
+        for (const auto& result : results)
+        {
+          mCRL2log(info) << "  " << result << "\n";
+        }
+      }
+    }
+
+    // Return h'(u_1', ..., u_n')
+    return *results.begin();
+  }
 }
 
 void InnermostRewriter::print_rewrite_metrics()

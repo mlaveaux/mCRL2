@@ -30,7 +30,7 @@ constexpr bool EnableIndexPositions = true;
 constexpr bool EnableRemoveVariables = true;
 
 /// \brief Stop whenever the prefix matches on of the left-hand sides already.
-constexpr bool EnableGreedyMatching = true;
+constexpr bool EnableGreedyMatching = false;
 
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
