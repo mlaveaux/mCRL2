@@ -97,6 +97,7 @@ public:
         {
           return;
         }
+        ++m_current_index;
       }
     }
 
