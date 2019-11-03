@@ -210,9 +210,9 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
   {
     construct_apma(Automaton(), m_automaton.root(), position_variable(position()), linear_equations);
 
-    mCRL2log(debug) << "AdaptiveMatcher: (EnableIndexPositions = " << EnableIndexPositions
+    mCRL2log(debug) << "AdaptiveMatcher (EnableIndexPositions = " << EnableIndexPositions
       << ", EnableRemoveVariables = " << EnableRemoveVariables
-      << ", EnableGreedyMatching = " << EnableGreedyMatching << ")\n";
+      << ", EnableGreedyMatching = " << EnableGreedyMatching << "):\n";
     mCRL2log(debug) << "  There are " << nof_nonlinear_equations << " nonlinear left-hand sides out of " << linear_equations.size() << " rewrite rules.\n";
 
     mCRL2log(debug) << "  Automaton (states: " << m_automaton.states() << ", transitions: " << m_automaton.transitions() << ") construction took " << construction.time() << " milliseconds.\n";

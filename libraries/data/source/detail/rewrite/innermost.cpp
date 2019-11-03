@@ -43,7 +43,7 @@ constexpr bool CountRewriteCacheMetric = false;
 // The following options toggle performance features.
 
 /// \brief Keep track of terms that are in normal form during rewriting.
-constexpr bool EnableNormalForms = true;
+constexpr bool EnableTrackNormalForms = true;
 
 /// \brief Enable caching of rewrite results.
 constexpr bool EnableCaching = false;
@@ -89,7 +89,15 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
   : Rewriter(data_spec, selector),
     m_rewrite_cache(1024),
     m_matcher(filter_data_specification(data_spec, selector))
-{}
+{
+  mCRL2log(debug) << "InnermostRewriter (EnableHigherOrder = " << EnableHigherOrder
+    << ", EnableConditions = " << EnableConditions
+    << ", EnableCheckConfluence = " << EnableCheckConfluence << "):\n";
+
+  mCRL2log(debug) << "  Performance features: EnableTrackNormalForms = " << EnableTrackNormalForms
+    << ", EnableCaching = " << EnableCaching
+    << ", EnableConstructionStack = " << EnableConstructionStack << ".\n";
+}
 
 data_expression InnermostRewriter::rewrite(const data_expression& term, substitution_type& sigma)
 {
@@ -382,12 +390,12 @@ void InnermostRewriter::print_rewrite_metrics()
 
 bool InnermostRewriter::is_normal_form(const data_expression& term) const
 {
-  return EnableNormalForms && (m_normal_forms.count(term) != 0);
+  return EnableTrackNormalForms && (m_normal_forms.count(term) != 0);
 }
 
 void InnermostRewriter::mark_normal_form(const data_expression& term)
 {
-  if (EnableNormalForms)
+  if (EnableTrackNormalForms)
   {
     m_normal_forms.emplace(term);
   }
