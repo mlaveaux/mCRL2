@@ -132,7 +132,7 @@ private:
   /// \brief Each state in the pattern match automaton is labelled with a set of variables.
   struct apma_state
   {
-    // Other states:
+    // Adaptive states:
     std::size_t position = std::numeric_limits<std::size_t>::max(); ///< L, the index of the position to be inspected.
     std::vector<std::size_t> argument_positions; ///< These are the positions where arguments must be stored in the subterm table.
 
@@ -144,10 +144,8 @@ private:
   // The underlying automaton.
   using Automaton = IndexedAutomaton<apma_state>;
 
-  /// \brief Adds states and transitions to the APMA for the given state and prefix.
-  Automaton construct_apma(const Automaton& automaton,
-    std::size_t s,
-    data_expression pref,
+  /// \returns A subautomaton for the given state and prefix.
+  Automaton construct_apma(data_expression pref,
     const std::vector<indexed_linear_data_equation>& L);
 
   /// \returns A subset of the given positions, filtering out unecessary positions.
@@ -163,11 +161,6 @@ private:
   mcrl2::utilities::indexed_set<position> m_positions;
 
   std::size_t m_not_equal_index = 0; ///< The index of the not_equal data_expression.
-
-  // Metrics for the automaton.
-
-  std::size_t m_nof_ambiguous_matches = 0; ///< The number of final states with multiple matches.
-  std::size_t m_nof_final_states = 0; ///< The number of final states.
 
   // Store (temporary) information about the match that can be invalidated.
 

@@ -70,14 +70,64 @@ public:
     }
   }
 
+  /// \brief Merge this automaton with one rooted at the given root state.
+  void merge(std::size_t root, const IndexedAutomaton<StateLabel>& automaton)
+  {
+    // Keep track of the old number of states, new states are nof_states + index in automaton.
+    std::size_t nof_states = m_states.size();
+
+    // Take the label of the other root.
+    m_states[root] = automaton.label(automaton.root());
+
+    // Add new states for every state except for the root.
+    for (std::size_t state = 0; state < automaton.states() - 1; ++state)
+    {
+      // Add a state.
+      add_state();
+
+      // Copy the state label.
+      label(nof_states + state) = automaton.label(state + 2);
+    }
+
+    // Take transitions from automaton.root() and add them for our root.
+    std::size_t label = 0;
+    for (std::size_t to : automaton.m_transitions[automaton.root()])
+    {
+      if (to != 0)
+      {
+        // Transition was defined, add to this automaton.
+        add_transition(root, label, nof_states + to - 2);
+      }
+      ++label;
+    }
+
+    // For each state of this automaton except for the root.
+    for (std::size_t state = 0; state < automaton.states() - 1; ++state)
+    {
+      std::size_t label = 0;
+      for (std::size_t to : automaton.m_transitions[state + 2])
+      {
+        if (to != 0)
+        {
+          add_transition(nof_states + state, label, nof_states + to - 2);
+        }
+        ++label;
+      }
+    }
+  }
+
   /// \returns The state label of the given state index.
+  const StateLabel& label(std::size_t state) const { return m_states[state]; }
   StateLabel& label(std::size_t state) { return m_states[state]; }
 
   std::size_t root() const { return 1; }
 
-  std::size_t states() const { return m_states.size(); }
+  std::size_t states() const { return m_states.size() - 1; }
 
   std::size_t transitions() const { return m_noftransitions; }
+
+  /// \return The size of the automaton (number of states and transitions).
+  std::size_t size() const { return states() + transitions(); }
 
 private:
   std::deque<StateLabel> m_states;

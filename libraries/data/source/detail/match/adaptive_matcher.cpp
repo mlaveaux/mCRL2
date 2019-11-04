@@ -30,7 +30,10 @@ constexpr bool EnableIndexPositions = true;
 constexpr bool EnableRemoveVariables = true;
 
 /// \brief Stop whenever the prefix matches on of the left-hand sides already.
-constexpr bool EnableGreedyMatching = false;
+constexpr bool EnableGreedyMatching = true;
+
+/// \brief Enable brute force minimization of the resulting automaton.
+constexpr bool EnableBruteForce = true;
 
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
@@ -208,18 +211,31 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
   // Construct the automaton.
   try
   {
-    construct_apma(Automaton(), m_automaton.root(), position_variable(position()), linear_equations);
+    m_automaton = construct_apma(position_variable(position()), linear_equations);
+
+    // Metrics for the automaton.
+    std::size_t nof_ambiguous_matches = 0; ///< The number of final states with multiple matches.
+    std::size_t nof_final_states = 0; ///< The number of final states.
+    for (std::size_t state = 1; state < m_automaton.states(); ++state)
+    {
+      //if (m_automaton.transition())
+
+    }
 
     mCRL2log(debug) << "AdaptiveMatcher (EnableIndexPositions = " << EnableIndexPositions
       << ", EnableRemoveVariables = " << EnableRemoveVariables
-      << ", EnableGreedyMatching = " << EnableGreedyMatching << "):\n";
+      << ", EnableGreedyMatching = " << EnableGreedyMatching
+      << ", EnableBruteForce = " << EnableBruteForce
+      << "):\n";
     mCRL2log(debug) << "  There are " << nof_nonlinear_equations << " nonlinear left-hand sides out of " << linear_equations.size() << " rewrite rules.\n";
 
     mCRL2log(debug) << "  Automaton (states: " << m_automaton.states() << ", transitions: " << m_automaton.transitions() << ") construction took " << construction.time() << " milliseconds.\n";
 
     mCRL2log(debug) << "  There are " << m_positions.size() << " positions indexed.\n";
 
-    mCRL2log(debug) << "  There are " << m_nof_ambiguous_matches << " ambiguous match sets out of " << m_nof_final_states << " final states.\n";
+    mCRL2log(debug) << "  There are " << nof_ambiguous_matches << " ambiguous match sets out of " << nof_final_states << " final states.\n";
+
+    // We might consider to make the position indices dense again.
 
     // Ensure that the subterm indexing can store all possible terms in the required places.
     m_subterms.resize(m_positions.size());
@@ -353,15 +369,10 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
 
 template<typename Substitution>
 typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>::construct_apma(
-  const Automaton& automaton,
-  std::size_t s,
   data_expression pref,
   const std::vector<indexed_linear_data_equation>& old_L)
 {
-  if (PrintConstructionSteps) { mCRL2log(info) << "state = " << s << "("; }
-
-  // The labelling for the current state.
-  apma_state& state = m_automaton.label(s);
+  //if (PrintConstructionSteps) { mCRL2log(info) << "state = " << state << "("; }
 
   // 2. L := { l in L | l unifies with pref }
   std::vector<indexed_linear_data_equation> L;
@@ -395,20 +406,17 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     }
   }
 
+  // The resulting automaton.
+  Automaton M;
+
   // if F = emptyset
   if (F.empty())
   {
-    // M := M[L := L[s -> L]
+    // The labelling for the current state.
+    apma_state& root = M.label(M.root());
 
     // Postprocessing: R := { r_i | l_i in L(s) }
-    state.match_set.insert(state.match_set.begin(), L.begin(), L.end());
-
-    // Keep track of some information about final states.
-    if (state.match_set.size() > 1)
-    {
-      ++m_nof_ambiguous_matches;
-    }
-    ++m_nof_final_states;
+    root.match_set.insert(root.match_set.begin(), L.begin(), L.end());
 
     // Postprocessing: P := union r_i in R : fringe(r_i) \ { L(s') in path(s) }
     if (PrintConstructionSteps) { mCRL2log(info) << "P = "; }
@@ -426,7 +434,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
       // Find where these variables occur in the left-hand side (equivalently in the prefix)
       std::set<position> lhs_fringe = fringe(equation.equation().lhs());
 
-      // This seems ugly, but we need to find the corresponding position in the lhs for each variable.
+      // Find the corresponding position in the lhs for each variable.
       for (const variable& var : vars)
       {
         for(const position& pos : lhs_fringe)
@@ -450,7 +458,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     for (const position& pos : P)
     {
       if (PrintConstructionSteps) { mCRL2log(info) << pos << ", "; }
-      state.variables.emplace_back(std::make_pair(position_variable(pos), m_positions.insert(pos).first));
+      root.variables.emplace_back(std::make_pair(position_variable(pos), m_positions.insert(pos).first));
     }
 
     // L' := L'[s -> (R, P)]
@@ -458,94 +466,126 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
   }
   else
   {
-    // pos := select(F).
-    position pos = select(F, L);
-
-    // M := M[L := L[s -> pos]]
-    state.position = m_positions.insert(pos).first;
-    if (PrintConstructionSteps) { mCRL2log(info) << "L = " << pos << ")\n"; }
-
-    // for f in F s.t. exist l in L : head(l[pos]) = f
-    std::set<std::pair<mcrl2::data::function_symbol, std::size_t>> symbols;
-
-    for (const indexed_linear_data_equation& equation : L)
+    // Find the smallest automaton for all positions.
+    while(!F.empty())
     {
-      // t := l[pos]
-      std::optional<data_expression> t = at_position(equation.equation().lhs(), pos);
+      // pos := select(F).
+      position pos = select(F, L);
 
-      if (t && (is_function_symbol(t.value()) || is_application_robust(t.value())))
+      // A temporary automaton for the current choice.
+      Automaton M_prime;
+
+      // The labelling for the current state.
+      apma_state& root = M_prime.label(M_prime.root());
+
+      // M := M[L := L[s -> pos]]
+      root.position = m_positions.insert(pos).first;
+      if (PrintConstructionSteps) { mCRL2log(info) << "L = " << pos << ")\n"; }
+
+      // for f in F s.t. exist l in L : head(l[pos]) = f
+      std::set<std::pair<mcrl2::data::function_symbol, std::size_t>> symbols;
+
+      for (const indexed_linear_data_equation& equation : L)
       {
-        // head(l[pos]) in F.
-        symbols.insert(std::make_pair(static_cast<const function_symbol&>(get_head(t.value())), get_arity(t.value())));
-      }
-    }
+        // t := l[pos]
+        std::optional<data_expression> t = at_position(equation.equation().lhs(), pos);
 
-    std::size_t max_arity = 0;
-    for (const auto& [symbol, arity] : symbols)
-    {
-      // M := M[S := (S cup {s'})], where s' is a fresh state.
-      std::size_t s_prime = m_automaton.add_state();
-
-      // M := M[delta := (delta := delta(s, f) -> s')
-      m_automaton.add_transition(s, mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(symbol), s_prime);
-
-      if (PrintConstructionSteps) { mCRL2log(info) << "added transition from " << s << " with label " << static_cast<atermpp::aterm>(symbol) << " to state " << s_prime << ".\n"; }
-
-      // pref := f(omega^ar(f)), but we store in the correct position variables directly in the prefix.
-      std::vector<data_expression> arguments;
-
-      if (arity > 0)
-      {
-        // In this case there are multiple variables are introduced, their positions are derived from current position.i where i is their
-        // position in the application f(x_0, ..., x_n).
-        position var_position = pos;
-        var_position.push_back(0);
-        for (std::size_t index = 0; index < arity; ++index)
+        if (t && (is_function_symbol(t.value()) || is_application_robust(t.value())))
         {
-          var_position.back() = index + 1;
-          arguments.push_back(position_variable(var_position));
+          // head(l[pos]) in F.
+          symbols.insert(std::make_pair(static_cast<const function_symbol&>(get_head(t.value())), get_arity(t.value())));
+        }
+      }
+
+      std::size_t max_arity = 0;
+      for (const auto& [symbol, arity] : symbols)
+      {
+        // M := M[S := (S cup {s'})], where s' is a fresh state.
+        std::size_t s_prime = M_prime.add_state();
+
+        // M := M[delta := (delta := delta(s, f) -> s')
+        M_prime.add_transition(M_prime.root(), mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(symbol), s_prime);
+
+        //if (PrintConstructionSteps) { mCRL2log(info) << "added transition from "
+        //  << "0 with label " << static_cast<atermpp::aterm>(symbol) << " to state " << s_prime << ".\n"; }
+
+        // pref := f(omega^ar(f)), but we store in the correct position variables directly in the prefix.
+        std::vector<data_expression> arguments;
+
+        if (arity > 0)
+        {
+          // Name the arguments of the new prefix.
+          position var_position = pos;
+          var_position.push_back(0);
+
+          // In this case there are multiple variables are introduced, their positions are derived from current position.i where i is their
+          // position in the application f(x_0, ..., x_n).
+          for (std::size_t index = 0; index < arity; ++index)
+          {
+            var_position.back() = index + 1;
+            arguments.push_back(position_variable(var_position));
+          }
+
+          M_prime.merge(s_prime, construct_apma(assign_at_position(pref, pos, application(symbol, arguments.begin(), arguments.end())), L));
+          max_arity = std::max(max_arity, arity);
+        }
+        else
+        {
+          // In this case the symbol is just a function symbol.
+          M_prime.merge(s_prime, construct_apma(assign_at_position(pref, pos, symbol), L));
+        }
+      }
+
+      // Here, we also ensure that the arguments of this symbol can be stored in the subterm table during evaluation.
+      position var_position = pos;
+      var_position.push_back(0);
+      for (std::size_t index = 0; index < max_arity; ++index)
+      {
+        var_position.back() = index + 1;
+        root.argument_positions.emplace_back(m_positions.insert(var_position).first);
+      }
+
+      // if exists l in L : (exists pos' <= pos : head(l[pos']) in V then
+      if (std::find_if(L.begin(),
+        L.end(),
+        [&](const indexed_linear_data_equation& equation)
+        {
+          return has_variable_higher(equation.equation().lhs(), pos);
+        }) != L.end())
+      {
+        // M := M[S := (S cup {s'})], where s' is a fresh state.
+        std::size_t s_prime = M_prime.add_state();
+
+        // M := M[delta := (delta := delta(s, \neq) -> s')
+        M_prime.add_transition(M_prime.root(), mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(not_equal()), s_prime);
+
+        //if (PrintConstructionSteps) { mCRL2log(info) << "added transition from " << state << " with label " << static_cast<atermpp::aterm>(not_equal()) << " to state " << s_prime << ".\n"; }
+
+        M_prime.merge(s_prime, construct_apma(assign_at_position(pref, pos, not_equal()), L));
+      }
+
+      if (EnableBruteForce)
+      {
+        // Try all possible positions until the smallest automaton has been found.
+        if (M_prime.size() < (M.size() == 1 ? std::numeric_limits<std::size_t>::max() : M.size()))
+        {
+          //mCRL2log(debug) << "Created smallest automaton of size " << M_prime.size() << " for position " << pos << "\n";
+          M = M_prime;
         }
 
-        construct_apma(automaton, s_prime, assign_at_position(pref, pos, application(symbol, arguments.begin(), arguments.end())), L);
-        max_arity = std::max(max_arity, arity);
+        // Remove the selection position from the possibilies.
+        F.erase(pos);
       }
       else
       {
-        // In this case the symbol is just a function symbol.
-        construct_apma(automaton, s_prime, assign_at_position(pref, pos, symbol), L);
+        // Accept the first selected position and exit the loop.
+        M = M_prime;
+        break;
       }
-    }
-
-    // Here, we also ensure that the arguments of this symbol can be stored in the subterm table during evaluation.
-    position var_position = pos;
-    var_position.push_back(0);
-    for (std::size_t index = 0; index < max_arity; ++index)
-    {
-      var_position.back() = index + 1;
-      state.argument_positions.emplace_back(m_positions.insert(var_position).first);
-    }
-
-    // if exists l in L : (exists pos' <= pos : head(l[pos']) in V then
-    if (std::find_if(L.begin(),
-      L.end(),
-      [&](const indexed_linear_data_equation& equation)
-      {
-        return has_variable_higher(equation.equation().lhs(), pos);
-      }) != L.end())
-    {
-      // M := M[S := (S cup {s'})], where s' is a fresh state.
-      std::size_t s_prime = m_automaton.add_state();
-
-      // M := M[delta := (delta := delta(s, \neq) -> s')
-      m_automaton.add_transition(s, mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(not_equal()), s_prime);
-
-      if (PrintConstructionSteps) { mCRL2log(info) << "added transition from " << s << " with label " << static_cast<atermpp::aterm>(not_equal()) << " to state " << s_prime << ".\n"; }
-
-      construct_apma(automaton, s_prime, assign_at_position(pref, pos, not_equal()), L);
     }
   }
 
-  return automaton;
+  return M;
 }
 
 template<typename Substitution>
