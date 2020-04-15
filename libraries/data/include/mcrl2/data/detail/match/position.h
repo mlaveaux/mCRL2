@@ -15,9 +15,10 @@
 #include "mcrl2/data/substitutions/mutable_map_substitution.h"
 #include "mcrl2/data/variable.h"
 
+#include <optional>
 #include <set>
-#include <vector>
 #include <sstream>
+#include <vector>
 
 namespace mcrl2::data::detail
 {
