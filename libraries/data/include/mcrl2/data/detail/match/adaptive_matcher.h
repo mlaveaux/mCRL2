@@ -138,7 +138,7 @@ private:
 
     // Final states:
     std::vector<indexed_linear_data_equation> match_set; ///< L, the equations that matched.
-    std::vector<std::pair<data::variable, std::size_t>> variables; ///< P, the variables that still must be assigned and their position.
+    std::vector<std::pair<data::variable, std::size_t>> assignments; ///< P, the variables that must be assigned and their subterm position.
   };
 
   // The underlying automaton.
@@ -153,6 +153,9 @@ private:
 
   /// \returns A single position selected from a set of positions.
   position select(const std::set<position>& positions, const std::vector<indexed_linear_data_equation>& L);
+
+  /// \returns A unique and consistent index for the given position.
+  std::size_t position_index(const position& positions);
 
   // Information about the underlying automata.
 

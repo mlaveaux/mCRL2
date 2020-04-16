@@ -35,6 +35,9 @@ constexpr bool EnableGreedyMatching = true;
 /// \brief Enable brute force minimization of the resulting automaton.
 constexpr bool EnableBruteForce = true;
 
+/// \brief Enable to reuse position indices based on the observation that each position is inspected at most once.
+constexpr bool EnableReusableIndex = false;
+
 using namespace mcrl2::data;
 using namespace mcrl2::data::detail;
 
@@ -272,7 +275,7 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
       matching_sigma.clear();
 
       // 3.3 for p in P do sigma := sigma[x_p -> t[p]]
-      for (const auto& [var, pos] : m_automaton.label(s).variables)
+      for (const auto& [var, pos] : m_automaton.label(s).assignments)
       {
         assert(m_subterms[pos].defined());
         auto& expression = static_cast<const data_expression&>(m_subterms[pos]);
@@ -304,7 +307,7 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
           if (PrintMatchSteps) { mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label " << appl.head() << "\n"; }
           s = s_prime;
 
-          // Insert the subterms onto the position mapping.
+          // Insert the subterms into the position mapping.
           auto it = state.argument_positions.begin();
           for (const atermpp::aterm& argument : appl)
           {
@@ -320,10 +323,7 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
           std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
           if (s_prime != 0)
           {
-            if (PrintMatchSteps)
-            {
-              mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n";
-            }
+            if (PrintMatchSteps) { mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n"; }
 
             s = s_prime;
           }
@@ -458,7 +458,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     for (const position& pos : P)
     {
       if (PrintConstructionSteps) { mCRL2log(info) << pos << ", "; }
-      root.variables.emplace_back(std::make_pair(position_variable(pos), m_positions.insert(pos).first));
+      root.assignments.emplace_back(std::make_pair(position_variable(pos), position_index(pos)));
     }
 
     // L' := L'[s -> (R, P)]
@@ -479,7 +479,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
       apma_state& root = M_prime.label(M_prime.root());
 
       // M := M[L := L[s -> pos]]
-      root.position = m_positions.insert(pos).first;
+      root.position = position_index(pos);
       if (PrintConstructionSteps) { mCRL2log(info) << "L = " << pos << ")\n"; }
 
       // for f in F s.t. exist l in L : head(l[pos]) = f
@@ -542,7 +542,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
       for (std::size_t index = 0; index < max_arity; ++index)
       {
         var_position.back() = index + 1;
-        root.argument_positions.emplace_back(m_positions.insert(var_position).first);
+        root.argument_positions.emplace_back(position_index(var_position));
       }
 
       // if exists l in L : (exists pos' <= pos : head(l[pos']) in V then
@@ -662,6 +662,12 @@ position AdaptiveMatcher<Substitution>::select(const std::set<position>& F, cons
 
   // This corresponds to the left-to-right depth-first traversal order.
   return *std::min_element(F.begin(), F.end(), less_than);
+}
+
+template<typename Substitution>
+std::size_t AdaptiveMatcher<Substitution>::position_index(const position& pos)
+{
+  return m_positions.insert(pos).first;
 }
 
 template class mcrl2::data::detail::AdaptiveMatcher<mutable_map_substitution<>>;
