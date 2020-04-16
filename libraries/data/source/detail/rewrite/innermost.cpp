@@ -30,7 +30,7 @@ constexpr bool EnableHigherOrder = false;
 constexpr bool EnableConditions = true;
 
 /// \brief Obtain all normal forms to check that the term rewrite system is confluent.
-constexpr bool EnableCheckConfluence = true;
+constexpr bool EnableCheckConfluence = false;
 
 // The following options toggle tracking metrics.
 
@@ -49,7 +49,7 @@ constexpr bool EnableTrackNormalForms = true;
 constexpr bool EnableCaching = false;
 
 /// \brief Enables construction stacks to reconstruct the right-hand sides bottom up.
-constexpr bool EnableConstructionStack = false;
+constexpr bool EnableConstructionStack = true;
 
 using namespace mcrl2;
 using namespace mcrl2::data;
@@ -143,6 +143,11 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
     return rewrite_abstraction(abstraction, sigma);
   }
   // Else (t is of the form h(u_1, ..., u_n)).
+  else if (is_where_clause(term))
+  {
+    const where_clause& w = atermpp::down_cast<where_clause>(term);
+    return rewrite_where_clause(w, sigma);
+  }
   else
   {
     assert(is_application(term));
@@ -180,29 +185,37 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
 
 data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstraction, const substitution_type& sigma)
 {
-  if (!EnableHigherOrder)
+  if (data::is_lambda_binder(abstraction.binding_operator()))
   {
-    mCRL2log(error) << "Term " << abstraction << " is higher-order.\n";
-    throw mcrl2::runtime_error("Higher-order rewriting is disabled (EnableHigherOrder = false).");
+    // u' := rewrite(u, sigma[x := y]) where y are fresh variables.
+    m_local_sigma.clear();
+    data::variable_list new_variables = rename_bound_variables(abstraction, m_local_sigma, m_generator);
+    data_expression u = capture_avoiding_substitution(abstraction.body(), m_local_sigma, m_generator);
+
+    // rewrite(u, sigma[x := y]) is equivalent to rewrite(u^[x := y], sigma);
+    data_expression body_rewritten = rewrite_impl(u, sigma);
+
+    // Return lambda y . u'
+    auto result = data::abstraction(abstraction.binding_operator(), new_variables, body_rewritten);
+
+    if (PrintRewriteSteps)
+    {
+      mCRL2log(info) << "Applied alpha-conversion to " << abstraction << " resulting in " << result << "\n";
+    }
+
+    return static_cast<data_expression>(result);
+  }
+  else if (data::is_exists_binder(abstraction.binding_operator()))
+  {
+    return existential_quantifier_enumeration(abstraction, m_identity);
+  }
+  else if (data::is_forall_binder(abstraction.binding_operator()))
+  {
+    return universal_quantifier_enumeration(abstraction, m_identity);
   }
 
-  // u' := rewrite(u, sigma[x := y]) where y are fresh variables.
-  m_local_sigma.clear();
-  data::variable_list new_variables = rename_bound_variables(abstraction, m_local_sigma, m_generator);
-  data_expression u = capture_avoiding_substitution(abstraction.body(), m_local_sigma, m_generator);
-
-  if (PrintRewriteSteps)
-  {
-    mCRL2log(info) << "Applied alpha-conversion to " << abstraction << " resulting in " << data::abstraction(abstraction.binding_operator(), new_variables, u) << "\n";
-  }
-
-  // rewrite(u, sigma[x := y]) is equivalent to rewrite(u^[x := y], sigma);
-  data_expression body_rewritten = rewrite_impl(u, sigma);
-
-  // Return lambda y . u'
-  auto result = data::abstraction(abstraction.binding_operator(), new_variables, body_rewritten);
-
-  return static_cast<data_expression>(result);
+  assert(false);
+  return abstraction;
 }
 
 data_expression InnermostRewriter::rewrite_application(const application& appl, const substitution_type& sigma)
@@ -234,11 +247,12 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
   if (is_abstraction(head_rewritten))
   {
     const auto& abstraction = static_cast<const data::abstraction&>(head_rewritten);
+    assert(data::is_lambda_binder(abstraction.binding_operator()));
 
     // rewrite(w, sigma[x gets u']) is equivalent to rewrite(w^[x := u'], id).
-    std::size_t index = 0;
     m_local_sigma.clear();
 
+    std::size_t index = 0;
     for (auto& variable : abstraction.variables())
     {
       m_local_sigma[variable] = arguments[index];
@@ -346,6 +360,15 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
   }
 }
 
+data_expression InnermostRewriter::rewrite_where_clause(const where_clause& clause, const substitution_type& sigma)
+{
+  m_local_sigma.clear();
+  data::variable_list new_variables = rename_bound_variables(clause, m_local_sigma, m_generator);
+  data_expression u = capture_avoiding_substitution(clause.body(), m_local_sigma, m_generator);
+
+  const data_expression result = rewrite_impl(u, sigma);
+  return result;
+}
 void InnermostRewriter::print_rewrite_metrics()
 {
   if (CountRewriteSteps)

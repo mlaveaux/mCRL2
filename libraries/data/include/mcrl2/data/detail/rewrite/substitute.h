@@ -14,6 +14,7 @@
 #include "mcrl2/data/data_expression.h"
 #include "mcrl2/data/function_symbol.h"
 #include "mcrl2/data/variable.h"
+#include "mcrl2/data/where_clause.h"
 #include "mcrl2/utilities/stack_array.h"
 
 #include <assert.h>
@@ -47,6 +48,49 @@ inline data::variable_list rename_bound_variables(const data::abstraction& abstr
   {
     for (auto& var : abstract.variables())
     {
+      // If the given variable occurs in a right-hand side or the substitution is non-trivial (i.e. sigma(x) != x) then
+      // this abstraction binds an existing variable and must be renamed.
+      if (sigma.variable_occurs_in_a_rhs(var) || sigma(var) != var)
+      {
+        variable fresh_variable(generator(), var.sort());
+        new_variables.push_front(fresh_variable);
+        sigma[var] = fresh_variable;
+      }
+      else
+      {
+        new_variables.push_front(var);
+      }
+    }
+
+  }
+
+  return new_variables;
+}
+
+/// \brief Renames (by adapting the substitution sigma) the bound variables of the given where clause.
+/// \returns The list of new variables, and updates the substitution to change these variables.
+template<typename Substitution, typename Generator>
+inline data::variable_list rename_bound_variables(const where_clause& clause, Substitution& sigma, Generator& generator)
+{
+  data::variable_list new_variables;
+  if constexpr (NaiveSubstitution)
+  {
+    // For every variable introduce a fresh variable.
+    for (auto& assignment : clause.assignments())
+    {
+      const variable& var = assignment.lhs();
+
+      variable fresh_variable(generator(), var.sort());
+      new_variables.push_front(fresh_variable);
+      sigma[var] = fresh_variable;
+    }
+  }
+  else
+  {
+    for (auto& assignment : clause.assignments())
+    {
+      const variable& var = assignment.lhs();
+
       // If the given variable occurs in a right-hand side or the substitution is non-trivial (i.e. sigma(x) != x) then
       // this abstraction binds an existing variable and must be renamed.
       if (sigma.variable_occurs_in_a_rhs(var) || sigma(var) != var)

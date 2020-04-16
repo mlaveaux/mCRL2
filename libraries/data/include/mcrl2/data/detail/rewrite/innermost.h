@@ -58,6 +58,9 @@ private:
   /// \returns The result after applying a single rewrite rule (if applicable) to the given expression.
   data_expression rewrite_single(const data_expression& expression);
 
+  /// \returns The normal form of a term of the shape (u_1, ..., u_n) where x_1 := t_1, ...., x_k := t_k
+  data_expression rewrite_where_clause(const where_clause& clause, const substitution_type& sigma);
+
   /// \brief Prints the various collected performance metrics after a rewrite() call.
   void print_rewrite_metrics();
 
