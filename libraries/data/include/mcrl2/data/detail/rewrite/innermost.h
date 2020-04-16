@@ -42,8 +42,8 @@ public:
 
 private:
   /// \brief Applies the substitution sigma to the term, optionally using the construction stack (depending on EnableConstructionStacks).
-  template<typename Substitution>
-  data_expression apply_substitution(const data_expression& term, Substitution& sigma, const ConstructionStack& stack);
+  template<typename Substitution, typename Transformer>
+  data_expression apply_substitution(const data_expression& term, Substitution& sigma, const ConstructionStack& stack, Transformer f);
 
   /// \brief The rewrite function defined in the document. Takes a term t and a substitution sigma and returns the normal
   ///        form of sigma applied to t with respect to the term rewrite system passed in the constructor.
@@ -68,7 +68,7 @@ private:
   bool is_normal_form(const data_expression& term) const;
 
   /// \brief Marks the given term as being in normal form.
-  void mark_normal_form(const data_expression& term);
+  data_expression mark_normal_form(const data_expression& term);
 
   mcrl2::utilities::unordered_set_large<data_expression> m_normal_forms; ///< Keeps track of terms that are in normal form.
 

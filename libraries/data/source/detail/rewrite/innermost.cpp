@@ -43,7 +43,14 @@ constexpr bool CountRewriteCacheMetric = false;
 // The following options toggle performance features.
 
 /// \brief Keep track of terms that are in normal form during rewriting.
-constexpr bool EnableTrackNormalForms = true;
+enum class NormalForm
+{
+  None,
+  Set, /// \brief Use an unordered_set to keep track of terms in normal form.
+  Tag  /// \brief Use a special term to keep track of terms in normal form.
+};
+
+constexpr NormalForm TrackNormalForms = NormalForm::Set;
 
 /// \brief Enable caching of rewrite results.
 constexpr bool EnableCaching = false;
@@ -94,7 +101,7 @@ InnermostRewriter::InnermostRewriter(const data_specification& data_spec, const 
     << ", EnableConditions = " << EnableConditions
     << ", EnableCheckConfluence = " << EnableCheckConfluence << "):\n";
 
-  mCRL2log(debug) << "  Performance features: EnableTrackNormalForms = " << EnableTrackNormalForms
+  mCRL2log(debug) << "  Performance features: TrackNormalForms = " << static_cast<std::size_t>(TrackNormalForms)
     << ", EnableCaching = " << EnableCaching
     << ", EnableConstructionStack = " << EnableConstructionStack << ".\n";
 }
@@ -103,27 +110,44 @@ data_expression InnermostRewriter::rewrite(const data_expression& term, substitu
 {
   auto result = rewrite_impl(term, sigma);
   print_rewrite_metrics();
-  m_normal_forms.clear();
+
+  // Clear the tracked normal forms to avoid unnecessary memory usage.
+  if (TrackNormalForms == NormalForm::Set) { m_normal_forms.clear(); }
   return result;
 }
 
 // Private functions
 
-template<typename Substitution>
-data_expression InnermostRewriter::apply_substitution(const data_expression& term, Substitution& sigma, const ConstructionStack& stack)
+template<typename Substitution, typename Transformer>
+data_expression InnermostRewriter::apply_substitution(const data_expression& term, Substitution& sigma, const ConstructionStack& stack, Transformer f)
 {
   if (EnableConstructionStack)
   {
-    return stack.construct_term(sigma, m_generator, m_argument_stack);
+    return stack.construct_term(sigma, m_generator, m_argument_stack, f);
   }
   else
   {
-    return capture_avoiding_substitution(term, sigma, m_generator);
+    return capture_avoiding_substitution(term, sigma, m_generator, f);
   }
 }
 
 data_expression InnermostRewriter::rewrite_impl(const data_expression& term, const substitution_type& sigma)
 {
+  if (is_normal_form(term))
+  {
+    // By definition a normal form does not match any rewrite rule.
+    if (PrintRewriteSteps) { mCRL2log(info) << "Term " << term << " is in normal form.\n"; }
+
+    if constexpr (TrackNormalForms == NormalForm::Tag)
+    {
+      return static_cast<data_expression>(term[1]);
+    }
+    else
+    {
+      return term;
+    }
+  }
+
   // If t in variables
   if (is_variable(term))
   {
@@ -184,13 +208,13 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
 }
 
 data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstraction, const substitution_type& sigma)
-{
+{  
   if (data::is_lambda_binder(abstraction.binding_operator()))
   {
     // u' := rewrite(u, sigma[x := y]) where y are fresh variables.
     m_local_sigma.clear();
     data::variable_list new_variables = rename_bound_variables(abstraction, m_local_sigma, m_generator);
-    data_expression u = capture_avoiding_substitution(abstraction.body(), m_local_sigma, m_generator);
+    data_expression u = capture_avoiding_substitution(abstraction.body(), m_local_sigma, m_generator, identity);
 
     // rewrite(u, sigma[x := y]) is equivalent to rewrite(u^[x := y], sigma);
     data_expression body_rewritten = rewrite_impl(u, sigma);
@@ -222,11 +246,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
 {
   // h' := rewrite(h, sigma)
   auto head_rewritten = (EnableHigherOrder ? rewrite_impl(appl.head(), sigma) : appl.head());
-  if (EnableHigherOrder)
-  {
-    mark_normal_form(head_rewritten);
-  }
-  else
+  if (!EnableHigherOrder)
   {
     if (!is_function_symbol(head_rewritten))
     {
@@ -240,7 +260,6 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
   for (std::size_t index = 0; index < appl.size(); ++index)
   {
     arguments[index] = rewrite_impl(appl[index], sigma);
-    mark_normal_form(arguments[index]);
   }
 
   // If h' is of the form lambda x . w
@@ -260,7 +279,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
     }
 
     // Return rewrite(w, sigma[x := u'])
-    data_expression result = rewrite_impl(capture_avoiding_substitution(abstraction.body(), m_local_sigma, m_generator), m_identity);
+    data_expression result = rewrite_impl(capture_avoiding_substitution(abstraction.body(), m_local_sigma, m_generator, identity), m_identity);
 
     if (PrintRewriteSteps)
     {
@@ -277,98 +296,90 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
 
 data_expression InnermostRewriter::rewrite_single(const data_expression& expression)
 {
-  if (is_normal_form(expression))
-  {
-    // By definition a normal form does not match any rewrite rule.
-    if (PrintRewriteSteps) { mCRL2log(info) << "Term " << expression << " is in normal form.\n"; }
-    return expression;
-  }
-
   // (R, sigma') := match(h'(u_1', ..., u_n')),
   std::set<data_expression> results;
 
+  //mutable_map_substitution<utilities::unordered_map<variable, data_expression>> matching_sigma;
   mutable_map_substitution<> matching_sigma;
-  for(auto it = m_matcher.match(expression, matching_sigma); ; ++it)
+  for(auto it = m_matcher.match(expression, matching_sigma); *it != nullptr; ++it)
   {
     // If R not empty
     const extended_data_equation* result = *it;
-    if (result != nullptr)
+    const extended_data_equation& match = *result;
+
+    // Compute rhs^sigma'.
+    auto rhs = apply_substitution(match.equation().rhs(), matching_sigma, match.rhs_stack(),
+      [this](const data_expression& expression)
+      {
+        return mark_normal_form(expression);
+      });
+
+    // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
+    if (match.equation().condition() != sort_bool::true_())
     {
-      const extended_data_equation& match = *result;
-
-      // Compute rhs^sigma'.
-      auto rhs = apply_substitution(match.equation().rhs(), matching_sigma, match.rhs_stack());
-
-      // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
-      if (match.equation().condition() != sort_bool::true_())
+      if (EnableConditions)
       {
-        if (EnableConditions)
+        if (PrintRewriteSteps) { mCRL2log(info) << "Rewriting condition " << match.equation().condition() << "\n"; }
+        if (rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack(), identity), m_identity) != sort_bool::true_())
         {
-          if (PrintRewriteSteps) { mCRL2log(info) << "Rewriting condition " << match.equation().condition() << "\n"; }
-          if (rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack()), m_identity) != sort_bool::true_())
-          {
-            continue;
-          }
-        }
-        else
-        {
-          throw mcrl2::runtime_error("Conditional rewriting (EnableConditions) is disabled.");
+          continue;
         }
       }
-
-      if (CountRewriteSteps) { ++m_application_count[match.equation()]; }
-
-      if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << ".\n"; } // using rule " << match.equation() << "\n"; }
-
-      // Return rewrite(r^sigma', id)
-      results.insert(rewrite_impl(rhs, m_identity));
-
-      if (!EnableCheckConfluence)
+      else
       {
-        break;
+        throw mcrl2::runtime_error("Conditional rewriting (EnableConditions) is disabled.");
       }
+    }
+
+    if (CountRewriteSteps) { ++m_application_count[match.equation()]; }
+
+    if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << ".\n"; } // using rule " << match.equation() << "\n"; }
+
+    // Return rewrite(r^sigma', id)
+    if constexpr (!EnableCheckConfluence)
+    {
+      if (PrintRewriteSteps) { mCRL2log(info) << "Term " << expression << " is in normal form.\n"; }
+      auto result = rewrite_impl(rhs, m_identity);
+
+      if (EnableCaching) { m_rewrite_cache.emplace(expression, result); }
+      return result;
     }
     else
     {
-      break;
+      results.insert(rewrite_impl(rhs, m_identity));
     }
   }
 
-  if (results.empty())
+  if constexpr (EnableCheckConfluence && !results.empty())
   {
-    if (PrintRewriteSteps) { mCRL2log(info) << "Term " << expression << " is in normal form.\n"; }
-    return expression;
-  }
-  else
-  {
-    if (EnableCaching) { m_rewrite_cache.emplace(expression, *results.begin()); }
+    if constexpr (EnableCaching) { m_rewrite_cache.emplace(expression, *results.begin()); }
 
-    if (EnableCheckConfluence)
+    if (results.size() > 1)
     {
-      if (results.size() > 1)
+      mCRL2log(info) << "Term rewrite system is not confluent as term " << expression << " has the following normal forms:.\n";
+      for (const auto& result : results)
       {
-        mCRL2log(info) << "Term rewrite system is not confluent as term " << expression << " has the following normal forms:.\n";
-        for (const auto& result : results)
-        {
-          mCRL2log(info) << "  " << result << "\n";
-        }
+        mCRL2log(info) << "  " << result << "\n";
       }
     }
 
     // Return h'(u_1', ..., u_n')
     return *results.begin();
   }
+
+  return expression;
 }
 
 data_expression InnermostRewriter::rewrite_where_clause(const where_clause& clause, const substitution_type& sigma)
 {
   m_local_sigma.clear();
   data::variable_list new_variables = rename_bound_variables(clause, m_local_sigma, m_generator);
-  data_expression u = capture_avoiding_substitution(clause.body(), m_local_sigma, m_generator);
+  data_expression u = capture_avoiding_substitution(clause.body(), m_local_sigma, m_generator, identity);
 
   const data_expression result = rewrite_impl(u, sigma);
   return result;
 }
+
 void InnermostRewriter::print_rewrite_metrics()
 {
   if (CountRewriteSteps)
@@ -411,15 +422,47 @@ void InnermostRewriter::print_rewrite_metrics()
   }
 }
 
-bool InnermostRewriter::is_normal_form(const data_expression& term) const
+// The function symbol below is used to administrate that a term is in normal form. It is put around a term.
+// Terms with this auxiliary function symbol cannot be printed using the pretty printer for data expressions.
+static const function_symbol& normal_form_tag()
 {
-  return EnableTrackNormalForms && (m_normal_forms.count(term) != 0);
+  static const function_symbol this_term_is_in_normal_form(
+    std::string("Rewritten@@term"),
+    function_sort({ untyped_sort() },untyped_sort()));
+  return this_term_is_in_normal_form;
 }
 
-void InnermostRewriter::mark_normal_form(const data_expression& term)
+
+data_expression add_normal_form_tag(const data_expression& term)
 {
-  if (EnableTrackNormalForms)
+  return application(normal_form_tag(), term);
+}
+
+bool InnermostRewriter::is_normal_form(const data_expression& term) const
+{
+  if constexpr (TrackNormalForms == NormalForm::Set)
+  {
+    return (m_normal_forms.count(term) != 0);
+  }
+  else if constexpr (TrackNormalForms == NormalForm::Tag)
+  {
+    return (term[0] == normal_form_tag());
+  }
+
+  return false;
+}
+
+data_expression InnermostRewriter::mark_normal_form(const data_expression& term)
+{
+  if constexpr (TrackNormalForms == NormalForm::Set)
   {
     m_normal_forms.emplace(term);
+    return term;
   }
+  else if constexpr (TrackNormalForms == NormalForm::Tag)
+  {
+    return add_normal_form_tag(term);
+  }
+
+  return term;
 }
