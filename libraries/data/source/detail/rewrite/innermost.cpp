@@ -297,9 +297,8 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
 data_expression InnermostRewriter::rewrite_single(const data_expression& expression)
 {
   // (R, sigma') := match(h'(u_1', ..., u_n')),
-  std::set<data_expression> results;
+  //std::set<data_expression> results;
 
-  //mutable_map_substitution<utilities::unordered_map<variable, data_expression>> matching_sigma;
   mutable_map_substitution<> matching_sigma;
   for(auto it = m_matcher.match(expression, matching_sigma); *it != nullptr; ++it)
   {
@@ -346,11 +345,11 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
     }
     else
     {
-      results.insert(rewrite_impl(rhs, m_identity));
+      //results.insert(rewrite_impl(rhs, m_identity));
     }
   }
 
-  if constexpr (EnableCheckConfluence && !results.empty())
+  /*if constexpr (EnableCheckConfluence && !results.empty())
   {
     if constexpr (EnableCaching) { m_rewrite_cache.emplace(expression, *results.begin()); }
 
@@ -365,7 +364,7 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
 
     // Return h'(u_1', ..., u_n')
     return *results.begin();
-  }
+  }*/
 
   return expression;
 }
