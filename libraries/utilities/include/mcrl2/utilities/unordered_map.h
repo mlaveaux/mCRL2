@@ -35,7 +35,7 @@ public:
 
   using hasher = Hash;
   using key_equal = KeyEqual;
-  using allocator_type = typename Allocator::template rebind<value_type>::other;
+  using allocator_type = typename std::allocator_traits<Allocator>::template rebind_alloc<value_type>;
 
   using reference = value_type&;
   using const_reference = const value_type&;

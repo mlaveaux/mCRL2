@@ -28,7 +28,7 @@
 
 #ifdef MCRL2_PLATFORM_WINDOWS
   #include <malloc.h>
-  #define MCRL2_SPECIFIC_STACK_ALLOCATOR(TYPE, SIZE) reinterpret_cast<TYPE*>(_alloca((SIZE)*sizeof(TYPE)))
+  #define MCRL2_SPECIFIC_STACK_ALLOCATOR(TYPE, SIZE) reinterpret_cast<TYPE*>(_malloca((SIZE)*sizeof(TYPE)))
 #elif (MCRL2_PLATFORM_LINUX || MCRL2_PLATFORM_MAC)
   #include <alloca.h>
   #define MCRL2_SPECIFIC_STACK_ALLOCATOR(TYPE, SIZE) reinterpret_cast<TYPE*>(alloca((SIZE)*sizeof(TYPE)))

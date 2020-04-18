@@ -162,10 +162,13 @@ std::size_t aterm_hasher<N>::operator()(const _aterm& term) const noexcept
   const std::size_t arity = (N == DynamicNumberOfArguments) ? f.arity() : N;
 
   // This is a function application with arguments, hash each argument and combine the result.
-  const _aterm_appl<>& term_appl = static_cast<const _aterm_appl<>&>(term);
-  for (std::size_t i = 0; i < arity; ++i)
+  if constexpr (N > 0)
   {
-    hnr = combine(hnr, term_appl.arg(i));
+    const _aterm_appl<>& term_appl = static_cast<const _aterm_appl<>&>(term);
+    for (std::size_t i = 0; i < arity; ++i)
+    {
+      hnr = combine(hnr, term_appl.arg(i));
+    }
   }
 
   return hnr;
