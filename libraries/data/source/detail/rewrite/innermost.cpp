@@ -50,7 +50,7 @@ enum class NormalForm
   Tag  /// \brief Use a special term to keep track of terms in normal form.
 };
 
-constexpr NormalForm TrackNormalForms = NormalForm::Set;
+constexpr NormalForm TrackNormalForms = NormalForm::Tag;
 
 /// \brief Enable caching of rewrite results.
 constexpr bool EnableCaching = false;
@@ -110,9 +110,6 @@ data_expression InnermostRewriter::rewrite(const data_expression& term, substitu
 {
   auto result = rewrite_impl(term, sigma);
   print_rewrite_metrics();
-
-  // Clear the tracked normal forms to avoid unnecessary memory usage.
-  if (TrackNormalForms == NormalForm::Set) { m_normal_forms.clear(); }
   return result;
 }
 
@@ -133,21 +130,6 @@ data_expression InnermostRewriter::apply_substitution(const data_expression& ter
 
 data_expression InnermostRewriter::rewrite_impl(const data_expression& term, const substitution_type& sigma)
 {
-  if (is_normal_form(term))
-  {
-    // By definition a normal form does not match any rewrite rule.
-    if (PrintRewriteSteps) { mCRL2log(info) << "Term " << term << " is in normal form.\n"; }
-
-    if constexpr (TrackNormalForms == NormalForm::Tag)
-    {
-      return static_cast<data_expression>(term[1]);
-    }
-    else
-    {
-      return term;
-    }
-  }
-
   // If t in variables
   if (is_variable(term))
   {
@@ -177,9 +159,24 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
     assert(is_application(term));
     const auto& appl = static_cast<const data::application&>(term);
 
-    if (is_normal_form(appl))
+    if (is_normal_form(term))
     {
-      return appl;
+      // By definition a normal form does not match any rewrite rule.
+      if (PrintRewriteSteps) { mCRL2log(info) << "Term " << term << " is in normal form.\n"; }
+
+      if constexpr (TrackNormalForms == NormalForm::Tag)
+      {
+        return static_cast<data_expression>(term[1]);
+      }
+      else if constexpr (TrackNormalForms == NormalForm::Set)
+      {
+        m_normal_forms.erase(term);
+        return term;
+      }
+      else
+      {
+        return term;
+      }
     }
 
     if (EnableCaching)
@@ -335,6 +332,7 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
         });
 
       if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << ".\n"; } // using rule " << match.equation() << "\n"; }
+
       auto result = rewrite_impl(rhs, m_identity);
 
       if (EnableCaching) { m_rewrite_cache.emplace(expression, result); }
@@ -428,12 +426,6 @@ static const function_symbol& normal_form_tag()
   return this_term_is_in_normal_form;
 }
 
-
-data_expression add_normal_form_tag(const data_expression& term)
-{
-  return application(normal_form_tag(), term);
-}
-
 bool InnermostRewriter::is_normal_form(const data_expression& term) const
 {
   if constexpr (TrackNormalForms == NormalForm::Set)
@@ -446,6 +438,11 @@ bool InnermostRewriter::is_normal_form(const data_expression& term) const
   }
 
   return false;
+}
+
+inline data_expression add_normal_form_tag(const data_expression& term)
+{
+  return application(normal_form_tag(), term);
 }
 
 data_expression InnermostRewriter::mark_normal_form(const data_expression& term)
