@@ -14,6 +14,7 @@
 #include "mcrl2/core/index_traits.h"
 #include "mcrl2/data/detail/enumerator_identifier_generator.h"
 #include "mcrl2/data/detail/match/linearise.h"
+#include "mcrl2/data/substitutions/sequence_substitution.h"
 
 /// \brief Print the intermediate matches that succeeded.
 constexpr bool PrintMatchSteps = false;
@@ -670,4 +671,5 @@ std::size_t AdaptiveMatcher<Substitution>::position_index(const position& pos)
   return m_positions.insert(pos).first;
 }
 
+template class mcrl2::data::detail::AdaptiveMatcher<sequence_substitution>;
 template class mcrl2::data::detail::AdaptiveMatcher<mutable_map_substitution<>>;

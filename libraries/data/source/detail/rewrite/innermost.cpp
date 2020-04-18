@@ -299,21 +299,13 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
   // (R, sigma') := match(h'(u_1', ..., u_n')),
   //std::set<data_expression> results;
 
-  mutable_map_substitution<> matching_sigma;
+  sequence_substitution matching_sigma;
   for(auto it = m_matcher.match(expression, matching_sigma); *it != nullptr; ++it)
   {
     // If R not empty
     const extended_data_equation* result = *it;
     const extended_data_equation& match = *result;
 
-    // Compute rhs^sigma'.
-    auto rhs = apply_substitution(match.equation().rhs(), matching_sigma, match.rhs_stack(),
-      [this](const data_expression& expression)
-      {
-        return mark_normal_form(expression);
-      });
-
-    // Delaying rewriting the condition ensures that the matching substitution does not have to be saved.
     if (match.equation().condition() != sort_bool::true_())
     {
       if (EnableConditions)
@@ -332,12 +324,17 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
 
     if (CountRewriteSteps) { ++m_application_count[match.equation()]; }
 
-    if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << ".\n"; } // using rule " << match.equation() << "\n"; }
-
     // Return rewrite(r^sigma', id)
     if constexpr (!EnableCheckConfluence)
     {
-      if (PrintRewriteSteps) { mCRL2log(info) << "Term " << expression << " is in normal form.\n"; }
+      // Compute rhs^sigma'.
+      auto rhs = apply_substitution(match.equation().rhs(), matching_sigma, match.rhs_stack(),
+        [this](const data_expression& expression)
+        {
+          return mark_normal_form(expression);
+        });
+
+      if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << ".\n"; } // using rule " << match.equation() << "\n"; }
       auto result = rewrite_impl(rhs, m_identity);
 
       if (EnableCaching) { m_rewrite_cache.emplace(expression, result); }
