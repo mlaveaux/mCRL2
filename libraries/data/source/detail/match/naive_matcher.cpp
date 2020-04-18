@@ -186,4 +186,7 @@ const extended_data_equation* NaiveMatcher<Substitution>::next(const data_expres
 
 // Explicit instantiations.
 
+#include "mcrl2/data/substitutions/sequence_substitution.h"
+
+template class mcrl2::data::detail::NaiveMatcher<sequence_substitution>;
 template class mcrl2::data::detail::NaiveMatcher<mutable_map_substitution<>>;

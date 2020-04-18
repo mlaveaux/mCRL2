@@ -45,15 +45,6 @@ private:
   data_equation m_equation;
 };
 
-/// \brief The result of the matching procedure, nullptr indicates no match.
-/// \details The substitution remains valid to the next call to match.
-template<typename Substitution>
-struct matching_result
-{
-  const extended_data_equation* equation;
-  Substitution& matching_sigma;
-};
-
 }
 }
 }

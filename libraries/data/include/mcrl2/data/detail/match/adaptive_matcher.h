@@ -125,6 +125,7 @@ public:
 
   // Matcher interface.
 
+  /// \details We assume that the given substitution is the identity.
   const_iterator match(const data_expression& term, Substitution& matching_sigma);
 
 private:

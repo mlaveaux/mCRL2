@@ -273,7 +273,6 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
     {
       // 3.1 (R, P) := Lfin(s)
       // 3.2 sigma := id
-      matching_sigma.clear();
 
       // 3.3 for p in P do sigma := sigma[x_p -> t[p]]
       for (const auto& [var, pos] : m_automaton.label(s).assignments)
