@@ -12,7 +12,7 @@
 
 #include "mcrl2/data/assignment.h"
 
-#include <vector>
+#include <queue>
 
 namespace mcrl2 {
 
@@ -27,16 +27,30 @@ public:
   using expression_type = data_expression;
   using argument_type = variable;
 
+  sequence_substitution(std::vector<std::pair<variable_type, expression_type>>& assignments)
+    : m_assignments(assignments)
+  {
+    offset = m_assignments.size();
+  }
+
+  ~sequence_substitution()
+  {
+    clear();
+  }
+
   expression_type& operator[](const variable& var)
   {
-    m_assignments.emplace_back(var, expression_type());
+    m_assignments.emplace_back(var, var);
+    ++size;
     return m_assignments.back().second;
   }
 
   const expression_type& operator()(const variable& v) const
   {
-    for (const auto&[var, expression] : m_assignments)
+    for (std::size_t i = offset; i < offset + size; ++i)
     {
+      const auto& [var, expression] = m_assignments[i];
+
       if (var == v)
       {
         return expression;
@@ -45,10 +59,20 @@ public:
     return v;
   }
 
-  void clear() { m_assignments.clear(); }
+  void clear() 
+  {
+    assert(offset + size <= m_assignments.size());
+    if (size != 0)
+    {
+      m_assignments.erase(m_assignments.begin() + offset);
+    }
+  }
 
 private:
-  std::vector<std::pair<variable_type, expression_type>> m_assignments;
+  std::size_t offset = 0;
+  std::size_t size = 0;
+
+  std::vector<std::pair<variable_type, expression_type>>& m_assignments;
 };
 
 } // namespace data

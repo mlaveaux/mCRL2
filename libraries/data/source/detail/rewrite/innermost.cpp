@@ -296,7 +296,7 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
   // (R, sigma') := match(h'(u_1', ..., u_n')),
   //std::set<data_expression> results;
 
-  sequence_substitution matching_sigma;
+  sequence_substitution matching_sigma(m_substitution);
   for(auto it = m_matcher.match(expression, matching_sigma); *it != nullptr; ++it)
   {
     // If R not empty

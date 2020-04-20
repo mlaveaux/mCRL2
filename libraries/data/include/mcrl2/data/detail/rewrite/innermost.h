@@ -85,6 +85,8 @@ private:
 
   mutable std::vector<data_expression> m_argument_stack; ///< A reused argument stack
 
+  mutable std::vector<std::pair<variable, data_expression>> m_substitution; ///< A reused substitution stack
+
   // These members are only used to keep track of underlying metrics.
 
   std::unordered_map<data_equation, std::size_t, std::hash<atermpp::aterm_appl>> m_application_count; ///< For every rewrite rule, counts the number of times that it was applied.
