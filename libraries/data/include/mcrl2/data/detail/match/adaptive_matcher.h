@@ -101,18 +101,14 @@ public:
       }
     }
 
-    const extended_data_equation* operator*()
+    const extended_data_equation& operator*()
     {
-      // Return the current match or an empty match.
-      if (m_match_set != nullptr && m_current_index < m_match_set->size())
-      {
-        const indexed_linear_data_equation& result = (*m_match_set)[m_current_index];
-        return &result;
-      }
-      else
-      {
-        return nullptr;
-      }
+      return (*m_match_set)[m_current_index];
+    }
+
+    bool operator!=(std::nullptr_t) const
+    {
+      return (m_match_set != nullptr && m_current_index < m_match_set->size());
     }
 
   private:

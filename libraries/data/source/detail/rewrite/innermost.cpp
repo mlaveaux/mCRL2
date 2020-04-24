@@ -295,53 +295,64 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
 {
   // (R, sigma') := match(h'(u_1', ..., u_n')),
   //std::set<data_expression> results;
+  if (PrintRewriteSteps) { mCRL2log(info) << "Rewriting " << expression << "\n"; }
 
-  sequence_substitution matching_sigma(m_substitution);
-  for(auto it = m_matcher.match(expression, matching_sigma); *it != nullptr; ++it)
+  data_expression rhs;
+  bool defined = false;
   {
-    // If R not empty
-    const extended_data_equation* result = *it;
-    const extended_data_equation& match = *result;
-
-    if (match.equation().condition() != sort_bool::true_())
+    sequence_substitution matching_sigma(m_substitution);
+    for (auto it = m_matcher.match(expression, matching_sigma); it != nullptr; ++it)
     {
-      if (EnableConditions)
+      // If R not empty
+      const extended_data_equation& match = *it;
+
+      if (match.equation().condition() != sort_bool::true_())
       {
-        if (PrintRewriteSteps) { mCRL2log(info) << "Rewriting condition " << match.equation().condition() << "\n"; }
-        if (rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack(), identity), m_identity) != sort_bool::true_())
+        if (EnableConditions)
         {
-          continue;
+          if (PrintRewriteSteps) { mCRL2log(info) << "Rewriting condition " << match.equation().condition() << "\n"; }
+          if (rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack(), identity), m_identity) != sort_bool::true_())
+          {
+            continue;
+          }
         }
+        else
+        {
+          throw mcrl2::runtime_error("Conditional rewriting (EnableConditions) is disabled.");
+        }
+      }
+
+      if (CountRewriteSteps) { ++m_application_count[match.equation()]; }
+
+      // Return rewrite(r^sigma', id)
+      if constexpr (!EnableCheckConfluence)
+      {
+        // Compute rhs^sigma'.
+        rhs = apply_substitution(match.equation().rhs(), matching_sigma, match.rhs_stack(),
+          [this](const data_expression& expression)
+          {
+            return mark_normal_form(expression);
+          });
+
+        if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << ".\n"; } // using rule " << match.equation() << "\n"; }
+        defined = true;
       }
       else
       {
-        throw mcrl2::runtime_error("Conditional rewriting (EnableConditions) is disabled.");
+        //results.insert(rewrite_impl(rhs, m_identity));
       }
     }
+  }
 
-    if (CountRewriteSteps) { ++m_application_count[match.equation()]; }
-
-    // Return rewrite(r^sigma', id)
-    if constexpr (!EnableCheckConfluence)
-    {
-      // Compute rhs^sigma'.
-      auto rhs = apply_substitution(match.equation().rhs(), matching_sigma, match.rhs_stack(),
-        [this](const data_expression& expression)
-        {
-          return mark_normal_form(expression);
-        });
-
-      if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << ".\n"; } // using rule " << match.equation() << "\n"; }
-
-      auto result = rewrite_impl(rhs, m_identity);
-
-      if (EnableCaching) { m_rewrite_cache.emplace(expression, result); }
-      return result;
-    }
-    else
-    {
-      //results.insert(rewrite_impl(rhs, m_identity));
-    }
+  if (defined)
+  {
+    auto result = rewrite_impl(rhs, m_identity);
+    if (EnableCaching) { m_rewrite_cache.emplace(expression, result); }
+    return result;
+  }
+  else 
+  {
+    return expression;
   }
 
   /*if constexpr (EnableCheckConfluence && !results.empty())
@@ -361,7 +372,6 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
     return *results.begin();
   }*/
 
-  return expression;
 }
 
 data_expression InnermostRewriter::rewrite_where_clause(const where_clause& clause, const substitution_type& sigma)

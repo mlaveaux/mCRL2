@@ -41,16 +41,23 @@ public:
         m_term(term),
         m_matching_sigma(matching_sigma),
         m_head_index(head_index)
-    {}
+    {
+      m_match = m_matcher.next(m_term, m_head_index, m_index, m_matching_sigma);
+    }
 
     void operator++()
     {
-      ++m_current_index;
+      m_match = m_matcher.next(m_term, m_head_index, m_index, m_matching_sigma);
     }
 
-    const extended_data_equation* operator*() const
+    const extended_data_equation& operator*() const
     {
-      return m_matcher.next(m_term, m_head_index, m_current_index, m_matching_sigma);
+      return *m_match;
+    }
+
+    bool operator!=(std::nullptr_t) const
+    {
+      return m_match != nullptr;
     }
 
   private:
@@ -59,7 +66,8 @@ public:
 
     Substitution& m_matching_sigma;
     std::size_t m_head_index = 0;
-    std::size_t m_current_index = 0;
+    std::size_t m_index = 0;
+    const extended_data_equation* m_match = nullptr;
   };
 
   /// \brief Initialize a naive matcher with a number of equations.
@@ -71,7 +79,7 @@ public:
 
 private:
   /// \brief A function that is used to obtain the next matching result.
-  const extended_data_equation* next(const data_expression& term, std::size_t head_index, std::size_t index, Substitution& matching_sigma) const;
+  const extended_data_equation* next(const data_expression& term, std::size_t head_index, std::size_t& index, Substitution& matching_sigma) const;
 
   using variable_partition = std::vector<variable>;
 

@@ -65,6 +65,7 @@ public:
     if (size != 0)
     {
       m_assignments.erase(m_assignments.begin() + offset);
+      size = 0;
     }
   }
 

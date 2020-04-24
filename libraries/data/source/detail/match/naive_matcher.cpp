@@ -148,7 +148,7 @@ typename NaiveMatcher<Substitution>::const_iterator NaiveMatcher<Substitution>::
 template<typename Substitution>
 const extended_data_equation* NaiveMatcher<Substitution>::next(const data_expression& term,
   std::size_t head_index,
-  std::size_t current_index,
+  std::size_t& index,
   Substitution& matching_sigma) const
 {
   if (EnableHeadIndexing && head_index >= m_rewrite_system.size())
@@ -157,9 +157,8 @@ const extended_data_equation* NaiveMatcher<Substitution>::next(const data_expres
     return nullptr;
   }
 
-  // Searches for a left-hand side and a substitution such that when the substitution is applied to this left-hand side it is (syntactically) equivalent
-  // to the given term. Only tries rewrite rules that start with the correct head symbol when EnableHeadIndexing is true.
-  for (std::size_t index = current_index; index < (EnableHeadIndexing ? m_rewrite_system[head_index].size() : m_equations.size()); ++index)
+  // Only tries rewrite rules that start with the correct head symbol when EnableHeadIndexing is true.
+  while (index < (EnableHeadIndexing ? m_rewrite_system[head_index].size() : m_equations.size()))
   {
     matching_sigma.clear();
 
@@ -173,15 +172,18 @@ const extended_data_equation* NaiveMatcher<Substitution>::next(const data_expres
         mCRL2log(info) << "Matched rule " << equation.equation() << " to term " << term << "\n";
       }
 
+      ++index;
       return &equation;
     }
     else if (PrintMatchSteps)
     {
       mCRL2log(info) << "Tried rule " << equation.equation() << " on term " << term << "\n";
     }
+
+    ++index;
   }
 
-  return nullptr ;
+  return nullptr;
 }
 
 // Explicit instantiations.
