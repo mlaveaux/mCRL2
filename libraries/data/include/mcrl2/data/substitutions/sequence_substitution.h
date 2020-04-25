@@ -64,7 +64,7 @@ public:
     assert(offset + size <= m_assignments.size());
     if (size != 0)
     {
-      m_assignments.erase(m_assignments.begin() + offset);
+      m_assignments.erase(m_assignments.begin() + offset, m_assignments.end());
       size = 0;
     }
   }
