@@ -90,27 +90,27 @@ template<typename Substitution>
 NaiveMatcher<Substitution>::NaiveMatcher(const data_equation_vector& equations)
 {
   // Preprocess the term rewrite system.
-  for (const data_equation& old_equation : equations)
+  for (const data_equation& original_equation : equations)
   {
     // Only rename the variables when the consistency check if performed afterwards.
     if (!EnableOnTheFlyConsistencyCheck)
     {
       // Rename the variables in the equation
-      auto [equation, partition] = make_linear(old_equation);
+      auto [equation, partition] = make_linear(original_equation);
 
       // Add the index of the equation
-      m_equations.emplace_back(linear_data_equation(equation, partition));
+      m_equations.emplace_back(linear_data_equation(original_equation, equation, partition));
     }
     else
     {
-      m_equations.emplace_back(linear_data_equation(old_equation, {}));
+      m_equations.emplace_back(linear_data_equation(original_equation, original_equation, {}));
     }
   }
 
-  for (const data_equation& old_equation : equations)
+  for (const data_equation& original_equation : equations)
   {
     // Make sure that it is possible to insert the match data for head_index left-hand side.
-    std::size_t head_index = get_head_index(old_equation.lhs());
+    std::size_t head_index = get_head_index(original_equation.lhs());
     if (head_index >= m_rewrite_system.size()) { m_rewrite_system.resize(head_index + 1); }
 
     // Insert the left-hand side into the rewrite rule mapping and a construction stack for its right-hand side.
@@ -119,14 +119,14 @@ NaiveMatcher<Substitution>::NaiveMatcher(const data_equation_vector& equations)
     if (!EnableOnTheFlyConsistencyCheck)
     {
       // Rename the variables in the equation
-      auto [equation, partition] = make_linear(old_equation);
+      auto [equation, partition] = make_linear(original_equation);
 
       // Add the index of the equation
-      m_rewrite_system[head_index].emplace_back(linear_data_equation(equation, partition));
+      m_rewrite_system[head_index].emplace_back(linear_data_equation(original_equation, equation, partition));
     }
     else
     {
-      m_rewrite_system[head_index].emplace_back(linear_data_equation(old_equation, {}));
+      m_rewrite_system[head_index].emplace_back(linear_data_equation(original_equation, original_equation, {}));
     }
   }
 
@@ -169,7 +169,7 @@ const extended_data_equation* NaiveMatcher<Substitution>::next(const data_expres
     {
       if (PrintMatchSteps)
       {
-        mCRL2log(info) << "Matched rule " << equation.equation() << " to term " << term << "\n";
+        mCRL2log(info) << "Matched rule " << equation.original_equation() << " to term " << term << "\n";
       }
 
       ++index;
@@ -177,7 +177,7 @@ const extended_data_equation* NaiveMatcher<Substitution>::next(const data_expres
     }
     else if (PrintMatchSteps)
     {
-      mCRL2log(info) << "Tried rule " << equation.equation() << " on term " << term << "\n";
+      mCRL2log(info) << "Tried rule " << equation.original_equation() << " on term " << term << "\n";
     }
 
     ++index;

@@ -23,8 +23,9 @@ using variable_partition = std::vector<std::vector<variable>>;
 class linear_data_equation : public extended_data_equation
 {
 public:
-  linear_data_equation(data_equation equation, const consistency_partition& partition)
-    : extended_data_equation(equation)
+  linear_data_equation(data_equation original_equation, data_equation linear_equation, const consistency_partition& partition)
+    : extended_data_equation(linear_equation),
+      m_original_equation(original_equation)
   {
     // Convert the positions to their variables.
     for (const consistency_class& positions : partition)
@@ -40,7 +41,10 @@ public:
   }
 
   const variable_partition& partition() const { return m_partition; }
+
+  const data_equation& original_equation() const { return m_original_equation; }
 private:
+  data_equation m_original_equation;
   variable_partition m_partition;
 };
 
