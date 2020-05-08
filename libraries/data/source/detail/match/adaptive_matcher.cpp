@@ -34,7 +34,7 @@ constexpr bool EnableRemoveVariables = true;
 constexpr bool EnableGreedyMatching = true;
 
 /// \brief Enable brute force minimization of the resulting automaton.
-constexpr bool EnableBruteForce = false;
+constexpr bool EnableBruteForce = true;
 
 /// \brief Enable to reuse position indices based on the observation that each position is inspected at most once.
 constexpr bool EnableReusableIndex = false;
@@ -416,7 +416,7 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
       // 3.5 Return (R, sigma)
       if (PrintMatchSteps) { mCRL2log(info) << "Matching succeeded.\n"; }
 
-      return const_iterator(&m_automaton.label(s).match_set, m_subterms, matching_sigma);
+      return const_iterator(&m_automaton.label(s).match_set, matching_sigma);
     }
   }
 }

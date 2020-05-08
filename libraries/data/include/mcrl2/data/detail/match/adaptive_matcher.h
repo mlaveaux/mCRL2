@@ -61,43 +61,15 @@ public:
 
     /// \brief Construct an iterator over the match_set, computing the consistent patterns from the subterm indexing
     const_iterator(std::vector<indexed_linear_data_equation>* match_set,
-      const std::vector<atermpp::unprotected_aterm>& subterms,
       Substitution& sigma)
       : m_match_set(match_set),
         m_matching_sigma(sigma)
-    {
-      if (m_match_set != nullptr)
-      {
-        // Find the consistent patterns.
-        for (const indexed_linear_data_equation& equation : *m_match_set)
-        {
-          m_consistent.push_back(is_consistent(equation, subterms));
-        }
-
-        // Find the first consistent index.
-        while (m_current_index < m_consistent.size())
-        {
-          if (m_consistent[m_current_index])
-          {
-            return;
-          }
-          ++m_current_index;
-        }
-      }
-    }
+    {}
 
     void operator++()
     {
       // Find the next consistent match.
       ++m_current_index;
-      while (m_current_index < m_consistent.size())
-      {
-        if (m_consistent[m_current_index])
-        {
-          return;
-        }
-        ++m_current_index;
-      }
     }
 
     const extended_data_equation& operator*()
