@@ -465,6 +465,35 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     }
   }
 
+  std::set<std::pair<std::size_t, std::size_t>> workC = {};
+
+  for (const indexed_linear_data_equation& equation : L)
+  {
+    for (const std::vector<std::size_t>& consistency : equation.partition())
+    {
+      if (!consistency.empty())
+      {
+        std::size_t x = *consistency.begin();
+
+        for (std::size_t y : consistency)
+        {
+          if (x != y)
+          {
+            std::size_t small = std::min(x, y);
+            std::size_t large = std::max(x, y);
+
+            if (E.find(std::make_pair(small, large)) == E.end()
+              && at_position(pref, m_positions[x])
+              && at_position(pref, m_positions[y]))
+            {
+              workC.insert(std::make_pair(small, large));
+            }
+          }
+        }
+      }
+    }
+  }
+
   // 3. F := restrict(fringe(pref), pref).
   std::set<position> workF = restrict(fringe(pref), L);
 
@@ -483,33 +512,8 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     {
       // Change L to only be this equation.
       workF.clear();
+      workC.clear();
       L = {*it};
-    }
-  }
-
-  std::set<std::pair<std::size_t, std::size_t>> workC = {};
-
-  for (const indexed_linear_data_equation& equation : L)
-  {
-    for (const std::vector<std::size_t>& consistency : equation.partition())
-    {
-      for (std::size_t x : consistency)
-      {
-        for (std::size_t y : consistency)
-        {
-          if (x < y)
-          {
-            if (E.find(std::make_pair(x, y)) == E.end() 
-              && at_position(pref, m_positions[x])
-              && at_position(pref, m_positions[y]))
-            {
-              workC.insert(std::make_pair(x, y));
-            }
-          }
-        }
-
-        break;
-      }
     }
   }
 
