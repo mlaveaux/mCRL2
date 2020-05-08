@@ -376,6 +376,25 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
         return const_iterator(matching_sigma);
       }
     }
+    else if (state.is_consistency_state())
+    {
+      assert(m_subterms[state.compare.first].defined());
+      assert(m_subterms[state.compare.second].defined());
+      if (m_subterms[state.compare.first] == m_subterms[state.compare.second])
+      {
+        std::size_t s_prime = m_automaton.transition(s, m_equal_index);
+        assert(s_prime != 0);
+        if (PrintMatchSteps) { mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label equal.\n"; }
+        s = s_prime;
+      }
+      else
+      {
+        std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
+        assert(s_prime != 0);
+        if (PrintMatchSteps) { mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n"; }
+        s = s_prime;
+      }
+    }
     // 1. If s in Sfin then return Lfin(s).
     else
     {
