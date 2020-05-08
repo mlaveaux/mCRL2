@@ -42,8 +42,7 @@ inline bool is_not_equal(const data_expression& expression)
   return expression == not_equal();
 }
 
-/// \brief An adaptive pattern matching automata based on the construction of "Adaptive Pattern Matching" by
-///        R. C. Sekar et al. This has been extended with a postprocessing to obtain the matching subsitution.
+/// \brief An adaptive non-linear pattern matching automata
 template<typename Substitution>
 class AdaptiveMatcher final
 {
@@ -160,7 +159,9 @@ private:
 
   mcrl2::utilities::indexed_set<position> m_positions;
 
-  std::size_t m_not_equal_index = 0; ///< The index of the not_equal data_expression.
+  std::size_t m_dontcare_index = 0; ///< The index of the dontcare data_expression.
+  std::size_t m_equal_index = 0;
+  std::size_t m_not_equal_index = 0;
 
   // Store (temporary) information about the match that can be invalidated.
 

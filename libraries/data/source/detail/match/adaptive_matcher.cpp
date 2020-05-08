@@ -44,6 +44,37 @@ using namespace mcrl2::data::detail;
 
 using namespace mcrl2::log;
 
+/// \brief Represents the unnamed variable omega.
+class dontcare : public function_symbol
+{
+public:
+  dontcare()
+    : function_symbol(mcrl2::core::identifier_string("@@dont_care"), mcrl2::data::sort_expression())
+  {}
+};
+
+class equal : public function_symbol
+{
+public:
+  equal()
+    : function_symbol(mcrl2::core::identifier_string("@@equal"), mcrl2::data::sort_expression())
+  {}
+};
+
+class not_equal : public function_symbol
+{
+public:
+  not_equal()
+    : function_symbol(mcrl2::core::identifier_string("@@not_equal"), mcrl2::data::sort_expression())
+  {}
+};
+
+/// \returns True iff the given data expression is of type omega.
+inline bool is_dontcare(const data_expression& expression)
+{
+  return expression == dontcare();
+}
+
 /// \brief Decides whether the left and right terms unify, assuming that vars(left) and vars(right) are disjoint.
 bool unify(const atermpp::aterm_appl& left, const atermpp::aterm_appl& right)
 {
@@ -142,7 +173,7 @@ bool less_than(const position& left, const position& right)
 /// \returns The number of arguments for the given data expressions.
 inline std::size_t get_arity(const data_expression& t)
 {
-  if (!is_application(t) || is_not_equal(t))
+  if (!is_application(t) || is_dontcare(t))
   {
     return 0;
   }
@@ -167,7 +198,7 @@ inline bool is_application_robust(const data_expression& t)
 // Return the head symbol, nested within applications.
 inline const data_expression& get_head(const data_expression& t)
 {
-  if (!is_application(t) || is_not_equal(t))
+  if (!is_application(t) || is_dontcare(t))
   {
     return t;
   }
@@ -209,8 +240,10 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
     linear_equations.emplace_back(indexed_linear_data_equation(equation, partition, m_positions));
   }
 
-  // Determine the index of not_equal.
+  // Determine the index of dontcare.
+  m_dontcare_index = mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(dontcare()));
   m_not_equal_index = mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(not_equal()));
+  m_equal_index = mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(static_cast<const function_symbol&>(equal()));
 
   // Construct the automaton.
   try
@@ -320,10 +353,10 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
         else
         {
           // If delta(s, \neq)
-          std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
+          std::size_t s_prime = m_automaton.transition(s, m_dontcare_index);
           if (s_prime != 0)
           {
-            if (PrintMatchSteps) { mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n"; }
+            if (PrintMatchSteps) { mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label don't care.\n"; }
 
             s = s_prime;
           }
@@ -341,13 +374,13 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
         }
         else
         {
-          // If delta(s, \neq)
-          std::size_t s_prime = m_automaton.transition(s, m_not_equal_index);
+          // If delta(s, \dc)
+          std::size_t s_prime = m_automaton.transition(s, m_dontcare_index);
           if (s_prime != 0)
           {
             if (PrintMatchSteps)
             {
-              mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label not_equal.\n";
+              mCRL2log(info) << "Took transition from " << s << " to " << s_prime << " with label don't care.\n";
             }
 
             s = s_prime;
@@ -557,11 +590,10 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
         std::size_t s_prime = M_prime.add_state();
 
         // M := M[delta := (delta := delta(s, \neq) -> s')
-        M_prime.add_transition(M_prime.root(), mcrl2::core::index_traits<mcrl2::data::function_symbol, function_symbol_key_type, 2>::index(not_equal()), s_prime);
+        M_prime.add_transition(M_prime.root(), m_dontcare_index, s_prime);
+        //if (PrintConstructionSteps) { mCRL2log(info) << "added transition from " << state << " with label " << static_cast<atermpp::aterm>(dontcare()) << " to state " << s_prime << ".\n"; }
 
-        //if (PrintConstructionSteps) { mCRL2log(info) << "added transition from " << state << " with label " << static_cast<atermpp::aterm>(not_equal()) << " to state " << s_prime << ".\n"; }
-
-        M_prime.merge(s_prime, construct_apma(assign_at_position(pref, pos, not_equal()), L));
+        M_prime.merge(s_prime, construct_apma(assign_at_position(pref, pos, dontcare()), L));
       }
 
       if (EnableBruteForce)
