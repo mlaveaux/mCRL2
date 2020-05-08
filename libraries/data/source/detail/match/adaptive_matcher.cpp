@@ -301,26 +301,7 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
     // Keep track of the current state.
     s_old = s;
 
-    // 1. If s in Sfin then return Lfin(s).
-    if (!state.match_set.empty())
-    {
-      // 3.1 (R, P) := Lfin(s)
-      // 3.2 sigma := id
-
-      // 3.3 for p in P do sigma := sigma[x_p -> t[p]]
-      for (const auto& [var, pos] : m_automaton.label(s).assignments)
-      {
-        assert(m_subterms[pos].defined());
-        auto& expression = static_cast<const data_expression&>(m_subterms[pos]);
-        if (PrintMatchSteps) { mCRL2log(info) << "sigma(" << var << ") := " << expression << ".\n"; }
-        matching_sigma[var] = expression;
-      }
-
-      // 3.5 Return (R, sigma)
-      if (PrintMatchSteps) { mCRL2log(info) << "Matching succeeded.\n"; }
-      return const_iterator(&m_automaton.label(s).match_set, m_subterms, matching_sigma);
-    }
-    else
+    if (state.is_matching_state())
     {
       // t[p] is given by the subterm table at the current position.
       const data_expression& subterm = static_cast<const data_expression&>(m_subterms[state.position]);
@@ -394,6 +375,26 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
         if (PrintMatchSteps) { mCRL2log(info) << "Matching failed.\n"; }
         return const_iterator(matching_sigma);
       }
+    }
+    // 1. If s in Sfin then return Lfin(s).
+    else
+    {
+      // 3.1 (R, P) := Lfin(s)
+      // 3.2 sigma := id
+
+      // 3.3 for p in P do sigma := sigma[x_p -> t[p]]
+      for (const auto& [var, pos] : m_automaton.label(s).assignments)
+      {
+        assert(m_subterms[pos].defined());
+        auto& expression = static_cast<const data_expression&>(m_subterms[pos]);
+        if (PrintMatchSteps) { mCRL2log(info) << "sigma(" << var << ") := " << expression << ".\n"; }
+        matching_sigma[var] = expression;
+      }
+
+      // 3.5 Return (R, sigma)
+      if (PrintMatchSteps) { mCRL2log(info) << "Matching succeeded.\n"; }
+
+      return const_iterator(&m_automaton.label(s).match_set, m_subterms, matching_sigma);
     }
   }
 }

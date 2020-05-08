@@ -128,9 +128,16 @@ private:
   /// \brief Each state in the pattern match automaton is labelled with a set of variables.
   struct apma_state
   {
-    // Adaptive states:
+    bool is_consistency_state() const { return compare.first == compare.second; }
+
+    bool is_matching_state() const { return position != std::numeric_limits<std::size_t>::max(); }
+
+    // Matching states:
     std::size_t position = std::numeric_limits<std::size_t>::max(); ///< L, the index of the position to be inspected.
     std::vector<std::size_t> argument_positions; ///< These are the positions where arguments must be stored in the subterm table.
+
+    // Consistency states:
+    std::pair<std::size_t, std::size_t> compare = std::make_pair(0,0); ///< L, the pair of positions that must be compared.
 
     // Final states:
     std::vector<indexed_linear_data_equation> match_set; ///< L, the equations that matched.
