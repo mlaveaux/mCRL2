@@ -128,7 +128,7 @@ private:
   /// \brief Each state in the pattern match automaton is labelled with a set of variables.
   struct apma_state
   {
-    bool is_consistency_state() const { return compare.first == compare.second; }
+    bool is_consistency_state() const { return compare.first != compare.second; }
 
     bool is_matching_state() const { return position != std::numeric_limits<std::size_t>::max(); }
 
@@ -149,7 +149,10 @@ private:
 
   /// \returns A subautomaton for the given state and prefix.
   Automaton construct_apma(data_expression pref,
-    const std::vector<indexed_linear_data_equation>& L);
+    const std::vector<indexed_linear_data_equation>& L,
+    const std::set<std::pair<std::size_t, std::size_t> >& E,
+    const std::set<std::pair<std::size_t, std::size_t> >& N
+    );
 
   /// \returns A subset of the given positions, filtering out unecessary positions.
   std::set<position> restrict(const std::set<position>& positions, const std::vector<indexed_linear_data_equation>& L);

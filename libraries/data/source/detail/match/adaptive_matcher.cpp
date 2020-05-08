@@ -34,7 +34,7 @@ constexpr bool EnableRemoveVariables = true;
 constexpr bool EnableGreedyMatching = true;
 
 /// \brief Enable brute force minimization of the resulting automaton.
-constexpr bool EnableBruteForce = true;
+constexpr bool EnableBruteForce = false;
 
 /// \brief Enable to reuse position indices based on the observation that each position is inspected at most once.
 constexpr bool EnableReusableIndex = false;
@@ -248,7 +248,10 @@ AdaptiveMatcher<Substitution>::AdaptiveMatcher(const data_equation_vector& equat
   // Construct the automaton.
   try
   {
-    m_automaton = construct_apma(position_variable(position()), linear_equations);
+    const std::set<std::pair<std::size_t, std::size_t> > E;
+    const std::set<std::pair<std::size_t, std::size_t> > N;
+    
+    m_automaton = construct_apma(position_variable(position()), linear_equations, E, N);
 
     // Metrics for the automaton.
     std::size_t nof_ambiguous_matches = 0; ///< The number of final states with multiple matches.
@@ -423,7 +426,9 @@ typename AdaptiveMatcher<Substitution>::const_iterator AdaptiveMatcher<Substitut
 template<typename Substitution>
 typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>::construct_apma(
   data_expression pref,
-  const std::vector<indexed_linear_data_equation>& old_L)
+  const std::vector<indexed_linear_data_equation>& old_L,
+  const std::set<std::pair<std::size_t, std::size_t> >& E,
+  const std::set<std::pair<std::size_t, std::size_t> >& N)
 {
   //if (PrintConstructionSteps) { mCRL2log(info) << "state = " << state << "("; }
 
@@ -431,14 +436,37 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
   std::vector<indexed_linear_data_equation> L;
   for (const indexed_linear_data_equation& equation : old_L)
   {
-    if (unify(equation.equation().lhs(), pref))
+    bool can_be_consistent = true;
+    // not exists C in P : exists x, y in C : {x, y} in N
+    for (const std::vector<std::size_t>& consistency : equation.partition())
+    {
+      for (std::size_t x : consistency)
+      {
+        for (std::size_t y : consistency)
+        {
+          if (x < y)
+          {
+            if (N.find(std::make_pair(x, y)) != N.end())
+            {
+              can_be_consistent = false;
+              break;
+            }
+          }
+        }
+
+        if (can_be_consistent == false) { break; }
+      }
+      if (can_be_consistent == false) { break; }
+    }
+
+    if (unify(equation.equation().lhs(), pref) && can_be_consistent)
     {
       L.emplace_back(equation);
     }
   }
 
   // 3. F := restrict(fringe(pref), pref).
-  std::set<position> F = restrict(fringe(pref), L);
+  std::set<position> workF = restrict(fringe(pref), L);
 
   // Greedy: If any of the elements in L match then we can chose that one.
   if constexpr (EnableGreedyMatching)
@@ -454,16 +482,42 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     if (it != L.end())
     {
       // Change L to only be this equation.
-      F.clear();
+      workF.clear();
       L = {*it};
+    }
+  }
+
+  std::set<std::pair<std::size_t, std::size_t>> workC = {};
+
+  for (const indexed_linear_data_equation& equation : L)
+  {
+    for (const std::vector<std::size_t>& consistency : equation.partition())
+    {
+      for (std::size_t x : consistency)
+      {
+        for (std::size_t y : consistency)
+        {
+          if (x < y)
+          {
+            if (E.find(std::make_pair(x, y)) == E.end() 
+              && at_position(pref, m_positions[x])
+              && at_position(pref, m_positions[y]))
+            {
+              workC.insert(std::make_pair(x, y));
+            }
+          }
+        }
+
+        break;
+      }
     }
   }
 
   // The resulting automaton.
   Automaton M;
 
-  // if F = emptyset
-  if (F.empty())
+  // if (workC = emptyset and workF = emptyset) or L = emptyset
+  if ((workF.empty() && workC.empty()) || L.empty())
   {
     // The labelling for the current state.
     apma_state& root = M.label(M.root());
@@ -517,13 +571,13 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
     // L' := L'[s -> (R, P)]
     if (PrintConstructionSteps) { mCRL2log(info) << ") \n"; }
   }
-  else
+  else if (!workF.empty())
   {
-    // Find the smallest automaton for all positions.
-    while(!F.empty())
+    // Find the smallest automaton for all positions, only perform consistency checks when matching is finished (for now).
+    while (!workF.empty())
     {
       // pos := select(F).
-      position pos = select(F, L);
+      position pos = select(workF, L);
 
       // A temporary automaton for the current choice.
       Automaton M_prime;
@@ -579,13 +633,13 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
             arguments.push_back(position_variable(var_position));
           }
 
-          M_prime.merge(s_prime, construct_apma(assign_at_position(pref, pos, application(symbol, arguments.begin(), arguments.end())), L));
+          M_prime.merge(s_prime, construct_apma(assign_at_position(pref, pos, application(symbol, arguments.begin(), arguments.end())), L, E, N));
           max_arity = std::max(max_arity, arity);
         }
         else
         {
           // In this case the symbol is just a function symbol.
-          M_prime.merge(s_prime, construct_apma(assign_at_position(pref, pos, symbol), L));
+          M_prime.merge(s_prime, construct_apma(assign_at_position(pref, pos, symbol), L, E, N));
         }
       }
 
@@ -613,7 +667,7 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
         M_prime.add_transition(M_prime.root(), m_dontcare_index, s_prime);
         //if (PrintConstructionSteps) { mCRL2log(info) << "added transition from " << state << " with label " << static_cast<atermpp::aterm>(dontcare()) << " to state " << s_prime << ".\n"; }
 
-        M_prime.merge(s_prime, construct_apma(assign_at_position(pref, pos, dontcare()), L));
+        M_prime.merge(s_prime, construct_apma(assign_at_position(pref, pos, dontcare()), L, E, N));
       }
 
       if (EnableBruteForce)
@@ -621,12 +675,12 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
         // Try all possible positions until the smallest automaton has been found.
         if (M_prime.size() < (M.size() == 1 ? std::numeric_limits<std::size_t>::max() : M.size()))
         {
-          //mCRL2log(debug) << "Created smallest automaton of size " << M_prime.size() << " for position " << pos << "\n";
+          if (PrintConstructionSteps) { mCRL2log(debug) << "Created smallest automaton of size " << M_prime.size() << " for position " << pos << "\n"; }
           M = M_prime;
         }
 
         // Remove the selection position from the possibilies.
-        F.erase(pos);
+        workF.erase(pos);
       }
       else
       {
@@ -634,6 +688,41 @@ typename AdaptiveMatcher<Substitution>::Automaton AdaptiveMatcher<Substitution>:
         M = M_prime;
         break;
       }
+    }
+  }
+  else
+  {
+    // Add the consistency checks
+    assert(!workC.empty());
+    std::pair<std::size_t, std::size_t> compare = *workC.begin();
+    workC.clear();
+
+    // The labelling for the current state.
+    apma_state& root = M.label(M.root());
+    root.compare = compare;
+
+    if (PrintConstructionSteps) { mCRL2log(info) << "compare = (" << compare.first << ", " << compare.second << ")\n"; }
+
+    // M := M[S := (S cup {s'})], where s' is a fresh state.
+    std::size_t s_cmark = M.add_state();
+
+    // M := M[delta := (delta := delta(s, cmark) -> s')
+    M.add_transition(M.root(), m_equal_index, s_cmark);
+    {
+      std::set<std::pair<std::size_t, std::size_t>> new_E = E;
+      new_E.insert(compare);
+      M.merge(s_cmark, construct_apma(pref, L, new_E, N));
+    }
+
+    // M := M[S := (S cup {s'})], where s' is a fresh state.
+    std::size_t s_xmark = M.add_state();
+
+    // M := M[delta := (delta := delta(s, cmark) -> s')
+    M.add_transition(M.root(), m_not_equal_index, s_xmark);
+    {
+      std::set<std::pair<std::size_t, std::size_t>> new_N = N;
+      new_N.insert(compare);
+      M.merge(s_xmark, construct_apma(pref, L, E, new_N));
     }
   }
 
