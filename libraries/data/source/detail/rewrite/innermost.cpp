@@ -128,6 +128,120 @@ data_expression InnermostRewriter::apply_substitution(const data_expression& ter
   }
 }
 
+class standard_expression : public data_expression
+{
+public:
+  standard_expression(const data_expression& expression)
+    : data_expression(expression)
+  {}
+};
+
+/// \brief Print a data expression in the standard way.
+std::ostream& operator<<(std::ostream& stream, const standard_expression& dummy)
+{
+  const auto& term = static_cast<data_expression>(dummy);
+
+  // If t in variables
+  if (is_variable(term))
+  {
+    const auto& var = static_cast<const data::variable&>(term);
+    stream << var.name();
+  }
+  // Else if t in function_symbols (This is an extra case handled by h() in the pseudocode).
+  else if (is_function_symbol(term))
+  {
+    const auto& function_symbol = static_cast<const data::function_symbol&>(term);
+    stream << function_symbol.name();
+  }
+  // Else if t is of the form lambda x . u
+  else if (is_abstraction(term))
+  {
+    const auto& abstraction = static_cast<const data::abstraction&>(term);
+    if (is_forall_binder(abstraction.binding_operator()))
+    {
+      stream << "forall ";
+    }
+    else if (is_exists_binder(abstraction.binding_operator()))
+    {
+      stream << "exists ";
+    }
+    else if (is_lambda_binder(abstraction.binding_operator()))
+    {
+      stream << "lambda ";
+    }
+
+    bool first = true;
+    for (const variable& var : abstraction.variables())
+    {
+      if (!first)
+      {
+        stream << ", ";
+      }
+
+      stream << var.name() << " : " << var.sort();
+      first = false;
+    }
+    stream << " . " << standard_expression(abstraction.body());
+  }
+  // Else (t is of the form h(u_1, ..., u_n)).
+  else if (is_where_clause(term))
+  {
+    const where_clause& w = atermpp::down_cast<where_clause>(term);
+    stream << standard_expression(w.body()) << " where ";
+
+    // Print the assignments.
+    bool first = true;
+    for (const assignment& assign : w.assignments())
+    {
+      if (!first)
+      {
+        stream << ", ";
+      }
+
+      stream << assign.lhs() << " := " << standard_expression(assign.lhs());
+      first = false;
+    }
+  }
+  else
+  {
+    assert(is_application(term));
+    const auto& appl = static_cast<const data::application&>(term);
+
+    stream << standard_expression(appl.head()) << "(";
+
+    bool first = true;
+    for (const data_expression& arg : appl)
+    {
+      if (!first)
+      {
+        stream << ", ";
+      }
+
+      stream << standard_expression(arg);
+      first = false;
+    }
+
+    stream << ")";
+  }
+
+  return stream;
+}
+
+class standard_equation : public data_equation
+{
+public:
+  standard_equation(const data_equation& equation)
+    : data_equation(equation)
+  {}
+};
+
+std::ostream& operator<<(std::ostream& stream, const standard_equation& equation)
+{
+  const auto& eq = static_cast<const data_equation&>(equation);
+  stream << standard_expression(eq.condition()) <<  " -> " << standard_expression(eq.lhs()) << " = " << standard_expression(eq.rhs());
+  return stream;
+}
+
 data_expression InnermostRewriter::rewrite_impl(const data_expression& term, const substitution_type& sigma)
 {
   // If t in variables
@@ -162,7 +276,7 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
     if (is_normal_form(term))
     {
       // By definition a normal form does not match any rewrite rule.
-      if (PrintRewriteSteps) { mCRL2log(info) << "Term " << term << " is in normal form.\n"; }
+      if (PrintRewriteSteps) { mCRL2log(info) << "Term " << standard_expression(term) << " is in normal form.\n"; }
 
       if constexpr (TrackNormalForms == NormalForm::Tag)
       {
@@ -189,7 +303,7 @@ data_expression InnermostRewriter::rewrite_impl(const data_expression& term, con
 
         if (PrintRewriteSteps)
         {
-          mCRL2log(info) << "Found " << term << " to " << (*it).second << " in the rewrite cache.\n";
+          mCRL2log(info) << "Found " << standard_expression(term) << " to " << standard_expression((*it).second) << " in the rewrite cache.\n";
         }
 
         return (*it).second;
@@ -221,7 +335,7 @@ data_expression InnermostRewriter::rewrite_abstraction(const abstraction& abstra
 
     if (PrintRewriteSteps)
     {
-      mCRL2log(info) << "Applied alpha-conversion to " << abstraction << " resulting in " << result << "\n";
+      mCRL2log(info) << "Applied alpha-conversion to " << standard_expression(abstraction) << " resulting in " << standard_expression(result) << "\n";
     }
 
     return static_cast<data_expression>(result);
@@ -247,7 +361,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
   {
     if (!is_function_symbol(head_rewritten))
     {
-      mCRL2log(error) << "Term " << appl << " is higher-order.\n";
+      mCRL2log(error) << "Term " << standard_expression(appl) << " is higher-order.\n";
       throw mcrl2::runtime_error("Higher-order rewriting is disabled (EnableHigherOrder = false).");
     }
   }
@@ -280,7 +394,7 @@ data_expression InnermostRewriter::rewrite_application(const application& appl, 
 
     if (PrintRewriteSteps)
     {
-      mCRL2log(info) << "Applied beta-reduction to" << appl << " resulting in " << result << "\n";
+      mCRL2log(info) << "Applied beta-reduction to" << standard_expression(appl) << " resulting in " << standard_expression(result) << "\n";
     }
 
     return result;
@@ -295,7 +409,7 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
 {
   // (R, sigma') := match(h'(u_1', ..., u_n')),
   //std::set<data_expression> results;
-  if (PrintRewriteSteps) { mCRL2log(info) << "Rewriting " << expression << "\n"; }
+  if (PrintRewriteSteps) { mCRL2log(info) << "Rewriting " << standard_expression(expression) << "\n"; }
 
   data_expression rhs;
   bool defined = false;
@@ -310,7 +424,7 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
       {
         if (EnableConditions)
         {
-          if (PrintRewriteSteps) { mCRL2log(info) << "Rewriting condition " << match.equation().condition() << "\n"; }
+          if (PrintRewriteSteps) { mCRL2log(info) << "Rewriting condition " << standard_expression(match.equation().condition()) << "\n"; }
           if (rewrite_impl(apply_substitution(match.equation().condition(), matching_sigma, match.condition_stack(), identity), m_identity) != sort_bool::true_())
           {
             continue;
@@ -334,7 +448,7 @@ data_expression InnermostRewriter::rewrite_single(const data_expression& express
             return mark_normal_form(expression);
           });
 
-        if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << expression << " to " << rhs << ".\n"; } // using rule " << match.equation() << "\n"; }
+        if (PrintRewriteSteps) { mCRL2log(info) << "Rewrote " << standard_expression(expression) << " to " << standard_expression(rhs) << "using rule " << standard_equation(match.equation()) << "\n"; }
         defined = true;
       }
       else
@@ -414,7 +528,7 @@ void InnermostRewriter::print_rewrite_metrics()
 
     for (auto& result : counts)
     {
-      mCRL2log(info) << "Applied rule " << result.first << " " << result.second << " times.\n";
+      mCRL2log(info) << "Applied rule " << standard_equation(result.first) << " " << result.second << " times.\n";
     }
 
     m_application_count.clear();
