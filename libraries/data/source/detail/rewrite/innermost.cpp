@@ -530,8 +530,6 @@ void InnermostRewriter::print_rewrite_metrics()
     {
       mCRL2log(info) << "Applied rule " << standard_equation(result.first) << " " << result.second << " times.\n";
     }
-
-    m_application_count.clear();
   }
 
   if (CountRewriteCacheMetric)
