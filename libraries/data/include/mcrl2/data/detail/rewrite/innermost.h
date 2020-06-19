@@ -34,6 +34,7 @@ public:
   using substitution_type = Rewriter::substitution_type;
 
   InnermostRewriter(const data_specification& data_spec, const used_data_equation_selector& selector);
+  ~InnermostRewriter();
 
   // Begin of the Rewriter interface.
   data_expression rewrite(const data_expression &term, substitution_type &sigma) override;
@@ -92,6 +93,9 @@ private:
   std::unordered_map<data_equation, std::size_t, std::hash<atermpp::aterm_appl>> m_application_count; ///< For every rewrite rule, counts the number of times that it was applied.
 
   mcrl2::utilities::cache_metric m_rewrite_cache_metric;
+
+  std::size_t m_nof_rewrite = 0; ///< Count the number of times rewrite() was called.
+  std::size_t m_nof_rewrite_impl = 0; ///< Count the number of times rewrite_impl() was called.
 };
 
 }
