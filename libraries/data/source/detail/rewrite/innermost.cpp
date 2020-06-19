@@ -59,7 +59,7 @@ constexpr NormalForm TrackNormalForms = NormalForm::Tag;
 constexpr bool EnableCaching = false;
 
 /// \brief Enables construction stacks to reconstruct the right-hand sides bottom up.
-constexpr bool EnableConstructionStack = true;
+constexpr bool EnableConstructionStack = false;
 
 using namespace mcrl2;
 using namespace mcrl2::data;
@@ -69,7 +69,7 @@ using namespace mcrl2::log;
 
 /// \brief Checks every equation in the given data specification.
 /// \returns A vector of equations from the data specifications that pass the given selector.
-data_equation_vector filter_data_specification(const data_specification& data_spec, const used_data_equation_selector& selector)
+inline data_equation_vector filter_data_specification(const data_specification& data_spec, const used_data_equation_selector& selector)
 {
   data_equation_vector equations;
 
@@ -144,7 +144,7 @@ public:
 };
 
 /// \brief Print a data expression in the standard way.
-std::ostream& operator<<(std::ostream& stream, const standard_expression& dummy)
+inline std::ostream& operator<<(std::ostream& stream, const standard_expression& dummy)
 {
   const auto& term = static_cast<data_expression>(dummy);
 
@@ -242,7 +242,7 @@ public:
   {}
 };
 
-std::ostream& operator<<(std::ostream& stream, const standard_equation& equation)
+inline std::ostream& operator<<(std::ostream& stream, const standard_equation& equation)
 {
   const auto& eq = static_cast<const data_equation&>(equation);
   stream << standard_expression(eq.condition()) <<  " -> " << standard_expression(eq.lhs()) << " = " << standard_expression(eq.rhs());
@@ -552,6 +552,7 @@ void InnermostRewriter::print_rewrite_metrics()
     if (CountRewriteCacheMetric)
     {
       mCRL2log(info) << "Rewrite cache " << m_rewrite_cache_metric.message() << ".\n";
+    }
   }
 }
 
