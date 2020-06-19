@@ -16,6 +16,6 @@ std::string cache_metric::message() const
 {
   std::stringstream str;
   std::size_t total_count = m_hit_count + m_miss_count;
-  str << m_hit_count << " times found out of " << total_count << " calls (" << static_cast<double>(m_hit_count) / static_cast<double>(m_miss_count) * 100 << " %)";
+  str << m_hit_count << " times found out of " << total_count << " calls (" << (static_cast<double>(m_hit_count) / static_cast<double>(total_count)) * 100.0 << " %)";
   return str.str();
 }
