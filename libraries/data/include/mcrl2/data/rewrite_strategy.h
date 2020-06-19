@@ -12,8 +12,8 @@ namespace data
 /// \brief The strategy of the rewriter.
 enum rewrite_strategy
 {
-  innermost,                  /** \brief Standard rewriter */
   jitty,                      /** \brief JITty */
+  innermost,                  /** \brief Innermost rewriter */
 #ifdef MCRL2_JITTYC_AVAILABLE
   jitty_compiling,            /** \brief Compiling JITty */
   jitty_prover,               /** \brief JITty + Prover */
