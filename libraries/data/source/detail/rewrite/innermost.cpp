@@ -38,7 +38,7 @@ constexpr bool EnableCheckConfluence = false;
 constexpr bool CountRewriteSteps = false;
 
 /// \brief Count number of total rewrites.
-constexpr bool CountRewriteCalls = true;
+constexpr bool CountRewriteCalls = false;
 
 /// \brief Counts the number of times that the cache was used succesfull, its size and the number of insertions.
 constexpr bool CountRewriteCacheMetric = false;

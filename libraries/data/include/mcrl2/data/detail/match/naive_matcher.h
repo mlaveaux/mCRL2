@@ -15,11 +15,7 @@
 
 #include <vector>
 
-namespace mcrl2
-{
-namespace data
-{
-namespace detail
+namespace mcrl2::data::detail
 {
 
 /// \brief Implements the naive matching algorithm with several (simple) extensions.
@@ -91,8 +87,6 @@ private:
   std::vector<linear_data_equation> m_equations;
 };
 
-} // namespace detail
-} // namespace data
-} // namespace mcrl2
+} // namespace mcrl2::data::detail
 
 #endif // MCRL2_DATA_DETAIL_NAIVE_MATCHER_H

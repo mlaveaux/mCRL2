@@ -20,11 +20,7 @@
 
 #include <vector>
 
-namespace mcrl2
-{
-namespace data
-{
-namespace detail
+namespace mcrl2::data::detail
 {
 
 /// \brief Represents the unnamed variable omega.
@@ -150,9 +146,7 @@ private:
   std::vector<atermpp::unprotected_aterm> m_subterms; ///< A mapping from indices to subterms.
 };
 
-} // namespace detail
-} // namespace data
-} // namespace mcrl2
+} // namespace mcrl2::data::detail
 
 // Explicit instantiations.
 
