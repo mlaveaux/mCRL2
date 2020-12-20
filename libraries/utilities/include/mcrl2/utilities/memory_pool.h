@@ -75,21 +75,16 @@ public:
   /// \brief Reuses memory from block and allocates a new block when
   ///        no slots are free.
   /// \returns A pointer to a block of memory that can store an object of type T.
+  /// \threadsafe
   T* allocate()
   {
-    // Enterting critical section, only allow one process to allocate at the time.
-    if (ThreadSafe)
-    {
-      m_block_mutex.lock();
-    }
+    // Only allow one thread to allocate at the time.
+    if constexpr (ThreadSafe) { m_block_mutex.lock(); }
 
     if (!m_freelist.empty())
     {
       T& element = m_freelist.pop_front();
-      if (ThreadSafe)
-      {
-        m_block_mutex.unlock();
-      }
+      if constexpr (ThreadSafe) { m_block_mutex.unlock(); }
       return &element;
     }
 
@@ -104,10 +99,7 @@ public:
     // The object was last written as this slot is not part of the freelist.
     T& slot = (m_blocks.front()[m_current_index++]).element();
 
-    if (ThreadSafe)
-    {
-      m_block_mutex.unlock();
-    }
+    if constexpr (ThreadSafe) { m_block_mutex.unlock(); }
     assert(contains(&slot));
     return &slot;
   }

@@ -82,30 +82,36 @@ MCRL2_UNORDERED_SET_TEMPLATES
 template<typename ...Args>
 auto MCRL2_UNORDERED_SET_CLASS::emplace(Args&&... args) -> std::pair<iterator, bool>
 {
-  // First rehash, such that this bucket can not be invalidated afterwards.
-  rehash_if_needed();
+  // Compute the hash and corresponding bucket.
+  size_type bucket_index = find_bucket_index(args...);
 
-  size_type bucket_index;
-  iterator it;
+  // Searching the current bucket list is safe and can be performed without locking.
   if constexpr (allow_transparent)
   {
-    bucket_index = find_bucket_index(args...);
-    it = find_impl(bucket_index, args...);
+    iterator it = find_impl(bucket_index, args...);
+
+    if (it != end())
+    {
+      return std::make_pair(it, false);
+    }
+    else
+    {
+      return emplace_impl(bucket_index, std::forward<Args>(args)...);
+    }
   }
   else
   {
     Key object(std::forward<Args>(args)...);
-    bucket_index = find_bucket_index(object);
-    it = find_impl(bucket_index, object);
-  }
+    iterator it = find_impl(bucket_index, object);
 
-  if (it != end())
-  {
-    return std::make_pair(it, false);
-  }
-  else
-  {
-    return emplace_impl(bucket_index, std::forward<Args>(args)...);
+    if (it != end())
+    {
+      return std::make_pair(it, false);
+    }
+    else
+    {
+      return emplace_impl(bucket_index, object);
+    }
   }
 }
 
@@ -221,8 +227,6 @@ void MCRL2_UNORDERED_SET_CLASS::rehash(std::size_t number_of_buckets)
     bucket_type& bucket = m_buckets[find_bucket_index(old_keys.front())];
     bucket.splice_front(bucket.before_begin(), old_keys);
   }
-
-  // The number of elements remain the same, so don't change this counter.
 }
 
 template<typename T>
@@ -239,7 +243,7 @@ void print_performance_statistics(const T& unordered_set)
     ++histogram[bucket_length];
   }
 
-  mCRL2log(mcrl2::log::debug, "Performance") << "Table stores " << unordered_set.size() << " keys, in " << unordered_set.bucket_count() << " buckets.\n";
+  mCRL2log(mcrl2::log::info, "Performance") << "Table stores " << unordered_set.size() << " keys in " << unordered_set.bucket_count() << " buckets.\n";
 
   for (std::size_t i = 0; i < histogram.size(); ++i)
   {
@@ -253,12 +257,40 @@ MCRL2_UNORDERED_SET_TEMPLATES
 template<typename ...Args>
 auto MCRL2_UNORDERED_SET_CLASS::emplace_impl(size_type bucket_index, Args&&... args) -> std::pair<iterator, bool>
 {
-  // Construct a new node and put it at the front of the bucket list.
-  auto& bucket = m_buckets[bucket_index];
-  bucket.emplace_front(m_allocator, std::forward<Args>(args)...);
+  bucket_type& bucket = m_buckets[bucket_index];
 
-  ++m_number_of_elements;
-  return std::make_pair(iterator(m_buckets.begin() + bucket_index, m_buckets.end(), bucket.before_begin(), bucket.begin()), true);
+  if constexpr (ThreadSafe)
+  {
+    // Obtain exclusive access to this bucket.
+    std::lock_guard g(m_bucket_mutexes[bucket_index % m_bucket_mutexes.size()]);
+
+    iterator it = find_impl(bucket_index, std::forward<Args>(args)...);
+    if (it != end())
+    {
+      // This element has been inserted in the mean time.
+      return std::make_pair(it, false);
+    }
+    else
+    {
+      // Construct a new node and put it at the front of the bucket list.
+      bucket.emplace_front(m_allocator, std::forward<Args>(args)...);
+      ++m_number_of_elements;
+
+      // Construct the iterator.
+      iterator it(m_buckets.begin() + bucket_index, m_buckets.end(), bucket.before_begin(), bucket.begin());
+      return std::make_pair(it, true);
+    }
+  }
+  else
+  {
+    // Construct a new node and put it at the front of the bucket list.
+    bucket.emplace_front(m_allocator, std::forward<Args>(args)...);
+    ++m_number_of_elements;
+
+    // Construct the iterator.
+    iterator it(m_buckets.begin() + bucket_index, m_buckets.end(), bucket.before_begin(), bucket.begin());
+    return std::make_pair(it, true);
+  }
 }
 
 MCRL2_UNORDERED_SET_TEMPLATES
@@ -325,7 +357,7 @@ auto MCRL2_UNORDERED_SET_CLASS::find_impl(size_type bucket_index, const Args&...
 MCRL2_UNORDERED_SET_TEMPLATES
 void MCRL2_UNORDERED_SET_CLASS::rehash_if_needed()
 {
-  if (load_factor() >= max_load_factor() && !ThreadSafe)
+  if (load_factor() >= max_load_factor())
   {
     rehash(m_buckets.size() * 2);
   }

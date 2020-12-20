@@ -14,6 +14,7 @@
 #include "mcrl2/utilities/detail/bucket_list.h"
 
 #include <cmath>
+#include <mutex>
 
 namespace mcrl2::utilities
 {
@@ -52,6 +53,7 @@ private:
   using bucket_type = detail::bucket_list<Key, Allocator>;
   using bucket_iterator = typename std::vector<bucket_type>::iterator;
   using const_bucket_iterator = typename std::vector<bucket_type>::const_iterator;
+  using mutex_type = std::mutex;
 
   template<typename Key_, typename T, typename Hash_, typename KeyEqual, typename Allocator_, bool ThreadSafe_>
   friend class unordered_map;
@@ -253,6 +255,7 @@ public:
   /// \brief Inserts an element Key(args...) into the set if it did not already exist.
   /// \returns A pair of the iterator pointing to the element and a boolean that is true iff
   ///         a new element was inserted (as opposed to it already existing in the set).
+  /// \threadsafe
   template<typename ...Args>
   std::pair<iterator, bool> emplace(Args&&... args);
 
@@ -310,6 +313,10 @@ public:
   /// \details Not standard.
   size_type capacity() const noexcept { return m_buckets.size(); }
 
+  /// \brief Resizes the hash table if necessary.
+  /// \details Not standard.
+  void rehash_if_needed();
+
 private:
   template<typename Key_, typename T, typename Hash_, typename KeyEqual, typename Allocator_, bool ThreadSafe_>
   friend class unordered_map;
@@ -341,9 +348,6 @@ private:
   template<typename ...Args>
   const_iterator find_impl(size_type bucket_index, const Args&... args) const;
 
-  /// \brief Resizes the hash table if required.
-  void rehash_if_needed();
-
   /// \brief True iff the hash and equals functions allow transparent lookup,
   static constexpr bool allow_transparent = is_transparent<Hash>() && is_transparent<Equals>();
 
@@ -354,6 +358,9 @@ private:
   size_type m_buckets_mask;
 
   std::vector<bucket_type> m_buckets;
+
+  /// \brief A number of a locks for threadsafe emplace on parts of the hashtable.
+  std::array<mutex_type, 256> m_bucket_mutexes;
 
   float m_max_load_factor = 1.0f;
 
