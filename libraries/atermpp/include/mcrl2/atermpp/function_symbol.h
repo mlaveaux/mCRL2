@@ -22,6 +22,7 @@ class function_symbol
   friend struct std::hash<function_symbol>;
 
 public:
+  function_symbol() = default;
 
   /// \brief Defines a function symbol from a name and arity combination.
   function_symbol(const std::string& name, const std::size_t arity_)
@@ -32,23 +33,6 @@ public:
   function_symbol(detail::_function_symbol::ref&& f)
    : m_function_symbol(std::forward<detail::_function_symbol::ref>(f))
   {}
-
-  function_symbol()
-  {}
-
-  /// \brief Destructor
-  ~function_symbol()
-  {
-    // The function symbol that was moved from should not reduce reference counter.
-    if (m_function_symbol.defined())
-    {
-      m_function_symbol->decrement_reference_count();
-      if (m_function_symbol->reference_count() == 0)
-      {
-        destroy();
-      }
-    }
-  }
 
   /// This class has non-trivial destructor so declare default copy and move operators.
   function_symbol(const function_symbol& other) noexcept = default;

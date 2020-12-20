@@ -57,7 +57,7 @@ public:
 
   ~function_symbol_generator()
   {
-    detail::g_term_pool().get_symbol_pool().deregister(m_prefix);
+    detail::g_term_pool().get_symbol_pool().deregister_prefix(m_prefix);
   }
 
   /// \brief Generates a unique function symbol with the given prefix followed by a number.

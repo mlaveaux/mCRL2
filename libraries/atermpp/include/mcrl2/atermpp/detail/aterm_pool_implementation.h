@@ -211,6 +211,7 @@ void aterm_pool::collect()
   // Keep track of the duration for marking and reset for sweep.
   auto mark_duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - timestamp).count();
   timestamp = std::chrono::system_clock::now();
+
   // Collect all terms that are not reachable or marked.
   m_int_storage.sweep();
   std::get<0>(m_appl_storage).sweep();
@@ -246,7 +247,9 @@ void aterm_pool::collect()
       << mark_duration + sweep_duration << " ms (marking " << mark_duration << " ms + sweep " << sweep_duration << " ms).\n";
   }
 
-  get_symbol_pool().print_performance_stats();
+  // Also garbage collect the symbol pool.
+  m_function_symbol_pool.sweep();
+
   print_performance_statistics();
 }
 

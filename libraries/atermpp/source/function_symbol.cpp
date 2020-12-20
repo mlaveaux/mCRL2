@@ -23,10 +23,3 @@ function_symbol::function_symbol(const std::string& name, const std::size_t arit
 global_function_symbol::global_function_symbol(const std::string& name, const std::size_t arity) :
   function_symbol(g_term_pool<true>().get_symbol_pool().create(name, arity, true))
 {}
-
-void function_symbol::destroy()
-{
-  assert(m_function_symbol.get() != nullptr);
-  g_term_pool().get_symbol_pool().destroy(*m_function_symbol.get());
-}
-

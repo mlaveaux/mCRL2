@@ -158,7 +158,7 @@ aterm ATERM_POOL_STORAGE::create_appl_dynamic(const function_symbol& symbol,
 ATERM_POOL_STORAGE_TEMPLATES
 void ATERM_POOL_STORAGE::print_performance_stats(const char* identifier) const
 {
-  if (EnableTermHashtableMetrics)
+  if (EnableHashtableMetrics)
   {
     mCRL2log(mcrl2::log::info, "Performance") << "g_term_pool(" << identifier << ") hashtable:\n";
     print_performance_statistics(m_term_set);

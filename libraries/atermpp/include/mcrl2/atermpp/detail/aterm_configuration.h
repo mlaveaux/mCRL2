@@ -22,7 +22,7 @@ constexpr static bool GlobalThreadSafe = false;
 constexpr static bool EnableGarbageCollectionMetrics = false;
 
 /// \brief Enable to print hashtable collision, size and number of buckets.
-constexpr static bool EnableTermHashtableMetrics = false;
+constexpr static bool EnableHashtableMetrics = false;
 
 /// \brief Enable to obtain the percentage of terms found compared to allocated.
 constexpr static bool EnableTermCreationMetrics = false;

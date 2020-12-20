@@ -42,28 +42,43 @@ public:
   /// \brief Increment the reference count by one.
   void increment_reference_count() const
   {
-    ++m_reference_count;
+    if constexpr (ThreadSafe)
+    {
+      // Garbage collection has a strict barrier; increments and decrements only have to be atomic, but reordering is allowed.
+      m_reference_count.fetch_add(1, std::memory_order_relaxed);
+    }
+    else
+    {
+      ++m_reference_count;
+    }
     increment_reference_count_changes();
   }
 
   /// \brief Decrement the reference count by one.
   void decrement_reference_count() const
   {
-    --m_reference_count;
+    if constexpr (ThreadSafe)
+    {
+      m_reference_count.fetch_sub(1, std::memory_order_relaxed);
+    }
+    else
+    {
+      ++m_reference_count;
+    }
     increment_reference_count_changes();
   }
 
   /// \brief Obtain the number of times that this reference count has changed.
-  static std::size_t& reference_count_changes()
+  static std::atomic<std::size_t>& reference_count_changes()
   {
-    static std::size_t g_reference_count_changes;
+    static std::atomic<std::size_t> g_reference_count_changes;
     return g_reference_count_changes;
   }
 
   /// \brief Increment the number of reference count changes.
   static void increment_reference_count_changes()
   {
-    if (EnableReferenceCountMetrics)
+    if constexpr (EnableReferenceCountMetrics)
     {
       ++reference_count_changes();
     }
@@ -119,6 +134,14 @@ public:
     : m_reference(other.m_reference)
   {
     other.m_reference = nullptr;
+  }
+
+  ~shared_reference()
+  {
+    if (defined())
+    {
+      m_reference->decrement_reference_count();
+    }
   }
 
   /// \brief Copy assignment constructor.
