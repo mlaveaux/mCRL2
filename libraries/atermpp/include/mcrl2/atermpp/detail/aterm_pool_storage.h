@@ -116,14 +116,11 @@ public:
   ///        mark() was called first.
   void sweep();
 
+  /// \brief Resizes the hash table if necessary.
+  void resize_if_needed();
+
   /// \returns The number of terms stored in this storage.
   std::size_t size() const { return m_term_set.size(); }
-
-  /// \brief A fake copy constructor to fix the issues with GCC 4 and 5.
-  aterm_pool_storage(const aterm_pool_storage& other) :
-    m_pool(other.m_pool),
-    m_term_set(std::move(other.m_term_set))
-  {}
 
   /// \brief Check that all arguments of a term application are marked properly.
   bool verify_mark();
