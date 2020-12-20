@@ -113,6 +113,8 @@ public:
   /// \returns The pool of function symbols.
   function_symbol_pool& get_symbol_pool() { return m_function_symbol_pool; }
 private:
+  /// \brief Resizes the hash tables if necessary.
+  inline void resize_if_needed();
 
   /// Storage for the function symbols.
   function_symbol_pool m_function_symbol_pool;
@@ -135,8 +137,9 @@ private:
   /// Storage for term_appl with a dynamic number of arguments larger than 7.
   arbitrary_function_application_storage m_appl_dynamic_storage;
 
-  /// Track the number of  terms destroyed and reduce the freelist.
-  std::size_t m_countUntilCollection;
+  /// Counter for number of terms added before garbage collection is triggered.
+  std::size_t m_count_until_collection = 0;
+  std::size_t m_count_until_resize = 0;
 
   /// It can happen that during create_appl with converter the converter generates new terms.
   /// As such these terms might only be protected after the term_appl was actually created.
@@ -146,7 +149,7 @@ private:
   bool m_deferred_garbage_collection = false;
 
   /// Enable automatically triggered garbage collection.
-  bool m_enable_garbage_collection = true;
+  bool m_enable_garbage_collection = EnableGarbageCollection;
 
   /// Represents an empty list.
   aterm m_empty_list;

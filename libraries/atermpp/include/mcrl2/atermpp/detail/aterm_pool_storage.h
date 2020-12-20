@@ -171,7 +171,7 @@ private:
   // Various performance statistics.
 
   mcrl2::utilities::cache_metric m_term_metric; ///< Count the number of times a term has been found in or is added to the set.
-  std::size_t m_erasedBlocks = 0; /// The number of blocks that have been erased in the block allocator.
+  std::size_t m_erased_blocks = 0; /// The number of blocks that have been erased in the block allocator.
 };
 
 } // namespace detail

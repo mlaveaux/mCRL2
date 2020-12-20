@@ -160,18 +160,18 @@ void ATERM_POOL_STORAGE::print_performance_stats(const char* identifier) const
 {
   if constexpr (EnableHashtableMetrics)
   {
-    mCRL2log(mcrl2::log::info, "Performance") << "g_term_pool(" << identifier << ") hashtable:\n";
+    mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool_storage(" << identifier << ") hashtable:\n";
     print_performance_statistics(m_term_set);
   }
 
-  if constexpr (EnableGarbageCollectionMetrics && m_erasedBlocks > 0)
+  if (EnableGarbageCollectionMetrics && m_erased_blocks > 0)
   {
-    mCRL2log(mcrl2::log::info, "Performance") << "g_term_pool(" << identifier << "): Consolidate removed " << m_erasedBlocks << " blocks.\n";
+    mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool_storage(" << identifier << "): Consolidate removed " << m_erased_blocks << " blocks.\n";
   }
 
   if constexpr (EnableCreationMetrics)
   {
-    mCRL2log(mcrl2::log::info, "Performance") << "g_term_pool(" << identifier << "): emplace() " << m_term_metric.message() << ".\n";
+    mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool_storage(" << identifier << "): emplace() " << m_term_metric.message() << ".\n";
   }
 }
 
@@ -214,7 +214,13 @@ void ATERM_POOL_STORAGE::sweep()
   }
 
   // Clean up unnecessary blocks.
-  m_erasedBlocks = m_term_set.get_allocator().consolidate();
+  m_erased_blocks = m_term_set.get_allocator().consolidate();
+}
+
+ATERM_POOL_STORAGE_TEMPLATES
+void ATERM_POOL_STORAGE::resize_if_needed()
+{
+  m_term_set.rehash_if_needed();
 }
 
 /// PRIVATE FUNCTIONS

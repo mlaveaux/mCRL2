@@ -34,7 +34,7 @@ aterm_pool::aterm_pool() :
   ),
   m_appl_dynamic_storage(*this)
 {
-  m_countUntilCollection = capacity();
+  m_count_until_collection = capacity();
   
   // Initialize the empty list.
   m_empty_list = create_appl(m_function_symbol_pool.as_empty_list());
@@ -150,15 +150,9 @@ std::size_t aterm_pool::capacity() const noexcept
 
 void aterm_pool::trigger_collection()
 {
-  // Defer garbage collection when it happens too often.
-  if (!EnableGarbageCollection)
+  if (m_count_until_collection > 0)
   {
-    return;
-  }
-
-  if (m_countUntilCollection > 0)
-  {
-    --m_countUntilCollection;
+    --m_count_until_collection;
   }
   else
   {
@@ -166,9 +160,15 @@ void aterm_pool::trigger_collection()
     {
       collect();
     }
+  }
 
-    // Use some heuristics to determine when the next collection is called.
-    m_countUntilCollection = size();
+  if (m_count_until_resize >0)
+  {
+    --m_count_until_resize;
+  }
+  else
+  {
+    resize_if_needed();
   }
 }
 
@@ -243,14 +243,17 @@ void aterm_pool::collect()
     auto sweep_duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - timestamp).count();
 
     // Print the relevant information.
-    mCRL2log(mcrl2::log::info, "Performance") << "g_term_pool(): Garbage collected " << old_size - size() << " terms, " << size() << " terms remaining in "
+    mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool: Garbage collected " << old_size - size() << " terms, " << size() << " terms remaining in "
       << mark_duration + sweep_duration << " ms (marking " << mark_duration << " ms + sweep " << sweep_duration << " ms).\n";
   }
+
+  print_performance_statistics();
 
   // Also garbage collect the symbol pool.
   m_function_symbol_pool.sweep();
 
-  print_performance_statistics();
+  // Use some heuristics to determine when the next collection is called.
+  m_count_until_collection = size();
 }
 
 void aterm_pool::enable_garbage_collection(bool enable)
@@ -360,7 +363,7 @@ aterm aterm_pool::create_appl_dynamic(const function_symbol& sym,
   {
     if (EnableGarbageCollectionMetrics)
     {
-      mCRL2log(mcrl2::log::info, "Performance") << "g_term_pool(): Deferred garbage collection.\n";
+      mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool: Deferred garbage collection.\n";
     }
     collect();
   }
@@ -384,7 +387,7 @@ void aterm_pool::print_performance_statistics() const
 
   if (mcrl2::utilities::EnableReferenceCountMetrics)
   {
-    mCRL2log(mcrl2::log::info, "Performance") << "g_term_pool(): all reference counts changed " << _aterm::reference_count_changes() << " times.\n";
+    mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool: all reference counts changed " << _aterm::reference_count_changes() << " times.\n";
   }
 }
 
@@ -401,6 +404,51 @@ std::size_t aterm_pool::size() const
     + std::get<6>(m_appl_storage).size()
     + std::get<7>(m_appl_storage).size()
     + m_appl_dynamic_storage.size();
+}
+
+// private functions
+
+void aterm_pool::resize_if_needed()
+{
+  auto timestamp = std::chrono::system_clock::now();
+  std::size_t old_capacity = capacity();
+
+  // Attempt to resize all storages.
+  m_function_symbol_pool.resize_if_needed();
+
+  m_int_storage.resize_if_needed();
+  std::get<0>(m_appl_storage).resize_if_needed();
+  std::get<1>(m_appl_storage).resize_if_needed();
+  std::get<2>(m_appl_storage).resize_if_needed();
+  std::get<3>(m_appl_storage).resize_if_needed();
+  std::get<4>(m_appl_storage).resize_if_needed();
+  std::get<5>(m_appl_storage).resize_if_needed();
+  std::get<6>(m_appl_storage).resize_if_needed();
+  std::get<7>(m_appl_storage).resize_if_needed();
+  m_appl_dynamic_storage.resize_if_needed();
+
+  // Find the hash table with the least amount of free buckets.
+  m_count_until_resize = std::min(m_int_storage.capacity() - m_int_storage.size(),
+                         std::min(std::get<0>(m_appl_storage).capacity() - std::get<0>(m_appl_storage).size(),
+                         std::min(std::get<1>(m_appl_storage).capacity() - std::get<1>(m_appl_storage).size(),
+                         std::min(std::get<2>(m_appl_storage).capacity() - std::get<2>(m_appl_storage).size(),
+                         std::min(std::get<3>(m_appl_storage).capacity() - std::get<3>(m_appl_storage).size(),
+                         std::min(std::get<4>(m_appl_storage).capacity() - std::get<4>(m_appl_storage).size(),
+                         std::min(std::get<5>(m_appl_storage).capacity() - std::get<5>(m_appl_storage).size(),
+                         std::min(std::get<6>(m_appl_storage).capacity() - std::get<6>(m_appl_storage).size(),
+                         std::min(std::get<7>(m_appl_storage).capacity() - std::get<7>(m_appl_storage).size(),
+                                  m_appl_dynamic_storage.capacity() - m_appl_dynamic_storage.size())))))))));
+
+  if (EnableGarbageCollectionMetrics && old_capacity != capacity())
+  {
+    // Only print if a resize actually took place.
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - timestamp).count();
+
+    mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool: Resized hash tables from " << old_capacity << " to " << capacity() << " capacity in "
+                                              << duration << " ms.\n";
+
+    print_performance_statistics();
+  }
 }
 
 } // namespace detail
