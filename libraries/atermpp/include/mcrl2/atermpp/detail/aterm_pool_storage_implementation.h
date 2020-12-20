@@ -158,18 +158,18 @@ aterm ATERM_POOL_STORAGE::create_appl_dynamic(const function_symbol& symbol,
 ATERM_POOL_STORAGE_TEMPLATES
 void ATERM_POOL_STORAGE::print_performance_stats(const char* identifier) const
 {
-  if (EnableHashtableMetrics)
+  if constexpr (EnableHashtableMetrics)
   {
     mCRL2log(mcrl2::log::info, "Performance") << "g_term_pool(" << identifier << ") hashtable:\n";
     print_performance_statistics(m_term_set);
   }
 
-  if (EnableGarbageCollectionMetrics && m_erasedBlocks > 0)
+  if constexpr (EnableGarbageCollectionMetrics && m_erasedBlocks > 0)
   {
     mCRL2log(mcrl2::log::info, "Performance") << "g_term_pool(" << identifier << "): Consolidate removed " << m_erasedBlocks << " blocks.\n";
   }
 
-  if (EnableTermCreationMetrics)
+  if constexpr (EnableCreationMetrics)
   {
     mCRL2log(mcrl2::log::info, "Performance") << "g_term_pool(" << identifier << "): emplace() " << m_term_metric.message() << ".\n";
   }
@@ -300,11 +300,11 @@ aterm ATERM_POOL_STORAGE::emplace(Args&&... args)
   if (added)
   {
     // A new term was created
-    if (EnableTermCreationMetrics) { m_term_metric.miss(); }
+    if constexpr (EnableCreationMetrics) { m_term_metric.miss(); }
     m_pool.trigger_collection();
     call_creation_hook(term);
   }
-  else if (EnableTermCreationMetrics)
+  else if constexpr (EnableCreationMetrics)
   {
     // A term was already found in the set.
     m_term_metric.hit();

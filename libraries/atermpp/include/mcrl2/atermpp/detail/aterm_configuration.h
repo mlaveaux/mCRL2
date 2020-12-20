@@ -25,7 +25,7 @@ constexpr static bool EnableGarbageCollectionMetrics = false;
 constexpr static bool EnableHashtableMetrics = false;
 
 /// \brief Enable to obtain the percentage of terms found compared to allocated.
-constexpr static bool EnableTermCreationMetrics = false;
+constexpr static bool EnableCreationMetrics = false;
 
 /// \brief Enable garbage collection.
 constexpr static bool EnableGarbageCollection = true && !GlobalThreadSafe;

@@ -38,14 +38,14 @@ function_symbol function_symbol_pool::create(const std::string& name, const std:
   auto it = m_symbol_set.find(name, arity);
   if (it != m_symbol_set.end())
   {
-    if (EnableFunctionSymbolMetrics) { m_function_symbol_metrics.hit(); }
+    if constexpr (EnableCreationMetrics) { m_function_symbol_metrics.hit(); }
 
     // The element already exists so return it.
     return function_symbol(_function_symbol::ref(&(*it)));
   }
   else
   {
-    if (EnableFunctionSymbolMetrics) { m_function_symbol_metrics.miss(); }
+    if constexpr (EnableCreationMetrics) { m_function_symbol_metrics.miss(); }
     const _function_symbol& symbol = *m_symbol_set.emplace(name, arity).first;
     if (check_for_registered_functions)
     {
@@ -178,7 +178,7 @@ void function_symbol_pool::sweep()
     print_performance_statistics(m_symbol_set);
   }
 
-  if constexpr (EnableTermCreationMetrics)
+  if constexpr (EnableCreationMetrics)
   {
     mCRL2log(mcrl2::log::info, "Performance") << "function_symbol_pool: Stores " << size() << " function symbols. create() " << m_function_symbol_metrics.message() << ".\n";
   }
