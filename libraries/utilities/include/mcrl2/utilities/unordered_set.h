@@ -40,14 +40,19 @@ class unordered_map;
 ///          Additionally, the unordered_set supports allocators that have a specialized allocate_args(args...) to vary the allocation size based
 ///          on the arguments used. This is required to store _aterm_appl classes with the function symbol arity determined at runtime.
 ///
+///          Threadsafe enables concurrent emplace calls, and Resize enables automatically resizing if needed.
+///
 /// \todo Does not implement std::unordered_map equal_range and swap.
 template<typename Key,
          typename Hash = std::hash<Key>,
          typename Equals = std::equal_to<Key>,
          typename Allocator = std::allocator<Key>,
-         bool ThreadSafe = false>
+         bool ThreadSafe = false,
+         bool Resize = true>
 class unordered_set
 {
+  static_assert (!(ThreadSafe && Resize), "ThreadSafe cannot be enabled together with automatic resizing.");
+
 private:
   /// \brief Combine the bucket list and a lock that locks modifications to the bucket list.
   using bucket_type = detail::bucket_list<Key, Allocator>;

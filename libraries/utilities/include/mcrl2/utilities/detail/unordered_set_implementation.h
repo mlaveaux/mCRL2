@@ -10,8 +10,8 @@
 #define MCRL2_UTILITIES_UNORDERED_SET_IMPLEMENTATION_H
 #pragma once
 
-#define MCRL2_UNORDERED_SET_TEMPLATES template<typename Key, typename Hash, typename Equals, typename Allocator, bool ThreadSafe>
-#define MCRL2_UNORDERED_SET_CLASS unordered_set<Key, Hash, Equals, Allocator, ThreadSafe>
+#define MCRL2_UNORDERED_SET_TEMPLATES template<typename Key, typename Hash, typename Equals, typename Allocator, bool ThreadSafe, bool Resize>
+#define MCRL2_UNORDERED_SET_CLASS unordered_set<Key, Hash, Equals, Allocator, ThreadSafe, Resize>
 
 #include "mcrl2/utilities/unordered_set.h"
 
@@ -82,12 +82,11 @@ MCRL2_UNORDERED_SET_TEMPLATES
 template<typename ...Args>
 auto MCRL2_UNORDERED_SET_CLASS::emplace(Args&&... args) -> std::pair<iterator, bool>
 {
-  // Compute the hash and corresponding bucket.
-  size_type bucket_index = find_bucket_index(args...);
-
   // Searching the current bucket list is safe and can be performed without locking.
   if constexpr (allow_transparent)
   {
+    // Compute the hash and corresponding bucket.
+    size_type bucket_index = find_bucket_index(args...);
     iterator it = find_impl(bucket_index, args...);
 
     if (it != end())
@@ -101,7 +100,9 @@ auto MCRL2_UNORDERED_SET_CLASS::emplace(Args&&... args) -> std::pair<iterator, b
   }
   else
   {
+    // Compute the hash and corresponding bucket.
     Key object(std::forward<Args>(args)...);
+    size_type bucket_index = find_bucket_index(object);
     iterator it = find_impl(bucket_index, object);
 
     if (it != end())
@@ -257,6 +258,8 @@ MCRL2_UNORDERED_SET_TEMPLATES
 template<typename ...Args>
 auto MCRL2_UNORDERED_SET_CLASS::emplace_impl(size_type bucket_index, Args&&... args) -> std::pair<iterator, bool>
 {
+  if constexpr (Resize) { rehash_if_needed(); }
+
   bucket_type& bucket = m_buckets[bucket_index];
 
   if constexpr (ThreadSafe)

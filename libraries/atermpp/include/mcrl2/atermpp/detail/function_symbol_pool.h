@@ -76,7 +76,8 @@ private:
     function_symbol_hasher,
     function_symbol_equals,
     mcrl2::utilities::block_allocator<_function_symbol, 1024, GlobalThreadSafe>,
-    GlobalThreadSafe>;
+    GlobalThreadSafe,
+    false>;
 
   /// \brief Stores the underlying function symbols.
   unordered_set m_symbol_set;

@@ -31,8 +31,7 @@ class aterm_pool;
 template<typename Element,
          typename Hash = aterm_hasher<>,
          typename Equals = aterm_equals<>,
-         std::size_t N = DynamicNumberOfArguments,
-         bool ThreadSafe = false>
+         std::size_t N = DynamicNumberOfArguments>
 class aterm_pool_storage : private mcrl2::utilities::noncopyable
 {
 public:
@@ -42,8 +41,9 @@ public:
     Equals,
     typename std::conditional<N == DynamicNumberOfArguments,
       atermpp::detail::_aterm_appl_allocator<>,
-      mcrl2::utilities::block_allocator<Element, 1024, ThreadSafe>>::type,
-    ThreadSafe>;
+      mcrl2::utilities::block_allocator<Element, 1024, GlobalThreadSafe>>::type,
+    GlobalThreadSafe,
+    false>;
   using iterator = typename unordered_set::iterator;
   using const_iterator = typename unordered_set::const_iterator;
 

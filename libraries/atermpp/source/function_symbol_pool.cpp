@@ -191,10 +191,7 @@ void function_symbol_pool::sweep()
 
 void function_symbol_pool::resize_if_needed()
 {
-  if (m_symbol_set.load_factor() >= m_symbol_set.max_load_factor())
-  {
-    m_symbol_set.rehash(m_symbol_set.bucket_count() * 2);
-  }
+  m_symbol_set.rehash_if_needed();
 }
 
 void function_symbol_pool::print_performance_stats() const noexcept

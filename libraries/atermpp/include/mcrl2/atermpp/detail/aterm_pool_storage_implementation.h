@@ -46,8 +46,8 @@ inline std::array<unprotected_aterm, N> construct_arguments(InputIterator it, In
   return arguments;
 }
 
-#define ATERM_POOL_STORAGE_TEMPLATES template<typename Element, typename Hash, typename Equals, std::size_t N, bool ThreadSafe>
-#define ATERM_POOL_STORAGE aterm_pool_storage<Element, Hash, Equals, N, ThreadSafe>
+#define ATERM_POOL_STORAGE_TEMPLATES template<typename Element, typename Hash, typename Equals, std::size_t N>
+#define ATERM_POOL_STORAGE aterm_pool_storage<Element, Hash, Equals, N>
 
 ATERM_POOL_STORAGE_TEMPLATES
 ATERM_POOL_STORAGE::aterm_pool_storage(aterm_pool& pool) :

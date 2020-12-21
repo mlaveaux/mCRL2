@@ -162,7 +162,7 @@ void aterm_pool::trigger_collection()
     }
   }
 
-  if (m_count_until_resize >0)
+  if (m_count_until_resize > 0)
   {
     --m_count_until_resize;
   }
