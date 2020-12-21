@@ -82,59 +82,63 @@ void ATERM_POOL_STORAGE::add_deletion_hook(function_symbol sym, term_callback ca
 }
 
 ATERM_POOL_STORAGE_TEMPLATES
-aterm ATERM_POOL_STORAGE::create_int(std::size_t value)
+bool ATERM_POOL_STORAGE::create_int(aterm& term, std::size_t value)
 {
-  return emplace(value);
+  return emplace(term, value);
 }
 
 ATERM_POOL_STORAGE_TEMPLATES
-aterm ATERM_POOL_STORAGE::create_term(const function_symbol& symbol)
+bool ATERM_POOL_STORAGE::create_term(aterm& term, const function_symbol& symbol)
 {
   assert(symbol.arity() == 0);
-  return emplace(symbol);
+  return emplace(term, symbol);
 }
 
 ATERM_POOL_STORAGE_TEMPLATES
 template<class ...Terms>
-aterm ATERM_POOL_STORAGE::create_appl(const function_symbol& symbol, const Terms&... arguments)
+bool ATERM_POOL_STORAGE::create_appl(aterm& term, const function_symbol& symbol, const Terms&... arguments)
 {
   assert(symbol.arity() == sizeof...(arguments));
-  return emplace(symbol, arguments...);
+  return emplace(term, symbol, arguments...);
 }
 
 ATERM_POOL_STORAGE_TEMPLATES
 template<typename ForwardIterator>
-aterm ATERM_POOL_STORAGE::create_appl_iterator(const function_symbol& symbol,
+bool ATERM_POOL_STORAGE::create_appl_iterator(aterm& term,
+                                        const function_symbol& symbol,
                                         ForwardIterator begin,
                                         ForwardIterator end)
 {
-  return emplace(symbol, begin, end);
+  return emplace(term, symbol, begin, end);
 }
 
 ATERM_POOL_STORAGE_TEMPLATES
 template<typename InputIterator, typename TermConverter>
-aterm ATERM_POOL_STORAGE::create_appl_iterator(const function_symbol& symbol,
+bool ATERM_POOL_STORAGE::create_appl_iterator(aterm& term,
+                                        const function_symbol& symbol,
                                         TermConverter converter,
                                         InputIterator begin,
                                         InputIterator end)
 {
   std::array<unprotected_aterm, N> arguments = construct_arguments<N>(begin, end, converter);
-  return emplace(symbol, arguments);
+  return emplace(term, symbol, arguments);
 }
 
 ATERM_POOL_STORAGE_TEMPLATES
 template<typename ForwardIterator>
-aterm ATERM_POOL_STORAGE::create_appl_dynamic(const function_symbol& symbol,
+bool ATERM_POOL_STORAGE::create_appl_dynamic(aterm& term,
+                                        const function_symbol& symbol,
                                         ForwardIterator begin,
                                         ForwardIterator end)
 {
-  return emplace(symbol, begin, end);
+  return emplace(term, symbol, begin, end);
 }
 
 ATERM_POOL_STORAGE_TEMPLATES
 template<typename InputIterator,
           typename TermConverter>
-aterm ATERM_POOL_STORAGE::create_appl_dynamic(const function_symbol& symbol,
+bool ATERM_POOL_STORAGE::create_appl_dynamic(aterm& term,
+                                        const function_symbol& symbol,
                                         TermConverter converter,
                                         InputIterator it,
                                         InputIterator end)
@@ -152,7 +156,7 @@ aterm ATERM_POOL_STORAGE::create_appl_dynamic(const function_symbol& symbol,
   assert(it == end);
 
   // Find or create a new term and return it.
-  return emplace(symbol, arguments.begin(), arguments.end());
+  return emplace(term, symbol, arguments.begin(), arguments.end());
 }
 
 ATERM_POOL_STORAGE_TEMPLATES
@@ -298,16 +302,18 @@ typename ATERM_POOL_STORAGE::iterator ATERM_POOL_STORAGE::destroy(iterator it)
 
 ATERM_POOL_STORAGE_TEMPLATES
 template<typename ...Args>
-aterm ATERM_POOL_STORAGE::emplace(Args&&... args)
+bool ATERM_POOL_STORAGE::emplace(aterm& term, Args&&... args)
 {
   auto [it, added] = m_term_set.emplace(std::forward<Args>(args)...);
 
-  aterm term(&(*it));
+  // Assign the inserted term.
+  atermpp::unprotected_aterm result(&(*it));
+  term.swap(result);
+
   if (added)
   {
     // A new term was created
     if constexpr (EnableCreationMetrics) { m_term_metric.miss(); }
-    m_pool.trigger_collection();
     call_creation_hook(term);
   }
   else if constexpr (EnableCreationMetrics)
@@ -316,7 +322,7 @@ aterm ATERM_POOL_STORAGE::emplace(Args&&... args)
     m_term_metric.hit();
   }
 
-  return term;
+  return added;
 }
 
 ATERM_POOL_STORAGE_TEMPLATES

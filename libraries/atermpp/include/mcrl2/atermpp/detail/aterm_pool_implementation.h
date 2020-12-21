@@ -37,7 +37,7 @@ aterm_pool::aterm_pool() :
   m_count_until_collection = capacity();
   
   // Initialize the empty list.
-  m_empty_list = create_appl(m_function_symbol_pool.as_empty_list());
+  create_appl(m_empty_list, m_function_symbol_pool.as_empty_list());
 }
 
 aterm_pool::~aterm_pool()
@@ -261,62 +261,79 @@ void aterm_pool::enable_garbage_collection(bool enable)
   m_enable_garbage_collection = enable;
 }
 
-aterm aterm_pool::create_int(size_t val)
+void aterm_pool::create_int(aterm& term, size_t val)
 {
-  return m_int_storage.create_int(val);
+  if (m_int_storage.create_int(term, val))
+  {
+    trigger_collection();
+  }
 }
 
-aterm aterm_pool::create_term(const atermpp::function_symbol& sym)
+void aterm_pool::create_term(aterm& term, const atermpp::function_symbol& sym)
 {
-  return std::get<0>(m_appl_storage).create_term(sym);
+  if (std::get<0>(m_appl_storage).create_term(term, sym))
+  {
+    trigger_collection();
+  }
 }
 
 template<class ...Terms>
-aterm aterm_pool::create_appl(const function_symbol& sym, const Terms&... arguments)
+void aterm_pool::create_appl(aterm& term, const function_symbol& sym, const Terms&... arguments)
 {
-  return std::get<sizeof...(Terms)>(m_appl_storage).create_appl(sym, arguments...);
+  if (std::get<sizeof...(Terms)>(m_appl_storage).create_appl(term, sym, arguments...))
+  {
+    trigger_collection();
+  }
 }
 
 template<typename ForwardIterator>
-aterm aterm_pool::create_appl_dynamic(const function_symbol& sym,
+void aterm_pool::create_appl_dynamic(aterm& term,
+                            const function_symbol& sym,
                             ForwardIterator begin,
                             ForwardIterator end)
 {
   const std::size_t arity = sym.arity();
 
+  bool added = false;
   switch(arity)
   {
   case 0:
-    return std::get<0>(m_appl_storage).create_term(sym);
+    added = std::get<0>(m_appl_storage).create_term(term, sym);
     break;
   case 1:
-    return std::get<1>(m_appl_storage).template create_appl_iterator<ForwardIterator>(sym, begin, end);
+    added = std::get<1>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
     break;
   case 2:
-    return std::get<2>(m_appl_storage).template create_appl_iterator<ForwardIterator>(sym, begin, end);
+    added = std::get<2>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
     break;
   case 3:
-    return std::get<3>(m_appl_storage).template create_appl_iterator<ForwardIterator>(sym, begin, end);
+    added = std::get<3>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
     break;
   case 4:
-    return std::get<4>(m_appl_storage).template create_appl_iterator<ForwardIterator>(sym, begin, end);
+    added = std::get<4>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
     break;
   case 5:
-    return std::get<5>(m_appl_storage).template create_appl_iterator<ForwardIterator>(sym, begin, end);
+    added = std::get<5>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
     break;
   case 6:
-    return std::get<6>(m_appl_storage).template create_appl_iterator<ForwardIterator>(sym, begin, end);
+    added = std::get<6>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
     break;
   case 7:
-    return std::get<7>(m_appl_storage).template create_appl_iterator<ForwardIterator>(sym, begin, end);
+    added = std::get<7>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
     break;
   default:
-    return m_appl_dynamic_storage.create_appl_dynamic(sym, begin, end);
+    added = m_appl_dynamic_storage.create_appl_dynamic(term, sym, begin, end);
+  }
+
+  if (added)
+  {
+    trigger_collection();
   }
 }
 
 template<typename InputIterator, typename ATermConverter>
-aterm aterm_pool::create_appl_dynamic(const function_symbol& sym,
+void aterm_pool::create_appl_dynamic(aterm& term,
+                            const function_symbol& sym,
                             ATermConverter converter,
                             InputIterator begin,
                             InputIterator end)
@@ -324,36 +341,41 @@ aterm aterm_pool::create_appl_dynamic(const function_symbol& sym,
   ++m_creation_depth;
 
   const std::size_t arity = sym.arity();
-  aterm result;
 
+  bool added = false;
   switch(arity)
   {
   case 0:
-    result = std::get<0>(m_appl_storage).create_term(sym);
+    added = std::get<0>(m_appl_storage).create_term(term, sym);
     break;
   case 1:
-    result = std::get<1>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(sym, converter, begin, end);
+    added = std::get<1>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
     break;
   case 2:
-    result = std::get<2>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(sym, converter, begin, end);
+    added = std::get<2>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
     break;
   case 3:
-    result = std::get<3>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(sym, converter, begin, end);
+    added = std::get<3>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
     break;
   case 4:
-    result = std::get<4>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(sym, converter, begin, end);
+    added = std::get<4>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
     break;
   case 5:
-    result = std::get<5>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(sym, converter, begin, end);
+    added = std::get<5>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
     break;
   case 6:
-    result = std::get<6>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(sym, converter, begin, end);
+    added = std::get<6>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
     break;
   case 7:
-    result = std::get<7>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(sym, converter, begin, end);
+    added = std::get<7>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
     break;
   default:
-    result = m_appl_dynamic_storage.create_appl_dynamic(sym, converter, begin, end);
+    added = m_appl_dynamic_storage.create_appl_dynamic(term, sym, converter, begin, end);
+  }
+
+  if (added)
+  {
+    trigger_collection();
   }
 
   --m_creation_depth;
@@ -367,8 +389,6 @@ aterm aterm_pool::create_appl_dynamic(const function_symbol& sym,
     }
     collect();
   }
-
-  return result;
 }
 
 void aterm_pool::print_performance_statistics() const

@@ -36,8 +36,6 @@ using are_terms = mcrl2::utilities::forall<std::is_convertible<Terms, unprotecte
 class _aterm : public mcrl2::utilities::shared_reference_counted<_aterm, GlobalThreadSafe>, mcrl2::utilities::noncopyable
 {
 public:
-  using ref = mcrl2::utilities::shared_reference<const _aterm>;
-
   /// \brief Create a term from a function symbol.
   _aterm(const function_symbol& symbol) :
     m_function_symbol(symbol)

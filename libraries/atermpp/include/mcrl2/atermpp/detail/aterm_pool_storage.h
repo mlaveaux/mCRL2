@@ -62,48 +62,52 @@ public:
   std::size_t capacity() const noexcept { return m_term_set.capacity(); }
 
   /// \brief Creates a integral term with the given value.
-  aterm create_int(std::size_t value);
+  bool create_int(aterm& term, std::size_t value);
 
   /// \brief Creates a term with the given function symbol.
-  aterm create_term(const function_symbol& sym);
+  bool create_term(aterm& term, const function_symbol& sym);
 
   /// \brief Creates a function application with the given function symbol and arguments.
   template<class ...Terms>
-  aterm create_appl(const function_symbol& sym, const Terms&... arguments);
+  bool create_appl(aterm& term, const function_symbol& sym, const Terms&... arguments);
 
   /// \brief Creates a function application with the given function symbol and the arguments
   ///       as provided by the given iterator. This function assumes that the arity of the
   ///       function symbol is equal to N and that the iterator has exactly N elements.
   template<typename ForwardIterator>
-  aterm create_appl_iterator(const function_symbol& sym,
-                              ForwardIterator begin,
-                              ForwardIterator end);
+  bool create_appl_iterator(aterm& term,
+                            const function_symbol& sym,
+                            ForwardIterator begin,
+                            ForwardIterator end);
 
   /// \brief Creates a function application with the given function symbol and the arguments
   ///       as provided by the given iterator. This function assumes that the arity of the
   ///       function symbol is equal to N and that the iterator has exactly N elements.
   template<typename InputIterator,
            typename TermConverter>
-  aterm create_appl_iterator(const function_symbol& sym,
-                              TermConverter converter,
-                              InputIterator begin,
-                              InputIterator end);
+  bool create_appl_iterator(aterm& term,
+                            const function_symbol& sym,
+                            TermConverter converter,
+                            InputIterator begin,
+                            InputIterator end);
 
   /// \brief Creates a function application with the given function symbol and the arguments
   ///        as provided by the given iterator.
   template<typename ForwardIterator>
-  aterm create_appl_dynamic(const function_symbol& sym,
-                              ForwardIterator begin,
-                              ForwardIterator end);
+  bool create_appl_dynamic(aterm& term,
+                           const function_symbol& sym,
+                           ForwardIterator begin,
+                           ForwardIterator end);
 
   /// \brief Creates a function application with the given function symbol and the arguments
   ///        as provided by the given iterator, but the converter is applied to each argument.
   template<typename InputIterator,
            typename TermConverter>
-  aterm create_appl_dynamic(const function_symbol& sym,
-                              TermConverter converter,
-                              InputIterator begin,
-                              InputIterator end);
+  bool create_appl_dynamic(aterm& term,
+                           const function_symbol& sym,
+                           TermConverter converter,
+                           InputIterator begin,
+                           InputIterator end);
 
   /// \brief Prints various performance statistics for this storage.
   /// \param identifier A string to identify the printed message for this storage.
@@ -142,7 +146,7 @@ private:
 
   /// \brief Inserts a term constructed by the given arguments, checks for existing term.
   template<typename ...Args>
-  aterm emplace(Args&&... args);
+  bool emplace(aterm& term, Args&&... args);
 
   /// \returns True if and only if this term storage can store term applications with a dynamic
   ///          number of arguments.

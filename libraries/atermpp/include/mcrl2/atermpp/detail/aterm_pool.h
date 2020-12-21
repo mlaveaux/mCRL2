@@ -19,16 +19,15 @@ namespace detail
 {
 
 /// Define several specializations of the term pool storage objects.
-using integer_term_storage = aterm_pool_storage<_aterm_int, aterm_int_hasher, aterm_int_equals, 0, GlobalThreadSafe>;
-using term_storage = aterm_pool_storage<_aterm, aterm_hasher_finite<0>, aterm_equals_finite<0>, 0, GlobalThreadSafe>;
+using integer_term_storage = aterm_pool_storage<_aterm_int, aterm_int_hasher, aterm_int_equals, 0>;
+using term_storage = aterm_pool_storage<_aterm, aterm_hasher_finite<0>, aterm_equals_finite<0>, 0>;
 using arbitrary_function_application_storage = aterm_pool_storage<_aterm_appl<1>,
   aterm_hasher<DynamicNumberOfArguments>,
   aterm_equals<DynamicNumberOfArguments>,
-  DynamicNumberOfArguments,
-  GlobalThreadSafe>;
+  DynamicNumberOfArguments>;
 
 template<std::size_t N>
-using function_application_storage = aterm_pool_storage<_aterm_appl<N>, aterm_hasher_finite<N>, aterm_equals_finite<N>, N, GlobalThreadSafe>;
+using function_application_storage = aterm_pool_storage<_aterm_appl<N>, aterm_hasher_finite<N>, aterm_equals_finite<N>, N>;
 
 /// \brief The interface for the term library. Provides the storage of
 ///        of all classes of terms.
@@ -41,7 +40,7 @@ public:
 
   /// \brief Should be able to call mark() from any storage.
   /// \todo Make mark() private and change enable this friend class.
-  template<typename Element, typename Hash, typename Equals, std::size_t N, bool ThreadSafe>
+  template<typename Element, typename Hash, typename Equals, std::size_t N>
   friend class aterm_pool_storage;
 
   inline aterm_pool();
@@ -56,9 +55,6 @@ public:
   /// \brief The number of terms that can be stored without resizing.
   inline std::size_t capacity() const noexcept;
 
-  /// \brief Triggers garbage collection when certain conditions are met.
-  inline void trigger_collection();
-
   /// \brief Triggers garbage collection on all storages.
   inline void collect();
 
@@ -66,20 +62,21 @@ public:
   inline void enable_garbage_collection(bool enable);
 
   /// \brief Creates a integral term with the given value.
-  inline aterm create_int(std::size_t val);
+  inline void create_int(aterm& term, std::size_t val);
 
   /// \brief Creates a term with the given function symbol.
-  inline aterm create_term(const function_symbol& sym);
+  inline void create_term(aterm& term, const function_symbol& sym);
 
   /// \brief Creates a function application with the given function symbol and arguments.
   template<class ...Terms>
-  aterm create_appl(const function_symbol& sym, const Terms&... arguments);
+  inline void create_appl(aterm& term, const function_symbol& sym, const Terms&... arguments);
 
   /// \brief Creates a function application with the given function symbol and the arguments
   ///       as provided by the given iterator. This function assumes that the arity of the
   ///       function symbol is equal to the number of elements in the iterator.
   template<typename ForwardIterator>
-  aterm create_appl_dynamic(const function_symbol& sym,
+  inline void create_appl_dynamic(aterm& term,
+                              const function_symbol& sym,
                               ForwardIterator begin,
                               ForwardIterator end);
 
@@ -87,7 +84,8 @@ public:
   ///       as provided by the given iterator. This function assumes that the arity of the
   ///       function symbol is equal to the number of elements in the iterator.
   template<typename InputIterator, typename ATermConverter>
-  aterm create_appl_dynamic(const function_symbol& sym,
+  inline void create_appl_dynamic(aterm& term,
+                              const function_symbol& sym,
                               ATermConverter convert_to_aterm,
                               InputIterator begin,
                               InputIterator end);
@@ -112,7 +110,11 @@ public:
 
   /// \returns The pool of function symbols.
   function_symbol_pool& get_symbol_pool() { return m_function_symbol_pool; }
+
 private:
+  /// \brief Triggers garbage collection when certain conditions are met.
+  inline void trigger_collection();
+
   /// \brief Resizes the hash tables if necessary.
   inline void resize_if_needed();
 

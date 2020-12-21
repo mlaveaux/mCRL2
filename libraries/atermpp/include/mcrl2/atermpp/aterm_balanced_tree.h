@@ -34,30 +34,35 @@ class term_balanced_tree : public aterm_appl
     static const function_symbol& tree_node_function() { return g_tree_node; }
     static const aterm_appl& empty_tree() { return g_empty_tree; }
 
-    static aterm_appl make_node(const term_balanced_tree& left_tree, const term_balanced_tree& right_tree)
+    static void make_node(aterm& term, const term_balanced_tree& left_tree, const term_balanced_tree& right_tree)
     {
-      return down_cast<aterm_appl>(detail::g_term_pool().create_appl(tree_node_function(), left_tree, right_tree));
+      detail::g_term_pool().create_appl(term, tree_node_function(), left_tree, right_tree);
     }
 
     template < typename ForwardTraversalIterator, class Transformer >
-    aterm_appl make_tree(ForwardTraversalIterator& p, const std::size_t size, Transformer transformer )
+    void make_tree(aterm& term, ForwardTraversalIterator& p, const std::size_t size, Transformer transformer )
     {
       if (size>1)
       {
         std::size_t left_size = (size + 1) >> 1; // size/2 rounded up.
-        const term_balanced_tree left_tree(make_tree(p, left_size, transformer));
+        term_balanced_tree left_tree;
+        make_tree(left_tree, p, left_size, transformer);
         std::size_t right_size = size >> 1; // size/2 rounded down.
-        const term_balanced_tree right_tree(make_tree(p, right_size, transformer));
-        return make_node(left_tree, right_tree);
+        term_balanced_tree right_tree;
+        make_tree(right_tree, p, right_size, transformer);
+
+        make_node(term, left_tree, right_tree);
+        return;
       }
 
       if (size==1)
       {
-        return down_cast<aterm_appl>(static_cast<const aterm&>(transformer(*(p++))));
+        term = down_cast<aterm_appl>(static_cast<const aterm&>(transformer(*(p++))));
+        return;
       }
 
       assert(size==0);
-      return empty_tree();
+      term = empty_tree();
     }
 
     explicit term_balanced_tree(detail::_term_appl* t)
@@ -112,8 +117,8 @@ class term_balanced_tree : public aterm_appl
     /// \param size The size of the range of elements.
     template<typename ForwardTraversalIterator>
     term_balanced_tree(ForwardTraversalIterator first, const std::size_t size)
-      : aterm_appl(make_tree(first, size, [](const Term& t) { return t; }))
     {
+        make_tree(*this, first, size, [](const Term& t) { return t; });
     }
 
     /// \brief Creates an term_balanced_tree with a copy of a range, where a transformer is applied to each term
@@ -123,8 +128,8 @@ class term_balanced_tree : public aterm_appl
     /// \param[in] transformer A class with an operator() that is applied to each term before adding it to the tree.
     template<typename ForwardTraversalIterator, typename Transformer>
     term_balanced_tree(ForwardTraversalIterator first, const std::size_t size, Transformer transformer)
-      : aterm_appl(make_tree(first, size, transformer))
     {
+        make_tree(*this, first, size, transformer);
     }
 
     /// \brief Get the left branch of the tree

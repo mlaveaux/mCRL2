@@ -28,14 +28,14 @@ constexpr std::size_t LengthOfShortList = 10000;  /// \brief The length of a sho
 template <class Term>
 void term_list<Term>::push_front(const Term& el)
 {
-  *this = down_cast<term_list<Term>>(detail::g_term_pool().create_appl(detail::g_term_pool().as_list(), el, *this));
+   detail::g_term_pool().create_appl(*this, detail::g_term_pool().as_list(), el, *this);
 }
 
 template <class Term>
 template<typename ...Args>
 void term_list<Term>::emplace_front(Args&&... arguments)
 {
-  *this = down_cast<term_list<Term>>(detail::g_term_pool().create_appl(detail::g_term_pool().as_list(), Term(std::forward<Args>(arguments)...), *this));
+  detail::g_term_pool().create_appl(*this, detail::g_term_pool().as_list(), Term(std::forward<Args>(arguments)...), *this);
 }
 
 template <typename Term>
