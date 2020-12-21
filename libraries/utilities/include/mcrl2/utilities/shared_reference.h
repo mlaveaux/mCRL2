@@ -10,6 +10,8 @@
 #ifndef MCRL2_UTILITIES_SHARED_REFERENCE_H_
 #define MCRL2_UTILITIES_SHARED_REFERENCE_H_
 
+#include "tagged_pointer.h"
+
 #include <cassert>
 #include <atomic>
 #include <type_traits>
@@ -113,11 +115,6 @@ public:
     assert(defined());
     m_reference->increment_reference_count();
   }
-
-  /// \brief Takes a reference, but do not changes the reference counter.
-  shared_reference(T* reference, bool) noexcept
-    : m_reference(reference)
-  {}
 
   /// \brief Copy constructor.
   shared_reference(const shared_reference<T>& other) noexcept
@@ -239,8 +236,24 @@ public:
     swap(m_reference, other.m_reference);
   }
 
-private:
-  T* m_reference;
+  // These functions break the underlying pointer and reset must be called before accessing it.
+  bool tagged() const noexcept
+  {
+    return mcrl2::utilities::tagged(m_reference);
+  }
+
+  void tag() const
+  {
+    m_reference = mcrl2::utilities::tag(m_reference);
+  }
+
+  void reset() const
+  {
+    m_reference = mcrl2::utilities::pointer(m_reference);
+  }
+
+protected:
+  mutable T* m_reference;
 };
 
 } // namespace utilities

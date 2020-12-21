@@ -230,7 +230,7 @@ void aterm_pool::collect()
 
   for (const auto& pool : m_thread_pools)
   {
-    if (pool->allow_collect())
+    if (!pool->allow_collect())
     {
       // Some thread is still creating a term recursively.
       resume();

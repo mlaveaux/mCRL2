@@ -116,8 +116,10 @@ public:
   /// \param identifier A string to identify the printed message for this storage.
   void print_performance_stats(const char* identifier) const;
 
+#ifdef MCRL2_ATERMPP_REFERENCE_COUNTED
   /// \brief Marks all terms that are reachable and should not be destroyed.
   void mark();
+#endif
 
   /// \brief sweep Destroys all terms that are not reachable. Requires that
   ///        mark() was called first.

@@ -34,7 +34,8 @@ constexpr static bool EnableGarbageCollection = true;
 constexpr static bool EnableVariableRegistrationMetrics = false;
 
 /// \brief Switch between reference counting and tracking term variables.
-//#define MCRL2_ATERMPP_REFERENCE_COUNTED
+/// \details This is a macro because for constexpr booleans we cannot change inheritance and remove members.
+#define MCRL2_ATERMPP_REFERENCE_COUNTED
 
 } // namespace detail
 } // namespace atermpp

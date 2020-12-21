@@ -215,7 +215,7 @@ void ATERM_POOL_STORAGE::print_performance_stats(const char* identifier) const
   }
 }
 
-
+#ifdef MCRL2_ATERMPP_REFERENCE_COUNTED
 ATERM_POOL_STORAGE_TEMPLATES
 void ATERM_POOL_STORAGE::mark()
 {
@@ -229,6 +229,7 @@ void ATERM_POOL_STORAGE::mark()
     }
   }
 }
+#endif
 
 ATERM_POOL_STORAGE_TEMPLATES
 void ATERM_POOL_STORAGE::sweep()
@@ -343,8 +344,12 @@ bool ATERM_POOL_STORAGE::emplace(aterm& term, Args&&... args)
   auto [it, added] = m_term_set.emplace(std::forward<Args>(args)...);
 
   // Assign the inserted term.
+#ifdef MCRL2_ATERMPP_REFERENCE_COUNTED
+  term = atermpp::aterm(&(*it));
+#else
   atermpp::unprotected_aterm result(&(*it));
   term.swap(result);
+#endif
 
   if (added)
   {
