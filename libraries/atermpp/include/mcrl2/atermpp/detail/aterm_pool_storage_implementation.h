@@ -46,6 +46,42 @@ inline std::array<unprotected_aterm, N> construct_arguments(InputIterator it, In
   return arguments;
 }
 
+void mark_term(const _aterm& root, std::stack<std::reference_wrapper<_aterm>>& todo)
+{
+  // Do not use the stack, because this might run out of stack memory for large lists.
+  todo.push(const_cast<_aterm&>(root));
+
+  // Mark the term depth-first to reduce the maximum todo size required.
+  while (!todo.empty())
+  {
+    _aterm& term = todo.top();
+    todo.pop();
+
+    // (Statically) determine the arity of the function application.
+    const std::size_t arity = term.function().arity();
+    _term_appl& term_appl = static_cast<_term_appl&>(term);
+
+    for (std::size_t i = 0; i < arity; ++i)
+    {
+      // Marks all arguments that are not already (marked as) reachable, because the current
+      // term is reachable and as such its arguments are reachable as well.
+      _aterm& argument = *detail::address(term_appl.arg(i));
+      if (!argument.is_reachable())
+      {
+        // Only mark this term if it current is unreachable, because the marking is applied to
+        // the reference counter.
+        argument.mark();
+
+        // Add the argument to be explored as well.
+        todo.push(argument);
+      }
+    }
+
+    // Each argument should be reachable.
+    assert(term.is_reachable());
+  }
+}
+
 #define ATERM_POOL_STORAGE_TEMPLATES template<typename Element, typename Hash, typename Equals, std::size_t N>
 #define ATERM_POOL_STORAGE aterm_pool_storage<Element, Hash, Equals, N>
 
@@ -189,7 +225,7 @@ void ATERM_POOL_STORAGE::mark()
     if (term.is_reachable() && !term.is_marked())
     {
       // Mark all terms (and their subterms) that are reachable, i.e the root set.
-      mark_term(term);
+      mark_term(term, todo);
     }
   }
 }
@@ -329,43 +365,6 @@ ATERM_POOL_STORAGE_TEMPLATES
 constexpr bool ATERM_POOL_STORAGE::is_dynamic_storage() const
 {
   return N == DynamicNumberOfArguments;
-}
-
-ATERM_POOL_STORAGE_TEMPLATES
-void ATERM_POOL_STORAGE::mark_term(const _aterm& root)
-{
-  // Do not use the stack, because this might run out of stack memory for large lists.
-  todo.push(const_cast<_aterm&>(root));
-
-  // Mark the term depth-first to reduce the maximum todo size required.
-  while (!todo.empty())
-  {
-    _aterm& term = todo.top();
-    todo.pop();
-
-    // (Statically) determine the arity of the function application.
-    const std::size_t arity = term.function().arity();
-    _term_appl& term_appl = static_cast<_term_appl&>(term);
-
-    for (std::size_t i = 0; i < arity; ++i)
-    {
-      // Marks all arguments that are not already (marked as) reachable, because the current
-      // term is reachable and as such its arguments are reachable as well.
-      _aterm& argument = *detail::address(term_appl.arg(i));
-      if (!argument.is_reachable())
-      {
-        // Only mark this term if it current is unreachable, because the marking is applied to
-        // the reference counter.
-        argument.mark();
-
-        // Add the argument to be explored as well.
-        todo.push(argument);
-      }
-    }
-
-    // Each argument should be reachable.
-    assert(term.is_reachable());
-  }
 }
 
 ATERM_POOL_STORAGE_TEMPLATES

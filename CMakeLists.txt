@@ -87,6 +87,8 @@ if(MCRL2_ENABLE_CODE_COVERAGE)
 endif()
 
 add_subdirectory(3rd-party/dparser)
+add_subdirectory(3rd-party/hopscotch-map)
+
 if (UNIX)
   add_subdirectory(3rd-party/sylvan/src)
 endif()

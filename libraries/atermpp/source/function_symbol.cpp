@@ -17,9 +17,9 @@ function_symbol detail::g_as_list(g_term_pool<true>().as_list());
 function_symbol detail::g_as_empty_list(g_term_pool<true>().as_empty_list());
 
 function_symbol::function_symbol(const std::string& name, const std::size_t arity, const bool check_for_registered_functions) :
-  function_symbol(g_term_pool().get_symbol_pool().create(name, arity, check_for_registered_functions))
+  function_symbol(g_thread_term_pool().create_function_symbol(name, arity, check_for_registered_functions))
 {}
 
 global_function_symbol::global_function_symbol(const std::string& name, const std::size_t arity) :
-  function_symbol(g_term_pool<true>().get_symbol_pool().create(name, arity, true))
+  function_symbol(g_thread_term_pool().create_function_symbol(name, arity, true))
 {}

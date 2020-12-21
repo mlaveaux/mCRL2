@@ -35,6 +35,7 @@ aterm_pool::aterm_pool() :
   m_appl_dynamic_storage(*this)
 {
   m_count_until_collection = capacity();
+  m_count_until_resize = m_int_storage.capacity();
   
   // Initialize the empty list.
   create_appl(m_empty_list, m_function_symbol_pool.as_empty_list());
@@ -148,18 +149,61 @@ std::size_t aterm_pool::capacity() const noexcept
     + m_appl_dynamic_storage.capacity();
 }
 
+
+void aterm_pool::print_performance_statistics() const
+{
+  m_int_storage.print_performance_stats("integral_storage");
+  std::get<0>(m_appl_storage).print_performance_stats("term_storage");
+  std::get<1>(m_appl_storage).print_performance_stats("function_application_storage_1");
+  std::get<2>(m_appl_storage).print_performance_stats("function_application_storage_2");
+  std::get<3>(m_appl_storage).print_performance_stats("function_application_storage_3");
+  std::get<4>(m_appl_storage).print_performance_stats("function_application_storage_4");
+  std::get<5>(m_appl_storage).print_performance_stats("function_application_storage_5");
+  std::get<6>(m_appl_storage).print_performance_stats("function_application_storage_6");
+  std::get<7>(m_appl_storage).print_performance_stats("function_application_storage_7");
+
+  m_appl_dynamic_storage.print_performance_stats("arbitrary_function_application_storage");
+
+#ifdef MCRL2_ATERMPP_REFERENCE_COUNTED
+  if (mcrl2::utilities::EnableReferenceCountMetrics)
+  {
+    mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool: all reference counts changed " << _aterm::reference_count_changes() << " times.\n";
+  }
+#endif
+  // Print information for the local aterm pools.
+  for (thread_aterm_pool_interface* local : m_thread_pools)
+  {
+    local->print_local_performance_statistics();
+  }
+}
+
+std::size_t aterm_pool::size() const
+{
+  // Determine the total number of terms in any storage.
+  return m_int_storage.size()
+    + std::get<0>(m_appl_storage).size()
+    + std::get<1>(m_appl_storage).size()
+    + std::get<2>(m_appl_storage).size()
+    + std::get<3>(m_appl_storage).size()
+    + std::get<4>(m_appl_storage).size()
+    + std::get<5>(m_appl_storage).size()
+    + std::get<6>(m_appl_storage).size()
+    + std::get<7>(m_appl_storage).size()
+    + m_appl_dynamic_storage.size();
+}
+
+// private
+
 void aterm_pool::trigger_collection()
 {
+  // Defer garbage collection when it happens too often.
   if (m_count_until_collection > 0)
   {
     --m_count_until_collection;
   }
   else
   {
-    if (m_enable_garbage_collection)
-    {
-      collect();
-    }
+    collect();
   }
 
   if (m_count_until_resize > 0)
@@ -174,17 +218,30 @@ void aterm_pool::trigger_collection()
 
 void aterm_pool::collect()
 {
-  if (m_creation_depth > 0)
+  if (!m_enable_garbage_collection) { return; }
+
+  halt();
+  if (m_count_until_collection > 0)
   {
-    m_deferred_garbage_collection = true;
+    // Another thread has performed garbage collection, so we can ignore it.
+    resume();
     return;
   }
 
-  auto timestamp = std::chrono::system_clock::now();
+  for (const auto& pool : m_thread_pools)
+  {
+    if (pool->allow_collect())
+    {
+      // Some thread is still creating a term recursively.
+      resume();
+      return;
+    }
+  }
 
-  m_deferred_garbage_collection = false;
+  auto timestamp = std::chrono::system_clock::now();
   std::size_t old_size = size();
 
+#ifdef MCRL2_ATERMPP_REFERENCE_COUNTED
   // Marks all terms that are reachable via any reachable term to
   // not be garbage collected.
   // For integer and terms without arguments the marking is not needed, because
@@ -197,6 +254,13 @@ void aterm_pool::collect()
   std::get<6>(m_appl_storage).mark();
   std::get<7>(m_appl_storage).mark();
   m_appl_dynamic_storage.mark();
+#else
+  // Instruct each thread_local to mark its terms to be protected.
+  for (const auto& pool : m_thread_pools)
+  {
+    pool->mark();
+  }
+#endif
 
   assert(std::get<0>(m_appl_storage).verify_mark());
   assert(std::get<1>(m_appl_storage).verify_mark());
@@ -213,6 +277,8 @@ void aterm_pool::collect()
   timestamp = std::chrono::system_clock::now();
 
   // Collect all terms that are not reachable or marked.
+  m_function_symbol_pool.sweep();
+
   m_int_storage.sweep();
   std::get<0>(m_appl_storage).sweep();
   std::get<1>(m_appl_storage).sweep();
@@ -237,9 +303,8 @@ void aterm_pool::collect()
   assert(m_appl_dynamic_storage.verify_sweep());
 
   // Print some statistics.
-  if (EnableGarbageCollectionMetrics)
+  if constexpr (EnableGarbageCollectionMetrics)
   {
-    // Update the times
     auto sweep_duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - timestamp).count();
 
     // Print the relevant information.
@@ -249,187 +314,129 @@ void aterm_pool::collect()
 
   print_performance_statistics();
 
-  // Also garbage collect the symbol pool.
-  m_function_symbol_pool.sweep();
-
-  // Use some heuristics to determine when the next collection is called.
+  // Use some heuristics to determine when the next collect should be called automatically.
   m_count_until_collection = size();
+
+  resume();
 }
 
-void aterm_pool::enable_garbage_collection(bool enable)
+function_symbol aterm_pool::create_function_symbol(const std::string& name, const std::size_t arity, const bool check_for_registered_functions)
 {
-  m_enable_garbage_collection = enable;
+  return m_function_symbol_pool.create(name, arity, check_for_registered_functions);
 }
 
-void aterm_pool::create_int(aterm& term, size_t val)
+bool aterm_pool::create_int(aterm& term, size_t val)
 {
-  if (m_int_storage.create_int(term, val))
-  {
-    trigger_collection();
-  }
+  return m_int_storage.create_int(term, val);
 }
 
-void aterm_pool::create_term(aterm& term, const atermpp::function_symbol& sym)
+bool aterm_pool::create_term(aterm& term, const atermpp::function_symbol& sym)
 {
-  if (std::get<0>(m_appl_storage).create_term(term, sym))
-  {
-    trigger_collection();
-  }
+  return std::get<0>(m_appl_storage).create_term(term, sym);
 }
 
 template<class ...Terms>
-void aterm_pool::create_appl(aterm& term, const function_symbol& sym, const Terms&... arguments)
+bool aterm_pool::create_appl(aterm& term, const function_symbol& sym, const Terms&... arguments)
 {
-  if (std::get<sizeof...(Terms)>(m_appl_storage).create_appl(term, sym, arguments...))
-  {
-    trigger_collection();
-  }
+  return std::get<sizeof...(Terms)>(m_appl_storage).create_appl(term, sym, arguments...);
 }
 
 template<typename ForwardIterator>
-void aterm_pool::create_appl_dynamic(aterm& term,
+bool aterm_pool::create_appl_dynamic(aterm& term,
                             const function_symbol& sym,
                             ForwardIterator begin,
                             ForwardIterator end)
 {
   const std::size_t arity = sym.arity();
 
-  bool added = false;
   switch(arity)
   {
   case 0:
-    added = std::get<0>(m_appl_storage).create_term(term, sym);
-    break;
+    return std::get<0>(m_appl_storage).create_term(term, sym);
   case 1:
-    added = std::get<1>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
-    break;
+    return std::get<1>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
   case 2:
-    added = std::get<2>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
-    break;
+    return std::get<2>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
   case 3:
-    added = std::get<3>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
-    break;
+    return std::get<3>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
   case 4:
-    added = std::get<4>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
-    break;
+    return std::get<4>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
   case 5:
-    added = std::get<5>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
-    break;
+    return std::get<5>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
   case 6:
-    added = std::get<6>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
-    break;
+    return std::get<6>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
   case 7:
-    added = std::get<7>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
-    break;
+    return std::get<7>(m_appl_storage).template create_appl_iterator<ForwardIterator>(term, sym, begin, end);
   default:
-    added = m_appl_dynamic_storage.create_appl_dynamic(term, sym, begin, end);
-  }
-
-  if (added)
-  {
-    trigger_collection();
+    return m_appl_dynamic_storage.create_appl_dynamic(term, sym, begin, end);
   }
 }
 
 template<typename InputIterator, typename ATermConverter>
-void aterm_pool::create_appl_dynamic(aterm& term,
+bool aterm_pool::create_appl_dynamic(aterm& term,
                             const function_symbol& sym,
                             ATermConverter converter,
                             InputIterator begin,
                             InputIterator end)
 {
-  ++m_creation_depth;
-
   const std::size_t arity = sym.arity();
-
-  bool added = false;
   switch(arity)
   {
   case 0:
-    added = std::get<0>(m_appl_storage).create_term(term, sym);
-    break;
+    return std::get<0>(m_appl_storage).create_term(term, sym);
   case 1:
-    added = std::get<1>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
-    break;
+    return std::get<1>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
   case 2:
-    added = std::get<2>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
-    break;
+    return std::get<2>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
   case 3:
-    added = std::get<3>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
-    break;
+    return std::get<3>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
   case 4:
-    added = std::get<4>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
-    break;
+    return std::get<4>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
   case 5:
-    added = std::get<5>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
-    break;
+    return std::get<5>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
   case 6:
-    added = std::get<6>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
-    break;
+    return std::get<6>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
   case 7:
-    added = std::get<7>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
-    break;
+    return std::get<7>(m_appl_storage).template create_appl_iterator<InputIterator, ATermConverter>(term, sym, converter, begin, end);
   default:
-    added = m_appl_dynamic_storage.create_appl_dynamic(term, sym, converter, begin, end);
-  }
-
-  if (added)
-  {
-    trigger_collection();
-  }
-
-  --m_creation_depth;
-
-  // Trigger a deferred garbage collection when it was requested and the term has been protected.
-  if (m_creation_depth == 0 && m_deferred_garbage_collection)
-  {
-    if (EnableGarbageCollectionMetrics)
-    {
-      mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool: Deferred garbage collection.\n";
-    }
-    collect();
+    return m_appl_dynamic_storage.create_appl_dynamic(term, sym, converter, begin, end);
   }
 }
 
-void aterm_pool::print_performance_statistics() const
+bool aterm_pool::should_wait()
 {
-  m_int_storage.print_performance_stats("integral_storage");
-  std::get<0>(m_appl_storage).print_performance_stats("term_storage");
-  std::get<1>(m_appl_storage).print_performance_stats("function_application_storage_1");
-  std::get<2>(m_appl_storage).print_performance_stats("function_application_storage_2");
-  std::get<3>(m_appl_storage).print_performance_stats("function_application_storage_3");
-  std::get<4>(m_appl_storage).print_performance_stats("function_application_storage_4");
-  std::get<5>(m_appl_storage).print_performance_stats("function_application_storage_5");
-  std::get<6>(m_appl_storage).print_performance_stats("function_application_storage_6");
-  std::get<7>(m_appl_storage).print_performance_stats("function_application_storage_7");
-
-  m_appl_dynamic_storage.print_performance_stats("arbitrary_function_application_storage");
-
-  if (mcrl2::utilities::EnableReferenceCountMetrics)
-  {
-    mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool: all reference counts changed " << _aterm::reference_count_changes() << " times.\n";
-  }
+  return m_guard.load(std::memory_order::memory_order_acquire);
 }
 
-std::size_t aterm_pool::size() const
+void aterm_pool::register_thread_aterm_pool(thread_aterm_pool_interface &pool)
 {
-  // Determine the total number of terms in any storage.
-  return m_int_storage.size()
-    + std::get<0>(m_appl_storage).size()
-    + std::get<1>(m_appl_storage).size()
-    + std::get<2>(m_appl_storage).size()
-    + std::get<3>(m_appl_storage).size()
-    + std::get<4>(m_appl_storage).size()
-    + std::get<5>(m_appl_storage).size()
-    + std::get<6>(m_appl_storage).size()
-    + std::get<7>(m_appl_storage).size()
-    + m_appl_dynamic_storage.size();
+  if constexpr (GlobalThreadSafe) { m_mutex.lock(); }
+
+  mCRL2log(mcrl2::log::debug) << "Registered thread_local aterm pool\n";
+  m_thread_pools.insert(m_thread_pools.end(), &pool);
+
+  if constexpr (GlobalThreadSafe) { m_mutex.unlock(); }
 }
 
-// private functions
+void aterm_pool::remove_thread_aterm_pool(thread_aterm_pool_interface& pool)
+{
+  if constexpr (GlobalThreadSafe) { m_mutex.lock(); }
+
+  mCRL2log(mcrl2::log::debug) << "Removed thread_local aterm pool\n";
+  auto it = std::find(m_thread_pools.begin(), m_thread_pools.end(), &pool);
+
+  if (it != m_thread_pools.end())
+  {
+    m_thread_pools.erase(it);
+  }
+
+  if constexpr (GlobalThreadSafe) { m_mutex.unlock(); }
+}
 
 void aterm_pool::resize_if_needed()
 {
+  halt();
+
   auto timestamp = std::chrono::system_clock::now();
   std::size_t old_capacity = capacity();
 
@@ -466,9 +473,41 @@ void aterm_pool::resize_if_needed()
 
     mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool: Resized hash tables from " << old_capacity << " to " << capacity() << " capacity in "
                                               << duration << " ms.\n";
+  }
 
+  resume();
+}
+
+void aterm_pool::halt()
+{
+  if constexpr (!GlobalThreadSafe) { return; }
+
+  // Only one thread can halt everything
+  m_mutex.lock();
+
+  // Indicate that threads must wait.
+  m_guard.store(true, std::memory_order::memory_order_release);
+
+  // Wait for all pools to indicate that they are not busy.
+  bool all_finished = true;
+  do
+  {
+    all_finished = true;
+    for (const auto& pool : m_thread_pools)
+    {
+      all_finished = all_finished && !pool->busy();
+    }
     print_performance_statistics();
   }
+  while(!all_finished);
+}
+
+void aterm_pool::resume()
+{
+  if constexpr (!GlobalThreadSafe) { return; }
+
+  m_guard.store(false, std::memory_order::memory_order_release);
+  m_mutex.unlock();
 }
 
 } // namespace detail

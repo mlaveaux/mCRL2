@@ -28,7 +28,13 @@ constexpr static bool EnableHashtableMetrics = false;
 constexpr static bool EnableCreationMetrics = false;
 
 /// \brief Enable garbage collection.
-constexpr static bool EnableGarbageCollection = true && !GlobalThreadSafe;
+constexpr static bool EnableGarbageCollection = true;
+
+/// \brief Keep track of the number of variables registered.
+constexpr static bool EnableVariableRegistrationMetrics = false;
+
+/// \brief Switch between reference counting and tracking term variables.
+//#define MCRL2_ATERMPP_REFERENCE_COUNTED
 
 } // namespace detail
 } // namespace atermpp

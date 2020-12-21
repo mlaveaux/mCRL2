@@ -31,7 +31,7 @@ public:
   /// \brief Constructs an integer term from a value.
   explicit aterm_int(std::size_t value)
   {
-    detail::g_term_pool().create_int(*this, value);
+    detail::g_thread_term_pool().create_int(*this, value);
   }
 
   /// This class has user-declared copy constructor so declare default copy and move operators.

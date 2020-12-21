@@ -25,6 +25,9 @@ namespace detail
 // Forward declaration
 class aterm_pool;
 
+/// \brief Marks a term and recursively all arguments that are not reachable.
+inline void mark_term(const _aterm& root, std::stack<std::reference_wrapper<_aterm>>& todo);
+
 /// \brief This class provides for all types of term storage. It also
 ///       provides garbage collection via its mark and sweep functions.
 /// \details Internally a hash set is used to ensure that the created terms are unique.
@@ -151,9 +154,6 @@ private:
   /// \returns True if and only if this term storage can store term applications with a dynamic
   ///          number of arguments.
   constexpr bool is_dynamic_storage() const;
-
-  /// \brief Marks a term and recursively all arguments that are not reachable.
-  void mark_term(const _aterm& root);
 
   /// \brief Verify that the given term was constructed properly.
   template<std::size_t Arity = N>

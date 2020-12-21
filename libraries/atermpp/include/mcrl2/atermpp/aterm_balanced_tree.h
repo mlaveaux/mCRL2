@@ -36,7 +36,7 @@ class term_balanced_tree : public aterm_appl
 
     static void make_node(aterm& term, const term_balanced_tree& left_tree, const term_balanced_tree& right_tree)
     {
-      detail::g_term_pool().create_appl(term, tree_node_function(), left_tree, right_tree);
+      detail::g_thread_term_pool().create_appl(term, tree_node_function(), left_tree, right_tree);
     }
 
     template < typename ForwardTraversalIterator, class Transformer >

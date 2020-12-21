@@ -94,7 +94,7 @@ public:
             ForwardIterator begin,
             ForwardIterator end)
   {
-    detail::g_term_pool().create_appl_dynamic(*this, sym, begin, end);
+    detail::g_thread_term_pool().create_appl_dynamic(*this, sym, begin, end);
     static_assert((std::is_base_of<aterm, Term>::value),"Term must be derived from an aterm");
     static_assert(sizeof(Term)==sizeof(std::size_t),"Term derived from an aterm must not have extra fields");
     static_assert(!std::is_same<typename ForwardIterator::iterator_category, std::input_iterator_tag>::value,
@@ -139,7 +139,7 @@ public:
             InputIterator end,
             TermConverter converter)
   {
-    detail::g_term_pool().create_appl_dynamic(*this, sym, converter, begin, end);
+    detail::g_thread_term_pool().create_appl_dynamic(*this, sym, converter, begin, end);
     static_assert(std::is_base_of<aterm, Term>::value,"Term must be derived from an aterm");
     static_assert(sizeof(Term)==sizeof(std::size_t),"Term derived from an aterm must not have extra fields");
     static_assert(!std::is_same<typename InputIterator::iterator_category, std::output_iterator_tag>::value,
@@ -150,7 +150,7 @@ public:
   /// \param sym A function symbol.
   term_appl(const function_symbol& sym)
   {
-    detail::g_term_pool().create_term(*this, sym);
+    detail::g_thread_term_pool().create_term(*this, sym);
     static_assert(std::is_base_of<aterm, Term>::value,"Term must be derived from an aterm");
     static_assert(sizeof(Term)==sizeof(std::size_t),"Term derived from an aterm must not have extra fields");
   }
@@ -161,7 +161,7 @@ public:
   template<typename ...Terms>
   term_appl(const function_symbol& symbol, const Terms& ...arguments)
   {
-    detail::g_term_pool().create_appl(*this, symbol, arguments...);
+    detail::g_thread_term_pool().create_appl(*this, symbol, arguments...);
     static_assert(detail::are_terms<Terms...>::value, "Arguments of function application should be terms.");
     static_assert(std::is_base_of<aterm, Term>::value,"Term must be derived from an aterm");
     static_assert(sizeof(Term)==sizeof(std::size_t),"Term derived from an aterm must not have extra fields");
