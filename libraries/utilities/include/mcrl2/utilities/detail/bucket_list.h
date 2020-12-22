@@ -53,18 +53,25 @@ public:
   class node_base
   {
   public:
+    node_base() = default;
+    node_base(node_base&& other)
+    {
+      m_next.store(other.m_next.load());
+      other.m_next = nullptr;
+    }
+
     /// \returns The next bucket in the linked list.
-    node_base* next() const noexcept { return m_next; }
+    node_base* next() const noexcept { return m_next.load(std::memory_order_relaxed); }
 
     /// \returns True if and only there is a next bucket in the linked list.
-    bool has_next() const noexcept { return m_next != nullptr; }
+    bool has_next() const noexcept { return m_next.load(std::memory_order_relaxed) != nullptr; }
 
     /// \brief Set the next pointer to the given next pointer.
-    void set_next(node_base* next) noexcept { m_next = next; }
+    void set_next(node_base* next) noexcept { m_next.store(next, std::memory_order_relaxed); }
   protected:
 
     /// \brief Pointer to the next node.
-    node_base* m_next = nullptr;
+    std::atomic<node_base*> m_next = nullptr;
   };
 
   /// \brief The nodes of the bucket list.

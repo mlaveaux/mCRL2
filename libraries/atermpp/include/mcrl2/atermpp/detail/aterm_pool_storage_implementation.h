@@ -57,8 +57,8 @@ void mark_term(const _aterm& root, std::stack<std::reference_wrapper<_aterm>>& t
     _aterm& term = todo.top();
     todo.pop();
 
-    // (Statically) determine the arity of the function application.
-    const std::size_t arity = term.function().arity();
+    // Determine the arity of the function application.
+    const std::size_t arity = term.get_symbol()->arity();
     _term_appl& term_appl = static_cast<_term_appl&>(term);
 
     for (std::size_t i = 0; i < arity; ++i)
@@ -269,13 +269,17 @@ void ATERM_POOL_STORAGE::resize_if_needed()
 ATERM_POOL_STORAGE_TEMPLATES
 void ATERM_POOL_STORAGE::call_creation_hook(unprotected_aterm term)
 {
+
   for (const auto& [symbol, callback] : m_creation_hooks)
   {
     if (symbol == term.function())
     {
+      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.lock(); }
       callback(static_cast<const aterm&>(term));
+      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.unlock(); }
     }
   }
+
 }
 
 ATERM_POOL_STORAGE_TEMPLATES
@@ -285,7 +289,9 @@ void ATERM_POOL_STORAGE::call_deletion_hook(unprotected_aterm term)
   {
     if (symbol == term.function())
     {
+      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.lock(); }
       callback(static_cast<const aterm&>(term));
+      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.unlock(); }
     }
   }
 }
@@ -297,10 +303,10 @@ bool ATERM_POOL_STORAGE::verify_mark()
   // Check for consistency that if a term is reachable its arguments are as well.
   for (const Element& term : m_term_set)
   {
-    if (term.is_reachable() && term.function().arity() > 0)
+    if (term.is_reachable() && term.get_symbol()->arity() > 0)
     {
        const _term_appl& ta = static_cast<_term_appl&>(const_cast<Element&>(term));
-       for (std::size_t i = 0; i < ta.function().arity(); ++i)
+       for (std::size_t i = 0; i < ta.get_symbol()->arity(); ++i)
        {
          assert(detail::address(ta.arg(i))->is_reachable());
        }
@@ -377,14 +383,14 @@ template<std::size_t Arity>
 bool ATERM_POOL_STORAGE::verify_term(const _aterm& term)
 {
   // Check that a valid function symbol was used and that its arity belongs to this storage.
-  assert(term.function().defined());
-  assert(Arity == DynamicNumberOfArguments ? true : term.function().arity() == N);
+  assert(term.get_symbol() != nullptr);
+  assert(Arity == DynamicNumberOfArguments ? true : term.get_symbol()->arity() == N);
 
   // Check that all of its arguments are defined.
-  if (term.function().arity() > 0)
+  if (term.get_symbol()->arity() > 0)
   {
     const _term_appl& ta = static_cast<const _term_appl&>(term);
-    for (std::size_t i = 0; i < ta.function().arity(); ++i)
+    for (std::size_t i = 0; i < ta.get_symbol()->arity(); ++i)
     {
       assert(ta.arg(i).defined());
       verify_term<DynamicNumberOfArguments>(*detail::address(ta.arg(0)));

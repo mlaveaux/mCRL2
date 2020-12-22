@@ -13,6 +13,8 @@
 #include "mcrl2/atermpp/detail/aterm_pool_storage.h"
 #include "mcrl2/atermpp/detail/function_symbol_pool.h"
 
+#include <condition_variable>
+
 namespace atermpp
 {
 namespace detail
@@ -94,11 +96,9 @@ public:
   const function_symbol& as_empty_list() noexcept { return m_function_symbol_pool.as_empty_list(); }
 
   /// \brief Add a callback that is triggered whenever a term with the given function symbol is created.
-  /// \threadsafe
   inline void add_creation_hook(function_symbol sym, term_callback callback);
 
   /// \brief Add a callback that is triggered whenever a term with the given function symbol is destroyed.
-  /// \threadsafe
   inline void add_deletion_hook(function_symbol sym, term_callback callback);
 
   /// \brief Enable garbage collection when passing true and disable otherwise.
@@ -154,8 +154,11 @@ private:
   /// \threadsafe.
   inline void resize_if_needed();
 
-  /// \brief Wait for the term pool to finish garbage collection.
+  /// \returns True iff the thread aterm pool should call wait().
   inline bool should_wait();
+
+  /// \brief Wait for the term pool to finish garbage collection.
+  inline void wait();
 
   /// \brief Prevent any thread aterm pool from creating or retrieving terms.
   inline void halt();
@@ -166,7 +169,7 @@ private:
   /// \brief The set of local aterm pools.
   std::vector<thread_aterm_pool_interface*> m_thread_pools;
 
-  /// \brief Mutex for adding/removing local pools in m_thread_pools and the creation/deletion hooks.
+  /// \brief Mutex for adding/removing local pools in m_thread_pools.
   std::mutex m_mutex;
 
   /// \brief Storage for the function symbols.
@@ -195,8 +198,10 @@ private:
   std::atomic<std::size_t> m_count_until_resize = 0;
 
   std::atomic<bool> m_guard = false; /// Instructs local thread pools to wait.
-
   std::atomic<bool> m_enable_garbage_collection = EnableGarbageCollection; /// Garbage collection is enabled.
+
+  /// A conditional variable to avoid busy waiting on the guard.
+  std::condition_variable m_wait_variable;
 
   /// Represents an empty list.
   aterm m_empty_list;

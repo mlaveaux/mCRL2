@@ -101,6 +101,12 @@ public:
 #endif
   }
 
+  /// \brief Access to the function symbol pointer when the term is tagged.
+  const detail::_function_symbol* get_symbol() const
+  {
+    return pointer(m_function_symbol.m_function_symbol.get());
+  }
+
 private:
   function_symbol m_function_symbol;
 };

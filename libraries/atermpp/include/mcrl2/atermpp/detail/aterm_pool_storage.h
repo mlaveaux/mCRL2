@@ -141,9 +141,11 @@ private:
   using callback_pair = std::pair<function_symbol, term_callback>;
 
   /// \brief Calls the creation hook attached to the function symbol of this term.
+  /// \threadsafe
   void call_creation_hook(unprotected_aterm term);
 
   /// \brief Calls the deletion hook attached to the function symbol of this term.
+  /// \threadsafe
   void call_deletion_hook(unprotected_aterm term);
 
   /// \brief Removes an element from the unordered set and deallocates it.
@@ -175,6 +177,7 @@ private:
   std::stack<std::reference_wrapper<_aterm>> todo;
 
   // Various performance statistics.
+  std::mutex m_callback_hook_mutex;
 
   mcrl2::utilities::cache_metric m_term_metric; ///< Count the number of times a term has been found in or is added to the set.
   std::size_t m_erased_blocks = 0; /// The number of blocks that have been erased in the block allocator.

@@ -218,17 +218,16 @@ public:
   }
 
 protected:
+#ifdef MCRL2_ATERMPP_REFERENCE_COUNTED
   /// \brief Increment the reference count.
   /// \details This increments the reference count unless the term contains null.
   ///          Use with care as this destroys the reference count mechanism.
   void increment_reference_count() const
   {
-#ifdef MCRL2_ATERMPP_REFERENCE_COUNTED
     if (defined())
     {
       m_term->increment_reference_count();
     }
-#endif
   }
 
   /// \brief Decrement the reference count.
@@ -236,13 +235,12 @@ protected:
   ///          Use with care as this destroys the reference count mechanism.
   void decrement_reference_count() const
   {
-#ifdef MCRL2_ATERMPP_REFERENCE_COUNTED
     if (defined())
     {
       m_term->decrement_reference_count();
     }
-#endif
   }
+#endif
 };
 
 template <class Term1, class Term2>

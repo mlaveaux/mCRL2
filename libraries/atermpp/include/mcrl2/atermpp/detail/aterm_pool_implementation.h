@@ -276,9 +276,7 @@ void aterm_pool::collect()
   auto mark_duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - timestamp).count();
   timestamp = std::chrono::system_clock::now();
 
-  // Collect all terms that are not reachable or marked.
-  m_function_symbol_pool.sweep();
-
+  // Garbage collect terms that are not reachable.
   m_int_storage.sweep();
   std::get<0>(m_appl_storage).sweep();
   std::get<1>(m_appl_storage).sweep();
@@ -311,6 +309,9 @@ void aterm_pool::collect()
     mCRL2log(mcrl2::log::info, "Performance") << "aterm_pool: Garbage collected " << old_size - size() << " terms, " << size() << " terms remaining in "
       << mark_duration + sweep_duration << " ms (marking " << mark_duration << " ms + sweep " << sweep_duration << " ms).\n";
   }
+
+  // Garbage collect function symbols.
+  m_function_symbol_pool.sweep();
 
   print_performance_statistics();
 
@@ -408,6 +409,13 @@ bool aterm_pool::should_wait()
   return m_guard.load(std::memory_order::memory_order_acquire);
 }
 
+void aterm_pool::wait()
+{
+  std::unique_lock lock(m_mutex);
+  m_wait_variable.wait(lock, [this]() { return !m_guard; });
+  lock.unlock();
+}
+
 void aterm_pool::register_thread_aterm_pool(thread_aterm_pool_interface &pool)
 {
   if constexpr (GlobalThreadSafe) { m_mutex.lock(); }
@@ -454,17 +462,8 @@ void aterm_pool::resize_if_needed()
   std::get<7>(m_appl_storage).resize_if_needed();
   m_appl_dynamic_storage.resize_if_needed();
 
-  // Find the hash table with the least amount of free buckets.
-  m_count_until_resize = std::min(m_int_storage.capacity() - m_int_storage.size(),
-                         std::min(std::get<0>(m_appl_storage).capacity() - std::get<0>(m_appl_storage).size(),
-                         std::min(std::get<1>(m_appl_storage).capacity() - std::get<1>(m_appl_storage).size(),
-                         std::min(std::get<2>(m_appl_storage).capacity() - std::get<2>(m_appl_storage).size(),
-                         std::min(std::get<3>(m_appl_storage).capacity() - std::get<3>(m_appl_storage).size(),
-                         std::min(std::get<4>(m_appl_storage).capacity() - std::get<4>(m_appl_storage).size(),
-                         std::min(std::get<5>(m_appl_storage).capacity() - std::get<5>(m_appl_storage).size(),
-                         std::min(std::get<6>(m_appl_storage).capacity() - std::get<6>(m_appl_storage).size(),
-                         std::min(std::get<7>(m_appl_storage).capacity() - std::get<7>(m_appl_storage).size(),
-                                  m_appl_dynamic_storage.capacity() - m_appl_dynamic_storage.size())))))))));
+  // Attempt to resize ever so often.
+  m_count_until_resize = 10000;
 
   if (EnableGarbageCollectionMetrics && old_capacity != capacity())
   {
@@ -482,7 +481,7 @@ void aterm_pool::halt()
 {
   if constexpr (!GlobalThreadSafe) { return; }
 
-  // Only one thread can halt everything
+  // Only one thread can halt everything.
   m_mutex.lock();
 
   // Indicate that threads must wait.
@@ -497,7 +496,6 @@ void aterm_pool::halt()
     {
       all_finished = all_finished && !pool->busy();
     }
-    print_performance_statistics();
   }
   while(!all_finished);
 }
@@ -508,6 +506,9 @@ void aterm_pool::resume()
 
   m_guard.store(false, std::memory_order::memory_order_release);
   m_mutex.unlock();
+
+  // Notify waiting threads that they can proceed (guard will be false).
+  m_wait_variable.notify_all();
 }
 
 } // namespace detail

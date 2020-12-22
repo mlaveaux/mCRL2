@@ -72,7 +72,7 @@ void thread_aterm_pool::create_appl_dynamic(aterm& term,
                             InputIterator begin,
                             InputIterator end)
 {
-  if constexpr (GlobalThreadSafe) { throw std::runtime_error("This function is not thread safe"); }
+  if (m_creation_depth == 0) { m_allow_collect_flag = false; }
 
   enter();
   ++m_creation_depth;
@@ -80,6 +80,7 @@ void thread_aterm_pool::create_appl_dynamic(aterm& term,
   --m_creation_depth;
   leave();
 
+  if (m_creation_depth == 0) { m_allow_collect_flag = true; }
   if (added) { m_pool.trigger_collection(); }
 }
 
@@ -119,6 +120,9 @@ void thread_aterm_pool::mark()
       _aterm* term = detail::address(*variable);
       if (variable->defined() && !term->is_marked())
       {
+        // Mark the term itself as reachable.
+        term->mark();
+
         // This variable is not a default term and that term has not been marked.
         mark_term(*term, todo);
       }
@@ -143,23 +147,23 @@ void thread_aterm_pool::print_local_performance_statistics() const
 
 void thread_aterm_pool::enter()
 {
-  if constexpr (GlobalThreadSafe) // && m_creation_depth == 0)
+  if (GlobalThreadSafe && m_creation_depth == 0)
   {
     m_busy_flag.store(true, std::memory_order::memory_order_release);
 
+    // Wait for the guard to become false.
     if (m_pool.should_wait())
     {
       m_waiting_flag = true;
-
-      // Wait for the guard to become false.
-      while (m_pool.should_wait()) {};
+      m_pool.wait();
+      m_waiting_flag = false;
     }
   }
 }
 
 void thread_aterm_pool::leave()
 {
-  if constexpr (GlobalThreadSafe) // && m_creation_depth == 0)
+  if (GlobalThreadSafe && m_creation_depth == 0)
   {
     m_busy_flag.store(false, std::memory_order::memory_order_release);
   }

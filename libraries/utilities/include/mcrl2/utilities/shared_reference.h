@@ -65,7 +65,7 @@ public:
     }
     else
     {
-      ++m_reference_count;
+      --m_reference_count;
     }
     increment_reference_count_changes();
   }
