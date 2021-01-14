@@ -264,25 +264,15 @@ auto MCRL2_UNORDERED_SET_CLASS::emplace_impl(size_type bucket_index, Args&&... a
 
   if constexpr (ThreadSafe)
   {
-    // Obtain exclusive access to this bucket.
-    std::lock_guard g(m_bucket_mutexes[bucket_index % m_bucket_mutexes.size()]);
-
-    iterator it = find_impl(bucket_index, std::forward<Args>(args)...);
-    if (it != end())
+    // Construct a new node and put it at the front of the bucket list.
+    if (bucket.emplace_front_unique(m_allocator, m_equals, std::forward<Args>(args)...))
     {
-      // This element has been inserted in the mean time.
-      return std::make_pair(it, false);
-    }
-    else
-    {
-      // Construct a new node and put it at the front of the bucket list.
-      bucket.emplace_front(m_allocator, std::forward<Args>(args)...);
       ++m_number_of_elements;
-
-      // Construct the iterator.
-      iterator it(m_buckets.begin() + bucket_index, m_buckets.end(), bucket.before_begin(), bucket.begin());
-      return std::make_pair(it, true);
     }
+
+    // Construct the iterator.
+    iterator it(m_buckets.begin() + bucket_index, m_buckets.end(), bucket.before_begin(), bucket.begin());
+    return std::make_pair(it, true);
   }
   else
   {

@@ -338,6 +338,7 @@ private:
   : std::true_type { };
 
   /// \brief Inserts T(args...) into the given bucket, assumes that it did not exists before.
+  /// \threadsafe
   template<typename ...Args>
   std::pair<iterator, bool> emplace_impl(size_type bucket_index, Args&&... args);
 
@@ -363,9 +364,6 @@ private:
   size_type m_buckets_mask;
 
   std::vector<bucket_type> m_buckets;
-
-  /// \brief A number of a locks for threadsafe emplace on parts of the hashtable.
-  std::array<mutex_type, 256> m_bucket_mutexes;
 
   float m_max_load_factor = 1.0f;
 

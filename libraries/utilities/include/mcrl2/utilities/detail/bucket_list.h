@@ -68,6 +68,8 @@ public:
 
     /// \brief Set the next pointer to the given next pointer.
     void set_next(node_base* next) noexcept { m_next.store(next, std::memory_order_relaxed); }
+    /// \returns True iff next has been replaced by value iff next is equal to expected.
+    bool exchange(node_base* expected, node_base* value) { return m_next.compare_exchange_weak(expected, value); }
   protected:
 
     /// \brief Pointer to the next node.
@@ -233,6 +235,49 @@ public:
 
     // Change the head to the newly allocated node.
     m_head.set_next(new_node);
+  }
+
+  /// \brief Constructs an element using the allocator with the given arguments and insert it in the front of the bucket iff it does not already exist.
+  /// \returns True iff the insertion took place.
+  /// \threadsafe
+  template<typename ...Args,
+           typename Equals>
+  bool emplace_front_unique(NodeAllocator& allocator, const Equals& equals, Args&& ...args)
+  {
+    // Allocate a new node.
+    node* new_node = allocate(allocator, std::forward<Args>(args)...);
+    std::allocator_traits<NodeAllocator>::construct(allocator, new_node, std::forward<Args>(args)...);
+
+    // This was the first and last when we started the operation.
+    node_base* old_head;
+    iterator old_end;
+
+    // Change the head to the newly allocated node.
+    do
+    {
+      old_head = m_head.next();
+
+      // Ensure that the previous front is set behind this node.
+      new_node->set_next(old_head);
+
+      // Check whether the new node is not already contained in the bucket list.
+      for (auto it = begin(); it != old_end; ++it)
+      {
+        if (equals(*it, args...))
+        {
+          // Clean up new node and leave bucket as is.
+          std::allocator_traits<NodeAllocator>::destroy(allocator, new_node);
+          allocator.deallocate(new_node, 1);
+          return false;
+        }
+      }
+
+      // Next iteration we only have to look at newly inserted nodes.
+      old_end = iterator(old_head);
+    }
+    while(!m_head.exchange(old_head, new_node));
+
+    return true;
   }
 
   /// \brief Removes the element after the given iterator from the list. The returned iterator

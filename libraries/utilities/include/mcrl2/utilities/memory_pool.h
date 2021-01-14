@@ -12,12 +12,12 @@
 
 #include "mcrl2/utilities/detail/free_list.h"
 #include "mcrl2/utilities/noncopyable.h"
-#include "mcrl2/utilities/spinlock.h"
 
 #include <array>
 #include <cstdint>
 #include <forward_list>
 #include <type_traits>
+#include <mutex>
 
 namespace mcrl2
 {
@@ -106,9 +106,13 @@ public:
 
   /// \brief Free the memory used by the given pointer that has been allocated by this pool.
   void deallocate(T* pointer)
-  {
+  {    
+    if constexpr (ThreadSafe) { m_block_mutex.lock(); }
+
     assert(contains(pointer));
     m_freelist.push_front(reinterpret_cast<Slot&>(*pointer));
+
+    if constexpr (ThreadSafe) { m_block_mutex.unlock(); }
   }
 
   /// \brief Frees blocks that are no longer storing elements of T.
@@ -199,7 +203,7 @@ private:
   std::forward_list<Block> m_blocks;
 
   /// \brief Ensures that the block list is only modified by a single thread.
-  mcrl2::utilities::spinlock m_block_mutex = {};
+  std::mutex m_block_mutex = {};
 
   /// \brief Indicates the head of the freelist.
   Freelist m_freelist;
