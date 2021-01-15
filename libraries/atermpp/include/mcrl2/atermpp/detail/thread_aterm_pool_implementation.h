@@ -149,14 +149,14 @@ void thread_aterm_pool::enter()
 {
   if (GlobalThreadSafe && m_creation_depth == 0)
   {
-    m_busy_flag.store(true, std::memory_order::memory_order_release);
+    m_busy_flag.store(true, std::memory_order_relaxed);
 
     // Wait for the guard to become false.
-    if (m_pool.should_wait())
+    while (m_pool.should_wait())
     {
-      m_waiting_flag = true;
+      m_busy_flag = false;
       m_pool.wait();
-      m_waiting_flag = false;
+      m_busy_flag = true;
     }
   }
 }
@@ -165,7 +165,7 @@ void thread_aterm_pool::leave()
 {
   if (GlobalThreadSafe && m_creation_depth == 0)
   {
-    m_busy_flag.store(false, std::memory_order::memory_order_release);
+    m_busy_flag.store(false, std::memory_order_release);
   }
 }
 

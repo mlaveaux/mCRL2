@@ -75,7 +75,7 @@ public:
   inline void mark() override;
   inline void print_local_performance_statistics() const override;
   inline bool allow_collect() const override { return m_allow_collect_flag; }
-  inline bool busy() const override{ return m_busy_flag && !m_waiting_flag; }
+  inline bool busy() const override{ return m_busy_flag; }
 
 private:
   /// \brief Called before entering the global term pool.
@@ -100,7 +100,6 @@ private:
   /// \brief A boolean flag indicating whether this thread is working inside the global aterm pool.
   std::atomic<bool> m_busy_flag = false;
   std::atomic<bool> m_allow_collect_flag = true;
-  std::atomic<bool> m_waiting_flag = false;
 
   std::stack<std::reference_wrapper<_aterm>> todo; ///< A reusable todo stack.
 };

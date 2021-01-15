@@ -485,7 +485,7 @@ void aterm_pool::halt()
   m_mutex.lock();
 
   // Indicate that threads must wait.
-  m_guard.store(true, std::memory_order::memory_order_release);
+  m_guard = true;
 
   // Wait for all pools to indicate that they are not busy.
   bool all_finished = true;
@@ -504,7 +504,7 @@ void aterm_pool::resume()
 {
   if constexpr (!GlobalThreadSafe) { return; }
 
-  m_guard.store(false, std::memory_order::memory_order_release);
+  m_guard = false;
   m_mutex.unlock();
 
   // Notify waiting threads that they can proceed (guard will be false).
