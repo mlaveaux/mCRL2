@@ -149,7 +149,7 @@ void thread_aterm_pool::enter()
 {
   if (GlobalThreadSafe && m_creation_depth == 0)
   {
-    m_busy_flag.store(true, std::memory_order_relaxed);
+    m_busy_flag.store(true);
 
     // Wait for the guard to become false.
     while (m_pool.should_wait())
