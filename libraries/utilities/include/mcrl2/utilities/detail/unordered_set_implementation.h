@@ -267,14 +267,12 @@ auto MCRL2_UNORDERED_SET_CLASS::emplace_impl(size_type bucket_index, Args&&... a
     if constexpr (EnableLockfreeInsertion)
     {
       // Construct a new node and put it at the front of the bucket list.
-      if (bucket.emplace_front_unique(m_allocator, m_equals, std::forward<Args>(args)...))
+      if (!bucket.emplace_front_unique(m_allocator, m_equals, std::forward<Args>(args)...))
       {
-        ++m_number_of_elements;
+        // This element has been inserted in the mean time.
+        iterator it(m_buckets.begin() + bucket_index, m_buckets.end(), bucket.before_begin(), bucket.begin());
+        return std::make_pair(it, false);
       }
-
-      // Construct the iterator.
-      iterator it(m_buckets.begin() + bucket_index, m_buckets.end(), bucket.before_begin(), bucket.begin());
-      return std::make_pair(it, true);
     }
     else
     {
@@ -291,9 +289,10 @@ auto MCRL2_UNORDERED_SET_CLASS::emplace_impl(size_type bucket_index, Args&&... a
       {
         // Construct a new node and put it at the front of the bucket list.
         bucket.emplace_front(m_allocator, std::forward<Args>(args)...);
-        ++m_number_of_elements;
       }
     }
+
+    m_number_of_elements.fetch_add(1, std::memory_order_relaxed);
   }
   else
   {

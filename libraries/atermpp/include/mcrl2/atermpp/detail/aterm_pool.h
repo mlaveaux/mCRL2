@@ -66,6 +66,10 @@ public:
 
   friend class thread_aterm_pool;
 
+  /// \brief Force garbage collection on all storages.
+  /// \threadsafe
+  inline void collect();
+
   /// \brief Register a thread specific aterm pool.
   /// \threadsafe
   inline void register_thread_aterm_pool(thread_aterm_pool_interface& pool);
@@ -113,9 +117,9 @@ private:
   /// \threadsafe
   inline void trigger_collection();
 
-  /// \brief Triggers garbage collection on all storages.
+  /// \brief Collect garbage on all storages.
   /// \threadsafe
-  inline void collect();
+  inline void collect_impl();
 
   /// \brief Creates a function symbol pair (name, arity).
   /// \see function_symbol_pool.
@@ -194,8 +198,8 @@ private:
   arbitrary_function_application_storage m_appl_dynamic_storage;
 
   /// Track the number of terms destroyed and reduce the freelist.
-  std::atomic<std::size_t> m_count_until_collection = 0;
-  std::atomic<std::size_t> m_count_until_resize = 0;
+  std::atomic<long> m_count_until_collection = 0;
+  std::atomic<long> m_count_until_resize = 0;
 
   std::atomic<bool> m_guard = false; /// Instructs local thread pools to wait.
   std::atomic<bool> m_enable_garbage_collection = EnableGarbageCollection; /// Garbage collection is enabled.

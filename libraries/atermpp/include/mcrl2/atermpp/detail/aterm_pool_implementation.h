@@ -134,21 +134,36 @@ void aterm_pool::add_deletion_hook(function_symbol sym, term_callback callback)
   }
 }
 
-std::size_t aterm_pool::capacity() const noexcept
+void aterm_pool::collect()
 {
-  // Determine the total number of terms in any storage.
-  return m_int_storage.capacity()
-    + std::get<0>(m_appl_storage).capacity()
-    + std::get<1>(m_appl_storage).capacity()
-    + std::get<2>(m_appl_storage).capacity()
-    + std::get<3>(m_appl_storage).capacity()
-    + std::get<4>(m_appl_storage).capacity()
-    + std::get<5>(m_appl_storage).capacity()
-    + std::get<6>(m_appl_storage).capacity()
-    + std::get<7>(m_appl_storage).capacity()
-    + m_appl_dynamic_storage.capacity();
+  m_count_until_collection = 0;
+  collect_impl();
 }
 
+void aterm_pool::register_thread_aterm_pool(thread_aterm_pool_interface &pool)
+{
+  if constexpr (GlobalThreadSafe) { m_mutex.lock(); }
+
+  mCRL2log(mcrl2::log::debug) << "Registered thread_local aterm pool\n";
+  m_thread_pools.insert(m_thread_pools.end(), &pool);
+
+  if constexpr (GlobalThreadSafe) { m_mutex.unlock(); }
+}
+
+void aterm_pool::remove_thread_aterm_pool(thread_aterm_pool_interface& pool)
+{
+  if constexpr (GlobalThreadSafe) { m_mutex.lock(); }
+
+  mCRL2log(mcrl2::log::debug) << "Removed thread_local aterm pool\n";
+  auto it = std::find(m_thread_pools.begin(), m_thread_pools.end(), &pool);
+
+  if (it != m_thread_pools.end())
+  {
+    m_thread_pools.erase(it);
+  }
+
+  if constexpr (GlobalThreadSafe) { m_mutex.unlock(); }
+}
 
 void aterm_pool::print_performance_statistics() const
 {
@@ -177,6 +192,21 @@ void aterm_pool::print_performance_statistics() const
   }
 }
 
+std::size_t aterm_pool::capacity() const noexcept
+{
+  // Determine the total number of terms in any storage.
+  return m_int_storage.capacity()
+    + std::get<0>(m_appl_storage).capacity()
+    + std::get<1>(m_appl_storage).capacity()
+    + std::get<2>(m_appl_storage).capacity()
+    + std::get<3>(m_appl_storage).capacity()
+    + std::get<4>(m_appl_storage).capacity()
+    + std::get<5>(m_appl_storage).capacity()
+    + std::get<6>(m_appl_storage).capacity()
+    + std::get<7>(m_appl_storage).capacity()
+    + m_appl_dynamic_storage.capacity();
+}
+
 std::size_t aterm_pool::size() const
 {
   // Determine the total number of terms in any storage.
@@ -197,26 +227,22 @@ std::size_t aterm_pool::size() const
 void aterm_pool::trigger_collection()
 {
   // Defer garbage collection when it happens too often.
-  if (m_count_until_collection > 0)
+  if (m_count_until_collection.fetch_sub(1, std::memory_order_relaxed) == 0)
   {
     --m_count_until_collection;
   }
   else
   {
-    collect();
+    collect_impl();
   }
 
-  if (m_count_until_resize > 0)
-  {
-    --m_count_until_resize;
-  }
-  else
+  if (m_count_until_resize.fetch_sub(1, std::memory_order_relaxed) == 0)
   {
     resize_if_needed();
   }
 }
 
-void aterm_pool::collect()
+void aterm_pool::collect_impl()
 {
   if (!m_enable_garbage_collection) { return; }
 
@@ -416,34 +442,15 @@ void aterm_pool::wait()
   lock.unlock();
 }
 
-void aterm_pool::register_thread_aterm_pool(thread_aterm_pool_interface &pool)
-{
-  if constexpr (GlobalThreadSafe) { m_mutex.lock(); }
-
-  mCRL2log(mcrl2::log::debug) << "Registered thread_local aterm pool\n";
-  m_thread_pools.insert(m_thread_pools.end(), &pool);
-
-  if constexpr (GlobalThreadSafe) { m_mutex.unlock(); }
-}
-
-void aterm_pool::remove_thread_aterm_pool(thread_aterm_pool_interface& pool)
-{
-  if constexpr (GlobalThreadSafe) { m_mutex.lock(); }
-
-  mCRL2log(mcrl2::log::debug) << "Removed thread_local aterm pool\n";
-  auto it = std::find(m_thread_pools.begin(), m_thread_pools.end(), &pool);
-
-  if (it != m_thread_pools.end())
-  {
-    m_thread_pools.erase(it);
-  }
-
-  if constexpr (GlobalThreadSafe) { m_mutex.unlock(); }
-}
-
 void aterm_pool::resize_if_needed()
 {
   halt();
+  if (m_count_until_resize > 0)
+  {
+    // Another thread has resized the tables, so we can ignore it.
+    resume();
+    return;
+  }
 
   auto timestamp = std::chrono::system_clock::now();
   std::size_t old_capacity = capacity();

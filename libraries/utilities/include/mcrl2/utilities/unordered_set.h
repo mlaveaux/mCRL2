@@ -361,7 +361,7 @@ private:
   static constexpr bool allow_transparent = is_transparent<Hash>() && is_transparent<Equals>();
 
   /// \brief The number of elements stored in this set.
-  size_type m_number_of_elements = 0;
+  std::conditional_t<ThreadSafe, std::atomic<size_type>, size_type> m_number_of_elements = 0;
 
   /// \brief Always equal to m_buckets.size() - 1.
   size_type m_buckets_mask;
