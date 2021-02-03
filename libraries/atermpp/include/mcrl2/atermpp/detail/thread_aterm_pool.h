@@ -13,7 +13,6 @@
 #include "mcrl2/atermpp/detail/aterm_pool.h"
 #include "mcrl2/utilities/tagged_pointer.h"
 
-#include <tsl/hopscotch_set.h>
 #include <atomic>
 
 namespace atermpp
@@ -87,7 +86,7 @@ private:
   aterm_pool& m_pool;
 
   /// Keeps track of pointers to all existing aterm variables.
-  tsl::hopscotch_set<mcrl2::utilities::tagged_pointer<aterm>> m_variables;
+  mcrl2::utilities::unordered_set_large<mcrl2::utilities::tagged_pointer<aterm>> m_variables;
 
   /// Counts the number of variables inserted into (and removed from) the root set.
   mcrl2::utilities::cache_metric m_variable_cache;

@@ -8,7 +8,6 @@ add_mcrl2_library(atermpp
     function_symbol_pool.cpp
   DEPENDS
     mcrl2_utilities
-    tsl::hopscotch_map
 )
 
 if (${MCRL2_ENABLE_BENCHMARKS})
