@@ -33,7 +33,7 @@ void thread_aterm_pool::create_int(aterm& term, size_t val)
   enter();
   bool added = m_pool.create_int(term, val);
   leave();
-  if (added) { m_pool.trigger_collection(); }
+  if (added) { m_pool.created_term(m_creation_depth == 0); }
 }
 
 void thread_aterm_pool::create_term(aterm& term, const atermpp::function_symbol& sym)
@@ -41,7 +41,7 @@ void thread_aterm_pool::create_term(aterm& term, const atermpp::function_symbol&
   enter();
   bool added = m_pool.create_term(term, sym);
   leave();
-  if (added) { m_pool.trigger_collection(); }
+  if (added) { m_pool.created_term(m_creation_depth == 0); }
 }
 
 template<class ...Terms>
@@ -50,7 +50,7 @@ void thread_aterm_pool::create_appl(aterm& term, const function_symbol& sym, con
   enter();
   bool added = m_pool.create_appl(term, sym, arguments...);
   leave();
-  if (added) { m_pool.trigger_collection(); }
+  if (added) { m_pool.created_term(m_creation_depth == 0); }
 }
 
 template<typename InputIterator>
@@ -62,7 +62,7 @@ void thread_aterm_pool::create_appl_dynamic(aterm& term,
   enter();
   bool added = m_pool.create_appl_dynamic(term, sym, begin, end);
   leave();
-  if (added) { m_pool.trigger_collection(); }
+  if (added) { m_pool.created_term(m_creation_depth == 0); }
 }
 
 template<typename InputIterator, typename ATermConverter>
@@ -72,16 +72,13 @@ void thread_aterm_pool::create_appl_dynamic(aterm& term,
                             InputIterator begin,
                             InputIterator end)
 {
-  if (m_creation_depth == 0) { m_allow_collect_flag = false; }
-
   enter();
   ++m_creation_depth;
   bool added = m_pool.create_appl_dynamic(term, sym, convert_to_aterm, begin, end);
   --m_creation_depth;
   leave();
 
-  if (m_creation_depth == 0) { m_allow_collect_flag = true; }
-  if (added) { m_pool.trigger_collection(); }
+  if (added) { m_pool.created_term(m_creation_depth == 0); }
 }
 
 void thread_aterm_pool::register_variable(aterm* variable)

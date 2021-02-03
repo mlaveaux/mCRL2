@@ -73,7 +73,6 @@ public:
   // Implementation of thread_aterm_pool_interface
   inline void mark() override;
   inline void print_local_performance_statistics() const override;
-  inline bool allow_collect() const override { return m_allow_collect_flag; }
   inline bool busy() const override{ return m_busy_flag; }
 
 private:
@@ -98,7 +97,6 @@ private:
 
   /// \brief A boolean flag indicating whether this thread is working inside the global aterm pool.
   std::atomic<bool> m_busy_flag = false;
-  std::atomic<bool> m_allow_collect_flag = true;
 
   std::stack<std::reference_wrapper<_aterm>> todo; ///< A reusable todo stack.
 };

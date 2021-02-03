@@ -69,7 +69,7 @@ public:
     /// \brief Set the next pointer to the given next pointer.
     void set_next(node_base* next) noexcept { m_next.store(next, std::memory_order_relaxed); }
     /// \returns True iff next has been replaced by value iff next is equal to expected.
-    bool exchange(node_base*& expected, node_base* value) { return m_next.compare_exchange_weak(expected, value); }
+    bool exchange(node_base*& expected, node_base* value) { return m_next.compare_exchange_weak(expected, value, std::memory_order_release, std::memory_order_relaxed); }
   protected:
 
     /// \brief Pointer to the next node.
@@ -242,7 +242,7 @@ public:
   /// \threadsafe
   template<typename ...Args,
            typename Equals>
-  bool emplace_front_unique(NodeAllocator& allocator, const Equals& equals, Args&& ...args)
+  std::pair<iterator, bool> emplace_front_unique(NodeAllocator& allocator, const Equals& equals, Args&& ...args)
   {
     // Allocate a new node.
     node* new_node = allocate(allocator, std::forward<Args>(args)...);
@@ -259,14 +259,14 @@ public:
       new_node->set_next(old_head);
 
       // Check whether the new node is not already contained in the bucket list.
-      for (auto it = const_iterator(old_head); it != old_end; ++it)
+      for (auto it = iterator(old_head); it != old_end; ++it)
       {
         if (equals(*it, std::forward<Args>(args)...))
         {
           // Clean up new node and leave bucket as is.          
           std::allocator_traits<NodeAllocator>::destroy(allocator, new_node);
           std::allocator_traits<NodeAllocator>::deallocate(allocator, new_node, 1);
-          return false;
+          return std::make_pair(it, false);
         }
       }
 
@@ -275,7 +275,7 @@ public:
     }
     while(!m_head.exchange(old_head, new_node));
 
-    return true;
+    return std::make_pair(iterator(new_node), true);
   }
 
   /// \brief Removes the element after the given iterator from the list. The returned iterator

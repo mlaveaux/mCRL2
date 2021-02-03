@@ -44,9 +44,6 @@ public:
   /// \brief Print performance statistics for data stored for this thread.
   virtual void print_local_performance_statistics() const = 0;
 
-  /// \brief Indicates that garbage collection can proceed.
-  virtual bool allow_collect() const = 0;
-
   /// \brief Indicates that thread aterm pool is not inserting elements.
   virtual bool busy() const = 0;
 };
@@ -114,8 +111,9 @@ public:
 private:
 
   /// \brief Triggers garbage collection and resizing when conditions are met.
+  /// \param allow_collect Actually perform the garbage collection instead of only updating the counters.
   /// \threadsafe
-  inline void trigger_collection();
+  inline void created_term(bool allow_collect);
 
   /// \brief Collect garbage on all storages.
   /// \threadsafe

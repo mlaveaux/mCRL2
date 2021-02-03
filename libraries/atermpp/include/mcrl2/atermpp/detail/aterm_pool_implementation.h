@@ -224,21 +224,23 @@ std::size_t aterm_pool::size() const
 
 // private
 
-void aterm_pool::trigger_collection()
+void aterm_pool::created_term(bool allow_collect)
 {
   // Defer garbage collection when it happens too often.
   if (m_count_until_collection.fetch_sub(1, std::memory_order_relaxed) == 0)
   {
-    --m_count_until_collection;
-  }
-  else
-  {
-    collect_impl();
+    if (allow_collect)
+    {
+      collect_impl();
+    }
   }
 
   if (m_count_until_resize.fetch_sub(1, std::memory_order_relaxed) == 0)
   {
-    resize_if_needed();
+    if (allow_collect)
+    {
+      resize_if_needed();
+    }
   }
 }
 
@@ -252,16 +254,6 @@ void aterm_pool::collect_impl()
     // Another thread has performed garbage collection, so we can ignore it.
     resume();
     return;
-  }
-
-  for (const auto& pool : m_thread_pools)
-  {
-    if (!pool->allow_collect())
-    {
-      // Some thread is still creating a term recursively.
-      resume();
-      return;
-    }
   }
 
   auto timestamp = std::chrono::system_clock::now();
