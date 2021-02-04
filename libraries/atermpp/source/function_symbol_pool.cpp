@@ -46,9 +46,12 @@ function_symbol function_symbol_pool::create(const std::string& name, const std:
   else
   {
     if constexpr (EnableCreationMetrics) { m_function_symbol_metrics.miss(); }
+
     const _function_symbol& symbol = *m_symbol_set.emplace(name, arity).first;
     if (check_for_registered_functions)
     {
+      if constexpr (GlobalThreadSafe) { m_mutex.lock(); }
+
       // Check whether there is a registered prefix p such that name equal pn where n is a number.
       // In that case prevent that pn will be generated as a fresh function name.
       std::size_t start_of_index = name.find_last_not_of("0123456789") + 1;
@@ -72,6 +75,8 @@ function_symbol function_symbol_pool::create(const std::string& name, const std:
           }
         }
       }
+
+      if  constexpr (GlobalThreadSafe) { m_mutex.unlock(); }
     }
 
     return function_symbol(_function_symbol::ref(&symbol));
@@ -80,12 +85,12 @@ function_symbol function_symbol_pool::create(const std::string& name, const std:
 
 std::shared_ptr<std::size_t> function_symbol_pool::register_prefix(const std::string& prefix)
 {
-  if (GlobalThreadSafe) { m_mutex.lock(); }
+  if constexpr (GlobalThreadSafe) { m_mutex.lock(); }
 
   auto it = m_prefix_to_register_function_map.find(prefix);
   if (it != m_prefix_to_register_function_map.end())
   {
-    if (GlobalThreadSafe) { m_mutex.unlock(); }
+    if constexpr (GlobalThreadSafe) { m_mutex.unlock(); }
     return it->second;
   }
   else
@@ -94,7 +99,7 @@ std::shared_ptr<std::size_t> function_symbol_pool::register_prefix(const std::st
     std::shared_ptr<std::size_t> shared_index = std::make_shared<std::size_t>(index);
     m_prefix_to_register_function_map[prefix] = shared_index;
 
-    if (GlobalThreadSafe) { m_mutex.unlock(); }
+    if constexpr (GlobalThreadSafe) { m_mutex.unlock(); }
     return shared_index;
   }
 }
@@ -108,8 +113,6 @@ void function_symbol_pool::deregister_prefix(const std::string& prefix)
 
 std::size_t function_symbol_pool::get_sufficiently_large_postfix_index(const std::string& prefix) const
 {
-  if constexpr (GlobalThreadSafe) { m_mutex.lock(); }
-
   std::size_t index = 0;
   for (const auto& f : m_symbol_set)
   {
@@ -138,7 +141,6 @@ std::size_t function_symbol_pool::get_sufficiently_large_postfix_index(const std
     }
   }
 
-  if constexpr (GlobalThreadSafe) { m_mutex.unlock(); }
   return index;
 }
 

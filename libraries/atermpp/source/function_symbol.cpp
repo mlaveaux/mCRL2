@@ -21,5 +21,5 @@ function_symbol::function_symbol(const std::string& name, const std::size_t arit
 {}
 
 global_function_symbol::global_function_symbol(const std::string& name, const std::size_t arity) :
-  function_symbol(g_thread_term_pool().create_function_symbol(name, arity, true))
+  function_symbol(g_term_pool<true>().create_function_symbol(name, arity, true))
 {}

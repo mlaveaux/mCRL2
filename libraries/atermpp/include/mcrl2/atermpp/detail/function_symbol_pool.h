@@ -44,11 +44,6 @@ public:
   /// \threadsafe
   void deregister_prefix(const std::string& prefix);
 
-  /// \brief Get an index such that no function symbol with name prefix + returned value
-  ///        and any value above it already exists.
-  /// \threadsafe
-  std::size_t get_sufficiently_large_postfix_index(const std::string& prefix) const;
-
   /// \brief Resize the function symbol pool if necessary.
   void resize_if_needed();
 
@@ -68,6 +63,11 @@ public:
   std::size_t size() const noexcept { return m_symbol_set.size(); }
 
 private:
+  /// \brief Get an index such that no function symbol with name prefix + returned value
+  ///        and any value above it already exists.
+  /// \threadsafe
+  std::size_t get_sufficiently_large_postfix_index(const std::string& prefix) const;
+
   /// \brief Print various performance statistics of this function symbol pool.
   void print_performance_stats() const noexcept;
 

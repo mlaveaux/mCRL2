@@ -36,7 +36,7 @@ inline thread_aterm_pool& g_thread_term_pool()
 template<bool lazy = false>
 inline aterm_pool& g_term_pool()
 {
-  if (lazy)
+  if constexpr (lazy)
   {
     static bool initialized = false;
     if (!initialized)

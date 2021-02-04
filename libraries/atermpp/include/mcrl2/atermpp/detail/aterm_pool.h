@@ -63,6 +63,10 @@ public:
 
   friend class thread_aterm_pool;
 
+  /// \brief Creates a function symbol pair (name, arity).
+  /// \see function_symbol_pool.
+  inline function_symbol create_function_symbol(const std::string& name, const std::size_t arity, const bool check_for_registered_functions = false);
+
   /// \brief Force garbage collection on all storages.
   /// \threadsafe
   inline void collect();
@@ -118,10 +122,6 @@ private:
   /// \brief Collect garbage on all storages.
   /// \threadsafe
   inline void collect_impl();
-
-  /// \brief Creates a function symbol pair (name, arity).
-  /// \see function_symbol_pool.
-  inline function_symbol create_function_symbol(const std::string& name, const std::size_t arity, const bool check_for_registered_functions = false);
 
   /// \brief Creates a integral term with the given value.
   inline bool create_int(aterm& term, std::size_t val);
