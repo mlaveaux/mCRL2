@@ -167,28 +167,28 @@ class aterm : public unprotected_aterm
 public:
 
   /// \brief Default constructor.
-  aterm();
+  aterm() noexcept;
 
   /// \brief Standard destructor.
-  ~aterm();
+  ~aterm() noexcept;
 
   /// \brief Constructor based on an internal term data structure. This is not for public use.
   /// \details Takes ownership of the passed underlying term.
   /// \param t A pointer to an internal aterm data structure.
   /// \todo Should be protected, but this cannot yet be done due to a problem
   ///       in the compiling rewriter.
-  explicit aterm(const detail::_aterm *t);
+  explicit aterm(const detail::_aterm *t) noexcept;
 
   /// \brief Copy constructor.
   /// \param other The aterm that is copied.
   /// \details  This class has a non-trivial destructor so explicitly define the copy and move operators.
-  aterm(const aterm& other);
+  aterm(const aterm& other) noexcept;
 
   /// \brief Move constructor.
   /// \param other The aterm that is moved into the new term. This term may have changed after this operation.
   /// \details This operation does not employ increments and decrements of reference counts and is therefore more
   ///          efficient than the standard copy construct.
-  aterm(aterm&& other);
+  aterm(aterm&& other) noexcept;
 
   /// \brief Assignment operator.
   /// \param other The aterm that will be assigned.
