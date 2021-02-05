@@ -204,6 +204,12 @@ void MCRL2_UNORDERED_SET_CLASS::rehash(std::size_t number_of_buckets)
     return;
   }
 
+  // Update the number of mutexes.
+  if constexpr (!EnableLockfreeInsertion)
+  {
+    m_bucket_mutexes = std::vector<std::mutex>(std::max(number_of_buckets / BucketsPerMutex, 1ul));
+  }
+
   // Create one bucket list for all elements in the hashtable.
   bucket_type old_keys;
   for (auto&& bucket : m_buckets)

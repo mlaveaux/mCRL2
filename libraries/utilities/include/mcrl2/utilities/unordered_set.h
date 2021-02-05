@@ -22,6 +22,9 @@ namespace mcrl2::utilities
 /// \brief Enables lockfree implementation of emplace.
 constexpr static bool EnableLockfreeInsertion = true;
 
+/// \brief Number of buckets per mutex.
+constexpr static long BucketsPerMutex = 256;
+
 /// \brief Prints various information for unordered_set like data structures.
 template<typename T>
 void print_performance_statistics(const T& unordered_set);
@@ -367,7 +370,7 @@ private:
   size_type m_buckets_mask;
 
   std::vector<bucket_type> m_buckets;
-  std::array<std::mutex, 256> m_bucket_mutexes;
+  std::vector<std::mutex> m_bucket_mutexes;
 
   float m_max_load_factor = 1.0f;
 
