@@ -8,6 +8,7 @@
 //
 
 #include "mcrl2/atermpp/aterm_io.h"
+#include "mcrl2/atermpp/aterm_container.h"
 
 using namespace atermpp;
 using namespace atermpp::detail;
@@ -61,6 +62,16 @@ aterm::aterm(aterm&& other) noexcept
   g_thread_term_pool().register_variable(this);
 #endif
   other.m_term=nullptr;
+}
+
+aterm_container::aterm_container()
+{
+  g_thread_term_pool().register_container(this);
+}
+
+aterm_container::~aterm_container()
+{
+  g_thread_term_pool().remove_container(this);
 }
 
 void atermpp::add_creation_hook(const function_symbol& function, term_callback callback)

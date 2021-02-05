@@ -272,13 +272,13 @@ void aterm_pool::collect_impl()
   std::get<6>(m_appl_storage).mark();
   std::get<7>(m_appl_storage).mark();
   m_appl_dynamic_storage.mark();
-#else
+#endif // MCRL2_ATERMPP_REFERENCE_COUNTED
+
   // Instruct each thread_local to mark its terms to be protected.
   for (const auto& pool : m_thread_pools)
   {
     pool->mark();
   }
-#endif
 
   assert(std::get<0>(m_appl_storage).verify_mark());
   assert(std::get<1>(m_appl_storage).verify_mark());

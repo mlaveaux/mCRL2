@@ -11,6 +11,7 @@
 #define ATERMPP_DETAIL_THREAD_ATERM_POOL_H
 
 #include "mcrl2/atermpp/detail/aterm_pool.h"
+#include "mcrl2/atermpp/aterm_container.h"
 #include "mcrl2/utilities/tagged_pointer.h"
 
 #include <atomic>
@@ -70,6 +71,12 @@ public:
   /// \brief Removes the given variable from the active variables.
   inline void remove_variable(aterm* variable);
 
+  /// \brief Consider the given container when marking underlying terms.
+  inline void register_container(aterm_container* variable);
+
+  /// \brief Removes the given container from the active variables.
+  inline void remove_container(aterm_container* variable);
+
   // Implementation of thread_aterm_pool_interface
   inline void mark() override;
   inline void print_local_performance_statistics() const override;
@@ -86,6 +93,7 @@ private:
 
   /// Keeps track of pointers to all existing aterm variables.
   mcrl2::utilities::unordered_set_large<mcrl2::utilities::tagged_pointer<aterm>> m_variables;
+  mcrl2::utilities::unordered_set_large<mcrl2::utilities::tagged_pointer<aterm_container>> m_containers;
 
   /// Counts the number of variables inserted into (and removed from) the root set.
   mcrl2::utilities::cache_metric m_variable_cache;
@@ -98,7 +106,7 @@ private:
   /// \brief A boolean flag indicating whether this thread is working inside the global aterm pool.
   std::atomic<bool> m_busy_flag = false;
 
-  std::stack<std::reference_wrapper<_aterm>> todo; ///< A reusable todo stack.
+  std::stack<std::reference_wrapper<_aterm>> m_todo; ///< A reusable todo stack.
 };
 
 } // namespace detail
