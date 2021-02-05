@@ -28,14 +28,14 @@ int main(int argc, char* argv[])
   }
 
   // Define a function that repeatedly creates nested function applications with a converter.
-  auto nested_function = [iterations, number_of_arguments, size, number_of_threads](void) -> void
+  auto nested_function = [iterations, number_of_arguments, size](void) -> void
     {
       // Track the time that the first iteration (when the term is created) takes.
       stopwatch stopwatch;
       bool first_run = true;
 
       aterm_appl f;
-      for (std::size_t i = 0; i < iterations / number_of_threads; ++i)
+      for (std::size_t i = 0; i < iterations; ++i)
       {
         f = create_nested_function<true>("f", "c", number_of_arguments, size / (number_of_arguments + 1));
 

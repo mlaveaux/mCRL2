@@ -21,7 +21,7 @@ int main(int, char*[])
   std::size_t number_of_threads = 1;
 
   // Defines a function that repeatedly creates list terms.
-  auto create_list = [number_of_threads, iterations, length](void) -> void
+  auto create_list = [iterations, length](void) -> void
     {
       function_symbol c("c", 0);
       aterm_appl c_term(c);
@@ -31,7 +31,7 @@ int main(int, char*[])
       bool first_run = true;
 
       aterm_list list;
-      for (std::size_t i = 0; i < iterations / number_of_threads; ++i)
+      for (std::size_t i = 0; i < iterations; ++i)
       {
         aterm_list tmp_list;
         for (std::size_t j = 0; j < length; ++j)

@@ -21,7 +21,7 @@ int main(int, char*[])
   std::size_t number_of_threads = 1;
 
   // Define a function that repeatedly creates integers.
-  auto create_integers = [amount, iterations, number_of_threads](void) -> void
+  auto create_integers = [amount, iterations](void) -> void
     {
       // Store the integers in a vector to prevent them from being deleted.
       std::vector<aterm_int> integers(amount);
@@ -30,7 +30,7 @@ int main(int, char*[])
       stopwatch stopwatch;
       bool first_run = true;
 
-      for (std::size_t i = 0; i < iterations / number_of_threads; ++i)
+      for (std::size_t i = 0; i < iterations; ++i)
       {
         for (std::size_t j = 0; j < amount; ++j)
         {

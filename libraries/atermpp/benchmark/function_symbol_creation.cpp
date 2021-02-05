@@ -21,7 +21,7 @@ int main(int, char*[])
   std::size_t number_of_threads = 1;
 
   // Define a function that repeatedly creates function symbols.
-  auto create_function_symbols = [amount, iterations, number_of_threads](void) -> void
+  auto create_function_symbols = [amount, iterations](void) -> void
     {
       // Store them in a vector to prevent them from being deleted.
       std::vector<function_symbol> symbols(amount);
@@ -32,7 +32,7 @@ int main(int, char*[])
 
       // Generate function symbols f + suffix, where suffix from 0 to amount.
       std::string name("f");
-      for (std::size_t k = 0; k < iterations / number_of_threads; ++k)
+      for (std::size_t k = 0; k < iterations; ++k)
       {
         for (std::size_t i = 0; i < amount; ++i)
         {
