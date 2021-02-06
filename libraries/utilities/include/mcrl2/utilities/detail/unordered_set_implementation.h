@@ -82,37 +82,33 @@ MCRL2_UNORDERED_SET_TEMPLATES
 template<typename ...Args>
 auto MCRL2_UNORDERED_SET_CLASS::emplace(Args&&... args) -> std::pair<iterator, bool>
 {
+  if constexpr (Resize) { rehash_if_needed(); }
+
+  size_type bucket_index;
+  iterator it;
+
   // Searching the current bucket list is safe and can be performed without locking.
   if constexpr (allow_transparent)
   {
     // Compute the hash and corresponding bucket.
-    size_type bucket_index = find_bucket_index(args...);
-    iterator it = find_impl(bucket_index, args...);
-
-    if (it != end())
-    {
-      return std::make_pair(it, false);
-    }
-    else
-    {
-      return emplace_impl(bucket_index, std::forward<Args>(args)...);
-    }
+    bucket_index = find_bucket_index(args...);
+    it = find_impl(bucket_index, args...);
   }
   else
   {
     // Compute the hash and corresponding bucket.
     Key object(std::forward<Args>(args)...);
-    size_type bucket_index = find_bucket_index(object);
-    iterator it = find_impl(bucket_index, object);
+    bucket_index = find_bucket_index(object);
+    it = find_impl(bucket_index, object);
+  }  
 
-    if (it != end())
-    {
-      return std::make_pair(it, false);
-    }
-    else
-    {
-      return emplace_impl(bucket_index, object);
-    }
+  if (it != end())
+  {
+    return std::make_pair(it, false);
+  }
+  else
+  {
+    return emplace_impl(bucket_index, std::forward<Args>(args)...);
   }
 }
 
@@ -264,8 +260,6 @@ MCRL2_UNORDERED_SET_TEMPLATES
 template<typename ...Args>
 auto MCRL2_UNORDERED_SET_CLASS::emplace_impl(size_type bucket_index, Args&&... args) -> std::pair<iterator, bool>
 {
-  if constexpr (Resize) { rehash_if_needed(); }
-
   bucket_type& bucket = m_buckets[bucket_index];
 
   if constexpr (ThreadSafe)
