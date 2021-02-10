@@ -35,6 +35,7 @@ public:
   ~thread_aterm_pool() override
   {
     m_pool.remove_thread_aterm_pool(*this);
+    print_local_performance_statistics();
   }
 
   /// \threadsafe

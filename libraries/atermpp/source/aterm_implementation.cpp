@@ -66,12 +66,16 @@ aterm::aterm(aterm&& other) noexcept
 
 aterm_container::aterm_container()
 {
+#ifndef MCRL2_ATERMPP_REFERENCE_COUNTED
   g_thread_term_pool().register_container(this);
+#endif
 }
 
 aterm_container::~aterm_container()
 {
+#ifndef MCRL2_ATERMPP_REFERENCE_COUNTED
   g_thread_term_pool().remove_container(this);
+#endif
 }
 
 void atermpp::add_creation_hook(const function_symbol& function, term_callback callback)

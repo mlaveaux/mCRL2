@@ -41,11 +41,6 @@ aterm_pool::aterm_pool() :
   create_appl(m_empty_list, m_function_symbol_pool.as_empty_list());
 }
 
-aterm_pool::~aterm_pool()
-{
-  print_performance_statistics();
-}
-
 void aterm_pool::add_creation_hook(function_symbol sym, term_callback callback)
 {
   const std::size_t arity = sym.arity();
