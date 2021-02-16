@@ -52,4 +52,6 @@ inline aterm_pool& g_term_pool()
 } // namespace detail
 } // namespace atermpp
 
+#include "mcrl2/atermpp/detail/aterm_implementation.h"
+
 #endif // MCRL2_ATERMPP_DETAIL_GLOBAL_ATERM_POOL_H_
