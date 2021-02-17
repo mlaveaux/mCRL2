@@ -12,7 +12,7 @@
 
 #include "mcrl2/atermpp/detail/aterm_pool.h"
 #include "mcrl2/atermpp/aterm_container.h"
-#include "mcrl2/utilities/tagged_pointer.h"
+#include "mcrl2/utilities/hashtable.h"
 
 #include <atomic>
 
@@ -93,12 +93,12 @@ private:
   aterm_pool& m_pool;
 
   /// Keeps track of pointers to all existing aterm variables.
-  mcrl2::utilities::unordered_set_large<mcrl2::utilities::tagged_pointer<aterm>> m_variables;
-  mcrl2::utilities::unordered_set_large<mcrl2::utilities::tagged_pointer<aterm_container>> m_containers;
+  mcrl2::utilities::hashtable<aterm*> m_variables;
+  mcrl2::utilities::hashtable<aterm_container*> m_containers;
 
   /// Counts the number of variables inserted into (and removed from) the root set.
-  mcrl2::utilities::cache_metric m_variable_cache;
-  mcrl2::utilities::cache_metric m_container_cache;
+  std::size_t m_variable_insertions;
+  std::size_t m_container_insertions;
 
   /// \brief It can happen that during create_appl with converter the converter generates new terms.
   ///        As such these terms might only be protected after the term_appl was actually created.

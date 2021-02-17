@@ -83,48 +83,36 @@ void thread_aterm_pool::create_appl_dynamic(aterm& term,
 
 void thread_aterm_pool::register_variable(aterm* variable)
 {
-  if constexpr (EnableVariableRegistrationMetrics) { m_variable_cache.hit(); }
+  if constexpr (EnableVariableRegistrationMetrics) { ++m_variable_insertions; }
 
-  auto [it, inserted] = m_variables.emplace(variable);
+  auto [it, inserted] = m_variables.insert(variable);
 
-  // Apply the tag for the inserted variable.
+  // The variable must be inserted.
+  assert(inserted);
+  mcrl2::utilities::mcrl2_unused(it);
   mcrl2::utilities::mcrl2_unused(inserted);
-  it->tag();
 }
 
 void thread_aterm_pool::remove_variable(aterm* variable)
 {
-  // This variable was registered at some point.
-  assert(m_variables.find(mcrl2::utilities::tagged_pointer<aterm>(variable)) != m_variables.end());
-
-  if constexpr (EnableVariableRegistrationMetrics) { m_variable_cache.miss(); }
-
-  auto it = m_variables.find(mcrl2::utilities::tagged_pointer<aterm>(variable));
-  assert(it != m_variables.end());
-  it->untag();
+  m_variables.erase(variable);
 }
 
 void thread_aterm_pool::register_container(aterm_container* container)
 {
-  if constexpr (EnableVariableRegistrationMetrics) { m_container_cache.hit(); }
+  if constexpr (EnableVariableRegistrationMetrics) { ++m_container_insertions; }
 
-  auto [it, inserted] = m_containers.emplace(container);
+  auto [it, inserted] = m_containers.insert(container);
 
-  // Apply the tag for the inserted variable.
+  // The container must be inserted.
+  assert(inserted);
+  mcrl2::utilities::mcrl2_unused(it);
   mcrl2::utilities::mcrl2_unused(inserted);
-  it->tag();
 }
 
 void thread_aterm_pool::remove_container(aterm_container* container)
 {
-  // This variable was registered at some point.
-  assert(m_containers.find(mcrl2::utilities::tagged_pointer<aterm_container>(container)) != m_containers.end());
-
-  if constexpr (EnableVariableRegistrationMetrics) { m_container_cache.miss(); }
-
-  auto it = m_containers.find(mcrl2::utilities::tagged_pointer<aterm_container>(container));
-  assert(it != m_containers.end());
-  it->untag();
+  m_containers.erase(container);
 }
 
 void thread_aterm_pool::mark()
@@ -132,13 +120,12 @@ void thread_aterm_pool::mark()
 
 #ifndef MCRL2_ATERMPP_REFERENCE_COUNTED
   // Marks all terms that are reachable from any tagged variable. Furthermore, remove variables that are not tagged.
-  for (auto it = m_variables.begin(); it != m_variables.end();)
+  for (auto it = m_variables.begin(); it != m_variables.end(); ++it)
   {
-    const mcrl2::utilities::tagged_pointer<aterm>& variable = *it;
-    if (variable.tagged())
+    const aterm* variable = *it;
+    if (variable != nullptr)
     {
       // Mark all terms (and their subterms) that are reachable, i.e the root set.
-      assert(variable != nullptr);
       _aterm* term = detail::address(*variable);
       if (variable->defined() && !term->is_marked())
       {
@@ -148,29 +135,18 @@ void thread_aterm_pool::mark()
         // This variable is not a default term and that term has not been marked.
         mark_term(*term, m_todo);
       }
-
-      ++it;
-    }
-    else
-    {
-      it = m_variables.erase(it);
     }
   }
 #endif // MCRL2_ATERMPP_REFERENCE_COUNTED
 
-  for (auto it = m_containers.begin(); it != m_containers.end();)
+  for (auto it = m_containers.begin(); it != m_containers.end(); ++it)
   {
-    const mcrl2::utilities::tagged_pointer<aterm_container>& container = *it;
-    if (container.tagged())
+    const aterm_container* container = *it;
+
+    if (container != nullptr)
     {
       // The container marks the contained terms itself.
       container->mark(m_todo);
-
-      ++it;
-    }
-    else
-    {
-      it = m_containers.erase(it);
     }
   }
 }
@@ -179,8 +155,8 @@ void thread_aterm_pool::print_local_performance_statistics() const
 {
   if constexpr (EnableVariableRegistrationMetrics)
   {
-    mCRL2log(mcrl2::log::info, "Performance") << "thread_aterm_pool: " << m_variables.size() << " variables in root set (" << m_variable_cache.message() << ") "
-                                              << " and " << m_containers.size() << " containers in root set (" << m_container_cache.message() << ").\n";
+    mCRL2log(mcrl2::log::info, "Performance") << "thread_aterm_pool: " << m_variables.size() << " variables in root set (" << m_variable_insertions << " total insertions)"
+                                              << " and " << m_containers.size() << " containers in root set (" << m_container_insertions << " total insertions).\n";
   }
 }
 
