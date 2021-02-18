@@ -20,38 +20,31 @@ namespace utilities
 {
 
 template <class Key, typename Hash, typename Equals, typename Allocator>
-inline void hashtable<Key, Hash, Equals, Allocator>::resize_if_needed()
+inline void hashtable<Key, Hash, Equals, Allocator>::rehash(std::size_t size)
 {
-  // Resize hashtable if necessary.
-  if (2 * m_number_of_elements >= m_hashtable.size())
+  // Copy the old hashtable.
+  std::vector<Key> old = std::move(m_hashtable);
+
+  m_hashtable = std::vector<Key>(size, nullptr);
+  m_buckets_mask = m_hashtable.size() - 1;
+
+  for (const Key& key : old)
   {
-    // Copy the old hashtable.
-    std::vector<Key> old = std::move(m_hashtable);
-
-    m_hashtable = std::vector<Key>(old.size() * 2, nullptr);
-    m_buckets_mask = m_hashtable.size() - 1;
-
-    for (const Key& key : old)
+    auto it = begin() + get_index(key);
+    // Find the first empty position.
+    while (*it != nullptr)
     {
-      // Find a place to insert key and find whether key already exists.
-      std::size_t start = get_index(key);
-      std::size_t position = start;
-
-      do
+      ++it;
+      if (it == end())
       {
-        const Key& element = m_hashtable[position];
+        it = begin();
+      }
 
-        if (element == nullptr)
-        {
-          // Found an empty spot, insert a new index belonging to key,
-          m_hashtable[position] = key;
-          break;
-        }
-
-        position = next_index(position);
-      }      
-      while (start != position);
+      assert(it != begin() + get_index(key));
     }
+
+    // Found an empty spot, insert a new index belonging to key,
+    *it = key;
   }
 }
 
@@ -80,57 +73,53 @@ inline void hashtable<Key,Hash,Equals,Allocator>::clear()
 template <class Key, typename Hash, typename Equals, typename Allocator>
 inline std::pair<typename hashtable<Key,Hash,Equals,Allocator>::iterator, bool> hashtable<Key,Hash,Equals,Allocator>::insert(const Key& key)
 {
-  resize_if_needed();
-
-  // Find a place to insert key and find whether key already exists.
-  std::size_t start = get_index(key);
-  std::size_t position = start;
-
-  do
+  ++m_number_of_elements;
+  // Resize hashtable if necessary.
+  if (2 * m_number_of_elements >= m_hashtable.size())
   {
-    const Key& element = m_hashtable[position];
+    rehash(2 * m_hashtable.size());
+  }
 
-    if (element == nullptr)
+  auto it = begin() + get_index(key);
+
+  // Find the first empty position.
+  while (*it != nullptr)
+  {
+    ++it;
+    if (it == end())
     {
-      // Found an empty spot, insert a new index belonging to key,
-      m_hashtable[position] = key;
-      ++m_number_of_elements;
-      return std::make_pair(m_hashtable.begin() + position, true);
+      it = begin();
     }
 
-    position = next_index(position);
+    assert(it != begin() + get_index(key));
   }
-  while (position != start);
 
-  return std::make_pair(m_hashtable.end(), false);
+  // Found an empty spot, insert a new index belonging to key,
+  *it = key;
+  return std::make_pair(it, true);
 }
 
 
 template <class Key, typename Hash, typename Equals, typename Allocator>
 inline typename hashtable<Key,Hash,Equals,Allocator>::iterator hashtable<Key,Hash,Equals,Allocator>::erase(const Key& key)
 {
+  auto it = begin() + get_index(key);
+
   // Find the key.
-  std::size_t start = get_index(key);
-  std::size_t position = start;
-
-  do
+  while (!m_equals(*it, key))
   {
-    const Key& element = m_hashtable[position];
-
-    if (element == key)
+    ++it;
+    if (it == end())
     {
-      m_hashtable[position] = nullptr;
-      --m_number_of_elements;
-
-      // key is already in the set, return position of key.
-      return m_hashtable.begin() + position;
+      it = begin();
     }
 
-    position = next_index(position);
+    assert(it != begin() + get_index(key));
   }
-  while (position != start);
 
-  return m_hashtable.end();
+  *it = nullptr;
+  --m_number_of_elements;
+  return it;
 }
 
 // PRIVATE FUNCTIONS
@@ -138,14 +127,9 @@ inline typename hashtable<Key,Hash,Equals,Allocator>::iterator hashtable<Key,Has
 template <class Key, typename Hash, typename Equals, typename Allocator>
 inline std::size_t hashtable<Key,Hash,Equals,Allocator>::get_index(const Key& key)
 {
-  return std::hash<Key>()(key) * detail::PRIME_NUMBER & m_buckets_mask;
+  return m_hasher(key) & m_buckets_mask;
 }
 
-template <class Key, typename Hash, typename Equals, typename Allocator>
-inline std::size_t hashtable<Key,Hash,Equals,Allocator>::next_index(std::size_t index)
-{
-  return (index + 1) & m_buckets_mask;
-}
 
 } // namespace utilities
 

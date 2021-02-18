@@ -143,9 +143,6 @@ private:
   /// \return The index where this key should be stored.
   std::size_t get_index(const key_type& key);
 
-  /// \return The next index.
-  std::size_t next_index(std::size_t index);
-
   std::vector<Key> m_hashtable;
 
   Hash m_hasher;
@@ -156,8 +153,8 @@ private:
   /// \brief Always equal to m_hashtable.size() - 1.
   size_type m_buckets_mask;
 
-  /// \brief Resizes the hash table to twice its current size.
-  inline void resize_if_needed();
+  /// \brief Resizes the hash table to the given power of two size.
+  inline void rehash(std::size_t size);
 };
 
 } // end namespace utilities
