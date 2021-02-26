@@ -114,7 +114,11 @@ inline typename hashtable<Key,Hash,Equals,Allocator>::iterator hashtable<Key,Has
       it = begin();
     }
 
-    assert(it != begin() + get_index(key));
+    if (it == begin() + get_index(key))
+    {
+      // This is a workaround for the thread_local hashsets that are deleted before the global aterms.
+      return it;
+    }
   }
 
   *it = nullptr;
