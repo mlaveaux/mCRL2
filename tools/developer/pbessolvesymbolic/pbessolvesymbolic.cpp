@@ -330,9 +330,24 @@ class pbessolvesymbolic_tool: public rewriter_tool<input_output_tool>
         throw mcrl2::runtime_error("PBESses without parameters are not supported");
       }
 
+      pbes_system::pbesreach_algorithm reach(pbesspec, options, lace_workers());
+
+      if (options.info)
+      {
+        std::cout << lps::print_read_write_patterns(reach.read_write_group_patterns());
+      }
       else
       {
-        if (options.solve_strategy == 0)
+        timer().start("instantiation");
+        ldd V = reach.run();
+        timer().finish("instantiation");
+        ldd init = reach.initial_state();
+
+        pbes_system::pbes_equation_index equation_index(reach.pbes());
+
+        // map propositional variable names to the corresponding ldd value
+        std::map<core::identifier_string, std::uint32_t> propvar_index;
+        for (const data::data_expression& X: reach.data_index()[0])
         {
           pbes_system::pbesreach_algorithm reach(pbesspec, options);
           solve(reach);

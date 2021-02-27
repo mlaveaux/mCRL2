@@ -163,7 +163,7 @@ class pbesreach_tool: public rewriter_tool<input_output_tool>
         throw mcrl2::runtime_error("PBESses without parameters are not supported");
       }
 
-      pbes_system::pbesreach_algorithm algorithm(pbesspec, options);
+      pbes_system::pbesreach_algorithm algorithm(pbesspec, options, lace_workers());
 
       if (options.info)
       {

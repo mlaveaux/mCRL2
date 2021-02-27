@@ -147,7 +147,7 @@ class lpsreach_tool: public rewriter_tool<input_output_tool>
         throw mcrl2::runtime_error("Processes without parameters are not supported");
       }
 
-      lps::lpsreach_algorithm algorithm(lpsspec, options);
+      lps::lpsreach_algorithm algorithm(lpsspec, options, lace_workers());
 
       if (options.info)
       {
