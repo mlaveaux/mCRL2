@@ -419,7 +419,7 @@ bool aterm_pool::create_appl_dynamic(aterm& term,
 
 bool aterm_pool::should_wait()
 {
-  return m_guard.load(std::memory_order::memory_order_acquire);
+  return m_guard.load();
 }
 
 void aterm_pool::wait()
@@ -482,16 +482,10 @@ void aterm_pool::halt()
   m_guard = true;
 
   // Wait for all pools to indicate that they are not busy.
-  bool all_finished = true;
-  do
+  for (const auto& pool : m_thread_pools)
   {
-    all_finished = true;
-    for (const auto& pool : m_thread_pools)
-    {
-      all_finished = all_finished && !pool->busy();
-    }
+    pool->wait_for_busy();
   }
-  while(!all_finished);
 }
 
 void aterm_pool::resume()

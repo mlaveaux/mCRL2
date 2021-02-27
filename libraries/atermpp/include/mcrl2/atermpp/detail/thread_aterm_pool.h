@@ -81,7 +81,7 @@ public:
   // Implementation of thread_aterm_pool_interface
   inline void mark() override;
   inline void print_local_performance_statistics() const override;
-  inline bool busy() const override{ return m_busy_flag; }
+  inline void wait_for_busy() const override;
 
 private:
   /// \brief Called before entering the global term pool.

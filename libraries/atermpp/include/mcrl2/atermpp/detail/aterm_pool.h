@@ -44,8 +44,8 @@ public:
   /// \brief Print performance statistics for data stored for this thread.
   virtual void print_local_performance_statistics() const = 0;
 
-  /// \brief Indicates that thread aterm pool is not inserting elements.
-  virtual bool busy() const = 0;
+  /// \brief Blocks until the thread pool is not busy.
+  virtual void wait_for_busy() const = 0;
 };
 
 class thread_aterm_pool;

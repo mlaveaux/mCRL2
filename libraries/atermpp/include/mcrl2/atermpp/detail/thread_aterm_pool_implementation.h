@@ -160,6 +160,11 @@ void thread_aterm_pool::print_local_performance_statistics() const
   }
 }
 
+void thread_aterm_pool::wait_for_busy() const
+{
+  while (m_busy_flag.load());
+}
+
 void thread_aterm_pool::enter()
 {
   if (GlobalThreadSafe && m_creation_depth == 0)
