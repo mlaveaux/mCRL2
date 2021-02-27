@@ -435,7 +435,11 @@ class data_expression_index
 
   protected:
     data::sort_expression m_sort;
-    mcrl2::utilities::indexed_set<data::data_expression> m_values;
+    mcrl2::utilities::indexed_set<data::data_expression,
+      std::hash<data::data_expression>,
+      std::equal_to<data::data_expression>,
+      std::allocator<data::data_expression>,
+      true> m_values;
 
   public:
     data_expression_index(const data::sort_expression& sort)
@@ -531,6 +535,7 @@ struct summand_group
   sylvan::ldds::ldd Ir; // meta data needed by sylvan::ldds::relprod
   sylvan::ldds::ldd Ip; // meta data needed by sylvan::ldds::project
   double learn_time = 0.0; // The time to learn the transitions for this group.
+  mcrl2::utilities::copyable_mutex m_mutex; // A mutex per summand group for updating L.
 
   std::pair<std::vector<std::size_t>, std::vector<std::size_t>> compute_read_write_pos() const
   {
@@ -909,7 +914,7 @@ void check_enumerator_solution(const EnumeratorElement& p, const summand_group&)
 }
 
 template <typename Context>
-void learn_successors_callback(WorkerP*, Task*, std::uint32_t* x, std::size_t, void* context)
+void learn_successors_callback(WorkerP* worker, Task*, std::uint32_t* x, std::size_t n, void* context)
 {
   using namespace sylvan::ldds;
   using enumerator_element = data::enumerator_list_element_with_substitution<>;
@@ -917,11 +922,13 @@ void learn_successors_callback(WorkerP*, Task*, std::uint32_t* x, std::size_t, v
   auto p = reinterpret_cast<Context*>(context);
   auto& algorithm = p->first;
   auto& group = p->second;
-  auto& sigma = algorithm.m_sigma;
   auto& data_index = algorithm.m_data_index;
-  const auto& options = algorithm.m_options;
+  auto& per_worker = algorithm.m_workers[worker->worker];
+  auto& sigma = per_worker.m_sigma;
+
   const auto& rewr = algorithm.m_rewr;
   const auto& enumerator = algorithm.m_enumerator;
+
   std::size_t x_size = group.read.size();
   std::size_t y_size = group.write.size();
   std::size_t xy_size = x_size + y_size;
@@ -952,7 +959,11 @@ void learn_successors_callback(WorkerP*, Task*, std::uint32_t* x, std::size_t, v
                                xy[group.write_pos[j]] = data::is_variable(value) ? lps::relprod_ignore : data_index[group.write[j]].index(value);
                              }
                              mCRL2log(log::debug) << "  " << print_transition(data_index, xy.data(), group.read, group.write) << std::endl;
+                             
+                             group.m_mutex.lock();
+                             group.Ldomain = union_cube(group.Ldomain, x, x_size);
                              group.L = algorithm.m_options.no_relprod ? union_cube(group.L, xy.data(), xy_size) : union_cube_copy(group.L, xy.data(), smd.copy.data(), xy_size);
+                             group.m_mutex.unlock();                             
                              return false;
                            },
                            data::is_false

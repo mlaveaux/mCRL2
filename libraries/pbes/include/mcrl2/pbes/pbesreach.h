@@ -322,6 +322,12 @@ pbes_system::srf_pbes split_conditions(const pbes_system::srf_pbes& pbes, std::s
   return result;
 }
 
+// Store information per lace worker.
+struct per_worker_information
+{
+  data::mutable_indexed_substitution<> m_sigma;
+}
+
 class pbesreach_algorithm
 {
     using enumerator_element = data::enumerator_list_element_with_substitution<>;
@@ -332,9 +338,9 @@ class pbesreach_algorithm
   protected:
     using ldd = sylvan::ldds::ldd;
     const symbolic_reachability_options& m_options;
+    std::vector<per_worker_information> m_workers;
     pbes_system::srf_pbes m_pbes;
     data::rewriter m_rewr;
-    data::mutable_indexed_substitution<> m_sigma;
     data::enumerator_identifier_generator m_id_generator;
     data::enumerator_algorithm<> m_enumerator;
     data::variable_list m_process_parameters;
@@ -372,7 +378,7 @@ class pbesreach_algorithm
 
       using namespace sylvan::ldds;
       std::pair<pbesreach_algorithm&, summand_group&> context{*this, R};
-      sat_all_nopar(X, lps::learn_successors_callback<std::pair<pbesreach_algorithm&, summand_group&>>, &context);
+      sat_all_par(X, lps::learn_successors_callback<std::pair<pbesreach_algorithm&, summand_group&>>, &context);
     }
 
     pbes_system::srf_pbes preprocess(pbes_system::pbes pbesspec, bool make_total)
@@ -388,7 +394,13 @@ class pbesreach_algorithm
 
       if (m_options.replace_constants_by_variables)
       {
-        pbes_system::replace_constants_by_variables(pbesspec, m_rewr, m_sigma);
+        pbes_system::replace_constants_by_variables(pbesspec, m_rewr, m_workers[0].m_sigma);
+      }
+
+      // Add the initial subsitution for every worker.
+      for (std::size_t i = 1; i < m_workers.size(); ++i)
+      {
+        m_workers[i].m_sigma = m_workers[0].m_sigma;
       }
 
       pbes_system::srf_pbes result = pbes2srf(pbesspec);
@@ -416,6 +428,7 @@ class pbesreach_algorithm
   public:
     pbesreach_algorithm(const pbes_system::pbes& pbesspec, const symbolic_reachability_options& options_)
       : m_options(options_),
+        m_workers(num_lace_workers),
         m_pbes(preprocess(pbesspec, options_.make_total)),
         m_rewr(lps::construct_rewriter(m_pbes.data(), m_options.rewrite_strategy, pbes_system::find_function_symbols(pbesspec), m_options.remove_unused_rewrite_rules)),
         m_enumerator(m_rewr, m_pbes.data(), m_rewr, m_id_generator, false)

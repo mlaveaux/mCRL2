@@ -142,6 +142,12 @@ struct lps_summand_group: public lps::summand_group
   }
 };
 
+// Store information per lace worker.
+struct per_worker_information
+{
+  data::mutable_indexed_substitution<> m_sigma;
+};
+
 class lpsreach_algorithm
 {
     using ldd = sylvan::ldds::ldd;
@@ -165,6 +171,8 @@ class lpsreach_algorithm
     std::vector<boost::dynamic_bitset<>> m_group_patterns;
     std::vector<std::size_t> m_variable_order;
 
+    std::vector<per_worker_information> m_workers;
+
     ldd state2ldd(const data::data_expression_list& x)
     {
       MCRL2_DECLARE_STACK_ARRAY(v, std::uint32_t, x.size());
@@ -187,7 +195,7 @@ class lpsreach_algorithm
 
       using namespace sylvan::ldds;
       std::pair<lpsreach_algorithm&, summand_group&> context{*this, R};
-      sat_all_nopar(X, lps::learn_successors_callback<std::pair<lpsreach_algorithm&, summand_group&>>, &context);
+      sat_all_par(X, lps::learn_successors_callback<std::pair<lpsreach_algorithm&, summand_group&>>, &context);
     }
 
     template <typename Specification>
@@ -203,16 +211,24 @@ class lpsreach_algorithm
       }
       if (m_options.replace_constants_by_variables)
       {
-        replace_constants_by_variables(result, m_rewr, m_sigma);
+        replace_constants_by_variables(result, m_rewr, m_workers[0].m_sigma);
       }
+
+      // Add the initial subsitution for every worker.
+      for (std::size_t i = 1; i < m_workers.size(); ++i)
+      {
+        m_workers[i].m_sigma = m_workers[0].m_sigma;
+      }
+
       return result;
     }
 
   public:
-    lpsreach_algorithm(const lps::specification& lpsspec, const lps::symbolic_reachability_options& options_)
+    lpsreach_algorithm(const lps::specification& lpsspec, const lps::symbolic_reachability_options& options_, std::size_t num_lace_workers)
       : m_options(options_),
         m_rewr(lps::construct_rewriter(lpsspec.data(), m_options.rewrite_strategy, lps::find_function_symbols(lpsspec), m_options.remove_unused_rewrite_rules)),
-        m_enumerator(m_rewr, lpsspec.data(), m_rewr, m_id_generator, false)
+        m_enumerator(m_rewr, lpsspec.data(), m_rewr, m_id_generator, false),
+        m_workers(num_lace_workers)
     {
       using utilities::detail::as_vector;
 
