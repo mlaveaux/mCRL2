@@ -274,9 +274,7 @@ void ATERM_POOL_STORAGE::call_creation_hook(unprotected_aterm term)
   {
     if (symbol == term.function())
     {
-      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.lock(); }
       callback(static_cast<const aterm&>(term));
-      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.unlock(); }
     }
   }
 
@@ -289,9 +287,7 @@ void ATERM_POOL_STORAGE::call_deletion_hook(unprotected_aterm term)
   {
     if (symbol == term.function())
     {
-      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.lock(); }
       callback(static_cast<const aterm&>(term));
-      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.unlock(); }
     }
   }
 }

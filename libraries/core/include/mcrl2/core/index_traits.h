@@ -6,15 +6,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/core/index_traits.h
-/// \brief add your file description here.
-
 
 #ifndef MCRL2_CORE_INDEX_TRAITS_H
 #define MCRL2_CORE_INDEX_TRAITS_H
 
 #include <unordered_map>
 
+#include "mcrl2/atermpp/detail/aterm_configuration.h"
 #include "mcrl2/core/identifier_string.h"
 
 namespace mcrl2 {
@@ -34,6 +32,14 @@ std::stack<std::size_t>& variable_map_free_numbers()
   static std::stack<std::size_t> s;
   return s;
 }
+
+template <typename Variable, typename KeyType>
+std::mutex& variable_mutex()
+{
+  static std::mutex m;
+  return m;
+}
+
 
 template <typename Variable, typename KeyType>
 std::size_t& variable_map_max_index()
@@ -74,6 +80,8 @@ struct index_traits
   static inline
   std::size_t insert(const KeyType& x)
   {
+    if constexpr (atermpp::detail::GlobalThreadSafe) { variable_mutex<Variable, KeyType>().lock(); }
+
     auto& m = variable_index_map<Variable, KeyType>();
     auto i = m.find(x);
     if (i == m.end())
@@ -91,8 +99,12 @@ struct index_traits
         s.pop();
       }
       m[x] = value;
+
+      if constexpr (atermpp::detail::GlobalThreadSafe) { variable_mutex<Variable, KeyType>().unlock(); }
       return value;
     }
+
+    if constexpr (atermpp::detail::GlobalThreadSafe) { variable_mutex<Variable, KeyType>().unlock(); }
     return i->second;
   }
 
@@ -101,12 +113,16 @@ struct index_traits
   static inline
   void erase(const KeyType& x)
   {
+    if constexpr (atermpp::detail::GlobalThreadSafe) { variable_mutex<Variable, KeyType>().unlock(); }
+
     auto& m = variable_index_map<Variable, KeyType>();
     auto& s = variable_map_free_numbers<Variable, KeyType>();
     auto i = m.find(x);
     assert(i != m.end());
     s.push(i->second);
     m.erase(i);
+
+    if constexpr (atermpp::detail::GlobalThreadSafe) { variable_mutex<Variable, KeyType>().unlock(); }
   }
 
   /// \brief Note: intended for internal use only!
