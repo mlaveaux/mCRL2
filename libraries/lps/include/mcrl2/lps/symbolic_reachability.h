@@ -959,8 +959,15 @@ void learn_successors_callback(WorkerP* worker, Task*, std::uint32_t* x, std::si
                                xy[group.write_pos[j]] = data::is_variable(value) ? lps::relprod_ignore : data_index[group.write[j]].index(value);
                              }
                              mCRL2log(log::debug) << "  " << print_transition(data_index, xy.data(), group.read, group.write) << std::endl;
-                             
-                             group.m_mutex.lock();
+
+                             while (!group.m_mutex.try_lock())
+                             {
+                               // During the union_cube we can trigger garbage collection. The garbage collection uses a barrier to wait for other threads to cooperate,
+                               // but since we are going to block this worker we yield if necessary.
+                               LACE_ME;
+                               YIELD_NEWFRAME();
+                             }
+
                              group.Ldomain = union_cube(group.Ldomain, x, x_size);
                              group.L = algorithm.m_options.no_relprod ? union_cube(group.L, xy.data(), xy_size) : union_cube_copy(group.L, xy.data(), smd.copy.data(), xy_size);
                              group.m_mutex.unlock();                             
