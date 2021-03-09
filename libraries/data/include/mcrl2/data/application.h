@@ -208,6 +208,35 @@ class skip_function_application_to_head
     }
 };
 
+// The class below transforms a function that is to be applied to
+// the arguments of an application into a function that is not applied
+// to the head, and only applied to the arguments.
+template <class ArgumentConverter>
+class skip_function_application_to_head_assignment
+{
+  protected:
+    ArgumentConverter& m_f;
+    std::size_t m_current_index;
+    const bool m_skip_head;
+  public:
+    skip_function_application_to_head_assignment(ArgumentConverter&f, const bool skip_head )
+     : m_f(f),
+       m_current_index(0),
+       m_skip_head(skip_head)
+    {}
+
+    void operator()(const data_expression& d, data_expression& result)
+    {
+      if (m_skip_head && m_current_index++==0)
+      {
+        result=d;
+        return;
+      }
+      m_f(d,result);
+      return;
+    }
+};
+
 inline bool contains_untyped_sort(const sort_expression& s)
 {
   if (is_untyped_sort(s))
@@ -432,7 +461,8 @@ class application: public data_expression
                 ArgumentConverter convert_arguments,
                 const bool skip_first_argument=false,
                 typename std::enable_if< !std::is_base_of<data_expression, FwdIter>::value>::type* = nullptr,
-                typename std::enable_if< !std::is_base_of<data_expression, ArgumentConverter>::value>::type* = nullptr)
+                typename std::enable_if< !std::is_base_of<data_expression, ArgumentConverter>::value>::type* = nullptr,
+                typename std::enable_if<std::is_convertible<typename std::invoke_result<ArgumentConverter,typename FwdIter::value_type>::type, aterm>::value>::type* = nullptr)
       : data_expression(atermpp::term_appl<aterm>(
                                  core::detail::function_symbol_DataAppl(std::distance(first, last) + 1),
                                  detail::term_appl_prepend_iterator<FwdIter>(first, &head),
@@ -442,6 +472,34 @@ class application: public data_expression
       assert(first!=last);
       assert(detail::check_whether_sorts_match(head,data_expression_list(begin(), end())));
     } 
+
+    /// \brief Constructor.
+    /// \details Construct at term head(arg_first,...,arg_last) where convert_arguments
+    ///          has been applied to the head and all the arguments.
+    /// \parameter head This is the new head for the application.
+    /// \parameter first This is a forward iterator yielding the first argument.
+    /// \parameter last  This is an iterator beyond the last argument.
+    /// \parameter convert_arguments This is a function applied to optionally the head and the arguments.
+    /// \parameter skip_first_argument A boolean which is true if the function must not be applied to the head.
+    template <typename FwdIter, class ArgumentConverter>
+    application(const data_expression& head,
+                FwdIter first,
+                FwdIter last,
+                ArgumentConverter convert_arguments,
+                const bool skip_first_argument=false,
+                typename std::enable_if< !std::is_base_of<data_expression, FwdIter>::value>::type* = nullptr,
+                typename std::enable_if< !std::is_base_of<data_expression, ArgumentConverter>::value>::type* = nullptr,
+                typename std::enable_if<std::is_same<typename std::invoke_result<ArgumentConverter,typename FwdIter::value_type,data_expression&>::type, void>::value>::type* = nullptr)
+
+      : data_expression(atermpp::term_appl<aterm>(
+                                 core::detail::function_symbol_DataAppl(std::distance(first, last) + 1),
+                                 detail::term_appl_prepend_iterator<FwdIter>(first, &head),
+                                 detail::term_appl_prepend_iterator<FwdIter>(last),
+                                 detail::skip_function_application_to_head_assignment(convert_arguments,skip_first_argument)))
+    {
+      assert(first!=last);
+      assert(detail::check_whether_sorts_match(head,data_expression_list(begin(), end())));
+    }
 
     /// Move semantics
     application(const application&) noexcept = default;
@@ -482,6 +540,53 @@ class application: public data_expression
       return atermpp::aterm_appl::size() - 1;
     }
 };
+
+/// Experimental make_application.
+template <typename FwdIter>
+static inline void make_application(
+            const data_expression& head,
+            FwdIter first,
+            FwdIter last,
+            data_expression& result,
+            typename std::enable_if< !std::is_base_of<data_expression, FwdIter>::value>::type* = nullptr)
+{
+  atermpp::make_term_appl<data_expression>(
+                             core::detail::function_symbol_DataAppl(std::distance(first, last) + 1),
+                             detail::term_appl_prepend_iterator<FwdIter>(first, &head),
+                             detail::term_appl_prepend_iterator<FwdIter>(last),
+                             result);
+}
+
+/// Experimental make_application.
+template <typename FwdIter, class ArgumentConverter>
+static inline void make_application(
+            const data_expression& head,
+            FwdIter first,
+            FwdIter last,
+            ArgumentConverter convert_arguments,
+            data_expression& result,
+            const bool skip_first_argument=false,
+            typename std::enable_if< !std::is_base_of<data_expression, FwdIter>::value>::type* = nullptr,
+            typename std::enable_if< !std::is_base_of<data_expression, ArgumentConverter>::value>::type* = nullptr,
+            typename std::enable_if<std::is_same<typename std::invoke_result<ArgumentConverter,typename FwdIter::value_type,data_expression&>::type, void>::value>::type* = nullptr)
+{
+  atermpp::make_term_appl<data_expression>(core::detail::function_symbol_DataAppl(std::distance(first, last) + 1),
+                          detail::term_appl_prepend_iterator<FwdIter>(first, &head),
+                          detail::term_appl_prepend_iterator<FwdIter>(last),
+                          detail::skip_function_application_to_head_assignment(convert_arguments,skip_first_argument),
+                          result);
+}
+
+/// Experimental make_application with one argument.
+static inline void make_application(const data_expression& head,
+                                    const data_expression& arg1,
+                                    data_expression& result)
+{
+  make_term_appl(result, core::detail::function_symbol_DataAppl(2),head,arg1);
+  assert(detail::check_whether_sorts_match<data_expression_list>(head, {arg1}));
+}
+
+
 
 /// \brief swap overload
 inline void swap(application& t1, application& t2)
