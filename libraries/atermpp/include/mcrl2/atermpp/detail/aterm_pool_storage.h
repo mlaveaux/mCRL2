@@ -105,7 +105,25 @@ public:
   /// \brief Creates a function application with the given function symbol and the arguments
   ///        as provided by the given iterator, but the converter is applied to each argument.
   template<typename InputIterator,
-           typename TermConverter>
+           typename TermConverter,
+           typename std::enable_if<std::is_convertible<
+                                    typename std::invoke_result<TermConverter, typename InputIterator::value_type>::type,
+                                    aterm>::value, void>::type* = nullptr>
+  bool create_appl_dynamic(aterm& term,
+                           const function_symbol& sym,
+                           TermConverter converter,
+                           InputIterator begin,
+                           InputIterator end);
+
+  /// \brief Creates a function application with the given function symbol and the arguments
+  ///        as provided by the given iterator, but the converter is applied to each argument.
+  template<typename InputIterator,
+           typename TermConverter,
+           typename std::enable_if<std::is_same<
+                                    typename std::invoke_result<TermConverter,
+                                                                typename InputIterator::value_type,
+                                                                typename InputIterator::value_type&>::type,
+                                    void>::value, void>::type* = nullptr>
   bool create_appl_dynamic(aterm& term,
                            const function_symbol& sym,
                            TermConverter converter,
