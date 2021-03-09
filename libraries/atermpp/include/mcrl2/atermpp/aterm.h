@@ -213,7 +213,11 @@ public:
   /// \return A reference to the assigned term.
   aterm& operator=(aterm&& other) noexcept
   {
+#ifdef MCRL2_ATERMPP_REFERENCE_COUNTED
     std::swap(m_term, other.m_term);
+#else
+    m_term = other.m_term;    // Using hash set protection it is cheaper just to move the value to the new term.
+#endif
     return *this;
   }
 
