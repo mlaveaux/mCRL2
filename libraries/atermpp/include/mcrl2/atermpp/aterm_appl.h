@@ -167,6 +167,7 @@ public:
     static_assert(sizeof(Term)==sizeof(std::size_t),"Term derived from an aterm must not have extra fields");
   }
 
+
   /// \brief Returns the function symbol belonging to an aterm_appl.
   /// \return The function symbol of this term.
   const function_symbol& function() const
@@ -218,6 +219,52 @@ public:
     return reinterpret_cast<const detail::_term_appl*>(m_term)->arg(i);
   }
 };
+
+/// \brief Experimental function to implement apply with an explicit result to write to.
+template <class Term,
+          class InputIterator,
+          typename std::enable_if<mcrl2::utilities::is_iterator<InputIterator>::value>::type* = nullptr>
+static inline void make_term_appl(const function_symbol& sym,
+                           InputIterator begin,
+                           InputIterator end,
+                           aterm& result)
+                           // term_appl<Term>& result)
+{
+  make_term_appl<Term>(sym, begin, end, [](const Term& term) -> const Term& { return term; }, result);
+  static_assert((std::is_base_of<aterm, Term>::value),"Term must be derived from an aterm");
+  static_assert(sizeof(Term)==sizeof(std::size_t),"Term derived from an aterm must not have extra fields");
+}
+
+/// \brief Experimental function to implement apply with an explicit result to write to.
+template <class Term,
+          class InputIterator,
+          class TermConverter,
+          typename std::enable_if<mcrl2::utilities::is_iterator<InputIterator>::value>::type* = nullptr>
+static inline void make_term_appl(const function_symbol& sym,
+                                  InputIterator begin,
+                                  InputIterator end,
+                                  TermConverter converter,
+                                  aterm& result)
+                                  // term_appl<Term>& result)
+{
+  detail::g_thread_term_pool().create_appl_dynamic(result, sym, converter, begin, end);
+  // static_assert(std::is_base_of<aterm, Term>::value,"Term must be derived from an aterm");
+  // static_assert(sizeof(Term)==sizeof(std::size_t),"Term derived from an aterm must not have extra fields");
+  static_assert(!std::is_same<typename InputIterator::iterator_category, std::output_iterator_tag>::value,
+                "The InputIterator has the output iterator tag.");
+}
+
+/// \brief Experimental function to implement make_term_appl
+/// \param symbol A function symbol.
+/// \param arguments The arguments of the function application.
+template<typename ...Terms>
+static inline void make_term_appl(aterm& result, const function_symbol& symbol, const Terms& ...arguments)
+{
+  detail::g_thread_term_pool().create_appl(result, symbol, arguments...);
+  static_assert(detail::are_terms<Terms...>::value, "Arguments of function application should be terms.");
+  // static_assert(std::is_base_of<aterm, Term>::value,"Term must be derived from an aterm");
+  // static_assert(sizeof(Term)==sizeof(std::size_t),"Term derived from an aterm must not have extra fields");
+}
 
 typedef term_appl<aterm> aterm_appl;
 } // namespace atermpp
