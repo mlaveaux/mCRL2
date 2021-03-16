@@ -57,6 +57,7 @@ public:
     for (std::size_t i = 0; i < N; ++i)
     {
       assert(it != end);
+      assert(it->defined());
       m_arguments[i] = *it;
       ++it;
     }
@@ -85,6 +86,7 @@ public:
     {
       // Prevent bound checking, the allocator must make sure that symbol.arity() arguments fit.
       assert(it != end);
+      assert(it->defined());
       m_arguments.data()[i] = *it;
       ++it;
     }

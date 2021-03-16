@@ -36,31 +36,16 @@ inline std::array<unprotected_aterm, N> construct_arguments(InputIterator it, In
   // The end is only used for debugging to ensure that the arity and std::distance(it, end) match.
   mcrl2::utilities::mcrl2_unused(end);
 
-//  static_assert(std::is_convertible<typename std::invoke_result<TermConverter, typename InputIterator::value_type>::type,
-//                                    aterm>::value ||
-//                std::is_convertible<typename std::invoke_result<TermConverter, typename InputIterator::value_type, aterm&>::type,
-//                                    void>::value,
-//                "Convertor of aterms must have an operator() of type convertible "
-//                "with aterm operator()(iterator_type), or void operator()(iterator_type, aterm&");
-
   // Copy the arguments into this array. Doesn't change any reference count, because they are unprotected terms.
   std::array<unprotected_aterm, N> arguments;
   for (size_t i = 0; i < N; ++i)
   {
     assert(it != end);
-    // if constexpr(std::is_convertible<typename std::invoke_result<TermConverter,typename InputIterator::value_type>::type,
-    //                                 aterm>::value)
-    // if constexpr(std::is_invocable_r<TermConverter, aterm, typename InputIterator::value_type>::value)
-    {
-      arguments[i] = converter(*it);
-    }
-    // else
-    // {
-    //   converter(*it,arguments[i]);
-    // }
-
+    arguments[i] = converter(*it);
+    assert(arguments[i].defined());
     ++it;
   }
+
   assert(it == end);
 
   return arguments;
@@ -86,14 +71,12 @@ inline std::array<unprotected_aterm, N> construct_arguments(InputIterator it, In
   for (size_t i = 0; i < N; ++i)
   {
     assert(it != end);
-    // typename InputIterator::value_type& t=*dynamic_cast<typename InputIterator::value_type*>(&arguments[i]);
-    // typename InputIterator::value_type t;
     typename InputIterator::value_type& t= *reinterpret_cast<typename InputIterator::value_type*>(&arguments[i]);
     converter(*it,t);
-    // arguments[i]=t;
-    // converter(*it,down_cast<typename InputIterator::value_type>(arguments[i]));
+    assert(t.defined());
     ++it;
   }
+
   assert(it == end);
 
   return arguments;
@@ -243,6 +226,7 @@ bool ATERM_POOL_STORAGE::create_appl_dynamic(aterm& term,
   {
     assert(it != end);
     arguments[i] = converter(*it);
+    assert(arguments[i].defined());
     ++it;
   }
   assert(it == end);
@@ -272,6 +256,7 @@ bool ATERM_POOL_STORAGE::create_appl_dynamic(aterm& term,
   for (std::size_t i = 0; i < symbol.arity(); ++i)
   {
     assert(it != end);
+    assert(it->defined());
     typename InputIterator::value_type t;
     converter(*it,t);
     arguments[i]=t;
@@ -362,7 +347,9 @@ void ATERM_POOL_STORAGE::call_creation_hook(unprotected_aterm term)
   {
     if (symbol == term.function())
     {
+      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.lock(); }
       callback(static_cast<const aterm&>(term));
+      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.unlock(); }
     }
   }
 
@@ -375,7 +362,9 @@ void ATERM_POOL_STORAGE::call_deletion_hook(unprotected_aterm term)
   {
     if (symbol == term.function())
     {
+      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.lock(); }
       callback(static_cast<const aterm&>(term));
+      if constexpr (GlobalThreadSafe) { m_callback_hook_mutex.unlock(); }
     }
   }
 }
@@ -437,7 +426,6 @@ bool ATERM_POOL_STORAGE::emplace(aterm& term, Args&&... args)
 #ifdef MCRL2_ATERMPP_REFERENCE_COUNTED
   term = atermpp::aterm(&(*it));
 #else
-  // THIS APPEARS TOO EXPENSIVE TO ME AS NOTHING NEEDS TO BE SWAPPED BACK TO RESULT.
   atermpp::unprotected_aterm result(&(*it));
   term.swap(result);
 #endif
