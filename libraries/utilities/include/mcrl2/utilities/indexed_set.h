@@ -12,6 +12,7 @@
 #include <deque>
 
 #include "mcrl2/utilities/unordered_map.h"
+#include "mcrl2/utilities/copyable_mutex.h"
 
 namespace mcrl2
 {
@@ -22,7 +23,8 @@ namespace utilities
 template<typename Key,
          typename Hash = std::hash<Key>,
          typename Equals = std::equal_to<Key>,
-         typename Allocator = std::allocator<Key>>
+         typename Allocator = std::allocator<Key>,
+         bool ThreadSafe = false>
 class indexed_set
 {
 private:
@@ -32,11 +34,15 @@ private:
   Hash m_hasher;
   Equals m_equals;
 
+  /// \brief Mutex for the m_hashtable and m_keys data structures.
+  mutable mcrl2::utilities::copyable_mutex m_mutex;
+
   /// \brief Inserts the given (key, n) pair into the indexed set.
   std::size_t put_in_hashtable(const Key& key, std::size_t n);
 
   /// \brief Resizes the hash table to twice its current size.
   inline void resize_hashtable();
+
 
 public:
   typedef Key key_type;
@@ -75,6 +81,7 @@ public:
 
   /// \brief Returns a reference to the mapped value.
   /// \details Returns an invalid value, larger or equal than the size of the indexed set, if there is no element with the given key.
+  /// \threadsafe
   size_type index(const key_type& key) const;
 
   /// \brief Returns a reference to the mapped value.
@@ -157,12 +164,14 @@ public:
   /// \details If the element was already in the set, the resulting bool is true, and the existing index is returned.
   ///         Otherwise, the key is inserted in the set, and the next available index is assigned to it. 
   /// \param  key The key to be inserted in the set.
-  /// \return The index of the key and a boolean indicating whether the element was actually inserted. 
+  /// \return The index of the key and a boolean indicating whether the element was actually inserted.
+  /// \threadsafe
   std::pair<size_type, bool> insert(const key_type& key);
 
   /// \brief Provides an iterator to the stored key in the indexed set.
   /// \param key The key that is sought.
   /// \return An iterator to the key, otherwise end().
+  /// \threadsafe
   const_iterator find(const key_type& key) const;
 
   /// \brief The number of elements in the indexed set.
