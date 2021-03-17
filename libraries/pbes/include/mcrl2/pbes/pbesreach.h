@@ -378,7 +378,7 @@ class pbesreach_algorithm
 
       using namespace sylvan::ldds;
       std::pair<pbesreach_algorithm&, summand_group&> context{*this, R};
-      sat_all_par(X, lps::learn_successors_callback<std::pair<pbesreach_algorithm&, summand_group&>>, &context);
+      sat_all(X, lps::learn_successors_callback<std::pair<pbesreach_algorithm&, summand_group&>>, &context);
     }
 
     pbes_system::srf_pbes preprocess(pbes_system::pbes pbesspec, bool make_total)

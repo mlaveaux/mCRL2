@@ -195,7 +195,7 @@ class lpsreach_algorithm
 
       using namespace sylvan::ldds;
       std::pair<lpsreach_algorithm&, summand_group&> context{*this, R};
-      sat_all_par(X, lps::learn_successors_callback<std::pair<lpsreach_algorithm&, summand_group&>>, &context);
+      sat_all(X, lps::learn_successors_callback<std::pair<lpsreach_algorithm&, summand_group&>>, &context);
     }
 
     template <typename Specification>
