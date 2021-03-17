@@ -132,7 +132,7 @@ void aterm_pool::add_deletion_hook(function_symbol sym, term_callback callback)
 void aterm_pool::collect()
 {
   m_count_until_collection = 0;
-  collect_impl();
+  collect_impl(nullptr);
 }
 
 void aterm_pool::register_thread_aterm_pool(thread_aterm_pool_interface &pool)
@@ -219,14 +219,14 @@ std::size_t aterm_pool::size() const
 
 // private
 
-void aterm_pool::created_term(bool allow_collect)
+void aterm_pool::created_term(bool allow_collect, thread_aterm_pool_interface* thread)
 {
   // Defer garbage collection when it happens too often.
   if (m_count_until_collection.fetch_sub(1, std::memory_order_relaxed) == 0)
   {
     if (allow_collect)
     {
-      collect_impl();
+      collect_impl(thread);
     }
   }
 
@@ -234,20 +234,20 @@ void aterm_pool::created_term(bool allow_collect)
   {
     if (allow_collect)
     {
-      resize_if_needed();
+      resize_if_needed(thread);
     }
   }
 }
 
-void aterm_pool::collect_impl()
+void aterm_pool::collect_impl(thread_aterm_pool_interface* thread)
 {
   if (!m_enable_garbage_collection) { return; }
 
-  halt();
+  lock(thread);
   if (m_count_until_collection > 0)
   {
     // Another thread has performed garbage collection, so we can ignore it.
-    resume();
+    unlock();
     return;
   }
 
@@ -269,7 +269,7 @@ void aterm_pool::collect_impl()
   m_appl_dynamic_storage.mark();
 #endif // MCRL2_ATERMPP_REFERENCE_COUNTED
 
-  // Instruct each thread_local to mark its terms to be protected.
+  // Mark the terms referenced by all thread pools.
   for (const auto& pool : m_thread_pools)
   {
     pool->mark();
@@ -331,7 +331,7 @@ void aterm_pool::collect_impl()
   // Use some heuristics to determine when the next collect should be called automatically.
   m_count_until_collection = size();
 
-  resume();
+  unlock();
 }
 
 function_symbol aterm_pool::create_function_symbol(const std::string& name, const std::size_t arity, const bool check_for_registered_functions)
@@ -417,25 +417,13 @@ bool aterm_pool::create_appl_dynamic(aterm& term,
   }
 }
 
-bool aterm_pool::should_wait()
+void aterm_pool::resize_if_needed(thread_aterm_pool_interface* thread)
 {
-  return m_guard.load();
-}
-
-void aterm_pool::wait()
-{
-  std::unique_lock lock(m_mutex);
-  m_wait_variable.wait(lock, [this]() { return !m_guard; });
-  lock.unlock();
-}
-
-void aterm_pool::resize_if_needed()
-{
-  halt();
+  lock(thread);
   if (m_count_until_resize > 0)
   {
     // Another thread has resized the tables, so we can ignore it.
-    resume();
+    unlock();
     return;
   }
 
@@ -468,10 +456,10 @@ void aterm_pool::resize_if_needed()
                                               << duration << " ms.\n";
   }
 
-  resume();
+  unlock();
 }
 
-void aterm_pool::halt()
+void aterm_pool::lock(thread_aterm_pool_interface* thread)
 {
   if constexpr (!GlobalThreadSafe) { return; }
 
@@ -479,7 +467,13 @@ void aterm_pool::halt()
   m_mutex.lock();
 
   // Indicate that threads must wait.
-  m_guard = true;
+  for (auto& pool : m_thread_pools)
+  {
+    if (pool != thread)
+    {
+      pool->set_forbidden(true);
+    }
+  }
 
   // Wait for all pools to indicate that they are not busy.
   for (const auto& pool : m_thread_pools)
@@ -488,15 +482,16 @@ void aterm_pool::halt()
   }
 }
 
-void aterm_pool::resume()
+void aterm_pool::unlock()
 {
   if constexpr (!GlobalThreadSafe) { return; }
 
-  m_guard = false;
-  m_mutex.unlock();
+  for (auto& pool : m_thread_pools)
+  {
+    pool->set_forbidden(false);
+  }
 
-  // Notify waiting threads that they can proceed (guard will be false).
-  m_wait_variable.notify_all();
+  m_mutex.unlock();
 }
 
 } // namespace detail

@@ -82,13 +82,17 @@ public:
   inline void mark() override;
   inline void print_local_performance_statistics() const override;
   inline void wait_for_busy() const override;
+  inline void set_forbidden(bool value) override;
 
 private:
   /// \brief Called before entering the global term pool.
-  inline void enter();
+  inline void lock_shared();
 
   /// \brief Called after leaving the global term pool.
-  inline void leave();
+  inline void unlock_shared();
+
+  /// \brief Wait for the guard to become true.
+  inline void wait();
 
   aterm_pool& m_pool;
 
@@ -106,6 +110,11 @@ private:
 
   /// \brief A boolean flag indicating whether this thread is working inside the global aterm pool.
   std::atomic<bool> m_busy_flag = false;
+  std::atomic<bool> m_forbidden_flag = false;
+
+  /// A conditional variable to avoid busy waiting on the guard.
+  std::condition_variable m_wait_variable;
+  std::mutex m_mutex;
 
   std::stack<std::reference_wrapper<_aterm>> m_todo; ///< A reusable todo stack.
 };

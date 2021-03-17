@@ -46,6 +46,9 @@ public:
 
   /// \brief Blocks until the thread pool is not busy.
   virtual void wait_for_busy() const = 0;
+
+  /// \brief Blocks until the thread pool is not busy.
+  virtual void set_forbidden(bool value) = 0;
 };
 
 class thread_aterm_pool;
@@ -116,12 +119,13 @@ private:
 
   /// \brief Triggers garbage collection and resizing when conditions are met.
   /// \param allow_collect Actually perform the garbage collection instead of only updating the counters.
+  /// \param thread The pool that called this function.
   /// \threadsafe
-  inline void created_term(bool allow_collect);
+  inline void created_term(bool allow_collect, thread_aterm_pool_interface* thread);
 
   /// \brief Collect garbage on all storages.
   /// \threadsafe
-  inline void collect_impl();
+  inline void collect_impl(thread_aterm_pool_interface* thread);
 
   /// \brief Creates a integral term with the given value.
   inline bool create_int(aterm& term, std::size_t val);
@@ -154,19 +158,16 @@ private:
 
   /// \brief Resizes all storages if necessary.
   /// \threadsafe.
-  inline void resize_if_needed();
+  inline void resize_if_needed(thread_aterm_pool_interface* thread);
 
   /// \returns True iff the thread aterm pool should call wait().
   inline bool should_wait();
 
-  /// \brief Wait for the term pool to finish garbage collection.
-  inline void wait();
+  /// \brief Prevent any other thread aterm pool from creating or retrieving terms.
+  inline void lock(thread_aterm_pool_interface* thread);
 
-  /// \brief Prevent any thread aterm pool from creating or retrieving terms.
-  inline void halt();
-
-  /// \brief Allow thread pools to resume their threads.
-  inline void resume();
+  /// \brief Allow all thread pools to resume their threads.
+  inline void unlock();
 
   /// \brief The set of local aterm pools.
   std::vector<thread_aterm_pool_interface*> m_thread_pools;
@@ -199,11 +200,7 @@ private:
   std::atomic<long> m_count_until_collection = 0;
   std::atomic<long> m_count_until_resize = 0;
 
-  std::atomic<bool> m_guard = false; /// Instructs local thread pools to wait.
   std::atomic<bool> m_enable_garbage_collection = EnableGarbageCollection; /// Garbage collection is enabled.
-
-  /// A conditional variable to avoid busy waiting on the guard.
-  std::condition_variable m_wait_variable;
 
   /// Represents an empty list.
   aterm m_empty_list;

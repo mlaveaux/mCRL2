@@ -22,35 +22,35 @@ namespace detail
 
 function_symbol thread_aterm_pool::create_function_symbol(const std::string& name, const std::size_t arity, const bool check_for_registered_functions)
 {
-  enter();
+  lock_shared();
   function_symbol symbol = m_pool.create_function_symbol(name, arity, check_for_registered_functions);
-  leave();
+  unlock_shared();
   return symbol;
 }
 
 void thread_aterm_pool::create_int(aterm& term, size_t val)
 {
-  enter();
+  lock_shared();
   bool added = m_pool.create_int(term, val);
-  leave();
-  if (added) { m_pool.created_term(m_creation_depth == 0); }
+  unlock_shared();
+  if (added) { m_pool.created_term(m_creation_depth == 0, this); }
 }
 
 void thread_aterm_pool::create_term(aterm& term, const atermpp::function_symbol& sym)
 {
-  enter();
+  lock_shared();
   bool added = m_pool.create_term(term, sym);
-  leave();
-  if (added) { m_pool.created_term(m_creation_depth == 0); }
+  unlock_shared();
+  if (added) { m_pool.created_term(m_creation_depth == 0, this); }
 }
 
 template<class ...Terms>
 void thread_aterm_pool::create_appl(aterm& term, const function_symbol& sym, const Terms&... arguments)
 {
-  enter();
+  lock_shared();
   bool added = m_pool.create_appl(term, sym, arguments...);
-  leave();
-  if (added) { m_pool.created_term(m_creation_depth == 0); }
+  unlock_shared();
+  if (added) { m_pool.created_term(m_creation_depth == 0, this); }
 }
 
 template<typename InputIterator>
@@ -59,10 +59,10 @@ void thread_aterm_pool::create_appl_dynamic(aterm& term,
                             InputIterator begin,
                             InputIterator end)
 {
-  enter();
+  lock_shared();
   bool added = m_pool.create_appl_dynamic(term, sym, begin, end);
-  leave();
-  if (added) { m_pool.created_term(m_creation_depth == 0); }
+  unlock_shared();
+  if (added) { m_pool.created_term(m_creation_depth == 0, this); }
 }
 
 template<typename InputIterator, typename ATermConverter>
@@ -72,47 +72,56 @@ void thread_aterm_pool::create_appl_dynamic(aterm& term,
                             InputIterator begin,
                             InputIterator end)
 {
-  enter();
+  lock_shared();
   ++m_creation_depth;
   bool added = m_pool.create_appl_dynamic(term, sym, convert_to_aterm, begin, end);
   --m_creation_depth;
-  leave();
+  unlock_shared();
 
-  if (added) { m_pool.created_term(m_creation_depth == 0); }
+  if (added) { m_pool.created_term(m_creation_depth == 0, this); }
 }
 
 void thread_aterm_pool::register_variable(aterm* variable)
 {
   if constexpr (EnableVariableRegistrationMetrics) { ++m_variable_insertions; }
 
+  lock_shared();
   auto [it, inserted] = m_variables.insert(variable);
 
   // The variable must be inserted.
   assert(inserted);
   mcrl2::utilities::mcrl2_unused(it);
   mcrl2::utilities::mcrl2_unused(inserted);
+
+  unlock_shared();
 }
 
 void thread_aterm_pool::remove_variable(aterm* variable)
 {
+  lock_shared();
   m_variables.erase(variable);
+  unlock_shared();
 }
 
 void thread_aterm_pool::register_container(aterm_container* container)
 {
   if constexpr (EnableVariableRegistrationMetrics) { ++m_container_insertions; }
 
+  lock_shared();
   auto [it, inserted] = m_containers.insert(container);
 
   // The container must be inserted.
   assert(inserted);
   mcrl2::utilities::mcrl2_unused(it);
   mcrl2::utilities::mcrl2_unused(inserted);
+  unlock_shared();
 }
 
 void thread_aterm_pool::remove_container(aterm_container* container)
 {
+  lock_shared();
   m_containers.erase(container);
+  unlock_shared();
 }
 
 void thread_aterm_pool::mark()
@@ -165,23 +174,23 @@ void thread_aterm_pool::wait_for_busy() const
   while (m_busy_flag.load());
 }
 
-void thread_aterm_pool::enter()
+void thread_aterm_pool::lock_shared()
 {
   if (GlobalThreadSafe && m_creation_depth == 0)
   {
     m_busy_flag.store(true);
 
-    // Wait for the guard to become false.
-    while (m_pool.should_wait())
+    // Wait for the forbidden flag to become false.
+    while (m_forbidden_flag.load())
     {
       m_busy_flag = false;
-      m_pool.wait();
+      wait();
       m_busy_flag = true;
     }
   }
 }
 
-void thread_aterm_pool::leave()
+void thread_aterm_pool::unlock_shared()
 {
   if (GlobalThreadSafe && m_creation_depth == 0)
   {
@@ -189,6 +198,21 @@ void thread_aterm_pool::leave()
   }
 }
 
+void thread_aterm_pool::wait()
+{
+  std::unique_lock lock(m_mutex);
+  m_wait_variable.wait(lock, [this]() { return !m_forbidden_flag; });
+  m_mutex.unlock();
+}
+
+void thread_aterm_pool::set_forbidden(bool value)
+{
+  m_forbidden_flag.store(value);
+  if (!value)
+  {
+    m_wait_variable.notify_one();
+  }
+}
 
 } // namespace detail
 } // namespace atermpp
