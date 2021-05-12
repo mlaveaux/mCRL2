@@ -344,7 +344,7 @@ class symbolic_pbessolve_algorithm
       std::size_t alpha = m % 2; // 0 = disjunctive, 1 = conjunctive
 
       // Compute the partitioning of V for players 0 (in V[0]) and 1 (in V[1]).
-      std::array<const ldd, 2> Vplayer = { intersect(V, m_V[0]), intersect(V, m_V[1]) };
+      std::array<const ldd, 2> Vplayer = { m_V[0], m_V[1] };
 
       ldd W[2];
       ldd W_1[2];
@@ -408,10 +408,9 @@ class symbolic_pbessolve_algorithm
       using namespace sylvan::ldds;
       stopwatch timer;
 
-      std::array<const ldd, 2> Vplayer = { intersect(V, m_V[0]), intersect(V, m_V[1]) };
+      std::array<const ldd, 2> Vplayer = { m_V[0], m_V[1] };
       std::pair<ldd, ldd> results;
-      ldd won0 = W0;
-      ldd won1 = W1;
+      std::array<ldd, 2> won = { W0, W1 };
 
       // After removing the deadlock (winning) states the resulting set of states is a total graph.
       if (Vdeadlock != empty_set())
@@ -419,25 +418,25 @@ class symbolic_pbessolve_algorithm
         // Determine winners from the deadlocks (the owner loses).
         mCRL2log(log::verbose) << "determining winners for deadlock states" << std::endl;
 
-        won0 = union_(won0, intersect(Vdeadlock, m_V[1]));
-        won1 = union_(won1, intersect(Vdeadlock, m_V[0]));
+        won[0] = union_(won[0], intersect(Vdeadlock, m_V[1]));
+        won[1] = union_(won[1], intersect(Vdeadlock, m_V[0]));
       }      
 
       mCRL2log(log::verbose) << "preprocessing to obtain total graph" << std::endl;
       ldd Vtotal = V;
-      won0 = attractor(won0, 0, V, Vplayer);
-      won1 = attractor(won1, 1, V, Vplayer);
+      won[0] = attractor(won[0], 0, V, Vplayer);
+      won[1] = attractor(won[1], 1, V, Vplayer);
 
       // After removing the deadlock (winning) states the resulting set of states is a total graph.
-      Vtotal = minus(minus(V, won0), won1);
+      Vtotal = minus(minus(V, won[0]), won[1]);
 
       mCRL2log(log::debug) << "\n--- apply zielonka to ---\n" << print_graph(Vtotal, m_all_nodes, m_summand_groups, m_data_index, m_V[0], m_rank_map) << std::endl;
       const auto& [solved0, solved1] = zielonka(Vtotal);
-      won0 = union_(won0, solved0);
-      won1 = union_(won1, solved1);
+      won[0] = union_(won[0], solved0);
+      won[1] = union_(won[1], solved1);
 
       mCRL2log(log::verbose) << "finished solving (time = " << std::setprecision(2) << std::fixed << timer.seconds() << "s)\n";
-      return { won0, won1 };
+      return { won[0], won[1] };
     }
 
     std::pair<ldd, ldd> detect_cycles(const ldd& V, const ldd& Vdeadlock)
@@ -445,7 +444,7 @@ class symbolic_pbessolve_algorithm
       using namespace sylvan::ldds;
       stopwatch timer;
 
-      std::array<const ldd, 2> Vplayer = { intersect(V, m_V[0]), intersect(V, m_V[1]) };
+      std::array<const ldd, 2> Vplayer = { m_V[0],  m_V[1] };
       std::array<ldd, 2> won;
 
       if (Vdeadlock != empty_set())
