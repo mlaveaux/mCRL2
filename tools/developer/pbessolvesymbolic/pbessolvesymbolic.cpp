@@ -141,11 +141,10 @@ public:
           mCRL2log(log::verbose) << "found " << std::setw(12) << satcount(visited) << " states after "
                                  << std::setw(3) << iter << " iterations (time = " << std::setprecision(2)
                                  << std::fixed << loop_start.seconds() << "s)" << std::endl;
-          mCRL2log(log::verbose) << "todo contains " << std::setw(12) << satcount(m_todo) << " states" << std::endl;
-          mCRL2log(log::verbose) << "LDD size visited = " << nodecount(m_visited) << ", todo = " << nodecount(m_todo) << " and deadlock = " << nodecount(m_deadlocks) << std::endl;
+          mCRL2log(log::verbose) << "todo LDD size= " << nodecount(todo) << std::endl;
         }
 
-        mCRL2log(log::verbose) << "pruned todo list to " << satcount(todo) << " states from " << satcount(m_todo) << " states" << std::endl;
+        mCRL2log(log::verbose) << "pruned todo list from " << satcount(m_todo) << " states to " << satcount(todo) << " states" << std::endl;
         m_todo = todo;
       }
     }
