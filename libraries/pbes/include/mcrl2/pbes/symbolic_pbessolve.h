@@ -376,6 +376,32 @@ class symbolic_pbessolve_algorithm
       return { W[0], W[1] };
     }
 
+    ldd compute_total_graph(const ldd& V,
+        const ldd& Vdeadlock,
+        std::array<ldd, 2>& won)
+    {
+      using namespace sylvan::ldds;
+      std::array<const ldd, 2> Vplayer = { m_V[0],  m_V[1] };
+
+      // After removing the deadlock (winning) states the resulting set of states is a total graph.
+      if (Vdeadlock != empty_set())
+      {
+        // Determine winners from the deadlocks (the owner loses).
+        mCRL2log(log::verbose) << "determining winners for deadlock states" << std::endl;
+
+        won[0] = union_(won[0], intersect(Vdeadlock, m_V[1]));
+        won[1] = union_(won[1], intersect(Vdeadlock, m_V[0]));
+      }
+
+      mCRL2log(log::verbose) << "preprocessing to obtain total graph" << std::endl;
+      ldd Vtotal = V;
+      won[0] = attractor(won[0], 0, V, Vplayer);
+      won[1] = attractor(won[1], 1, V, Vplayer);
+
+      // After removing the deadlock (winning) states the resulting set of states is a total graph.
+      return minus(minus(V, won[0]), won[1]);
+    }
+
   public:
 
     bool solve(const ldd& V,
@@ -397,38 +423,21 @@ class symbolic_pbessolve_algorithm
       }
     }
 
-
     /// \returns The winning partition where first is the set won by player even.
     std::pair<ldd, ldd> solve_impl(const ldd& V,
-               const ldd& initial_vertex,
-               const ldd& Vdeadlock = sylvan::ldds::empty_set(),
-               const ldd& W0 = sylvan::ldds::empty_set(),
-               const ldd& W1 = sylvan::ldds::empty_set())
+        const ldd& initial_vertex,
+        const ldd& Vdeadlock = sylvan::ldds::empty_set(),
+        const ldd& W0 = sylvan::ldds::empty_set(),
+        const ldd& W1 = sylvan::ldds::empty_set())
     {
       using namespace sylvan::ldds;
       stopwatch timer;
 
       std::array<const ldd, 2> Vplayer = { m_V[0], m_V[1] };
       std::pair<ldd, ldd> results;
+
       std::array<ldd, 2> won = { W0, W1 };
-
-      // After removing the deadlock (winning) states the resulting set of states is a total graph.
-      if (Vdeadlock != empty_set())
-      {
-        // Determine winners from the deadlocks (the owner loses).
-        mCRL2log(log::verbose) << "determining winners for deadlock states" << std::endl;
-
-        won[0] = union_(won[0], intersect(Vdeadlock, m_V[1]));
-        won[1] = union_(won[1], intersect(Vdeadlock, m_V[0]));
-      }      
-
-      mCRL2log(log::verbose) << "preprocessing to obtain total graph" << std::endl;
-      ldd Vtotal = V;
-      won[0] = attractor(won[0], 0, V, Vplayer);
-      won[1] = attractor(won[1], 1, V, Vplayer);
-
-      // After removing the deadlock (winning) states the resulting set of states is a total graph.
-      Vtotal = minus(minus(V, won[0]), won[1]);
+      ldd Vtotal = compute_total_graph(V, Vdeadlock, won);
 
       mCRL2log(log::debug) << "\n--- apply zielonka to ---\n" << print_graph(Vtotal, m_all_nodes, m_summand_groups, m_data_index, m_V[0], m_rank_map) << std::endl;
       const auto& [solved0, solved1] = zielonka(Vtotal);
@@ -439,22 +448,17 @@ class symbolic_pbessolve_algorithm
       return { won[0], won[1] };
     }
 
-    std::pair<ldd, ldd> detect_cycles(const ldd& V, const ldd& Vdeadlock)
+    std::pair<ldd, ldd> detect_cycles(const ldd& V,
+        const ldd& Vdeadlock,
+        const ldd& W0 = sylvan::ldds::empty_set(),
+        const ldd& W1 = sylvan::ldds::empty_set())
     {
       using namespace sylvan::ldds;
       stopwatch timer;
 
       std::array<const ldd, 2> Vplayer = { m_V[0],  m_V[1] };
-      std::array<ldd, 2> won;
-
-      if (Vdeadlock != empty_set())
-      {
-        // Determine winners from the deadlocks (the owner loses).
-        mCRL2log(log::verbose) << "determining winners for deadlock states" << std::endl;
-
-        won[0] = intersect(Vdeadlock, m_V[1]);
-        won[1] = intersect(Vdeadlock, m_V[0]);
-      }
+      std::array<ldd, 2> won = { W0, W1 };
+      ldd Vtotal = compute_total_graph(V, Vdeadlock, won);
 
       for (const auto&[rank, Vrank] : m_rank_map)
       {
