@@ -62,8 +62,8 @@ class pbesreach_algorithm_partial : public pbes_system::pbesreach_algorithm
 {
 public:
 
-  pbesreach_algorithm_partial(const pbes_system::pbes& pbesspec, const symbolic_reachability_options& options_) :
-    pbes_system::pbesreach_algorithm(pbesspec, options_)
+  pbesreach_algorithm_partial(const pbes_system::pbes& pbesspec, const symbolic_reachability_options& options_, std::size_t num_lace_workers) :
+    pbes_system::pbesreach_algorithm(pbesspec, options_, num_lace_workers)
   {
     m_Vwon[0] = sylvan::ldds::empty_set();
     m_Vwon[1] = sylvan::ldds::empty_set();
@@ -330,31 +330,16 @@ class pbessolvesymbolic_tool: public rewriter_tool<input_output_tool>
         throw mcrl2::runtime_error("PBESses without parameters are not supported");
       }
 
-      pbes_system::pbesreach_algorithm reach(pbesspec, options, lace_workers());
-
-      if (options.info)
-      {
-        std::cout << lps::print_read_write_patterns(reach.read_write_group_patterns());
-      }
       else
       {
-        timer().start("instantiation");
-        ldd V = reach.run();
-        timer().finish("instantiation");
-        ldd init = reach.initial_state();
-
-        pbes_system::pbes_equation_index equation_index(reach.pbes());
-
-        // map propositional variable names to the corresponding ldd value
-        std::map<core::identifier_string, std::uint32_t> propvar_index;
-        for (const data::data_expression& X: reach.data_index()[0])
+        if (options.solve_strategy == 0)
         {
-          pbes_system::pbesreach_algorithm reach(pbesspec, options);
+          pbes_system::pbesreach_algorithm reach(pbesspec, options, lace_workers());
           solve(reach);
         }
         else
         {
-          pbes_system::pbesreach_algorithm_partial reach(pbesspec, options);
+          pbes_system::pbesreach_algorithm_partial reach(pbesspec, options, lace_workers());
           solve(reach);
         }
       }

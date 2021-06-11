@@ -205,29 +205,6 @@ public:
     return v;
   }
 
-  /// \brief Experimental operator to store the result in the second argument.
-
-  void operator()(const variable_type& v, expression_type& result) const
-  {
-    const std::size_t i = core::index_traits<data::variable, data::variable_key_type, 2>::index(v);
-    if (i < m_index_table.size())
-    {
-      const std::size_t j = m_index_table[i];
-      if (j!=std::size_t(-1))
-      {
-        // the variable has an assigned value.
-        assert(j<m_container.size());
-        // return m_container[j].second;
-        result=m_container[j].second;
-        return;
-      }
-    }
-    // no value assigned to v;
-    // return v;
-    result=v;
-    return;
-  }
-
   /// \brief Index operator.
   assignment operator[](variable_type const& v)
   {

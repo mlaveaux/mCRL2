@@ -326,7 +326,7 @@ pbes_system::srf_pbes split_conditions(const pbes_system::srf_pbes& pbes, std::s
 struct per_worker_information
 {
   data::mutable_indexed_substitution<> m_sigma;
-}
+};
 
 class pbesreach_algorithm
 {
@@ -426,7 +426,7 @@ class pbesreach_algorithm
     }
 
   public:
-    pbesreach_algorithm(const pbes_system::pbes& pbesspec, const symbolic_reachability_options& options_)
+    pbesreach_algorithm(const pbes_system::pbes& pbesspec, const symbolic_reachability_options& options_, std::size_t num_lace_workers)
       : m_options(options_),
         m_workers(num_lace_workers),
         m_pbes(preprocess(pbesspec, options_.make_total)),

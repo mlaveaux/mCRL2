@@ -928,6 +928,7 @@ void learn_successors_callback(WorkerP* worker, Task*, std::uint32_t* x, std::si
 
   const auto& rewr = algorithm.m_rewr;
   const auto& enumerator = algorithm.m_enumerator;
+  const auto& options = algorithm.m_options;
 
   std::size_t x_size = group.read.size();
   std::size_t y_size = group.write.size();
