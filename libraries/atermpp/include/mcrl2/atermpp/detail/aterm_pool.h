@@ -160,8 +160,8 @@ private:
   /// \threadsafe.
   inline void resize_if_needed(thread_aterm_pool_interface* thread);
 
-  /// \returns True iff the thread aterm pool should call wait().
-  inline bool should_wait();
+  /// \returns Lock the mutex to wait until unlock.
+  inline void wait();
 
   /// \brief Prevent any other thread aterm pool from creating or retrieving terms.
   inline void lock(thread_aterm_pool_interface* thread);

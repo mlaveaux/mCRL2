@@ -184,7 +184,7 @@ void thread_aterm_pool::lock_shared()
     while (m_forbidden_flag.load())
     {
       m_busy_flag = false;
-      wait();
+      m_pool.wait();
       m_busy_flag = true;
     }
   }
@@ -198,20 +198,10 @@ void thread_aterm_pool::unlock_shared()
   }
 }
 
-void thread_aterm_pool::wait()
-{
-  std::unique_lock lock(m_mutex);
-  m_wait_variable.wait(lock, [this]() { return !m_forbidden_flag; });
-  m_mutex.unlock();
-}
 
 void thread_aterm_pool::set_forbidden(bool value)
 {
   m_forbidden_flag.store(value);
-  if (!value)
-  {
-    m_wait_variable.notify_one();
-  }
 }
 
 } // namespace detail

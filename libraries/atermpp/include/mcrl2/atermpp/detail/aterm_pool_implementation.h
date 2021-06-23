@@ -459,12 +459,22 @@ void aterm_pool::resize_if_needed(thread_aterm_pool_interface* thread)
   unlock();
 }
 
+void aterm_pool::wait()
+{
+  if (m_mutex.try_lock())
+  {
+    m_mutex.unlock();
+  }
+}
+
 void aterm_pool::lock(thread_aterm_pool_interface* thread)
 {
   if constexpr (!GlobalThreadSafe) { return; }
 
   // Only one thread can halt everything.
   m_mutex.lock();
+
+  mCRL2log(mcrl2::log::debug) << "lock.\n";
 
   // Indicate that threads must wait.
   for (auto& pool : m_thread_pools)
@@ -479,6 +489,7 @@ void aterm_pool::lock(thread_aterm_pool_interface* thread)
   for (const auto& pool : m_thread_pools)
   {
     pool->wait_for_busy();
+    mCRL2log(mcrl2::log::debug) << "threadpool not busy.\n";
   }
 }
 
@@ -491,6 +502,7 @@ void aterm_pool::unlock()
     pool->set_forbidden(false);
   }
 
+  mCRL2log(mcrl2::log::debug) << "unlock.\n";
   m_mutex.unlock();
 }
 
