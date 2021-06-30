@@ -44,7 +44,8 @@ public:
     Equals,
     typename std::conditional<N == DynamicNumberOfArguments,
       atermpp::detail::_aterm_appl_allocator<>,
-      mcrl2::utilities::block_allocator<Element, 1024, GlobalThreadSafe>>::type,
+      typename std::conditional<EnableBlockAllocator, mcrl2::utilities::block_allocator<Element, 1024, GlobalThreadSafe>, std::allocator<Element>>::type
+      >::type,
     GlobalThreadSafe,
     false>;
   using iterator = typename unordered_set::iterator;

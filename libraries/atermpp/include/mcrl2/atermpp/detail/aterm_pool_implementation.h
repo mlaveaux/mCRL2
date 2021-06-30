@@ -461,10 +461,7 @@ void aterm_pool::resize_if_needed(thread_aterm_pool_interface* thread)
 
 void aterm_pool::wait()
 {
-  if (m_mutex.try_lock())
-  {
-    m_mutex.unlock();
-  }
+  std::unique_lock lock(m_mutex);
 }
 
 void aterm_pool::lock(thread_aterm_pool_interface* thread)

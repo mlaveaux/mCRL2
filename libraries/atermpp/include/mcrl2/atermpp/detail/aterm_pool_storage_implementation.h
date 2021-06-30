@@ -327,8 +327,11 @@ void ATERM_POOL_STORAGE::sweep()
     }
   }
 
-  // Clean up unnecessary blocks.
-  m_erased_blocks = m_term_set.get_allocator().consolidate();
+  if constexpr (EnableBlockAllocator)
+  {
+    // Clean up unnecessary blocks.
+    m_erased_blocks = m_term_set.get_allocator().consolidate();
+  }
 }
 
 ATERM_POOL_STORAGE_TEMPLATES

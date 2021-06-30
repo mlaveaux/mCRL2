@@ -21,6 +21,9 @@ constexpr static bool GlobalThreadSafe = true;
 /// \brief Enable garbage collection.
 constexpr static bool EnableGarbageCollection = true;
 
+/// \brief Enable the block allocator for terms.
+constexpr static bool EnableBlockAllocator = false;
+
 /// \brief Enable to print garbage collection statistics.
 constexpr static bool EnableGarbageCollectionMetrics = false;
 

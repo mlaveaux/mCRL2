@@ -160,7 +160,7 @@ private:
   /// \threadsafe.
   inline void resize_if_needed(thread_aterm_pool_interface* thread);
 
-  /// \returns Lock the mutex to wait until unlock.
+  /// \returns Wait for the mutex to unlock.
   inline void wait();
 
   /// \brief Prevent any other thread aterm pool from creating or retrieving terms.
