@@ -1,0 +1,30 @@
+A preliminary document explaining how to peform the benchmarks and gather the results.
+
+1. Clone the parallel branch (for now called ml-parallel in my repository) of
+   the mCRL2 repository and configure a release build (see mcrl2.org)
+
+2. Copy the *.cpp files and benchmark_shared.h from this directory to the
+   libraries/atermpp/benchmark/ directory (overwrite existing files).
+
+3. Configure MCRL2_ENABLE_BENCHMARKS to be 'ON' in the build.
+
+4. Now we have to choose which implementation we want to use. This can be
+   configured in 'libraries/atermpp/include/mcrl2/atermpp/detail/aterm_configuration.h'.
+   For the parallel implementation 'GlobalThreadSafe' is true and false otherwise.
+   For the reference counted implementation 'MCRL2_ATERMPP_REFERENCE_COUNTED' should be
+   defined, and commented out for the protection set implementation. For the original
+   implementation we use the master version of the mCRL2 repository.
+
+5. Build the following targets:
+    benchmark_target_atermpp_shared_creation 
+    benchmark_target_atermpp_shared_inspect 
+    benchmark_target_atermpp_shared_lookup 
+    benchmark_target_atermpp_unique_creation 
+    benchmark_target_atermpp_unique_lookup 
+    benchmark_target_atermpp_unique_inspect 
+
+5. Execute 'benchmark_parallel.sh <filename> to execute the parallel benchmarks
+   for 1 to 8 threads. Execute 'benchmark.sh <filename> to execute every benchmark
+   for only 1 thread. Both report pgfplots data after performing them.
+
+Our results can be found in the *.txt files and can be printed using ./report <filename.txt>.

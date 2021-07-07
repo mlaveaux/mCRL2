@@ -8,6 +8,7 @@
 //
 
 #include "mcrl2/atermpp/aterm_appl.h"
+#include "mcrl2/utilities/stopwatch.h"
 
 #include <thread>
 
@@ -16,21 +17,27 @@ using namespace atermpp;
 template<typename F>
 void benchmark_threads(std::size_t number_of_threads, F f)
 {
+  stopwatch timer;
+
   // Initialize a number of threads.
   std::vector<std::thread> threads(number_of_threads - 1);
+  int id = 1;
   for (auto& thread : threads)
   {
-    thread = std::thread(f);
+    thread = std::thread(f, id);
+    ++id;
   }
 
   // Run the benchmark on the main thread as well.
-  f();
+  f(0);
 
   // Wait for all threads to complete.
   for (auto& thread : threads)
   {
     thread.join();
   }
+
+  std::cerr << "time: " << timer.seconds() << std::endl;
 }
 
 /// \brief Create a nested function application f_depth. Where f_0 = c and f_i = f(f_i-1,...,f_i-1).
