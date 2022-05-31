@@ -342,7 +342,8 @@ class symbolic_parity_game
         mCRL2log(log::debug1) << "Zoutside = " << print_nodes(Zoutside) << std::endl;
         stopwatch iter_start;
 
-        todo = minus(safe_control_predecessors_impl(alpha, todo, V, Zoutside, V, Vplayer, I), Z);
+        //todo = minus(safe_control_predecessors_impl(alpha, todo, V, Zoutside, V, Vplayer, I), Z);
+        todo = minus(safe_control_predecessors_impl2(alpha, todo, Zoutside, Vplayer, I), Z);
         Z = union_(Z, todo);
         Zoutside = minus(Zoutside, todo);
 
@@ -612,6 +613,34 @@ private:
 
       return union_(Palpha, Pforced);
     } 
+    
+    /// \brief Compute the safe control attractor set for U.
+    ldd safe_control_predecessors_impl2(std::size_t alpha,
+      const ldd& U,
+      const ldd& Zoutside,
+      const std::array<const ldd, 2>& Vplayer,
+      const ldd& I = sylvan::ldds::empty_set()) const
+    {
+      using namespace sylvan::ldds;
+
+      ldd P = predecessors(Zoutside, U);
+      ldd Palpha = intersect(P, Vplayer[alpha]);
+      ldd Pforced = minus(intersect(P, Vplayer[1-alpha]), I);
+
+      for (std::size_t i = 0; i < m_summand_groups.size(); ++i)
+      {
+        const symbolic::summand_group& group = m_summand_groups[i];
+
+        stopwatch watch;
+        Pforced = minus(Pforced, predecessors(Pforced, Zoutside, group));
+
+        mCRL2log(log::debug) << "removed 1 - alpha predecessors for group " << i << " out of " << m_summand_groups.size()
+                               << " (time = " << std::setprecision(2) << std::fixed << watch.seconds() << "s)\n";
+      }
+
+      return union_(Palpha, Pforced);
+    }
+
 };
 
 } // namespace pbes_system
