@@ -23,6 +23,9 @@
 #include "settingsdialog.h"
 #include "settingsdock.h"
 #include "simdock.h"
+#include "graphicsinfodialog.h"
+
+#include <iostream>
 
 class MainWindow : public QMainWindow
 {
@@ -42,6 +45,8 @@ class MainWindow : public QMainWindow
     void exportText();
     void setStatusBar(QString message) { m_ui.statusbar->showMessage(message); }
     void clearStatusBar() { m_ui.statusbar->clearMessage(); }
+
+    void updateGraphicsInfo();
 
     void startRendering() { setStatusBar("Rendering..."); }
     void loadingLts() { setProgress(0, "Loading file"); }
@@ -76,7 +81,6 @@ class MainWindow : public QMainWindow
 
   private:
     Ui::MainWindow m_ui;
-    Settings m_settings;
     LtsManager *m_ltsManager;
     MarkManager *m_markManager;
     InfoDock *m_infoDock;
@@ -86,6 +90,8 @@ class MainWindow : public QMainWindow
     SettingsDialog *m_settingsDialog;
     LtsCanvas *m_ltsCanvas;
     QProgressDialog *m_progressDialog;
+    GraphicsInfoDialog *m_graphics_info_dialog;
+    
     mcrl2::gui::qt::LogRelay m_logRelay;
 
     mcrl2::gui::qt::PersistentFileDialog m_fileDialog;

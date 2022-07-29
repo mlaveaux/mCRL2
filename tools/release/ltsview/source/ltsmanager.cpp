@@ -41,7 +41,7 @@ void LtsManagerHelper::loadLts(QString filename)
 
 void LtsManagerHelper::clusterStates(LTS *lts)
 {
-  bool cyclic = m_settings->stateRankStyleCyclic.value();
+  bool cyclic = Settings::instance().stateRankStyleCyclic.value();
   emit rankingStates();
   lts->rankStates(cyclic);
   emit clusteringStates();
@@ -54,22 +54,20 @@ void LtsManagerHelper::clusterStates(LTS *lts)
 void LtsManagerHelper::positionClusters(LTS *lts)
 {
   emit positioningClusters();
-  lts->positionClusters(m_settings->fsmStyle.value());
+  lts->positionClusters(Settings::instance().fsmStyle.value());
   positionStates(lts);
 }
 
 void LtsManagerHelper::positionStates(LTS *lts)
 {
   emit positioningStates();
-  lts->positionStates(m_settings->statePosStyleMultiPass.value());
+  lts->positionStates(Settings::instance().statePosStyleMultiPass.value());
   m_lts = lts;
   emit finished();
 }
 
-LtsManager::LtsManager(QObject *parent, Settings *settings, QThread *atermThread):
+LtsManager::LtsManager(QObject *parent, QThread *atermThread):
   QObject(parent),
-  m_helper(settings),
-  m_settings(settings),
   m_lts(0),
   m_simulation(nullptr),
   m_selectedState(0),
@@ -84,9 +82,9 @@ LtsManager::LtsManager(QObject *parent, Settings *settings, QThread *atermThread
   connect(&m_helper, SIGNAL(positioningClusters()), this, SIGNAL(positioningClusters()));
   connect(&m_helper, SIGNAL(positioningStates()), this, SIGNAL(positioningStates()));
 
-  connect(&settings->stateRankStyleCyclic, SIGNAL(changed(bool)), this, SLOT(clusterStates()));
-  connect(&settings->fsmStyle, SIGNAL(changed(bool)), this, SLOT(positionClusters()));
-  connect(&settings->statePosStyleMultiPass, SIGNAL(changed(bool)), this, SLOT(positionStates()));
+  connect(&Settings::instance().stateRankStyleCyclic, SIGNAL(changed(bool)), this, SLOT(clusterStates()));
+  connect(&Settings::instance().fsmStyle, SIGNAL(changed(bool)), this, SLOT(positionClusters()));
+  connect(&Settings::instance().statePosStyleMultiPass, SIGNAL(changed(bool)), this, SLOT(positionStates()));
 }
 
 State *LtsManager::currentSimulationState() const

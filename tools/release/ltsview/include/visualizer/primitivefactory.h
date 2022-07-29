@@ -24,7 +24,7 @@ class PrimitiveFactory: public QObject
   Q_OBJECT
 
   public:
-    PrimitiveFactory(Settings* ss);
+    PrimitiveFactory();
     ~PrimitiveFactory();
     void drawPrimitive(int p);
     void drawSimpleSphere();
@@ -42,7 +42,6 @@ class PrimitiveFactory: public QObject
     std::vector<Primitive*> primitives;
     std::vector<P_ObliqueCone*> oblq_cones;
     ConeDB*  coneDB;
-    Settings* settings;
     int     disc;
     int     simple_sphere;
     int     sphere;

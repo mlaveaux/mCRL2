@@ -36,31 +36,37 @@ void ColorButtonHandler::setColor()
   m_button->setStyleSheet(QString("background-color: ") + colorString + "; color: " + colorString + ";");
 }
 
-SettingsDialog::SettingsDialog(QWidget *parent, Settings *settings):
-  QDialog(parent),
-  m_settings(settings)
+SettingsDialog::SettingsDialog(QWidget *parent):
+  QDialog(parent)
 {
   m_ui.setupUi(this);
 
-  setupSpinbox(m_ui.transparency, m_settings->transparency);
-  new ColorButtonHandler(m_ui.backgroundColor, m_settings->backgroundColor);
-  new ColorButtonHandler(m_ui.stateColor, m_settings->stateColor);
-  new ColorButtonHandler(m_ui.transitionColor, m_settings->downEdgeColor);
-  new ColorButtonHandler(m_ui.backpointerColor, m_settings->upEdgeColor);
-  new ColorButtonHandler(m_ui.markColor, m_settings->markedColor);
-  new ColorButtonHandler(m_ui.clusterColorTop, m_settings->clusterColorTop);
-  new ColorButtonHandler(m_ui.clusterColorBottom, m_settings->clusterColorBottom);
-  setupCheckbox(m_ui.longInterpolation, m_settings->longInterpolation);
-  new ColorButtonHandler(m_ui.simulationHistoryColor, m_settings->simPrevColor);
-  new ColorButtonHandler(m_ui.simulationCurrentStateColor, m_settings->simCurrColor);
-  new ColorButtonHandler(m_ui.simulationSelectedColor, m_settings->simSelColor);
-  new ColorButtonHandler(m_ui.simulationNextStateColor, m_settings->simPosColor);
-  setupCheckbox(m_ui.navShowBackpointers, m_settings->navShowBackpointers);
-  setupCheckbox(m_ui.navShowStates, m_settings->navShowStates);
-  setupCheckbox(m_ui.navShowTransitions, m_settings->navShowTransitions);
-  setupCheckbox(m_ui.navSmoothShading, m_settings->navSmoothShading);
-  setupCheckbox(m_ui.navLighting, m_settings->navLighting);
-  setupCheckbox(m_ui.navTransparency, m_settings->navTransparency);
+  setupSpinbox(m_ui.transparency, Settings::instance().transparency);
+  new ColorButtonHandler(m_ui.backgroundColor, Settings::instance().backgroundColor);
+  new ColorButtonHandler(m_ui.stateColor, Settings::instance().stateColor);
+  new ColorButtonHandler(m_ui.transitionColor, Settings::instance().downEdgeColor);
+  
+  new ColorButtonHandler(m_ui.backpointerColorTo, Settings::instance().upEdgeColorTo);
+  new ColorButtonHandler(m_ui.backpointerColorFrom, Settings::instance().upEdgeColorFrom);
+  setupCheckbox(m_ui.longInterpolation_transition,
+                Settings::instance().longInterpolationUpEdge);
+
+  new ColorButtonHandler(m_ui.markColor, Settings::instance().markedColor);
+
+  new ColorButtonHandler(m_ui.clusterColorTop, Settings::instance().clusterColorTop);
+  new ColorButtonHandler(m_ui.clusterColorBottom, Settings::instance().clusterColorBottom);
+  setupCheckbox(m_ui.longInterpolation, Settings::instance().longInterpolationCluster);
+
+  new ColorButtonHandler(m_ui.simulationHistoryColor, Settings::instance().simPrevColor);
+  new ColorButtonHandler(m_ui.simulationCurrentStateColor, Settings::instance().simCurrColor);
+  new ColorButtonHandler(m_ui.simulationSelectedColor, Settings::instance().simSelColor);
+  new ColorButtonHandler(m_ui.simulationNextStateColor, Settings::instance().simPosColor);
+  setupCheckbox(m_ui.navShowBackpointers, Settings::instance().navShowBackpointers);
+  setupCheckbox(m_ui.navShowStates, Settings::instance().navShowStates);
+  setupCheckbox(m_ui.navShowTransitions, Settings::instance().navShowTransitions);
+  setupCheckbox(m_ui.navSmoothShading, Settings::instance().navSmoothShading);
+  setupCheckbox(m_ui.navLighting, Settings::instance().navLighting);
+  setupCheckbox(m_ui.navTransparency, Settings::instance().navTransparency);
 }
 
 void SettingsDialog::setupSpinbox(QSpinBox *spinbox, Settings::SettingInt &setting)

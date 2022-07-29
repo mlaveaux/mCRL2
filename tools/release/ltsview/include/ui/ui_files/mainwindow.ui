@@ -31,7 +31,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -68,6 +68,8 @@
     <addaction name="displayWireframe"/>
     <addaction name="separator"/>
     <addaction name="preferences"/>
+    <addaction name="separator"/>
+    <addaction name="actionShowGraphicsInfo"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="viewMenu"/>
@@ -222,6 +224,11 @@
   <action name="preferences">
    <property name="text">
     <string>&amp;Preferences...</string>
+   </property>
+  </action>
+  <action name="actionShowGraphicsInfo">
+   <property name="text">
+    <string>Show graphics info</string>
    </property>
   </action>
  </widget>

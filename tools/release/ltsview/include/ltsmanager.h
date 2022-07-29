@@ -22,7 +22,7 @@ class LtsManagerHelper : public QObject
   Q_OBJECT
 
   public:
-    LtsManagerHelper(Settings *settings): m_settings(settings) {}
+    LtsManagerHelper() {}
     LTS *lts() { return m_lts; }
 
   public slots:
@@ -41,7 +41,6 @@ class LtsManagerHelper : public QObject
     void finished();
 
   private:
-    Settings *m_settings;
     LTS *m_lts;
 };
 
@@ -50,7 +49,7 @@ class LtsManager : public QObject
   Q_OBJECT
 
   public:
-    LtsManager(QObject *parent, Settings *settings, QThread *atermThread);
+    LtsManager(QObject *parent, QThread *atermThread);
     LTS *lts() const { return m_lts; }
 
     State *selectedState() const { return m_selectedState; }
@@ -111,8 +110,6 @@ class LtsManager : public QObject
 
   public:
     LtsManagerHelper m_helper;
-
-    Settings *m_settings;
     LTS *m_lts;
     std::unique_ptr<Simulation> m_simulation;
     State *m_selectedState;

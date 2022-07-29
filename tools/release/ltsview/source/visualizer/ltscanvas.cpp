@@ -17,14 +17,16 @@
 #include "icons/pan_cursor.xpm"
 #include "icons/rotate_cursor.xpm"
 
-LtsCanvas::LtsCanvas(QWidget* parent, Settings* settings, LtsManager* ltsManager, MarkManager* markManager):
+#include <chrono>
+
+LtsCanvas::LtsCanvas(QWidget* parent, LtsManager* ltsManager, MarkManager* markManager):
   QOpenGLWidget(parent),
-  m_settings(settings),
   m_ltsManager(ltsManager),
-  m_visualizer(new Visualizer(this, settings, ltsManager, markManager)),
+  m_visualizer(new Visualizer(this, ltsManager, markManager)),
   m_width(0),
   m_height(0),
-  m_dragging(false)
+  m_dragging(false),
+  frame_times(QLinkedList<QTime>())
 {
   m_selectCursor = QCursor(Qt::ArrowCursor);
   m_panCursor = QCursor(QPixmap(pan_cursor));
@@ -35,11 +37,11 @@ LtsCanvas::LtsCanvas(QWidget* parent, Settings* settings, LtsManager* ltsManager
   connect(m_ltsManager, SIGNAL(clusterPositionsChanged()), this, SLOT(clusterPositionsChanged()));
   connect(m_ltsManager, SIGNAL(ltsZoomed(LTS *)), this, SLOT(clusterPositionsChanged()));
   connect(m_ltsManager, SIGNAL(ltsZoomed(LTS *)), this, SLOT(resetView()));
-  connect(&m_settings->backgroundColor, SIGNAL(changed(QColor)), this, SLOT(update()));
-  connect(&m_settings->displayStates, SIGNAL(changed(bool)), this, SLOT(update()));
-  connect(&m_settings->displayTransitions, SIGNAL(changed(bool)), this, SLOT(update()));
-  connect(&m_settings->displayBackpointers, SIGNAL(changed(bool)), this, SLOT(update()));
-  connect(&m_settings->displayWireframe, SIGNAL(changed(bool)), this, SLOT(update()));
+  connect(&Settings::instance().backgroundColor, SIGNAL(changed(QColor)), this, SLOT(update()));
+  connect(&Settings::instance().displayStates, SIGNAL(changed(bool)), this, SLOT(update()));
+  connect(&Settings::instance().displayTransitions, SIGNAL(changed(bool)), this, SLOT(update()));
+  connect(&Settings::instance().displayBackpointers, SIGNAL(changed(bool)), this, SLOT(update()));
+  connect(&Settings::instance().displayWireframe, SIGNAL(changed(bool)), this, SLOT(update()));
 
   clusterPositionsChanged();
   resetView();
@@ -149,6 +151,11 @@ void LtsCanvas::resizeGL(int width, int height)
 
 void LtsCanvas::paintGL()
 {
+  // GLint64 start;
+  // GLint64 end;
+  // glGetInteger64v(GL_TIMESTAMP, &start);
+  auto start = std::chrono::high_resolution_clock::now();
+  
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(60.0f, (GLfloat)m_width / (GLfloat)m_height, m_nearPlane, m_farPlane);
@@ -156,6 +163,17 @@ void LtsCanvas::paintGL()
   emit renderingStarted();
   render(m_dragging);
   emit renderingFinished();
+
+  auto end = std::chrono::high_resolution_clock::now();
+  // glGetInteger64v(GL_TIMESTAMP, &end);
+
+  frame_times.append(QTime::currentTime());
+  while(frame_times.back().msecsSinceStartOfDay() - frame_times.front().msecsSinceStartOfDay() > measuring_time * 1000) frame_times.pop_front();
+  graphics_info = QString("Version: ").append((const char *)glGetString(GL_VERSION));
+  graphics_info.append("\nAverage frame time: ").append(QString::number(measuring_time / frame_times.size()));
+  graphics_info.append("\nFrame_times length: ").append(QString::number(frame_times.size()));
+  graphics_info.append("\nLast frametime in msec: ").append(QString::number((end - start).count() / 1e6));
+  
 }
 
 void LtsCanvas::render(bool light)
@@ -164,9 +182,9 @@ void LtsCanvas::render(bool light)
   glDepthFunc(GL_LESS);
 
   glClearColor(
-    m_settings->backgroundColor.value().red() / 255.0,
-    m_settings->backgroundColor.value().green() / 255.0,
-    m_settings->backgroundColor.value().blue() / 255.0,
+    Settings::instance().backgroundColor.value().red() / 255.0,
+    Settings::instance().backgroundColor.value().green() / 255.0,
+    Settings::instance().backgroundColor.value().blue() / 255.0,
     1.0f
   );
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -175,7 +193,7 @@ void LtsCanvas::render(bool light)
   glPushMatrix();
   glLoadIdentity();
 
-  if (!light || m_settings->navLighting.value())
+  if (!light || Settings::instance().navLighting.value())
   {
     glEnable(GL_NORMALIZE);
     glEnable(GL_LIGHTING);
@@ -188,7 +206,7 @@ void LtsCanvas::render(bool light)
     glDisable(GL_LIGHT0);
   }
 
-  if (!light || m_settings->navSmoothShading.value())
+  if (!light || Settings::instance().navSmoothShading.value())
   {
     glShadeModel(GL_SMOOTH);
   }
@@ -197,7 +215,7 @@ void LtsCanvas::render(bool light)
     glShadeModel(GL_FLAT);
   }
 
-  if (m_settings->displayWireframe.value())
+  if (Settings::instance().displayWireframe.value())
   {
     glPolygonMode(GL_FRONT,GL_LINE);
   }
@@ -226,9 +244,9 @@ void LtsCanvas::render(bool light)
     );
     glPopName();
   }
-  if (!light || m_settings->navShowStates.value())
+  if (!light || Settings::instance().navShowStates.value())
   {
-    if (m_settings->displayStates.value())
+    if (Settings::instance().displayStates.value())
     {
       // Identify that we are drawing states
       glPushName(StateObject);
@@ -244,8 +262,8 @@ void LtsCanvas::render(bool light)
   glDisable(GL_LIGHT0);
 
   m_visualizer->drawTransitions(
-    m_settings->displayTransitions.value() && (!light || m_settings->navShowTransitions.value()),
-    m_settings->displayBackpointers.value() && (!light || m_settings->navShowBackpointers.value())
+    Settings::instance().displayTransitions.value() && (!light || Settings::instance().navShowTransitions.value()),
+    Settings::instance().displayBackpointers.value() && (!light || Settings::instance().navShowBackpointers.value())
   );
 
   if (m_ltsManager->simulationActive())
@@ -254,8 +272,8 @@ void LtsCanvas::render(bool light)
     // transitions going out of the current state.
     // Identify that we are drawing selectable sim states in this mode.
     m_visualizer->drawSimTransitions(
-      !light || m_settings->navShowTransitions.value(),
-      !light || m_settings->navShowBackpointers.value(),
+      !light || Settings::instance().navShowTransitions.value(),
+      !light || Settings::instance().navShowBackpointers.value(),
       m_ltsManager->simulationTransitionHistory(),
       m_ltsManager->simulationAvailableTransitions(),
       m_ltsManager->currentSimulationTransition()
@@ -263,14 +281,14 @@ void LtsCanvas::render(bool light)
   }
 
   // Enable lighting again, if required
-  if (!light || m_settings->navLighting.value())
+  if (!light || Settings::instance().navLighting.value())
   {
     glEnable(GL_NORMALIZE);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
   }
 
-  if (!light || m_settings->navTransparency.value())
+  if (!light || Settings::instance().navTransparency.value())
   {
     // determine current viewpoint in world coordinates
     glPushMatrix();
@@ -305,6 +323,8 @@ void LtsCanvas::render(bool light)
   {
     qWarning("OpenGL error: %d", error);
   }
+
+  
 }
 
 void LtsCanvas::mousePressEvent(QMouseEvent* event)

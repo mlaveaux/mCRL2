@@ -9,6 +9,7 @@
 #include <QApplication>
 #include <QImageWriter>
 #include <QSettings>
+#include <QTimer>
 
 #include "mcrl2/lts/lts_io.h"
 #include "mainwindow.h"
@@ -19,15 +20,16 @@ MainWindow::MainWindow(QThread *atermThread):
 {
   m_ui.setupUi(this);
 
-  m_ltsManager = new LtsManager(this, &m_settings, atermThread);
+  m_ltsManager = new LtsManager(this, atermThread);
   m_markManager = new MarkManager(this, m_ltsManager);
 
   m_infoDock = new InfoDock(this, m_ltsManager, m_markManager);
   m_markDock = new MarkDock(this, m_markManager);
   m_simDock = new SimDock(this, m_ltsManager);
-  m_settingsDock = new SettingsDock(this, &m_settings);
-  m_settingsDialog = new SettingsDialog(this, &m_settings);
-  m_ltsCanvas = new LtsCanvas(this, &m_settings, m_ltsManager, m_markManager);
+  m_settingsDock = new SettingsDock(this);
+  m_settingsDialog = new SettingsDialog(this);
+  m_ltsCanvas = new LtsCanvas(this, m_ltsManager, m_markManager);
+  m_graphics_info_dialog = new GraphicsInfoDialog(this);
   setCentralWidget(m_ltsCanvas);
   m_progressDialog = new QProgressDialog("", QString(), 0, 6, this);
   m_progressDialog->setMinimumDuration(0);
@@ -57,16 +59,17 @@ MainWindow::MainWindow(QThread *atermThread):
   connect(m_ui.zoomIntoBelow, SIGNAL(triggered()), m_ltsManager, SLOT(zoomInBelow()));
   connect(m_ui.zoomOut, SIGNAL(triggered()), m_ltsManager, SLOT(zoomOut()));
 
-  connect(m_ui.displayStates, SIGNAL(triggered(bool)), &m_settings.displayStates, SLOT(setValue(bool)));
-  connect(&m_settings.displayStates, SIGNAL(changed(bool)), m_ui.displayStates, SLOT(setChecked(bool)));
-  connect(m_ui.displayTransitions, SIGNAL(triggered(bool)), &m_settings.displayTransitions, SLOT(setValue(bool)));
-  connect(&m_settings.displayTransitions, SIGNAL(changed(bool)), m_ui.displayTransitions, SLOT(setChecked(bool)));
-  connect(m_ui.displayBackpointers, SIGNAL(triggered(bool)), &m_settings.displayBackpointers, SLOT(setValue(bool)));
-  connect(&m_settings.displayBackpointers, SIGNAL(changed(bool)), m_ui.displayBackpointers, SLOT(setChecked(bool)));
-  connect(m_ui.displayWireframe, SIGNAL(triggered(bool)), &m_settings.displayWireframe, SLOT(setValue(bool)));
-  connect(&m_settings.displayWireframe, SIGNAL(changed(bool)), m_ui.displayWireframe, SLOT(setChecked(bool)));
+  connect(m_ui.displayStates, SIGNAL(triggered(bool)), &Settings::instance().displayStates, SLOT(setValue(bool)));
+  connect(&Settings::instance().displayStates, SIGNAL(changed(bool)), m_ui.displayStates, SLOT(setChecked(bool)));
+  connect(m_ui.displayTransitions, SIGNAL(triggered(bool)), &Settings::instance().displayTransitions, SLOT(setValue(bool)));
+  connect(&Settings::instance().displayTransitions, SIGNAL(changed(bool)), m_ui.displayTransitions, SLOT(setChecked(bool)));
+  connect(m_ui.displayBackpointers, SIGNAL(triggered(bool)), &Settings::instance().displayBackpointers, SLOT(setValue(bool)));
+  connect(&Settings::instance().displayBackpointers, SIGNAL(changed(bool)), m_ui.displayBackpointers, SLOT(setChecked(bool)));
+  connect(m_ui.displayWireframe, SIGNAL(triggered(bool)), &Settings::instance().displayWireframe, SLOT(setValue(bool)));
+  connect(&Settings::instance().displayWireframe, SIGNAL(changed(bool)), m_ui.displayWireframe, SLOT(setChecked(bool)));
 
   connect(m_ui.preferences, SIGNAL(triggered()), m_settingsDialog, SLOT(show()));
+  connect(m_ui.actionShowGraphicsInfo, SIGNAL(triggered()), m_graphics_info_dialog, SLOT(show()));
 
   connect(m_ltsManager, SIGNAL(loadingLts()), this, SLOT(loadingLts()));
   connect(m_ltsManager, SIGNAL(rankingStates()), this, SLOT(rankingStates()));
@@ -87,6 +90,7 @@ MainWindow::MainWindow(QThread *atermThread):
 
   connect(m_ltsCanvas, SIGNAL(renderingStarted()), this, SLOT(startRendering()));
   connect(m_ltsCanvas, SIGNAL(renderingFinished()), this, SLOT(clearStatusBar()));
+  connect(m_ltsCanvas, SIGNAL(renderingFinished()), this, SLOT(updateGraphicsInfo()));
 
   QSettings settings("mCRL2", "LTSView");
   restoreGeometry(settings.value("geometry").toByteArray());
@@ -96,6 +100,11 @@ MainWindow::MainWindow(QThread *atermThread):
 MainWindow::~MainWindow()
 {
   mcrl2::log::logger::unregister_output_policy(m_logRelay);
+}
+
+void MainWindow::updateGraphicsInfo(){ 
+  if (!m_ltsCanvas) return;
+  m_graphics_info_dialog->lbl_info->setText(m_ltsCanvas->graphics_info);
 }
 
 void MainWindow::closeEvent(QCloseEvent * /*event*/)

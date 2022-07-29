@@ -103,12 +103,12 @@ class Cluster
     void addBranchVisObject(int vo);
     void clearBranchVisObjects();
 
+    std::vector< Cluster* > descendants;
   private:
     std::map< int, int > actionLabelCounts;
     Cluster* ancestor;
     float baseRadius;
     int numDeadlocks;
-    std::vector< Cluster* > descendants;
     std::vector<std::vector<bool> > severedDescendants;
     unsigned int severedDescendantsC;
     int numMarkedStatesAll;

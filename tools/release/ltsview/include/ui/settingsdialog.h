@@ -35,7 +35,7 @@ class SettingsDialog : public QDialog
   Q_OBJECT
 
   public:
-    SettingsDialog(QWidget *parent, Settings *settings);
+    SettingsDialog(QWidget *parent);
 
   private:
     void setupSpinbox(QSpinBox *spinbox, Settings::SettingInt &setting);
@@ -43,7 +43,6 @@ class SettingsDialog : public QDialog
 
   private:
     Ui::SettingsDialog m_ui;
-    Settings *m_settings;
 };
 
 #endif

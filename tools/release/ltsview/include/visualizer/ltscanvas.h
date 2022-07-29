@@ -9,6 +9,7 @@
 #ifndef LTSCANVAS_H
 #define LTSCANVAS_H
 
+// #include <QOpenGLFunctions_3_3_Core>
 #include <QCursor>
 #include <QOpenGLWidget>
 #include <QImage>
@@ -16,6 +17,9 @@
 #include <QPoint>
 #include <QWheelEvent>
 #include <QQuaternion>
+
+#include <QLinkedList>
+#include <QTime>
 
 #include "visualizer.h"
 
@@ -29,7 +33,7 @@ class LtsCanvas : public QOpenGLWidget
     struct Selection { State* state; Cluster* cluster; };
 
   public:
-    LtsCanvas(QWidget* parent, Settings* settings, LtsManager* ltsManager, MarkManager* markManager);
+    LtsCanvas(QWidget* parent, LtsManager* ltsManager, MarkManager* markManager);
     int viewWidth() const { return m_width; }
     int viewHeight() const { return m_height; }
 
@@ -68,7 +72,6 @@ class LtsCanvas : public QOpenGLWidget
     void renderingFinished();
 
   private:
-    Settings* m_settings;
     LtsManager* m_ltsManager;
     Visualizer* m_visualizer;
 
@@ -87,6 +90,12 @@ class LtsCanvas : public QOpenGLWidget
     Tool m_activeTool;
     bool m_dragging;
     QPoint m_lastMousePosition;
+
+    // graphics info variables
+    QLinkedList<QTime> frame_times; 
+    double measuring_time = 1; // [s]
+  public:
+    QString graphics_info;
 };
 
 #endif

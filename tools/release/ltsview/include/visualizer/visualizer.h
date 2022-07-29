@@ -25,7 +25,7 @@ class Visualizer: public QObject
   Q_OBJECT
 
   public:
-    Visualizer(QObject *parent, Settings* settings_, LtsManager *ltsManager_, MarkManager* markManager_);
+    Visualizer(QObject *parent, LtsManager *ltsManager_, MarkManager* markManager_);
 
     void computeBoundsInfo(float& bcw,float& bch);
     float getHalfStructureHeight() const;
@@ -57,7 +57,6 @@ class Visualizer: public QObject
     void dirtied();
 
   private:
-    Settings* settings;
     LtsManager *ltsManager;
     MarkManager* markManager;
     VisObjectFactory visObjectFactory;

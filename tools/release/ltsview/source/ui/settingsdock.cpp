@@ -28,32 +28,42 @@ void ComboboxHandler::setState()
   m_combobox->setCurrentIndex(m_setting->value() ? 1 : 0);
 }
 
-SettingsDock::SettingsDock(QWidget *parent, Settings *settings):
-  QWidget(parent),
-  m_settings(settings)
+SettingsDock::SettingsDock(QWidget *parent):
+  QWidget(parent)
 {
   m_ui.setupUi(this);
 
   connect(m_ui.stateSize, SIGNAL(valueChanged(int)), this, SLOT(stateSizeChanged(int)));
-  connect(&m_settings->stateSize, SIGNAL(changed(float)), this, SLOT(setStateSize(float)));
-  setStateSize(m_settings->stateSize.value());
+  connect(&Settings::instance().stateSize, SIGNAL(changed(float)), this, SLOT(setStateSize(float)));
+  setStateSize(Settings::instance().stateSize.value());
 
   connect(m_ui.clusterHeight, SIGNAL(valueChanged(int)), this, SLOT(clusterHeightChanged(int)));
-  connect(&m_settings->clusterHeight, SIGNAL(changed(float)), this, SLOT(setClusterHeight(float)));
-  setClusterHeight(m_settings->clusterHeight.value());
+  connect(&Settings::instance().clusterHeight, SIGNAL(changed(float)), this, SLOT(setClusterHeight(float)));
+  setClusterHeight(Settings::instance().clusterHeight.value());
 
-  setupSpinbox(m_ui.branchRotation, m_settings->branchRotation);
-  setupSpinbox(m_ui.branchTilt, m_settings->branchTilt);
+  setupSpinbox(m_ui.branchRotation, Settings::instance().branchRotation);
+  setupSpinbox(m_ui.branchTilt, Settings::instance().branchTilt);
 
+<<<<<<< HEAD:tools/release/ltsview/settingsdock.cpp
   new ComboboxHandler(m_ui.stateRanking, m_settings->stateRankStyleCyclic);
   new ComboboxHandler(m_ui.clusterPositioning, m_settings->fsmStyle);
   new ComboboxHandler(m_ui.statePositioning, m_settings->statePosStyleMultiPass);
   new ComboboxHandler(m_ui.visualizationStyle, m_settings->clusterVisStyleTubes);
+=======
+  connect(m_ui.accuracy, SIGNAL(valueChanged(int)), this, SLOT(accuracyChanged(int)));
+  connect(&Settings::instance().quality, SIGNAL(changed(int)), this, SLOT(setAccuracy(int)));
+  setAccuracy(Settings::instance().quality.value());
+
+  new ComboboxHandler(m_ui.stateRanking, Settings::instance().stateRankStyleCyclic);
+  new ComboboxHandler(m_ui.clusterPositioning, Settings::instance().fsmStyle);
+  new ComboboxHandler(m_ui.statePositioning, Settings::instance().statePosStyleMultiPass);
+  new ComboboxHandler(m_ui.visualizationStyle, Settings::instance().clusterVisStyleTubes);
+>>>>>>> 49b9c9eb18 (Major structure overhaul):tools/release/ltsview/source/ui/settingsdock.cpp
 }
 
 void SettingsDock::stateSizeChanged(int value)
 {
-  m_settings->stateSize.setValue(value / 10.0f);
+  Settings::instance().stateSize.setValue(value / 10.0f);
 }
 
 void SettingsDock::setStateSize(float value)
@@ -63,12 +73,22 @@ void SettingsDock::setStateSize(float value)
 
 void SettingsDock::clusterHeightChanged(int value)
 {
-  m_settings->clusterHeight.setValue(value / 10.0f);
+  Settings::instance().clusterHeight.setValue(value / 10.0f);
 }
 
 void SettingsDock::setClusterHeight(float value)
 {
   m_ui.clusterHeight->setValue((int)(value * 10.0f));
+}
+
+void SettingsDock::accuracyChanged(int value)
+{
+  Settings::instance().quality.setValue(value * 2);
+}
+
+void SettingsDock::setAccuracy(int value)
+{
+  m_ui.accuracy->setValue(value / 2);
 }
 
 void SettingsDock::setupSpinbox(QSpinBox *spinbox, Settings::SettingInt &setting)

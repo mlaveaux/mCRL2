@@ -14,8 +14,9 @@
 
 #include "mcrl2/gui/setting.h"
 
-struct Settings
+class Settings
 {
+public:
   typedef mcrl2::gui::qt::SettingInt SettingInt;
   typedef mcrl2::gui::qt::SettingFloat SettingFloat;
   typedef mcrl2::gui::qt::SettingBool SettingBool;
@@ -30,11 +31,17 @@ struct Settings
   SettingColor backgroundColor;
   SettingColor stateColor;
   SettingColor downEdgeColor;
-  SettingColor upEdgeColor;
+
+  SettingColor upEdgeColorFrom;
+  SettingColor upEdgeColorTo;
+  SettingBool longInterpolationUpEdge;
+
   SettingColor markedColor;
+  
   SettingColor clusterColorTop;
   SettingColor clusterColorBottom;
-  SettingBool longInterpolation;
+  SettingBool longInterpolationCluster;
+  
   SettingColor simPrevColor;
   SettingColor simCurrColor;
   SettingColor simSelColor;
@@ -53,7 +60,8 @@ struct Settings
   SettingBool displayTransitions;
   SettingBool displayBackpointers;
   SettingBool displayWireframe;
-
+  
+private:
   Settings():
     stateSize(0.1f),
     clusterHeight(0.0f),
@@ -64,11 +72,13 @@ struct Settings
     backgroundColor(QColor(150, 150, 150)),
     stateColor(QColor(255, 255, 255)),
     downEdgeColor(QColor(255, 255, 255)),
-    upEdgeColor(QColor(0, 0, 255)),
+    upEdgeColorFrom(QColor(0, 0, 0)),
+    upEdgeColorTo(QColor(0, 0, 255)),
+    longInterpolationUpEdge(false),
     markedColor(QColor(255, 0, 0)),
     clusterColorTop(QColor(255, 255, 255)),
     clusterColorBottom(QColor(0, 0, 255)),
-    longInterpolation(false),
+    longInterpolationCluster(false),
     simPrevColor(QColor(255, 0, 255)),
     simCurrColor(QColor(0, 255, 0)),
     simSelColor(QColor(255, 255, 0)),
@@ -88,6 +98,13 @@ struct Settings
     displayBackpointers(false),
     displayWireframe(false)
   {}
+
+public:
+  // singleton pattern
+  static Settings& instance(){
+    static Settings INSTANCE;
+    return INSTANCE;
+  }
 };
 
 #endif
