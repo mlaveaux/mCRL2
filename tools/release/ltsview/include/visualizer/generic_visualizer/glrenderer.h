@@ -15,12 +15,11 @@
 #include <QPainter>
 
 /// \brief Objects of type renderer represent a pipeline of shaders.
-template <typename NodeData, typename ModelData>
 class Renderer : private QOpenGLShaderProgram
 {
     public:
-        void initialize(SceneGraph<NodeData, ModelData>* scenegraph);
-        void forceInitialize(SceneGraph<NodeData, ModelData>* scenegraph);
+        void initialize();
+        void forceInitialize();
 
         virtual void update();
         // in general usage as follows:
@@ -29,13 +28,11 @@ class Renderer : private QOpenGLShaderProgram
         // painter.endNativePainting()
         // ~ Draw some text using QPainter
         virtual void render(QPainter& painter) = 0;
-        // used to clear buffers etc.
-        virtual void rebuild(SceneGraph<NodeData, ModelData>* scenegraph) = 0;
 
 
     private:
         virtual void intializeShaders();
-        virtual void initializeData(SceneGraph<NodeData, ModelData>* scenegraph);
+        virtual void initializeData();
         bool m_initialized = false;
 };
 

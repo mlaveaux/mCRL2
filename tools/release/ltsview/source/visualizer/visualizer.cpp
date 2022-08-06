@@ -18,7 +18,7 @@
 #include <QtOpenGL>
 
 #include "vistree.h"
-#include "scenegraphgenerator.h"
+#include "vistreegenerator.h"
 
 using namespace MathUtils;
 

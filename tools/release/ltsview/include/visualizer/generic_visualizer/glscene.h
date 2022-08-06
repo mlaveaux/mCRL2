@@ -31,7 +31,7 @@ public:
   /// \param glwidget The widget where this scene is drawn
   /// \param scenegraph The scenegraph that is to be drawn.
   /// \param cam Camera to be used
-  GLScene(QOpenGLWidget& glwidget, SceneGraph<NodeData, ModelData>* scenegraph, Camera* camera, Renderer<NodeData, ModelData>* renderer) :
+  GLScene(QOpenGLWidget& glwidget, SceneGraph<NodeData, ModelData>& scenegraph, Camera& camera, Renderer& renderer) :
    m_glwidget(glwidget),
    m_scenegraph(scenegraph),
    m_camera(camera),
@@ -53,9 +53,9 @@ public:
   void resize(std::size_t width, std::size_t height);
 
 private:
-  Camera* m_camera;
-  SceneGraph<NodeData, ModelData>* m_scenegraph;
-  Renderer<NodeData, ModelData>* m_renderer;
+  Camera& m_camera;
+  SceneGraph<NodeData, ModelData>& m_scenegraph;
+  Renderer& m_renderer;
   QOpenGLWidget& m_glwidget; /// The widget where this scene is drawn
 
   float m_device_pixel_ratio;

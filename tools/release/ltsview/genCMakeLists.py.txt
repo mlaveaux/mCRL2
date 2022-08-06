@@ -1,0 +1,283 @@
+import os, sys
+
+TARGET_NAME = "LTSView"
+
+PRINT_BLACKLIST     = True
+PRINT_FILE_TYPES    = True
+   
+PRINT_SOURCES       = False
+PRINT_HEADERS       = False
+PRINT_UI            = False
+    
+PRINT_SRC_PATHS     = True
+PRINT_H_PATHS       = True
+PRINT_UI_PATHS      = True
+
+PRINT_VERSIONING    = True
+PRINT_CACHE         = False
+PRINT_CACHING       = True
+
+ENABLE_CONSOLE_FLAG = True
+
+USE_VERSIONING      = True
+USE_BLACKLIST       = True
+USE_CACHE           = True
+
+CACHE_FILE_DIRECTORY        = "./gencmakecache"
+CACHE_FILE_NAME_FILES       = "cache_files.txt"
+CACHE_FILE_NAME_PATHS       = "cache_paths.txt"
+CMAKELISTS_FILE_DIRECTORY   = "."
+CMAKELISTS_FILE_NAME        = "CMakeLists.txt"
+
+# some dependent variables need to be checked
+PRINT_VERSIONING &= USE_VERSIONING
+PRINT_BLACKLIST  &= USE_BLACKLIST
+PRINT_CACHE      &= USE_CACHE
+PRINT_CACHING    &= USE_CACHE
+
+# internal constant
+INFO_PATH_SUFFIX = "_path"
+
+def silent(args):
+    global PRINT_BLACKLIST
+    PRINT_BLACKLIST     = False
+    global PRINT_FILE_TYPES
+    PRINT_FILE_TYPES    = False
+    global PRINT_SOURCES
+    PRINT_SOURCES       = False
+    global PRINT_HEADERS
+    PRINT_HEADERS       = False
+    global PRINT_UI
+    PRINT_UI            = False
+    global PRINT_SRC_PATHS
+    PRINT_SRC_PATHS     = False
+    global PRINT_H_PATHS
+    PRINT_H_PATHS       = False
+    global PRINT_UI_PATHS
+    PRINT_UI_PATHS      = False
+    global PRINT_VERSIONING
+    PRINT_VERSIONING    = False
+    global PRINT_CACHE
+    PRINT_CACHE         = False
+    global PRINT_CACHING
+    PRINT_CACHING       = False
+
+    return 1
+
+flags = {
+    "s" : silent,
+    'S' : silent,
+}
+
+if len(sys.argv) > 1:
+    i = 1
+    while i < len(sys.argv):
+        stripped = sys.argv[i].strip('-')
+        if stripped in flags:
+            i += flags[stripped](sys.argv[i:])
+        else:
+            print(f"Unknown flag: {sys.argv[i]}")
+
+blacklist = [
+    ".vscode",
+    "CMakeFiles",
+    "icons",
+]
+
+file_types = {
+    "cpp" : ["src"],
+    "ui" : ["ui"],
+    "h" : ["headers"]
+}
+
+cache_file_types = ["cpp", "ui"]
+
+def printlist(l, header=""):
+    if len(header) > 0: print(header)
+    for x in l: print(f" - {x}")
+
+def recurse(path, info):
+    for file_or_folder in os.listdir(path):
+        if USE_BLACKLIST and file_or_folder in blacklist:
+            continue
+        if os.path.isdir(path+file_or_folder):
+            recurse(path + file_or_folder+'/', info)
+        else:
+            ext = file_or_folder.split('.')[-1]
+            if ext in file_types:
+                # sources.append((path if ext == "ui" else "") + file_or_folder)
+                for identifier in file_types[ext]:
+                    identifier_path = f"{identifier}{INFO_PATH_SUFFIX}"
+                    if identifier not in info:
+                        info[identifier] = [file_or_folder]
+                        info[identifier_path] = set([path])
+                    else:
+                        info[identifier].append(file_or_folder)
+                        info[identifier_path].add(path)
+    
+
+if PRINT_BLACKLIST: printlist(blacklist, "\nCurrent folder blacklist: ")
+
+if PRINT_FILE_TYPES: printlist(file_types.keys(), "\nScanning for file types: ")
+
+info = {}
+recurse("./", info)
+
+src_files = info["src"]                        if "src" in info else []
+src_paths = info[f"src{INFO_PATH_SUFFIX}"]     if "src" in info else []
+
+ui_files  = info["ui"]                         if "ui"  in info else []
+ui_paths  = info[f"ui{INFO_PATH_SUFFIX}"]      if "ui"  in info else []
+
+h_files   = info["headers"]                    if "headers" in info else []
+h_paths   = info[f"headers{INFO_PATH_SUFFIX}"] if "headers" in info else []
+
+
+
+if PRINT_SOURCES:   printlist(src_files, "\nFound src_files: ")
+if PRINT_SRC_PATHS: printlist(src_paths, f"\nFound src{INFO_PATH_SUFFIX}: ")
+
+if PRINT_HEADERS:   printlist(h_files, "\nFound h_files: ")
+if PRINT_H_PATHS:   printlist(h_paths, f"\nFound h{INFO_PATH_SUFFIX}")
+ 
+if PRINT_UI:        printlist(ui_files, "\nFound ui_files: ")
+if PRINT_UI_PATHS:  printlist(ui_paths, f"\nFound ui{INFO_PATH_SUFFIX}: ")
+
+autouic_comment = "\n# Make sure AUTOUIC knows where to find the .ui files.\n" if len(ui_paths) > 0 else ""
+autouic_string = f"set(CMAKE_AUTOUIC_SEARCH_PATHS \"{';'.join(ui_paths)}\")\n" if len(ui_paths) > 0 else ""
+enable_console_string = "set(CMAKE_EXE_LINKER_FLAGS \"${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:CONSOLE\")\n" if ENABLE_CONSOLE_FLAG else ""
+
+NEWLINE = '\n'
+LIST_PREFIX = f"{NEWLINE}    "
+
+ui_string = f"# Qt wants .ui files in the sources variable.\n{LIST_PREFIX.join(ui_files)}" if len(ui_files) > 0 else ""
+ui_paths_string = f"# Qt wants .ui files in the sources variable; include by directory.{LIST_PREFIX}{LIST_PREFIX.join(ui_paths)}" if len(ui_paths) > 0 else ""
+
+src_string = LIST_PREFIX.join(src_files)
+src_paths_string = LIST_PREFIX.join(src_paths)
+
+h_string = LIST_PREFIX.join(h_files)
+h_paths_string = ";".join(h_paths) if len(h_paths) > 0 else "."
+
+def getCacheStr(do_files=True):
+    cache_str = ""
+    for file_ext in cache_file_types:
+        for identifier in file_types[file_ext]: 
+            files = sorted(info[identifier+("" if do_files else INFO_PATH_SUFFIX)])
+            cache_str += f"{identifier}:{LIST_PREFIX}{LIST_PREFIX.join(files)}\n"
+    return cache_str
+
+if USE_CACHE:
+    cache_file_files = CACHE_FILE_DIRECTORY + "/" + CACHE_FILE_NAME_FILES
+    cache_file_paths = CACHE_FILE_DIRECTORY + "/" + CACHE_FILE_NAME_PATHS
+    cache_str_files = getCacheStr(do_files=True)
+    cache_str_paths = getCacheStr(do_files=False)
+    
+    
+    if not os.path.exists(CACHE_FILE_DIRECTORY):
+        os.mkdir(CACHE_FILE_DIRECTORY)
+    if not os.path.exists(cache_file_files):
+        if PRINT_CACHING:
+            print("No cache detected, writing cache...")
+        with open(cache_file_files, 'w') as f:
+            f.write(cache_str_files)
+        with open(cache_file_paths, 'w') as f:
+            f.write(cache_str_paths)
+        cached_files_valid = False
+        cached_paths_valid = False
+    else:
+        if PRINT_CACHING: print("Cache detected, checking...")
+        cache_str_files = getCacheStr(do_files=True)
+        cache_str_paths = getCacheStr(do_files=False)
+        cached_files_valid = True
+        cached_paths_valid = True
+        with open(cache_file_files, 'r') as f:
+            cached_files = f.read()
+            if cached_files == cache_str_files:
+                if PRINT_CACHING: print("Files cache is still valid.")
+            else:
+                if PRINT_CACHING: print("Files cache is invalid.")
+                cached_files_valid = False
+            if PRINT_CACHE: print(f"Cached files:\n{cached_files}")
+        with open(cache_file_paths, 'r') as f:
+            cached_paths = f.read()
+            if cached_paths == cache_str_paths:
+                if PRINT_CACHING: print("Paths cache is still valid.")
+            else:
+                if PRINT_CACHING: print("Paths cache is invalid.")
+                cached_paths_valid = False
+        
+        if not cached_paths_valid:
+            with open(cache_file_paths, 'w') as f:
+                f.write(cache_str_paths)
+            if PRINT_CACHING: print("Written new paths cache" + (":" if PRINT_CACHE else "."))
+            if PRINT_CACHE: print(cache_str_paths)    
+        if not cached_files_valid:
+            with open(cache_file_files, 'w') as f:
+                f.write(cache_str_files)
+            if PRINT_CACHING: print("Written new files cache" + (":" if PRINT_CACHE else "."))
+            if PRINT_CACHE: print(cache_str_files)   
+
+    if cached_files_valid and cached_paths_valid:
+        if PRINT_CACHING: print("Cached files suffice. Exiting...")
+        exit(0)
+            
+
+
+version_tag = "Version:"
+version_count = 1
+cache_warrants_version_update = ((USE_CACHE and not cached_files_valid and cached_paths_valid) or (not USE_CACHE))
+cmakefile_exists = os.path.exists(CMAKELISTS_FILE_DIRECTORY+"/"+CMAKELISTS_FILE_NAME)
+update_versioning = USE_VERSIONING and cache_warrants_version_update and cmakefile_exists
+if update_versioning:
+    with open(CMAKELISTS_FILE_DIRECTORY+"/"+CMAKELISTS_FILE_NAME, 'r') as f:
+        lines = f.read().splitlines()
+        if len(lines) > 1:
+            line = lines[1].split(' ')
+            if len(line) > 2 and line[1] == version_tag:
+                version_count = int(line[2])+1
+    if PRINT_VERSIONING: print(f"Updated version to: {version_count}")
+elif USE_VERSIONING and PRINT_VERSIONING:
+    if not cmakefile_exists:
+        print(f"{CMAKELISTS_FILE_NAME} does not yet exist. Version set to 1.")
+    elif USE_CACHE and not cached_paths_valid:
+        print(f"Cached paths were not valid, so {CMAKELISTS_FILE_NAME} will change anyways. Version reset to 1.")
+    elif USE_CACHE and cached_files_valid:
+        print(f"Cached files were valid, so no version update is necessary.")
+version_string = f"# {version_tag} {version_count}\n" if USE_VERSIONING else ""
+
+cmakelist = f"""# This file was autogenerated with genCMakeLists.py for {TARGET_NAME}
+{version_string}\
+{autouic_comment}\
+{autouic_string}\
+{enable_console_string}\
+add_mcrl2_tool({TARGET_NAME.lower()}
+  MENUNAME "{TARGET_NAME}"
+  DESCRIPTION "Visualisation tool for large state spaces (mCRL2 toolset)"
+  ICON "mcrl2-green"
+  SOURCES
+    {src_paths_string}
+    {ui_paths_string}
+  DEPENDS
+    mcrl2_lts
+    mcrl2_gui
+    Qt5::Core
+    Qt5::Gui
+    Qt5::OpenGL
+    Qt5::Widgets
+    Qt5::Xml
+    ${{OPENGL_LIBRARIES}}
+    ${{TR_LIBRARIES}}
+  INCLUDE
+    ${{OPENGL_INCLUDE_DIR}}
+    ${{TR_INCLUDE_DIR}}
+    ${{Boost_INCLUDE_DIRS}}
+    "{h_paths_string}"
+)
+"""
+
+
+
+
+with open("CMakeLists.txt", 'w') as f:
+    f.write(cmakelist)

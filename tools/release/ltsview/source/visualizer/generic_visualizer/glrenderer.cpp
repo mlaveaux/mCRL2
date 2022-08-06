@@ -1,17 +1,15 @@
 #include "glrenderer.h"
 #include "glscenegraph.h"
-template<typename NodeData, typename ModelData>
-void Renderer<NodeData, ModelData>::initialize(SceneGraph<NodeData, ModelData>* scenegraph){
+
+
+void Renderer::initialize(){
     if (!m_initialized){
         intializeShaders();
-        initializeData(scenegraph);
         m_initialized = true;
     }
 }
 
-template<typename NodeData, typename ModelData>
-void Renderer<NodeData, ModelData>::forceInitialize(SceneGraph<NodeData, ModelData>* scenegraph){
+void Renderer::forceInitialize(){
     intializeShaders();
-    initializeData(scenegraph);
     m_initialized = true;
 }

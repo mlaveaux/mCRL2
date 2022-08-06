@@ -6,7 +6,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-// Abstracted from ltsgraph/glscene.h (02/08/2022)
 
 #ifndef MCRL2_OPENGL_GLSCENEGRAPH_H
 #define MCRL2_OPENGL_GLSCENEGRAPH_H
@@ -18,14 +17,13 @@
 namespace{
     template <typename NodeData>
     struct SceneGraphNode{
-        NodeData* data;
+        NodeData data;
         SceneGraphNode* parent;
         std::vector<SceneGraphNode*> children;
     };
 }
 
 struct AbstractSceneModelData{
-    std::string name;
     uint dirty = 0; // Use bit flags to set what part is dirty. Implementation specific
     virtual void toGPU() = 0;
 };
@@ -46,7 +44,7 @@ template <typename NodeData, typename ModelData>
 class SceneGraph{
 public:
     SceneGraphNode<NodeData>* root;
-    ModelData model_data;
+    SceneModelData<ModelData> modelData;
     // updates any changed parts of the scenegraph
     void update();
 

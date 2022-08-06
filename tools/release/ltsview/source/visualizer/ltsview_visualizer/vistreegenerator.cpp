@@ -1,4 +1,4 @@
-#include "scenegraphgenerator.h"
+#include "vistreegenerator.h"
 #include "cluster.h"
 #include "mcrl2/utilities/logger.h"
 
@@ -84,21 +84,28 @@ ClusterChildIterator getClusterChildIterator(Cluster* cluster){
   return {cluster->descendants.begin(), cluster->descendants.end()};
 }
 
-
 std::vector<Cluster*>::iterator ClusterChildIterator::operator++(){ return ++it; }
 Cluster* ClusterChildIterator::operator*() { return *it; }
 
-SG* SceneGraphGenerator::generate(Mode mode){
+VisTree::VisTreeNode* VisTreeGenerator::generateTubes(Cluster* root){
+    generateClusterTree<TubeConvertFunctor>(root);
+}
+
+VisTree::VisTreeNode* VisTreeGenerator::generateCones(Cluster* root){
+    generateClusterTree<ConeConvertFunctor>(root);
+}
+
+VisTree::VisTreeNode* VisTreeGenerator::generate(Mode mode, Cluster* root){
     switch (mode){
         case Mode::TUBES:
-            return generateTubes(m_clusterRoot);
+            return generateTubes(root);
             break;
         case Mode::CONES:
-            return generateCones(m_clusterRoot);
+            return generateCones(root);
             break;
         default:
             mCRL2log(mcrl2::log::warning) << "Invalid mode selected in ltsview scenegraphgenerator. Defaulting to tubes." << std::endl;
-            return generateCones(m_clusterRoot);
+            return generateCones(root);
     }
 }
 
