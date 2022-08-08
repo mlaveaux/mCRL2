@@ -22,10 +22,25 @@ void ConeConvertFunctor::matrixRotate(float angle, float x, float y, float z){
 
 
 VisTree::VisTreeNode* ConeConvertFunctor::operator()(VisTree::VisTreeNode* parent, Cluster* cluster){
-    if (parent == nullptr) current_matrix.setToIdentity(); else current_matrix = parent->shape.matrix;
+    if (parent == nullptr) current_matrix.setToIdentity(); else current_matrix = parent->matrix;
     if (!cluster->hasDescendants()){
         VisTree::VisTreeNode* node = new VisTree::VisTreeNode();
-        node->shape = noChildren(cluster, topClosed, rot);
+        Primitives::Shapes::Sphere sphere = Primitives::Shapes::Sphere();
+        sphere.radius = 1;
+        // find shape matrix
+        float r = cluster->getTopRadius();
+        // move down and to the side (if applicable)
+        float sideways = cluster->isCentered() ? 0 : cluster->getAncestor()->getBaseRadius();
+        float branchtilt = cluster->isCentered() ? 0 : Settings::instance().branchTilt.value();
+        // TODO: Check order
+        matrixRotate(cluster->getPosition(), 0, 0, 1);
+        matrixRotate(branchtilt, 0, 1, 0);
+        matrixTranslate(sideways, 0, Settings::instance().clusterHeight.value());
+        matrixScale(r, r, r);
+        node->matrix = current_matrix;
+        
+        std::cout << "Sphere at: " << qvec4ToString(current_matrix.column(3)) << " with:" <<
+        "\n\t- radius: 1\n\t- r: " << std::to_string(r) << std::endl;
         return node;
     }
 
@@ -38,11 +53,11 @@ VisTree::VisTreeNode* ConeConvertFunctor::operator()(VisTree::VisTreeNode* paren
     matrixTranslate(sideways, 0, Settings::instance().clusterHeight.value());
 
     VisTree::VisTreeNode* node = new VisTree::VisTreeNode();
-    VisTree::Shapes::TruncatedCone cone = VisTree::Shapes::TruncatedCone();
+    Primitives::Shapes::TruncatedCone cone = Primitives::Shapes::TruncatedCone();
     cone.height = Settings::instance().clusterHeight.value();
     cone.fill_top = !cluster->isCentered() || parent == nullptr;
     cone.fill_bot = cluster->getNumDescendants() > 1;
-    cone.matrix = current_matrix;
+    node->matrix = current_matrix;
     cone.radius_top = cluster->getTopRadius();
     cone.radius_bot = cluster->getBaseRadius();
     node->shape = cone;
@@ -55,25 +70,6 @@ VisTree::VisTreeNode* ConeConvertFunctor::operator()(VisTree::VisTreeNode* paren
     return node;
 }
 
-VisTree::Shape ConeConvertFunctor::noChildren(Cluster* cluster, bool topClosed, int rot){
-    VisTree::Shapes::Sphere sphere = VisTree::Shapes::Sphere();
-    sphere.radius = 1;
-    // find shape matrix
-    float r = cluster->getTopRadius();
-    // move down and to the side (if applicable)
-    float sideways = cluster->isCentered() ? 0 : cluster->getAncestor()->getBaseRadius();
-    float branchtilt = cluster->isCentered() ? 0 : Settings::instance().branchTilt.value();
-    // TODO: Check order
-    matrixRotate(cluster->getPosition(), 0, 0, 1);
-    matrixRotate(branchtilt, 0, 1, 0);
-    matrixTranslate(sideways, 0, Settings::instance().clusterHeight.value());
-    matrixScale(r, r, r);
-    sphere.matrix = current_matrix;
-    
-    std::cout << "Sphere at: " << qvec4ToString(current_matrix.column(3)) << " with:" <<
-    "\n\t- radius: 1\n\t- r: " << std::to_string(r) << std::endl;
-    return sphere;
-}
 
 VisTree::VisTreeNode* TubeConvertFunctor::operator()(VisTree::VisTreeNode* parent, Cluster* cluster){
     std::cout << "TubeConvertFunctor: not implemented yet..." << std::endl;
@@ -88,11 +84,11 @@ std::vector<Cluster*>::iterator ClusterChildIterator::operator++(){ return ++it;
 Cluster* ClusterChildIterator::operator*() { return *it; }
 
 VisTree::VisTreeNode* VisTreeGenerator::generateTubes(Cluster* root){
-    generateClusterTree<TubeConvertFunctor>(root);
+    return generateClusterTree<TubeConvertFunctor>(root);
 }
 
 VisTree::VisTreeNode* VisTreeGenerator::generateCones(Cluster* root){
-    generateClusterTree<ConeConvertFunctor>(root);
+    return generateClusterTree<ConeConvertFunctor>(root);
 }
 
 VisTree::VisTreeNode* VisTreeGenerator::generate(Mode mode, Cluster* root){

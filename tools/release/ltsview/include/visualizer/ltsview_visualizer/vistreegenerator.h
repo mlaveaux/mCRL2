@@ -47,8 +47,6 @@ struct ConeConvertFunctor
   float rot = 0;
   VisTree::VisTreeNode* operator()(VisTree::VisTreeNode* parent,
                                    Cluster* cluster);
-
-  VisTree::Shape noChildren(Cluster* cluster, bool topClosed, int rot);
 };
 
 // TODO: Implement

@@ -14,37 +14,19 @@
 #include <QMatrix4x4>
 #include <QOpenGLShaderProgram>
 
-namespace{
-    template <typename NodeData>
-    struct SceneGraphNode{
-        NodeData data;
-        SceneGraphNode* parent;
-        std::vector<SceneGraphNode*> children;
-    };
-}
-
-struct AbstractSceneModelData{
-    uint dirty = 0; // Use bit flags to set what part is dirty. Implementation specific
-    virtual void toGPU() = 0;
+template <typename NodeData>
+struct SceneGraphNode{
+    NodeData data;
+    SceneGraphNode* parent;
+    std::vector<SceneGraphNode*> children;
 };
 
-template < typename T >
-struct SceneModelData : AbstractSceneModelData{
-    void toGPU(QOpenGLShaderProgram& shader_program){
-        if (dirty != 0){
-            fix();
-            dirty = 0;
-        }
-    }
-    void fix();
-    T data;
-};
 
 template <typename NodeData, typename ModelData>
 class SceneGraph{
 public:
     SceneGraphNode<NodeData>* root;
-    SceneModelData<ModelData> modelData;
+    ModelData modelData;
     // updates any changed parts of the scenegraph
     void update();
 

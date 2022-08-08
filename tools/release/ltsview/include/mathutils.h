@@ -13,6 +13,9 @@ namespace MathUtils
 {
 
 const double PI = 3.14159265359;
+const inline double INV_SQRT2 = 0.70710678118;
+const inline float INV_SQRT2F = 0.70710678118; 
+const inline float ONE_THIRD  = 0.33333333333;
 
 static inline int round_to_int(float f)
 {

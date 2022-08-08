@@ -24,6 +24,10 @@ namespace Scene{
         std::vector<Model> models;
         std::vector<QMatrix4x4> matrices;
     };
+    
+    struct SceneGraphFunctor{
+        
+    };
 }
 
 

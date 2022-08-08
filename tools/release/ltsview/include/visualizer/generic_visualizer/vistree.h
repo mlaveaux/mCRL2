@@ -10,119 +10,45 @@
 #include <vector>
 #include <QMatrix4x4>
 
+#include "glprimitives.h"
+
 #ifndef MCRL2_OPENGL_VISTREE_H
 #define MCRL2_OPENGL_VISTREE_H
 
-struct Shape;
 
 
 namespace VisTree{
-    
-    enum ShapeType{
-        SPHERE,
-        HEMISPHERE,
-        TUBE,
-        CONE,
-        TRUNCATED_CONE,
-        OBLIQUE_CONE,
-        DISC,
-        RING,
-    };
-
-    struct Shape{
-        ShapeType shape;
-        QMatrix4x4 matrix;
-    };
-
     struct VisTreeNode{
-        Shape shape;
+        Primitives::Shape shape;
+        QMatrix4x4 matrix;
         VisTreeNode* parent;
         std::vector<VisTreeNode*> children;
     };
 
-
-    namespace Shapes{
-        struct Sphere : Shape{
-            VisTree::ShapeType shape = VisTree::ShapeType::SPHERE;
-            float radius;
-        };
-        struct HemiSphere : Shape{
-            VisTree::ShapeType shape = VisTree::ShapeType::HEMISPHERE;
-            float radius;
-        };
-
-        // without transform a tube is formed by circle in the xy0 and xy1 planes 
-        struct Tube : Shape{
-            VisTree::ShapeType shape = VisTree::ShapeType::TUBE;
-            float radius;
-            float height;
-        };
-
-        // without transform a cone is formed by a cirle in the xy0 plane and a point at 001 
-        struct Cone : Shape{
-            VisTree::ShapeType shape = VisTree::ShapeType::CONE;
-            float radius;
-            float height;
-        };
-
-        // without transform a disc is formed by a circle in the xy0 plane (filled)
-        struct Disc : Shape{
-            VisTree::ShapeType shape = VisTree::ShapeType::DISC;
-            float radius;
-        };
-
-        // without transform a disc is formed by a circle in the xy0 plane (not filled)
-        struct Ring : Shape{
-            VisTree::ShapeType shape = VisTree::ShapeType::RING;
-            float radius;
-        };
-
-        // Suppose we have an untransformed cone with a certain radius and height
-        // We can truncate the cone by 'cutting' it open using two planes at z=a and z=b
-        // This results in 4 options: 
-        //  - a and b both miss -> regular cone
-        //  - bottom is sliced off -> truncate
-        //  - top is sliced off -> truncate
-        //  - both are sliced off -> truncate
-        // For every case where we truncate we can either fill or not fill the resulting cut
-        // i.e. ring/disc
-        struct TruncatedCone : Shape{
-            VisTree::ShapeType shape = VisTree::ShapeType::TRUNCATED_CONE;
-            float radius_bot, radius_top;
-            float height;
-            float bot, top; // if bot \in (0, height) a cut occurs
-            bool fill_bot, fill_top;
-        };
-
-
-        // Think of a regular cone, but move the tip off-axis
-        // In this case, untransformed:
-        //   - tip = height*(cos(alpha), sin(alpha), 0) with alpha in [0, 90] degrees
-        struct ObliqueCone : Shape{
-            VisTree::ShapeType shape = VisTree::ShapeType::OBLIQUE_CONE;
-            float radius;
-            float height;
-            float alpha; // in degrees
-        };
-    }
-
-
-    template < typename InputTreeType, typename Functor, typename Iterator >
-    void recurse(VisTreeNode* parent, InputTreeType* current, Functor& f, std::function<Iterator(InputTreeType *)>& getChildIterator){
-        VisTreeNode* node = f(parent, current);
-        node->parent = parent;
-        parent->children.emplace_back(node);
+    template < typename OutputTreeType, typename InputTreeType, typename Functor, typename ChildIterator >
+    OutputTreeType* fold_tree(
+        OutputTreeType* parent, 
+        InputTreeType* current,
+        std::function<void(OutputTreeType *, OutputTreeType *)> setParent, 
+        std::function<void(OutputTreeType *, OutputTreeType *)>  addChild, 
+        Functor& f, 
+        std::function<ChildIterator(InputTreeType *)>& getChildIterator
+    ){
+        OutputTreeType* node = f(parent, current);
+        setParent(node, parent);
         for(auto child_it = getChildIterator(current); child_it.it != child_it.it_end; ++child_it) 
-            recurse(node, *child_it, f, getChildIterator);
+            addChild(node, fold_tree(node, *child_it, setParent, addChild, f, getChildIterator));
+        return node;
     }
 
-    template < typename InputTreeType, typename Functor, typename Iterator >
-    VisTree::VisTreeNode* generateVisTree(InputTreeType* root, Functor& f, std::function<Iterator(InputTreeType *)>& getChildIterator){
-        VisTreeNode* node = f(nullptr, root);
-        node->parent = nullptr; // this is the root of the vistree
-        for(auto child_it = getChildIterator(root); child_it.it != child_it.it_end; ++child_it) 
-            VisTree::recurse(node, *child_it, f, getChildIterator);
-        return node;
+    template < typename InputTreeType, typename Functor, typename ChildIterator >
+    VisTree::VisTreeNode* generateVisTree(InputTreeType* root, Functor& f, std::function<ChildIterator(InputTreeType *)>& getChildIterator) {
+        return fold_tree<VisTree::VisTreeNode, InputTreeType, Functor, ChildIterator>(nullptr, 
+                                                                                      root,
+                                                                                      [](VisTree::VisTreeNode* node, VisTree::VisTreeNode* parent){ node->parent = parent; },
+                                                                                      [](VisTree::VisTreeNode* node, VisTree::VisTreeNode* child){ node->children.emplace_back(child); },
+                                                                                      f,
+                                                                                      getChildIterator);
     }
 }
 
