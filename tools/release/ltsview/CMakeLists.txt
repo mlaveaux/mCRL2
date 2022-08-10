@@ -3,15 +3,48 @@ mcrl2_add_gui_tool(ltsview
   DESCRIPTION "Visualisation tool for large state spaces (mCRL2 toolset)"
   ICON "mcrl2-green"
   SOURCES
-    ./source/visualizer/
-    ./source/
-    ./source/visualizer/ltsview_visualizer/
-    ./source/visualizer/generic_visualizer/primitives/
-    ./source/visualizer/generic_visualizer/cameras/
-    ./source/ui/
-    ./source/visualizer/generic_visualizer/
-    # Qt wants .ui files in the sources variable; include by directory.
-    ./include/ui/ui_files/
+    cluster.cpp
+    fsm_state_positioner.cpp
+    lts.cpp
+    ltsmanager.cpp
+    main.cpp
+    markmanager.cpp
+    rtree.cpp
+    simulation.cpp
+    sp_state_positioner.cpp
+    state.cpp
+    transition.cpp
+    graphicsinfodialog.cpp
+    infodock.cpp
+    mainwindow.cpp
+    markdock.cpp
+    markstateruledialog.cpp
+    savepicturedialog.cpp
+    settingsdialog.cpp
+    settingsdock.cpp
+    simdock.cpp
+    vectors.cpp
+    conedb.cpp
+    arcballcamera.cpp
+    glprimitivefactories.cpp
+    ltscanvas.cpp
+    renderer.cpp
+    scene.cpp
+    vistreegenerator.cpp
+    primitivefactory.cpp
+    primitives.cpp
+    visobjectfactory.cpp
+    visualizer.cpp
+    # Qt wants .ui files in the sources variable.
+    graphicsinfodialog.ui
+    infodock.ui
+    mainwindow.ui
+    markdock.ui
+    markstateruledialog.ui
+    savepicturedialog.ui
+    settingsdialog.ui
+    settingsdock.ui
+    simdock.ui
   DEPENDS
     mcrl2_lts
     mcrl2_gui

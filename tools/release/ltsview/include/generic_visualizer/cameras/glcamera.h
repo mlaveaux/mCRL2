@@ -44,7 +44,7 @@ class Camera
   void setViewport(std::size_t width, std::size_t height) { m_viewport = QRect(0, 0, width, height); }
 
   // virtual functions
-  virtual void reset();
+  virtual void reset() = 0;
   virtual void update() = 0;
   protected:
   // Matrices to be sent to GPU for rendering

@@ -1,6 +1,7 @@
 #include "vistreegenerator.h"
 #include "cluster.h"
 #include "mcrl2/utilities/logger.h"
+#include "glvistree.h"
 
 
 
@@ -22,11 +23,11 @@ void ConeConvertFunctor::matrixRotate(float angle, float x, float y, float z){
 
 
 VisTree::VisTreeNode* ConeConvertFunctor::operator()(VisTree::VisTreeNode* parent, Cluster* cluster){
-    if (parent == nullptr) current_matrix.setToIdentity(); else current_matrix = parent->matrix;
+    if (parent == nullptr) current_matrix.setToIdentity(); else current_matrix = parent->data.matrix;
     if (!cluster->hasDescendants()){
         VisTree::VisTreeNode* node = new VisTree::VisTreeNode();
-        Primitives::Shapes::Sphere sphere = Primitives::Shapes::Sphere();
-        sphere.radius = 1;
+        GlUtil::Shapes::Sphere* sphere = new GlUtil::Shapes::Sphere();
+        sphere->radius = 1;
         // find shape matrix
         float r = cluster->getTopRadius();
         // move down and to the side (if applicable)
@@ -37,7 +38,8 @@ VisTree::VisTreeNode* ConeConvertFunctor::operator()(VisTree::VisTreeNode* paren
         matrixRotate(branchtilt, 0, 1, 0);
         matrixTranslate(sideways, 0, Settings::instance().clusterHeight.value());
         matrixScale(r, r, r);
-        node->matrix = current_matrix;
+        node->data.matrix = current_matrix;
+        node->data.shape = sphere;
         
         std::cout << "Sphere at: " << qvec4ToString(current_matrix.column(3)) << " with:" <<
         "\n\t- radius: 1\n\t- r: " << std::to_string(r) << std::endl;
@@ -53,19 +55,19 @@ VisTree::VisTreeNode* ConeConvertFunctor::operator()(VisTree::VisTreeNode* paren
     matrixTranslate(sideways, 0, Settings::instance().clusterHeight.value());
 
     VisTree::VisTreeNode* node = new VisTree::VisTreeNode();
-    Primitives::Shapes::TruncatedCone cone = Primitives::Shapes::TruncatedCone();
-    cone.height = Settings::instance().clusterHeight.value();
-    cone.fill_top = !cluster->isCentered() || parent == nullptr;
-    cone.fill_bot = cluster->getNumDescendants() > 1;
-    node->matrix = current_matrix;
-    cone.radius_top = cluster->getTopRadius();
-    cone.radius_bot = cluster->getBaseRadius();
-    node->shape = cone;
+    GlUtil::Shapes::TruncatedCone* cone = new GlUtil::Shapes::TruncatedCone();
+    cone->height = Settings::instance().clusterHeight.value();
+    cone->fill_top = !cluster->isCentered() || parent == nullptr;
+    cone->fill_bot = cluster->getNumDescendants() > 1;
+    node->data.matrix = current_matrix;
+    cone->radius_top = cluster->getTopRadius();
+    cone->radius_bot = cluster->getBaseRadius();
+    node->data.shape = cone;
     std::cout << "Cone at: " << qvec4ToString(current_matrix.column(3)) << " with:" << 
-    "\n\t- topclosed: " << std::to_string(cone.fill_top) << 
-    "\n\t- botclosed: " << std::to_string(cone.fill_bot) <<
-    "\n\t- topradius: " << std::to_string(cone.radius_top) <<
-    "\n\t- botradius: " << std::to_string(cone.radius_bot) << std::endl;
+    "\n\t- topclosed: " << std::to_string(cone->fill_top) << 
+    "\n\t- botclosed: " << std::to_string(cone->fill_bot) <<
+    "\n\t- topradius: " << std::to_string(cone->radius_top) <<
+    "\n\t- botradius: " << std::to_string(cone->radius_bot) << std::endl;
 
     return node;
 }
@@ -75,13 +77,6 @@ VisTree::VisTreeNode* TubeConvertFunctor::operator()(VisTree::VisTreeNode* paren
     std::cout << "TubeConvertFunctor: not implemented yet..." << std::endl;
     return nullptr;
 }
-
-ClusterChildIterator getClusterChildIterator(Cluster* cluster){
-  return {cluster->descendants.begin(), cluster->descendants.end()};
-}
-
-std::vector<Cluster*>::iterator ClusterChildIterator::operator++(){ return ++it; }
-Cluster* ClusterChildIterator::operator*() { return *it; }
 
 VisTree::VisTreeNode* VisTreeGenerator::generateTubes(Cluster* root){
     return generateClusterTree<TubeConvertFunctor>(root);

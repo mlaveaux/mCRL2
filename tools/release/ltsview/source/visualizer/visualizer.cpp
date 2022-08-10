@@ -17,8 +17,9 @@
 
 #include <QtOpenGL>
 
-#include "vistree.h"
-#include "vistreegenerator.h"
+#include "scene.h"
+#include "arcballcamera.h"
+#include "renderer.h"
 
 using namespace MathUtils;
 
@@ -174,7 +175,12 @@ void Visualizer::traverseTree()
   {
     visObjectFactory.clear();
     update_colors = true;
-    VisTree::VisTreeNode* visroot = generateClusterTree<ConeConvertFunctor>(ltsManager->lts()->getInitialState()->getCluster());
+    QOpenGLWidget oglw;
+    SceneGraph<GlLTSView::NodeData, GlLTSView::SceneData> sg;
+    ArcballCamera camera;
+    LTSRenderer renderer;
+    GlLTSView::Scene scene = GlLTSView::Scene(oglw, sg, camera, ltsManager->lts()->getInitialState()->getCluster());
+    scene.rebuild();
   }
   glPushMatrix();
   glLoadIdentity();

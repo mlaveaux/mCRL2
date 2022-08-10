@@ -22,7 +22,7 @@
 ///        and view matrices to draw objects as if they are viewed from this camera. The assumption is that the camera
 ///        is always upright towards the z-axis. It also uses a perspective projection where objects further away appear
 ///        smaller.
-class ArcballCamera : Camera
+class ArcballCamera : public Camera
 {
 public:
   /// \brief Update the view and projection matrix.
@@ -70,7 +70,5 @@ public:
   static QVector3D DEFAULT_CENTER;
 
 };
-QQuaternion ArcballCamera::DEFAULT_ROTATION = QQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
-QVector3D ArcballCamera::DEFAULT_CENTER   = QVector3D(0, 0, 0);
 
 #endif // MCRL2_LTSGRAPH_CAMERA_H

@@ -13,6 +13,9 @@
 #include "mcrl2/gui/arcball.h"
 #include "mcrl2/gui/glu.h"
 
+QQuaternion ArcballCamera::DEFAULT_ROTATION = QQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
+QVector3D ArcballCamera::DEFAULT_CENTER   = QVector3D(0, 0, 0);
+
 void ArcballCamera::update()
 {
   m_viewMatrix.setToIdentity();
@@ -26,9 +29,6 @@ void ArcballCamera::update()
   m_projectionMatrix.setToIdentity();
   m_projectionMatrix.perspective(m_vert_fieldofview, static_cast<float>(m_viewport.width()) / static_cast<float>(m_viewport.height()), 1.0f, m_viewdistance);
 }
-
-
-
 
 void ArcballCamera::reset()
 {

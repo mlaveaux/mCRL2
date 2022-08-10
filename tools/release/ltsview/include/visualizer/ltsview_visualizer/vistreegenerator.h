@@ -14,7 +14,7 @@
 #include <QMatrix4x4>
 #include <stack>
 #include "glscenegraph.h"
-#include "vistree.h"
+#include "glvistree.h"
 #include "settings.h"
 #include <string>
 #include <iostream>
@@ -56,25 +56,17 @@ struct TubeConvertFunctor
                                    Cluster* cluster);
 };
 
-struct ClusterChildIterator
-{
-  std::vector<Cluster*>::iterator it;
-  std::vector<Cluster*>::iterator it_end;
-
-  std::vector<Cluster*>::iterator operator++();
-  Cluster* operator*();
-};
-
-ClusterChildIterator getClusterChildIterator(Cluster* cluster);
-
 template <typename Functor>
 VisTree::VisTreeNode* generateClusterTree(Cluster* root)
 {
   Functor f = Functor();
-  auto getIterator =
-      std::function<ClusterChildIterator(Cluster*)>(getClusterChildIterator);
-  return VisTree::generateVisTree<Cluster, Functor, ClusterChildIterator>(
-      root, f, getIterator);
+  std::function<std::vector<Cluster*>::iterator(Cluster*)> getChildBegin =
+      [](Cluster* node) { return node->descendants.begin(); };
+  std::function<std::vector<Cluster*>::iterator(Cluster*)> getChildEnd =
+      [](Cluster* node) { return node->descendants.end(); };
+  return VisTree::generateVisTree<Cluster, Functor,
+                                  std::vector<Cluster*>::iterator>(
+      root, f, getChildBegin, getChildEnd);
 }
 
 class VisTreeGenerator
@@ -97,7 +89,5 @@ class VisTreeGenerator
 
   static VisTree::VisTreeNode* generateCones(Cluster* root);
 };
-
-
 
 #endif

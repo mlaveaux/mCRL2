@@ -19,43 +19,39 @@
 #include <QPainter>
 
 #include "glscenegraph.h"
-#include "glrenderer.h"
+#include "glcamera.h"
 
-class Camera;
-
-template<typename NodeData, typename ModelData>
-class GLScene : private QOpenGLFunctions_3_3_Core
+template<typename NodeData, typename SceneData>
+class GLScene : public QOpenGLFunctions_3_3_Core
 {
 public:
   /// \brief Constructor.
   /// \param glwidget The widget where this scene is drawn
   /// \param scenegraph The scenegraph that is to be drawn.
   /// \param cam Camera to be used
-  GLScene(QOpenGLWidget& glwidget, SceneGraph<NodeData, ModelData>& scenegraph, Camera& camera, Renderer& renderer) :
+  GLScene(QOpenGLWidget& glwidget, SceneGraph<NodeData, SceneData>& scenegraph, Camera& camera) :
    m_glwidget(glwidget),
    m_scenegraph(scenegraph),
-   m_camera(camera),
-   m_renderer(renderer) {}
+   m_camera(camera) {}
 
   /// \brief Initializes all state and data required for rendering.
-  void initialize();
+  virtual void initialize() = 0;
 
   /// \brief Updates the state of the scene.
-  void update();
+  virtual void update() = 0;
 
   /// \brief Builds static data based on the current data.
-  void rebuild();
+  virtual void rebuild() = 0;
 
   /// \brief Render the scene.
-  void render(QPainter& painter);
+  virtual void render(QPainter& painter) = 0;
 
   /// \brief Resize the OpenGL viewport.
-  void resize(std::size_t width, std::size_t height);
+  virtual void resize(std::size_t width, std::size_t height) = 0;
 
-private:
+protected:
   Camera& m_camera;
-  SceneGraph<NodeData, ModelData>& m_scenegraph;
-  Renderer& m_renderer;
+  SceneGraph<NodeData, SceneData>& m_scenegraph;
   QOpenGLWidget& m_glwidget; /// The widget where this scene is drawn
 
   float m_device_pixel_ratio;
