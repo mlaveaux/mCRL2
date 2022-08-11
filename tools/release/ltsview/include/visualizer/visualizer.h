@@ -72,7 +72,7 @@ class Visualizer: public QObject
     void computeStateAbsPos(Cluster* root,int rot);
     void computeSubtreeBounds(Cluster* root,float& bw,
                               float& bh);
-    void drawBackPointer(State* startState, const QColor& startColor, State* endState, const QColor& endColor);
+    void drawBackPointer(State* startState, QColor& startColor, State* endState, QColor& endColor);
     void drawForwardPointer(State* startState,State* endState);
     void drawLoop(State* state);
     void drawStates(Cluster* root,bool simulating);

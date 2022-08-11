@@ -26,6 +26,9 @@ mcrl2_add_gui_tool(ltsview
     vectors.cpp
     conedb.cpp
     arcballcamera.cpp
+    glcolor.cpp
+    glluts.cpp
+    glmeshes.cpp
     glprimitivefactories.cpp
     ltscanvas.cpp
     renderer.cpp

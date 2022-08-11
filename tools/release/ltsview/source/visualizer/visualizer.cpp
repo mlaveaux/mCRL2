@@ -21,9 +21,12 @@
 #include "arcballcamera.h"
 #include "renderer.h"
 
+#include "glcolor.h"
+
 using namespace MathUtils;
 
 #define SELECT_BLEND 0.3f
+QColor SELECT_COLOR = QColor(255, 122, 0);
 
 Visualizer::Visualizer(QObject *parent, LtsManager *ltsManager_, MarkManager* markManager_):
   QObject(parent),
@@ -522,14 +525,6 @@ void Visualizer::traverseTreeT(Cluster* root, bool topClosed, int rot)
   }
 }
 
-static inline QColor blend(QColor from, QColor to, float factor)
-{
-  unsigned char red = (unsigned char)(from.red() * factor + to.red() * (1.0 - factor));
-  unsigned char green = (unsigned char)(from.green() * factor + to.green() * (1.0 - factor));
-  unsigned char blue = (unsigned char)(from.blue() * factor + to.blue() * (1.0 - factor));
-  return QColor(red, green, blue);
-}
-
 void Visualizer::updateColors()
 {
   Cluster* cl;
@@ -542,29 +537,6 @@ void Visualizer::updateColors()
     float hueFrom = from.hueF();
     float hueTo = to.hueF();
     bool useLongInterpolationCluster = Settings::instance().longInterpolationCluster.value();
-
-    // set hues equal if one of the colors is grey
-    if (to.red() == to.green() && to.green() == to.blue())
-    {
-      hueTo = hueFrom;
-    }
-    if (from.red() == from.green() && from.green() == from.blue())
-    {
-      hueFrom = hueTo;
-    }
-
-    float hueDelta = hueTo - hueFrom;
-    if ((useLongInterpolationCluster && abs(hueDelta) < 0.5f) || (!useLongInterpolationCluster && abs(hueDelta) >= 0.5f))
-    {
-      if (hueDelta > 0.0f)
-      {
-        hueDelta -= 1.0f;
-      }
-      else
-      {
-        hueDelta += 1.0f;
-      }
-    }
 
     float saturationFrom = from.saturationF();
     float saturationDelta = to.saturationF() - saturationFrom;
@@ -585,21 +557,17 @@ void Visualizer::updateColors()
       else
       {
         float t = cl->getRank() / (float)(ranks);
-        float hue = hueFrom + t * hueDelta;
-        if (hue < 0.0f)
-        {
-          hue += 1.0f;
+        if (useLongInterpolationCluster){
+          c = GlUtil::Color::lerp<GlUtil::Color::InterpolateMode::LONG, GlUtil::Color::ColorMode::HSV>(from, to, t);
+        }else{
+          c = GlUtil::Color::lerp<GlUtil::Color::InterpolateMode::SHORT,
+                                  GlUtil::Color::ColorMode::HSV>(from, to, t);
         }
-        if (hue >= 1.0f)
-        {
-          hue -= 1.0f;
-        }
-        c = QColor::fromHsvF(hue, saturationFrom + saturationDelta * t, valueFrom + valueDelta * t);
       }
 
       if (cl == ltsManager->selectedCluster())
       {
-        c = blend(c, QColor(255, 122, 0), SELECT_BLEND);
+        c = GlUtil::Color::blend<GlUtil::Color::ColorMode::RGB>(c, SELECT_COLOR, SELECT_BLEND, 0);
       }
       // set color of cluster cl
       visObjectFactory.updateObjectColor(cl->getVisObject(),c);
@@ -640,7 +608,7 @@ void Visualizer::updateColors()
 
       if (cl == ltsManager->selectedCluster())
       {
-        c = blend(c, QColor(255, 122, 0), SELECT_BLEND);
+        c = GlUtil::Color::blend<GlUtil::Color::ColorMode::RGB>(c, SELECT_COLOR, SELECT_BLEND, 0);
       }
 
       visObjectFactory.updateObjectColor(cl->getVisObject(),c);
@@ -713,7 +681,7 @@ void Visualizer::drawSimStates(QList<State*> historicStates,
 
     if (currState == ltsManager->selectedState())
     {
-      c = blend(c, QColor(255, 122, 0), SELECT_BLEND);
+        c = GlUtil::Color::blend<GlUtil::Color::ColorMode::RGB>(c, SELECT_COLOR, SELECT_BLEND, 0);
     }
 
     glColor4ub(c.red(), c.green(), c.blue(), 255);
@@ -760,7 +728,7 @@ void Visualizer::drawSimStates(QList<State*> historicStates,
 
       if (endState == ltsManager->selectedState())
       {
-        c = blend(c, QColor(255, 122, 0), SELECT_BLEND);
+        c = GlUtil::Color::blend<GlUtil::Color::ColorMode::RGB>(c, SELECT_COLOR, SELECT_BLEND, 0);
       }
 
       glColor4ub(c.red(), c.green(), c.blue(), 255);
@@ -804,7 +772,7 @@ void Visualizer::drawSimStates(QList<State*> historicStates,
 
       if (s == ltsManager->selectedState())
       {
-        c = blend(c, QColor(255, 122, 0), SELECT_BLEND);
+        c = GlUtil::Color::blend<GlUtil::Color::ColorMode::RGB>(c, SELECT_COLOR, SELECT_BLEND, 0);
       }
 
       glColor4ub(c.red(), c.green(), c.blue(), 255);
@@ -1030,7 +998,7 @@ void Visualizer::drawStates(Cluster* root, bool simulating)
 
         if (s == ltsManager->selectedState())
         {
-          c = blend(c, QColor(255, 122, 0), SELECT_BLEND);
+          c = GlUtil::Color::blend<GlUtil::Color::ColorMode::RGB>(c, SELECT_COLOR, SELECT_BLEND, 0);
         }
 
         glColor4ub(c.red(),c.green(),c.blue(),255);
@@ -1302,7 +1270,7 @@ void Visualizer::drawForwardPointer(State* startState, State* endState)
   glEnd();
 }
 
-void Visualizer::drawBackPointer(State* startState, const QColor& startColor, State* endState, const QColor& endColor)
+void Visualizer::drawBackPointer(State* startState, QColor& startColor, State* endState, QColor& endColor)
 {
   QVector3D startPoint = startState->getPositionAbs();
   QVector3D startControl = startState->getOutgoingControl();
@@ -1325,17 +1293,7 @@ void Visualizer::drawBackPointer(State* startState, const QColor& startColor, St
 
   float t,it,b0,b1,b2,b3,x,y,z;
   int N = Settings::instance().quality.value();
-
-  float col[3];
-  col[0] = startColor.red();
-  col[1] = startColor.green();
-  col[2] = startColor.blue();
-  float diff[3];
-  int steps = N / 2;
-  diff[0] = (float)(endColor.red() - startColor.red()) / steps;
-  diff[1] = (float)(endColor.green() - startColor.green()) / steps;
-  diff[2] = (float)(endColor.blue() - startColor.blue()) / steps;
-
+  QColor _col;
   glBegin(GL_LINE_STRIP);
 
   for (int k = 0; k < N; ++k)
@@ -1361,14 +1319,21 @@ void Visualizer::drawBackPointer(State* startState, const QColor& startColor, St
         b1 * ctrlPts[1][2] +
         b2 * ctrlPts[2][2] +
         b3 * ctrlPts[3][2];
-    glColor4ub((GLubyte)col[0], (GLubyte)col[1], (GLubyte)col[2], 255);
-    glVertex3f(x, y, z);
-    if (4 * k > N && 4 * k <= 3 * N)
+    if (Settings::instance().longInterpolationUpEdge.value())
     {
-      col[0] += diff[0];
-      col[1] += diff[1];
-      col[2] += diff[2];
+        _col = GlUtil::Color::lerp<GlUtil::Color::InterpolateMode::LONG,
+                                         GlUtil::Color::ColorMode::HSL>(
+            startColor, endColor, t);
     }
+    else
+    {
+      _col = GlUtil::Color::lerp<GlUtil::Color::InterpolateMode::SHORT,
+                                 GlUtil::Color::ColorMode::HSL>(startColor,
+                                                                endColor, t);
+    }
+    
+    glColor4ub((GLubyte)_col.red(), (GLubyte)_col.green(), (GLubyte)_col.blue(), 255);
+    glVertex3f(x, y, z);
   }
 
   glEnd();

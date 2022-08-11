@@ -28,6 +28,8 @@ struct TriangleMesh
   int n_triangles;
   std::vector<Triangle> triangles;
   std::vector<QVector3D> face_normals;
+
+  void toObj(std::string filename);
 };
 
 struct TriangleMeshNoNormals

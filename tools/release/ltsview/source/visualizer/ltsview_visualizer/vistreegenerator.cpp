@@ -24,20 +24,25 @@ void ConeConvertFunctor::matrixRotate(float angle, float x, float y, float z){
 
 VisTree::VisTreeNode* ConeConvertFunctor::operator()(VisTree::VisTreeNode* parent, Cluster* cluster){
     if (parent == nullptr) current_matrix.setToIdentity(); else current_matrix = parent->data.matrix;
+
+    // move down and to the side (if applicable)
+    float branchtilt = cluster->isCentered() ? 0 : Settings::instance().branchTilt.value();
+    float sideways = cluster->isCentered() ? 0 : cluster->getAncestor()->getBaseRadius() - cosf(branchtilt)*Settings::instance().clusterHeight.value();
+    float down = cluster->hasDescendants() ? -Settings::instance().clusterHeight.value() : 0;
+    // TODO: Check order
+    matrixRotate(cluster->getPosition(), 0, 0, 1);
+    matrixTranslate(sideways, 0, 0);
+    matrixRotate(-branchtilt, 0, 1, 0);
+    matrixTranslate(0, 0, down);
+
     if (!cluster->hasDescendants()){
         VisTree::VisTreeNode* node = new VisTree::VisTreeNode();
         GlUtil::Shapes::Sphere* sphere = new GlUtil::Shapes::Sphere();
         sphere->radius = 1;
         // find shape matrix
         float r = cluster->getTopRadius();
-        // move down and to the side (if applicable)
-        float sideways = cluster->isCentered() ? 0 : cluster->getAncestor()->getBaseRadius();
-        float branchtilt = cluster->isCentered() ? 0 : Settings::instance().branchTilt.value();
-        // TODO: Check order
-        matrixRotate(cluster->getPosition(), 0, 0, 1);
-        matrixRotate(branchtilt, 0, 1, 0);
-        matrixTranslate(sideways, 0, Settings::instance().clusterHeight.value());
         matrixScale(r, r, r);
+
         node->data.matrix = current_matrix;
         node->data.shape = sphere;
         
@@ -46,17 +51,14 @@ VisTree::VisTreeNode* ConeConvertFunctor::operator()(VisTree::VisTreeNode* paren
         return node;
     }
 
-    // move down and to the side (if applicable)
-    float sideways = cluster->isCentered() ? 0 : cluster->getAncestor()->getBaseRadius();
-    float branchtilt = cluster->isCentered() ? 0 : Settings::instance().branchTilt.value();
-    // TODO: Check order
-    matrixRotate(cluster->getPosition(), 0, 0, 1);
-    matrixRotate(branchtilt, 0, 1, 0);
-    matrixTranslate(sideways, 0, Settings::instance().clusterHeight.value());
+   
 
     VisTree::VisTreeNode* node = new VisTree::VisTreeNode();
     GlUtil::Shapes::TruncatedCone* cone = new GlUtil::Shapes::TruncatedCone();
     cone->height = Settings::instance().clusterHeight.value();
+    /// TODO: Figure out why top-bot are sometimes inverted in the clustering algorithm
+    // cone->fill_bot = !cluster->isCentered() || parent == nullptr;
+    // cone->fill_top = cluster->getNumDescendants() > 1;
     cone->fill_top = !cluster->isCentered() || parent == nullptr;
     cone->fill_bot = cluster->getNumDescendants() > 1;
     node->data.matrix = current_matrix;
@@ -67,7 +69,8 @@ VisTree::VisTreeNode* ConeConvertFunctor::operator()(VisTree::VisTreeNode* paren
     "\n\t- topclosed: " << std::to_string(cone->fill_top) << 
     "\n\t- botclosed: " << std::to_string(cone->fill_bot) <<
     "\n\t- topradius: " << std::to_string(cone->radius_top) <<
-    "\n\t- botradius: " << std::to_string(cone->radius_bot) << std::endl;
+    "\n\t- botradius: " << std::to_string(cone->radius_bot) <<
+    "\n\t- height:    " << std::to_string(cone->height) << std::endl;
 
     return node;
 }

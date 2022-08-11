@@ -28,6 +28,7 @@ namespace GlLTSView{
     struct SceneData{
       std::vector<Mesh> meshes = std::vector<Mesh>();
       std::vector<QMatrix4x4> matrices = std::vector<QMatrix4x4>();
+      std::vector<QColor> colors = std::vector<QColor>();
     };
 
     using SGNode = GlUtil::VectorTree::VectorTree<NodeData>;

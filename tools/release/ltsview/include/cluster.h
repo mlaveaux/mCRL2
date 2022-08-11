@@ -16,9 +16,6 @@
 
 class State;
 
-// forward declaration
-class Cluster;
-
 // class for cluster comparison based on cluster radii
 class Comp_BCRadius
 {
