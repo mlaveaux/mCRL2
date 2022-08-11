@@ -1,4 +1,5 @@
 #include "glluts.h"
+#include <cmath>
 
 using namespace GlUtil::LUTs;
 
@@ -22,8 +23,8 @@ void CircleLUT::recompute(int resolution)
   float a = 0, da = 6.28318530718 / resolution;
   for (int i = 0; i < resolution; ++i)
   {
-    LUTcosf[i] = cosf(a);
-    LUTsinf[i] = sinf(a);
+    LUTcosf[i] = std::cosf(a);
+    LUTsinf[i] = std::sinf(a);
     a += da;
   }
 }
