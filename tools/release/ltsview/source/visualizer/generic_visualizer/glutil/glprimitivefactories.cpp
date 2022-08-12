@@ -206,15 +206,18 @@ SphereFactory<MeshTypes::QuadMesh>::createPrimitive(Shapes::Sphere* sphere,
   return MeshTypes::QuadMesh();
 }
 
+
+template<>
+MeshTypes::Vertices TruncatedConeFactory<
+    MeshTypes::TriangleMesh>::last_ring = MeshTypes::Vertices(); // we need to declare it, otherwise
+                                         // compiler doesn't know about it
+template<>
+int TruncatedConeFactory<MeshTypes::TriangleMesh>::last_resolution = -1;
 /// TODO: Look into possibly redefining into just the skewed cylinder without
 /// the top and bottom lids \brief Creates truncated cone out of triangles with
 /// bottom and/or top or neither closed \param cone The cone to be created
 /// \param resolution The number of vertices per circle. Resolution >= 3
 /// required for normal behaviour
-MeshTypes::Vertices TruncatedConeFactory<
-    MeshTypes::TriangleMesh>::last_ring = MeshTypes::Vertices(); // we need to declare it, otherwise
-                                         // compiler doesn't know about it
-int TruncatedConeFactory<MeshTypes::TriangleMesh>::last_resolution = -1;
 template<>
 MeshTypes::TriangleMesh
 TruncatedConeFactory<MeshTypes::TriangleMesh>::createPrimitive(
