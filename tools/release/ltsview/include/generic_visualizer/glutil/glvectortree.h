@@ -68,7 +68,7 @@ template <typename T> struct PointerTree
   PointerTree<T>* lastChild;
   static std::function<void(PointerTree<T>*, PointerTree<T>*)> setParent;
   static std::function<void(PointerTree<T>*, PointerTree<T>*)> addChild;
-  typedef typename PointerTreeForwardIterator<T> childIterator;
+  typedef PointerTreeForwardIterator<T> childIterator;
   static std::function<childIterator(PointerTree<T>*)> getChildBegin;
   static std::function<childIterator(PointerTree<T>*)> getChildEnd;
 };
