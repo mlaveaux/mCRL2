@@ -1,4 +1,5 @@
 #include "glprimitivefactories.h"
+#include "mathutils.h"
 
 using namespace GlUtil;
 
@@ -23,7 +24,7 @@ RingFactory<MeshTypes::Vertices>::createPrimitive(Shapes::Ring* ring,
   int n_vertices = resolution;
   std::vector<QVector3D> vertices(n_vertices);
   int vertex_index = 0;
-  float cosa, sina, x, y, z = 0;
+  qreal cosa, sina, x, y, z = 0;
   for (int i = 0; i < resolution; i++)
   {
     cosa = LUTs::CircleLUT::LUTcosf[i];
@@ -31,7 +32,7 @@ RingFactory<MeshTypes::Vertices>::createPrimitive(Shapes::Ring* ring,
 
     x = cosa * ring->radius;
     y = sina * ring->radius;
-    vertices[vertex_index++] = {x, y, z};
+    vertices[vertex_index++] = {(float)x, (float)y, (float)z};
   }
   return {n_vertices, vertices};
 }
@@ -53,7 +54,7 @@ SphereFactory<MeshTypes::TriangleMesh>::createPrimitive(Shapes::Sphere* sphere,
   int n_vertices = 12;
   int n_triangles = 20;
 
-  float sqrt5 = sqrtf(5);
+  qreal sqrt5 = sqrt(5);
   float s = sqrtf((5 - sqrt5) * 0.1);
   float t = sqrtf((5 + sqrt5) * 0.1);
 
@@ -183,12 +184,12 @@ SphereFactory<MeshTypes::TriangleMesh>::createPrimitive(Shapes::Sphere* sphere,
     b = triangles[i][1];
     c = triangles[i][2];
     face_normals[normal_index++] =
-        0.333333333 *
+        (float)MathUtils::ONE_THIRD *
         (vertex_normals[a] + vertex_normals[b] + vertex_normals[c]);
   }
 
   // finally we need to multiply all vertices by the radius of the sphere
-  float r = sphere->radius;
+  qreal r = sphere->radius;
   for (auto it = vertices.begin(); it != vertices.end(); ++it)
   {
     *it *= r;
@@ -242,13 +243,13 @@ TruncatedConeFactory<MeshTypes::TriangleMesh>::createPrimitive(
   std::vector<GlUtil::Triangle> triangles(n_triangles);
   std::vector<QVector3D> face_normals(n_triangles);
   // create the vertices
-  float cosa, sina, x, y, z = 0;
+  qreal cosa, sina, z = 0;
   int vertex_index = 0;
   int vertex_normal_index = 0;
   int triangle_index = 0;
   int face_normal_index = 0;
-  float dr = cone->radius_bot - cone->radius_top;
-  float inv_normal_magnitude = 1.0 / sqrt(1 + dr * dr);
+  qreal dr = cone->radius_bot - cone->radius_top;
+  qreal inv_normal_magnitude = 1.0 / sqrt(1 + dr * dr);
   // bottom circle
   if (last_resolution != resolution)
   {
@@ -280,7 +281,7 @@ TruncatedConeFactory<MeshTypes::TriangleMesh>::createPrimitive(
     cosa = LUTs::CircleLUT::LUTcosf[i];
     sina = LUTs::CircleLUT::LUTsinf[i];
     vertex_normals[vertex_normal_index++] =
-        inv_normal_magnitude * QVector3D({cosa, sina, dr});
+        inv_normal_magnitude * QVector3D({(float)cosa, (float)sina, (float)dr});
   }
   // for both cirlces the normals are identical
   std::copy(vertex_normals.begin(), vertex_normals.begin() + resolution,
@@ -290,7 +291,7 @@ TruncatedConeFactory<MeshTypes::TriangleMesh>::createPrimitive(
   int triangle_vertex_offset =
       resolution; // vertex number i of top circle is at location
                   // triangle_vertex_offset + i
-  float cosa_next, sina_next;
+  qreal cosa_next, sina_next;
   for (int i = 0; i < resolution; i++)
   {
     int next = (i + 1) % resolution;
@@ -307,14 +308,14 @@ TruncatedConeFactory<MeshTypes::TriangleMesh>::createPrimitive(
     sina_next = LUTs::CircleLUT::LUTsinf[next];
 
     face_normals[face_normal_index++] = {
-        inv_normal_magnitude * 0.3333333f * (2 * cosa + cosa_next),
-        inv_normal_magnitude * 0.3333333f * (2 * sina + sina_next),
-        inv_normal_magnitude * dr};
+        (float)(inv_normal_magnitude * MathUtils::ONE_THIRD * (2 * cosa + cosa_next)),
+        (float)(inv_normal_magnitude * MathUtils::ONE_THIRD * (2 * sina + sina_next)),
+        (float)(inv_normal_magnitude * dr)};
 
     face_normals[face_normal_index++] = {
-        inv_normal_magnitude * 0.3333333f * (cosa + 2 * cosa_next),
-        inv_normal_magnitude * 0.3333333f * (sina + 2 * sina_next),
-        inv_normal_magnitude * dr};
+        (float)(inv_normal_magnitude * MathUtils::ONE_THIRD * (cosa + 2 * cosa_next)),
+        (float)(inv_normal_magnitude * MathUtils::ONE_THIRD * (sina + 2 * sina_next)),
+        (float)(inv_normal_magnitude * dr)};
   }
 
   if (cone->fill_bot || cone->fill_top)

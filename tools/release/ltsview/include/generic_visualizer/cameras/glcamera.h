@@ -41,7 +41,7 @@ class Camera
 
   // setters for various properties
   void setPosition(const QVector3D& position) { m_worldPosition = position; }
-  void setViewport(std::size_t width, std::size_t height) { m_viewport = QRect(0, 0, width, height); }
+  void setViewport(std::size_t width, std::size_t height) { m_viewport = QRect(0, 0, (int)width, (int)height); }
 
   // virtual functions
   virtual void reset() = 0;

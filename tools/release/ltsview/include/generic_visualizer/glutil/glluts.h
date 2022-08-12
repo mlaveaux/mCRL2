@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <vector>
+#include <QtCore>
 
 namespace GlUtil
 {
@@ -11,8 +12,8 @@ namespace LUTs
 class CircleLUT
 {
   public:
-  static std::vector<float> LUTcosf;
-  static std::vector<float> LUTsinf;
+  static std::vector<qreal> LUTcosf;
+  static std::vector<qreal> LUTsinf;
   static int last_resolution;
   static void update(int resolution);
 

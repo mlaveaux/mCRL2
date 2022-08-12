@@ -19,9 +19,9 @@
 
 ConeDB::ConeDB()
 {
-  int hashclass = 6;
-  ohashtable.assign((1 << hashclass),-1);
-  thashtable.assign((1 << hashclass),-1);
+  size_t hashclass = 6;
+  ohashtable.assign(((size_t)1 << hashclass),-1);
+  thashtable.assign(((size_t)1 << hashclass),-1);
 }
 
 ConeDB::~ConeDB()

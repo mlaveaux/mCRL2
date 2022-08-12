@@ -1,10 +1,11 @@
 #include "glluts.h"
 #include <cmath>
+#include "mathutils.h"
 
 using namespace GlUtil::LUTs;
 
-std::vector<float> CircleLUT::LUTcosf = {};
-std::vector<float> CircleLUT::LUTsinf = {};
+std::vector<qreal> CircleLUT::LUTcosf = {};
+std::vector<qreal> CircleLUT::LUTsinf = {};
 int CircleLUT::last_resolution = -1;
 
 
@@ -17,14 +18,14 @@ void CircleLUT::update(int resolution)
 void CircleLUT::recompute(int resolution)
 {
   
-  LUTcosf = std::vector<float>(resolution); // allocate space for arrays
-  LUTsinf = std::vector<float>(resolution); // allocate space for arrays
+  LUTcosf = std::vector<qreal>(resolution); // allocate space for arrays
+  LUTsinf = std::vector<qreal>(resolution); // allocate space for arrays
   
-  float a = 0, da = 6.28318530718 / resolution;
+  qreal a = 0, da = MathUtils::TWO_PI / resolution;
   for (int i = 0; i < resolution; ++i)
   {
-    LUTcosf[i] = std::cosf(a);
-    LUTsinf[i] = std::sinf(a);
+    LUTcosf[i] = std::cos(a);
+    LUTsinf[i] = std::sin(a);
     a += da;
   }
 }

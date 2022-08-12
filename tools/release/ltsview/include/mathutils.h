@@ -8,16 +8,19 @@
 
 #ifndef MATHUTILS_H
 #define MATHUTILS_H
+#include <QtCore>
 
 namespace MathUtils
 {
 
-const double PI = 3.14159265359;
-const inline double INV_SQRT2 = 0.70710678118;
-const inline float INV_SQRT2F = 0.70710678118; 
-const inline float ONE_THIRD  = 0.33333333333;
+const inline qreal PI = 3.14159265359;
+const inline qreal TWO_PI = 2*PI;
+const inline qreal INV_PI = 1/PI;
+const inline qreal INV_SQRT2 = 0.70710678118;
+const inline qreal INV_SQRT2F = 0.70710678118; 
+const inline qreal ONE_THIRD  = 0.33333333333;
 
-static inline int round_to_int(float f)
+static inline int round_to_int(qreal f)
 {
   if (f >= 0.0f)
   {
@@ -29,14 +32,16 @@ static inline int round_to_int(float f)
   }
 }
 
-static inline float deg_to_rad(float deg)
+const inline qreal deg2rad = PI/180;
+static inline qreal deg_to_rad(qreal deg)
 {
-  return deg * (float)PI / 180.0f;
+  return deg * deg2rad;
 }
 
-static inline float rad_to_deg(float rad)
+const inline qreal rad2deg = 180 * INV_PI;
+static inline qreal rad_to_deg(qreal rad)
 {
-  return rad * 180.0f / (float)PI;
+  return rad * rad2deg;
 }
 
 }

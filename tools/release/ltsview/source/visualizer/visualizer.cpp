@@ -408,7 +408,7 @@ void Visualizer::traverseTreeT(Cluster* root, bool topClosed, int rot)
             }
             else
             {
-              alpha = 0.5f * PI;
+              alpha = 0.5f * (float)PI;
             }
           }
           glRotatef(-desc->getPosition()-rot,0.0f,0.0f,1.0f);
@@ -687,7 +687,7 @@ void Visualizer::drawSimStates(QList<State*> historicStates,
     glColor4ub(c.red(), c.green(), c.blue(), 255);
     QVector3D p = currState->getPositionAbs();
 
-    glPushName(currState->getID());
+    glPushName((GLuint)currState->getID());
 
     glPushMatrix();
     glTranslatef(p.x(), p.y(), p.z());
@@ -711,7 +711,7 @@ void Visualizer::drawSimStates(QList<State*> historicStates,
     if (ltsManager->lts()->getZoomLevel() == endState->getZoomLevel()
         && drawnStates.find(endState) == drawnStates.end())
     {
-      glPushName(endState->getID());
+      glPushName((GLuint)endState->getID());
 
       if (markManager->isMarked(endState))
       {
@@ -777,7 +777,7 @@ void Visualizer::drawSimStates(QList<State*> historicStates,
 
       glColor4ub(c.red(), c.green(), c.blue(), 255);
 
-      glPushName(s->getID());
+      glPushName((GLuint)s->getID());
 
       p = s->getPositionAbs();
       glPushMatrix();
@@ -1008,7 +1008,7 @@ void Visualizer::drawStates(Cluster* root, bool simulating)
         glTranslatef(p.x(), p.y(), p.z());
         glScalef(ns, ns, ns);
 
-        glPushName(s->getID());
+        glPushName((GLuint)s->getID());
 
         primitiveFactory.drawSimpleSphere();
         glPopName();
