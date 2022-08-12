@@ -21,7 +21,7 @@
 template <typename NodeData, typename SceneData> class SceneGraph
 {
   public:
-  GlUtil::VectorTree::VectorTree<NodeData>* root;
+  GlUtil::PointerTree::PointerTree<NodeData>* root;
   SceneData sceneData;
   // updates any changed parts of the scenegraph
   void update();

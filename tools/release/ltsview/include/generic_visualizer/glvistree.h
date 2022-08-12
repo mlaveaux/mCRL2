@@ -25,7 +25,7 @@ struct VisTreeData{
   QMatrix4x4 matrix;
 };
 
-using VisTreeNode = GlUtil::VectorTree::VectorTree<VisTreeData>;
+using VisTreeNode = GlUtil::PointerTree::PointerTree<VisTreeData>;
 
 template <typename InputTreeType, typename Functor, typename ChildIterator>
 VisTree::VisTreeNode*

@@ -31,7 +31,7 @@ namespace GlLTSView{
       std::vector<QColor> colors = std::vector<QColor>();
     };
 
-    using SGNode = GlUtil::VectorTree::VectorTree<NodeData>;
+    using SGNode = GlUtil::PointerTree::PointerTree<NodeData>;
     using LTSScene = GLScene<NodeData, SceneData>;
 
     struct SceneGraphFunctor{
