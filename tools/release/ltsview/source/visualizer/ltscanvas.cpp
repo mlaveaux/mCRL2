@@ -17,6 +17,10 @@
 #include "icons/pan_cursor.xpm"
 #include "icons/rotate_cursor.xpm"
 
+#include "scene.h"
+#include "arcballcamera.h"
+#include "state.h" 
+
 #include <chrono>
 
 LtsCanvas::LtsCanvas(QWidget* parent, LtsManager* ltsManager, MarkManager* markManager):
@@ -178,6 +182,21 @@ void LtsCanvas::paintGL()
 
 void LtsCanvas::render(bool light)
 {
+  /// TODO: 
+  if (m_ltsManager->lts())
+  {
+
+    SceneGraph<GlLTSView::NodeData, GlLTSView::SceneData> sg;
+    ArcballCamera camera;
+    GlLTSView::Scene scene =
+        GlLTSView::Scene(*((QOpenGLWidget*)this), sg, camera,
+                         m_ltsManager->lts()->getInitialState()->getCluster());
+
+    scene.initialize();
+    QPainter painter = QPainter(this);
+    scene.render(painter);
+  }
+  return;
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
 

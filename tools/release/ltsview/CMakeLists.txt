@@ -31,7 +31,6 @@ mcrl2_add_gui_tool(ltsview
     glmeshes.cpp
     glprimitivefactories.cpp
     ltscanvas.cpp
-    renderer.cpp
     scene.cpp
     vistreegenerator.cpp
     primitivefactory.cpp

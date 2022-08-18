@@ -66,6 +66,7 @@ template <typename T> struct PointerTree
   PointerTree<T>* next;
   PointerTree<T>* firstChild;
   PointerTree<T>* lastChild;
+  int num_children = 0;
   static std::function<void(PointerTree<T>*, PointerTree<T>*)> setParent;
   static std::function<void(PointerTree<T>*, PointerTree<T>*)> addChild;
   typedef PointerTreeForwardIterator<T> childIterator;
@@ -95,7 +96,7 @@ template <typename T>
 std::function<void(PointerTree<T>*, PointerTree<T>*)> PointerTree<T>::addChild =
     [](PointerTree<T>* node, PointerTree<T>* child)
 {
-  if (node->firstChild == nullptr)
+  if (node->num_children == 0)
   {
     node->firstChild = child;
     node->lastChild = child;
@@ -105,6 +106,7 @@ std::function<void(PointerTree<T>*, PointerTree<T>*)> PointerTree<T>::addChild =
     node->lastChild->next = child;
     node->lastChild = child;
   }
+  node->num_children++;
 };
 
 template <typename T>

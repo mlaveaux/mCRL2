@@ -1,11 +1,13 @@
 #include "glcolor.h"
 #include <iostream>
+#include <functional>
 using namespace GlUtil::Color;
 
-qreal temp;
+qreal temp = 0;
 inline qreal normalize(qreal x){
-  qreal y = std::modf(x - (std::trunc(x) - 1), &temp) + (x==temp);
-    return y;
+  qreal y = std::modf(x - (std::trunc(x) - 1), &temp);
+  y += (x==temp);
+  return y;
 }
 
 inline qreal clamp01(qreal x)

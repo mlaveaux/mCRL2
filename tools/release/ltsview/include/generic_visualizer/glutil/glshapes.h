@@ -28,7 +28,7 @@ struct Sphere : Shape
   {
     return ShapeType::SPHERE;
   }
-  float radius;
+  float radius = 1;
 };
 
 struct HemiSphere : Shape

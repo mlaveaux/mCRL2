@@ -13,7 +13,7 @@
 
 #include <array>
 #include <QOpenGLBuffer>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions_4_3_Core>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
 #include <QPainter>
@@ -22,7 +22,7 @@
 #include "glcamera.h"
 
 template<typename NodeData, typename SceneData>
-class GLScene : public QOpenGLFunctions_3_3_Core
+class GLScene : public QOpenGLFunctions_4_3_Core
 {
 public:
   /// \brief Constructor.

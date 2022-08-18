@@ -1,7 +1,7 @@
 #version 330
 
 uniform mat4 g_worldViewProjMatrix;
-uniform float u_alpha;
+uniform float u_alpha = 1;
 
 layout(location = 0) in vec3 v_vertex;
 layout(location = 1) in vec3 v_normal;

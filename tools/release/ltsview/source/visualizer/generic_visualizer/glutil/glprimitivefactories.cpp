@@ -16,8 +16,8 @@ using namespace DefaultFactories;
 /// \brief Creates vertices for a ring. No normals/tris since ring does not
 /// define those
 template<>
-MeshTypes::Vertices
-RingFactory<MeshTypes::Vertices>::createPrimitive(Shapes::Ring* ring,
+Meshes::MeshTypes::Vertices
+RingFactory<Meshes::MeshTypes::Vertices>::createPrimitive(Shapes::Ring* ring,
                                                   int resolution)
 {
   LUTs::CircleLUT::update(resolution);
@@ -47,8 +47,8 @@ uint encode(int a, int b)
 // Credit for vertex/triangle indices:
 // http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
 template <>
-MeshTypes::TriangleMesh
-SphereFactory<MeshTypes::TriangleMesh>::createPrimitive(Shapes::Sphere* sphere,
+Meshes::MeshTypes::TriangleMesh
+SphereFactory<Meshes::MeshTypes::TriangleMesh>::createPrimitive(Shapes::Sphere* sphere,
                                                         int resolution)
 {
   int n_vertices = 12;
@@ -200,28 +200,28 @@ SphereFactory<MeshTypes::TriangleMesh>::createPrimitive(Shapes::Sphere* sphere,
 
 /// TODO: implement quad sphere
 template<>
-MeshTypes::QuadMesh
-SphereFactory<MeshTypes::QuadMesh>::createPrimitive(Shapes::Sphere* sphere,
+Meshes::MeshTypes::QuadMesh
+SphereFactory<Meshes::MeshTypes::QuadMesh>::createPrimitive(Shapes::Sphere* sphere,
                                                     int resolution)
 {
-  return MeshTypes::QuadMesh();
+  return Meshes::MeshTypes::QuadMesh();
 }
 
 
 template<>
-MeshTypes::Vertices TruncatedConeFactory<
-    MeshTypes::TriangleMesh>::last_ring = MeshTypes::Vertices(); // we need to declare it, otherwise
+Meshes::MeshTypes::Vertices TruncatedConeFactory<
+    Meshes::MeshTypes::TriangleMesh>::last_ring = Meshes::MeshTypes::Vertices(); // we need to declare it, otherwise
                                          // compiler doesn't know about it
 template<>
-int TruncatedConeFactory<MeshTypes::TriangleMesh>::last_resolution = -1;
+int TruncatedConeFactory<Meshes::MeshTypes::TriangleMesh>::last_resolution = -1;
 /// TODO: Look into possibly redefining into just the skewed cylinder without
 /// the top and bottom lids \brief Creates truncated cone out of triangles with
 /// bottom and/or top or neither closed \param cone The cone to be created
 /// \param resolution The number of vertices per circle. Resolution >= 3
 /// required for normal behaviour
 template<>
-MeshTypes::TriangleMesh
-TruncatedConeFactory<MeshTypes::TriangleMesh>::createPrimitive(
+Meshes::MeshTypes::TriangleMesh
+TruncatedConeFactory<Meshes::MeshTypes::TriangleMesh>::createPrimitive(
     Shapes::TruncatedCone* cone, int resolution)
 {
   LUTs::CircleLUT::update(resolution);
@@ -255,8 +255,8 @@ TruncatedConeFactory<MeshTypes::TriangleMesh>::createPrimitive(
   {
     Shapes::Ring* ring = new Shapes::Ring();
     ring->radius = 1;
-    TruncatedConeFactory<MeshTypes::TriangleMesh>::last_ring =
-        RingFactory<MeshTypes::Vertices>::createPrimitive(ring, resolution);
+    TruncatedConeFactory<Meshes::MeshTypes::TriangleMesh>::last_ring =
+        RingFactory<Meshes::MeshTypes::Vertices>::createPrimitive(ring, resolution);
     last_resolution = resolution;
   }
   std::copy(last_ring.vertices.begin(), last_ring.vertices.end(),

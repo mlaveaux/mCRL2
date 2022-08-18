@@ -19,6 +19,7 @@
 #include <string>
 #include <iostream>
 #include "cluster.h"
+#include <QtCore>
 
 class Cluster;
 
@@ -44,7 +45,8 @@ struct ConeConvertFunctor
   void matrixRotate(float angle, float x, float y, float z);
 
   bool topClosed = true;
-  float rot = 0;
+  qreal max_rank = -1;
+  QColor c_top, c_bot;
   VisTree::VisTreeNode* operator()(VisTree::VisTreeNode* parent,
                                    Cluster* cluster);
 };
@@ -52,14 +54,14 @@ struct ConeConvertFunctor
 // TODO: Implement
 struct TubeConvertFunctor
 {
+  qreal max_rank = -1;
   VisTree::VisTreeNode* operator()(VisTree::VisTreeNode* parent,
                                    Cluster* cluster);
 };
 
 template <typename Functor>
-VisTree::VisTreeNode* generateClusterTree(Cluster* root)
+VisTree::VisTreeNode* generateClusterTree(Cluster* root, Functor& f)
 {
-  Functor f = Functor();
   std::function<std::vector<Cluster*>::iterator(Cluster*)> getChildBegin =
       [](Cluster* node) { return node->descendants.begin(); };
   std::function<std::vector<Cluster*>::iterator(Cluster*)> getChildEnd =
@@ -85,9 +87,9 @@ class VisTreeGenerator
   {
   }
 
-  static VisTree::VisTreeNode* generateTubes(Cluster* root);
+  static VisTree::VisTreeNode* generateTubes(Cluster* root, int max_rank);
 
-  static VisTree::VisTreeNode* generateCones(Cluster* root);
+  static VisTree::VisTreeNode* generateCones(Cluster* root, int max_rank);
 };
 
 #endif

@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <QMatrix4x4>
+#include <QColor> 
 
 #include "glvectortree.h"
 #include "glshapes.h"
@@ -22,7 +23,9 @@ namespace VisTree
 /// TODO: Smart pointer
 struct VisTreeData{
   GlUtil::Shape* shape;
+  int num_children;
   QMatrix4x4 matrix;
+  QColor color;
 };
 
 using VisTreeNode = GlUtil::PointerTree::PointerTree<VisTreeData>;

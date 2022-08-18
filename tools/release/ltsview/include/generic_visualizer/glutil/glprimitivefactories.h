@@ -59,7 +59,7 @@ class TruncatedConeFactory
                                   int resolution);
 
   private:
-  static MeshTypes::Vertices last_ring;
+  static Meshes::MeshTypes::Vertices last_ring;
   static int last_resolution;
 };
 

@@ -19,7 +19,6 @@
 
 #include "scene.h"
 #include "arcballcamera.h"
-#include "renderer.h"
 
 #include "glcolor.h"
 
@@ -178,13 +177,11 @@ void Visualizer::traverseTree()
   {
     visObjectFactory.clear();
     update_colors = true;
-    QOpenGLWidget oglw;
-    SceneGraph<GlLTSView::NodeData, GlLTSView::SceneData> sg;
-    ArcballCamera camera;
-    LTSRenderer renderer;
-    GlLTSView::Scene scene = GlLTSView::Scene(oglw, sg, camera, ltsManager->lts()->getInitialState()->getCluster());
-    scene.rebuild();
+    
+    
   }
+  /// TODO: Fix
+  return;
   glPushMatrix();
   glLoadIdentity();
   Cluster *root = ltsManager->lts()->getInitialState()->getCluster();
