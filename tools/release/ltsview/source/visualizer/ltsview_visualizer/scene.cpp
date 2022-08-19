@@ -19,8 +19,10 @@
 #define COLOR_BINDING 2
 #define MATRIX_BINDING 3
 
-#define assertOpenGL assert(reportOpenGLError())
+#define assertGL(msg) msgAssert(reportOpenGLError(), msg)
+#define execAssertGL(expr, msg) _result = expr; msgAssert(_result, msg);
 
+bool _result;
 inline int cone_encode_resolution(int res, bool a, bool b){
     return res | (a ? (1<<30) : 0) | (b ? (1<<31) : 0);
 }
@@ -87,28 +89,17 @@ void GlLTSView::Scene::initialize(){
     gl_funcs = m_glwidget.context()->versionFunctions<QOpenGLFunctions_4_3_Core>();
     
     // create shaderprogram
-    if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, "shaders/ltsview.vs")){
-        
-        std::cout << "VS failed. Log:" << std::endl;
-        std::cout << program.log().toStdString() << std::endl;
-    }
-    if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment, "shaders/ltsview.fs")){
-        std::cout << "FS failed" << std::endl;
-        std::cout << program.log().toStdString() << std::endl;
-    }
+    execAssertGL(program.addShaderFromSourceFile(QOpenGLShader::Vertex, "shaders/ltsview.vs"), 
+                 "Vertex shader can't be added.");
+    execAssertGL(program.addShaderFromSourceFile(QOpenGLShader::Fragment,
+                                                 "shaders/ltsview.fs"),
+                 "Fragment shader can't be added.");
 
-    bool linked = program.link();
-    bool bound = program.bind();
-
-    std::cout << "Program linked: " << (linked ? "Yes." : "No.") << std::endl;
-    std::cout << "Program bound: " << (bound ? "Yes." : "No.") << std::endl;
+    execAssertGL(program.link(), "Program linking failed.");
+    execAssertGL(program.bind(), "Program binding failed.");
     glUseProgram(program.programId());
     genBuffers();
-    GLenum error;
-    error = glGetError();
-    if (error != GL_NO_ERROR){
-        std::cout << "Gen buffers went wrong: 0x" << std::hex << error << std::endl;
-    }
+    assertGL("Gen buffers function");
     
 
     m_view_loc = program.uniformLocation("u_view");
@@ -118,7 +109,7 @@ void GlLTSView::Scene::initialize(){
 
 bool GlLTSView::Scene::reportOpenGLError(){
     GLenum error = glGetError();
-    std::cout << "Checking OGL error." << std::endl;
+    //std::cout << "Checking OGL error." << std::endl;
     if (error != GL_NO_ERROR){
         std::cout << "OpenGL error occured with code 0x" << std::hex << error << ":\n"
                   << program.log().toStdString() << std::endl;
@@ -140,7 +131,7 @@ void GlLTSView::Scene::fillBuffers(){
     }
     m_vertex_ssbo.bind();
     m_vertex_ssbo.allocate(vertices, index * sizeof(GLfloat));
-    assertOpenGL;
+    assertGL("Vertex ssbo");
     free(vertices);
     
 
@@ -156,7 +147,7 @@ void GlLTSView::Scene::fillBuffers(){
     }
     m_normal_ssbo.bind();
     m_normal_ssbo.allocate(normals, sizeof(GLfloat) * index);
-    assertOpenGL;
+    assertGL("Normal ssbo");
     free(normals);
 
     // NB: All of the following buffers should be hinted as dynamic
@@ -171,7 +162,7 @@ void GlLTSView::Scene::fillBuffers(){
     }
     m_color_ssbo.bind();
     m_color_ssbo.allocate(normals, sizeof(GLfloat) * index);
-    assertOpenGL;
+    assertGL("Color ssbo");
     free(colors);
 
     // finally matrices
@@ -183,7 +174,7 @@ void GlLTSView::Scene::fillBuffers(){
     }
     m_matrix_ssbo.bind();
     m_matrix_ssbo.allocate(matrices, m_scenegraph.sceneData.matrices.size() * 16 * sizeof(GLfloat));
-    assertOpenGL;
+    assertGL("Matrix ssbo");
     free(matrices);
 
 
@@ -196,14 +187,14 @@ void GlLTSView::Scene::fillBuffers(){
     }
     m_vbo.bind();
     m_vbo.allocate(vertexdata, index * sizeof(GLuint));
-    assertOpenGL;
+    assertGL("VBO");
     free(vertexdata);
 
     // tell openGL we will be sending ivec2
     int vertex_location = program.attributeLocation("in_vertexData");
     program.enableAttributeArray(vertex_location);
     program.setAttributeBuffer(vertex_location, GL_FLOAT, 0, 2, 2 * sizeof(GLuint));
-    assertOpenGL;
+    assertGL("Program.enableAttirbuteArray");
 
 
     // Fill IBO
@@ -217,7 +208,7 @@ void GlLTSView::Scene::fillBuffers(){
     m_ibo.bind();
     m_ibo.allocate(indices, index * sizeof(GLuint));
     free(indices);
-    assertOpenGL;
+    assertGL("IBO");
 }
 
 void GlLTSView::Scene::genBuffers(){
@@ -235,35 +226,35 @@ void GlLTSView::Scene::genBuffers(){
     // Create buffers
     m_vbo = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
     m_vbo.create();
-    assertOpenGL;
+    assertGL("VBO create");
 
     m_ibo = QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
     m_ibo.create();
-    assertOpenGL;
+    assertGL("IBO create");
 
     m_vertex_ssbo.create();
     m_vertex_ssbo.bind();
     m_vertex_ssbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
     gl_funcs->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, VERTEX_BINDING, m_vertex_ssbo.bufferId());
-    assertOpenGL;
+    assertGL("Vertex SSBO create");
 
     m_normal_ssbo.create();
     m_normal_ssbo.bind();
     m_normal_ssbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
     gl_funcs->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, NORMAL_BINDING, m_normal_ssbo.bufferId());
-    assertOpenGL;
+    assertGL("Normal SSBO create");
 
     m_color_ssbo.create();
     m_color_ssbo.bind();
     m_color_ssbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
     gl_funcs->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, COLOR_BINDING, m_color_ssbo.bufferId());
-    assertOpenGL;
+    assertGL("Color SSBO create");
 
     m_matrix_ssbo.create();
     m_matrix_ssbo.bind();
     m_matrix_ssbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
     gl_funcs->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, MATRIX_BINDING, m_matrix_ssbo.bufferId());
-    assertOpenGL;
+    assertGL("Matrix SSBO create");
     
     buffers_exist = true;
 }
@@ -420,14 +411,10 @@ void GlLTSView::Scene::render(QPainter& painter){
     }
     // glUniformMatrix4fv(m_view_loc, 1, false, (GLfloat*)m_camera.getViewMatrix().data());
     glUniformMatrix4fv(m_view_loc, 1, false, (GLfloat*)view_matrix.data());
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR)
-    {
-     std::cout << "1. OpenGL error: 0x" << std::hex <<  error << " m_view_loc: " << m_view_loc << std::endl;
-     exit(-1);
-    }
+    assertGL("Set uniform; u_view");
     // glUniformMatrix4fv(m_proj_loc, 1, false, (GLfloat*)m_camera.getProjectionMatrix().data());
     glUniformMatrix4fv(m_proj_loc, 1, false, (GLfloat*)proj_matrix.data());
+    assertGL("Set uniform; u_proj");
 
     // set transparency
     glUniform1f(m_alpha_loc, Settings::instance().transparency.value()/100.0f);
@@ -445,7 +432,7 @@ void GlLTSView::Scene::render(QPainter& painter){
     glDepthFunc(GL_LESS); // closer to camera wins
 
     glCullFace(GL_FRONT);
-    assertOpenGL;
+    assertGL("GlCullFace(GL_FRONT)");
 
 
     /// TODO: Multiple calls to get proper transparency.
@@ -454,15 +441,15 @@ void GlLTSView::Scene::render(QPainter& painter){
     m_ibo.bind();
     glDrawElements(GL_TRIANGLES, m_triangles.size() * 3, GL_UNSIGNED_INT, nullptr);
     std::cout << "After draw elements" << std::endl;
-    assertOpenGL;
+    assertGL("GlDrawElements for back faces");
 
     glClear(GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_BACK);
-    assertOpenGL;
+    assertGL("GlCullFace(GL_BACK)");
 
     /// TODO: Multiple calls to get proper transparency.
     glDrawElements(GL_TRIANGLES, m_triangles.size() * 3, GL_UNSIGNED_INT, nullptr);
-    assertOpenGL;
+    assertGL("GlDrawElements for front faces");
 
     painter.endNativePainting();
 }
