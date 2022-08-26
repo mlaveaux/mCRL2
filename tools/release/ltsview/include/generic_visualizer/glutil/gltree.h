@@ -14,6 +14,9 @@ fold_tree(OutputTreeType* parent, InputTreeType* current,
           std::function<ChildIterator(InputTreeType*)>& getChildBegin,
           std::function<ChildIterator(InputTreeType*)>& getChildEnd)
 {
+    /// TODO: Assert
+  if (!current)
+    return nullptr;
   OutputTreeType* node = f(parent, current);
   setParent(node, parent);
   auto child_it = getChildBegin(current);

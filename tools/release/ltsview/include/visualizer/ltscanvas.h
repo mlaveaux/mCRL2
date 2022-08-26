@@ -9,7 +9,7 @@
 #ifndef LTSCANVAS_H
 #define LTSCANVAS_H
 
-// #include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions_4_3_Core>
 #include <QCursor>
 #include <QOpenGLWidget>
 #include <QImage>
@@ -45,9 +45,9 @@ class LtsCanvas : public QOpenGLWidget
     void clusterPositionsChanged();
 
   protected:
-    void initializeGL();
-    void resizeGL(int width, int height);
-    void paintGL();
+    void initializeGL() override;
+    void resizeGL(int width, int height) override;
+    void paintGL() override;
     void render(bool light);
     void determineActiveTool(QMouseEvent* event, bool useModifiers);
     void setActiveTool(Tool tool);
@@ -90,6 +90,8 @@ class LtsCanvas : public QOpenGLWidget
     Tool m_activeTool;
     bool m_dragging;
     QPoint m_lastMousePosition;
+    QOpenGLFunctions_4_3_Core* m_ogl;
+    QOpenGLContext* m_context;
 
     // graphics info variables
     QLinkedList<QTime> frame_times; 

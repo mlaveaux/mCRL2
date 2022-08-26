@@ -108,7 +108,7 @@ struct RankFunctor
 {
   int max_rank = -1;
   nullptr_t* operator()(nullptr_t* parent,
-                                   Cluster* cluster){ max_rank = std::max(max_rank, cluster->getRank()); return nullptr; };
+                                   Cluster* cluster){ if (cluster) max_rank = std::max(max_rank, cluster->getRank()); return nullptr; };
 };
 
 VisTree::VisTreeNode* VisTreeGenerator::generate(Mode mode, Cluster* root){

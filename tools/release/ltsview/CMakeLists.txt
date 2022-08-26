@@ -30,6 +30,7 @@ mcrl2_add_gui_tool(ltsview
     ./source/visualizer/generic_visualizer/glutil/glluts.cpp
     ./source/visualizer/generic_visualizer/glutil/glmeshes.cpp
     ./source/visualizer/generic_visualizer/glutil/glprimitivefactories.cpp
+    ./source/visualizer/glwidget.cpp
     ./source/visualizer/ltscanvas.cpp
     ./source/visualizer/ltsview_visualizer/scene.cpp
     ./source/visualizer/ltsview_visualizer/vistreegenerator.cpp

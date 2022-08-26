@@ -79,9 +79,9 @@ namespace GlLTSView{
     };
 
 
-    class Scene : private LTSScene{
+    class Scene : public LTSScene{
     public:
-        Scene(QOpenGLWidget& glwidget, SceneGraph<NodeData, SceneData>& scenegraph, Camera& camera, Cluster* root);
+        explicit Scene(QOpenGLWidget* glwidget, Cluster* root);
         Cluster *m_clusterRoot;
         VisTree::VisTreeNode *m_vistreeRoot;
         // LTSRenderer m_renderer;
@@ -99,15 +99,15 @@ namespace GlLTSView{
     private:
         bool built = false;
         bool buffers_exist = false;
-        QOpenGLBuffer m_vbo;  // vertex buffer object contains all vertices as VertexData
-        QOpenGLBuffer m_ibo;  // index buffer object contains all triangles
+        GLuint m_vbo;  // vertex buffer object contains all vertices as VertexData
+        GLuint m_ibo;  // index buffer object contains all triangles
 
-        QOpenGLBuffer m_vertex_ssbo; // shader storage buffer object contains all the mesh vertices
-        QOpenGLBuffer m_normal_ssbo; // shader storage buffer object contains all the mesh vertex normals
+        GLuint m_vertex_ssbo; // shader storage buffer object contains all the mesh vertices
+        GLuint m_normal_ssbo; // shader storage buffer object contains all the mesh vertex normals
 
-        QOpenGLBuffer m_color_ssbo;  // shader storage buffer object contains all the model colors
-        QOpenGLBuffer m_matrix_ssbo; // shader storage buffer object contains all the model matrices
-        
+        GLuint m_color_ssbo;  // shader storage buffer object contains all the model colors
+        GLuint m_matrix_ssbo; // shader storage buffer object contains all the model matrices
+
         GLuint m_view_loc;
         GLuint m_proj_loc;
         GLuint m_alpha_loc;
@@ -117,8 +117,9 @@ namespace GlLTSView{
         void fillBuffers();
         void bindBufferBases();
         bool reportOpenGLError();
+        /// \brief Creates a single SSBO with given parameters and binds to the program associated with the scene
+        void createBufferObject(void *data, int num_bytes, GLuint& buff_id, int binding, const char* name, int drawmode = GL_STATIC_DRAW );
 
-        QOpenGLFunctions_4_3_Core* gl_funcs;
         QOpenGLShaderProgram program;
 
         std::vector<VertexData> m_vertexData;

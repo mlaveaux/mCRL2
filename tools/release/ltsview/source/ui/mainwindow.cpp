@@ -28,9 +28,9 @@ MainWindow::MainWindow(QThread *atermThread):
   m_simDock = new SimDock(this, m_ltsManager);
   m_settingsDock = new SettingsDock(this);
   m_settingsDialog = new SettingsDialog(this);
-  m_ltsCanvas = new LtsCanvas(this, m_ltsManager, m_markManager);
+  m_glwidget = new GLWidget(nullptr, this);
   m_graphics_info_dialog = new GraphicsInfoDialog(this);
-  setCentralWidget(m_ltsCanvas);
+  setCentralWidget(m_glwidget);
   m_progressDialog = new QProgressDialog("", QString(), 0, 6, this);
   m_progressDialog->setMinimumDuration(0);
 
@@ -54,7 +54,8 @@ MainWindow::MainWindow(QThread *atermThread):
   connect(m_ui.exportText, SIGNAL(triggered()), this, SLOT(exportText()));
   connect(m_ui.exit, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
 
-  connect(m_ui.resetViewpoint, SIGNAL(triggered()), m_ltsCanvas, SLOT(resetView()));
+  /// TODO: restore connection
+  // connect(m_ui.resetViewpoint, SIGNAL(triggered()), m_ltsCanvas, SLOT(resetView()));
   connect(m_ui.zoomIntoAbove, SIGNAL(triggered()), m_ltsManager, SLOT(zoomInAbove()));
   connect(m_ui.zoomIntoBelow, SIGNAL(triggered()), m_ltsManager, SLOT(zoomInBelow()));
   connect(m_ui.zoomOut, SIGNAL(triggered()), m_ltsManager, SLOT(zoomOut()));
@@ -88,9 +89,11 @@ MainWindow::MainWindow(QThread *atermThread):
   m_ui.zoomIntoBelow->setEnabled(false);
   m_ui.zoomOut->setEnabled(false);
 
-  connect(m_ltsCanvas, SIGNAL(renderingStarted()), this, SLOT(startRendering()));
-  connect(m_ltsCanvas, SIGNAL(renderingFinished()), this, SLOT(clearStatusBar()));
-  connect(m_ltsCanvas, SIGNAL(renderingFinished()), this, SLOT(updateGraphicsInfo()));
+
+  /// TODO: Restore connections
+  // connect(m_ltsCanvas, SIGNAL(renderingStarted()), this, SLOT(startRendering()));
+  // connect(m_ltsCanvas, SIGNAL(renderingFinished()), this, SLOT(clearStatusBar()));
+  // connect(m_ltsCanvas, SIGNAL(renderingFinished()), this, SLOT(updateGraphicsInfo()));
 
   QSettings settings("mCRL2", "LTSView");
   restoreGeometry(settings.value("geometry").toByteArray());
@@ -103,8 +106,8 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::updateGraphicsInfo(){ 
-  if (!m_ltsCanvas) return;
-  m_graphics_info_dialog->lbl_info->setText(m_ltsCanvas->graphics_info);
+  // if (!m_ltsCanvas) return;
+  // m_graphics_info_dialog->lbl_info->setText(m_ltsCanvas->graphics_info);
 }
 
 void MainWindow::closeEvent(QCloseEvent * /*event*/)
@@ -177,25 +180,30 @@ void MainWindow::exportBitmap()
   {
     return;
   }
-
-  SavePictureDialog dialog(this, m_ltsCanvas, filename);
-  connect(&dialog, SIGNAL(statusMessage(QString)), this, SLOT(setStatusBar(QString)));
-  dialog.exec();
+/// TODO: Restore connection
+  // SavePictureDialog dialog(this, m_ltsCanvas, filename);
+  // connect(&dialog, SIGNAL(statusMessage(QString)), this, SLOT(setStatusBar(QString)));
+  // dialog.exec();
   clearStatusBar();
 }
 
 void MainWindow::exportText()
 {
+  m_glwidget->update(m_ltsManager->lts()->getInitialState()->getCluster());
+  std::cout << "num states: " << m_ltsManager->lts()->getNumStates() << " num clusters: " << m_ltsManager->lts()->getNumClusters() << std::endl;
+  std::cout << "m_ltsManager->lts()->getInitialState()->getCluster() " << m_ltsManager->lts()->getInitialState()->getCluster() << std::endl;
   QString filename = m_fileDialog.getSaveFileName("Save text", "All files (*.*)");
   if (filename.isNull())
   {
     return;
   }
-  m_ltsCanvas->exportToText(filename);
+  /// TODO: Restore functionality
+  // m_ltsCanvas->exportToText(filename);
 }
 
 void MainWindow::setProgress(int phase, QString message)
 {
+  std::cout << "setProgress(" << phase << ", " << message.toStdString() << ")" << std::endl;
   if (!m_progressDialog->isVisible())
   {
     m_progressDialog->setWindowTitle("Structuring LTS");

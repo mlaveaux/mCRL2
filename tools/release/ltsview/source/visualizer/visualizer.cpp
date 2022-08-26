@@ -173,6 +173,8 @@ void Visualizer::drawStructure()
 
 void Visualizer::traverseTree()
 {
+  /// TODO: Fix
+  return;
   if (update_objects)
   {
     visObjectFactory.clear();
@@ -180,8 +182,6 @@ void Visualizer::traverseTree()
     
     
   }
-  /// TODO: Fix
-  return;
   glPushMatrix();
   glLoadIdentity();
   Cluster *root = ltsManager->lts()->getInitialState()->getCluster();

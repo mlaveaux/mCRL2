@@ -21,6 +21,8 @@
 #include "arcballcamera.h"
 #include "state.h" 
 
+#include "glutil.h"
+
 #include <chrono>
 
 LtsCanvas::LtsCanvas(QWidget* parent, LtsManager* ltsManager, MarkManager* markManager):
@@ -36,6 +38,18 @@ LtsCanvas::LtsCanvas(QWidget* parent, LtsManager* ltsManager, MarkManager* markM
   m_panCursor = QCursor(QPixmap(pan_cursor));
   m_zoomCursor = QCursor(QPixmap(zoom_cursor));
   m_rotateCursor = QCursor(QPixmap(rotate_cursor));
+
+  QSurfaceFormat format;
+  format.setDepthBufferSize(24);
+  format.setMajorVersion(4);
+  format.setMinorVersion(3);
+  format.setProfile(QSurfaceFormat::CoreProfile);
+  setFormat(format);
+  QSurfaceFormat::setDefaultFormat(format);
+
+  m_ogl = (QOpenGLFunctions_4_3_Core*)context()->versionFunctions();
+  msgAssert(m_ogl, "Could not find version functions in current context.");
+  
 
   connect(m_visualizer, SIGNAL(dirtied()), this, SLOT(update()));
   connect(m_ltsManager, SIGNAL(clusterPositionsChanged()), this, SLOT(clusterPositionsChanged()));
@@ -118,6 +132,7 @@ void LtsCanvas::setActiveTool(Tool tool)
 
 void LtsCanvas::initializeGL()
 {
+  return;
   GLfloat gray[] = { 0.35f, 0.35f, 0.35f, 1.0f };
   GLfloat light_pos[] = { 50.0f, 50.0f, 50.0f, 1.0f };
   glLightfv(GL_LIGHT0, GL_AMBIENT, gray);
@@ -155,6 +170,8 @@ void LtsCanvas::resizeGL(int width, int height)
 
 void LtsCanvas::paintGL()
 {
+  render(m_dragging);
+  return;
   // GLint64 start;
   // GLint64 end;
   // glGetInteger64v(GL_TIMESTAMP, &start);
@@ -182,20 +199,6 @@ void LtsCanvas::paintGL()
 
 void LtsCanvas::render(bool light)
 {
-  /// TODO: 
-  if (m_ltsManager->lts())
-  {
-
-    SceneGraph<GlLTSView::NodeData, GlLTSView::SceneData> sg;
-    ArcballCamera camera;
-    GlLTSView::Scene scene =
-        GlLTSView::Scene(*((QOpenGLWidget*)this), sg, camera,
-                         m_ltsManager->lts()->getInitialState()->getCluster());
-
-    scene.initialize();
-    QPainter painter = QPainter(this);
-    scene.render(painter);
-  }
   return;
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
@@ -442,6 +445,7 @@ void LtsCanvas::wheelEvent(QWheelEvent* event)
 
 LtsCanvas::Selection LtsCanvas::selectObject(QPoint position)
 {
+  return Selection();
   // In the worst case, all the objects in the frame are hit.
   // For each hit, the following needs to be recorded:
   // * The number of names on the stack

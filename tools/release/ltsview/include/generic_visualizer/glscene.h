@@ -29,10 +29,8 @@ public:
   /// \param glwidget The widget where this scene is drawn
   /// \param scenegraph The scenegraph that is to be drawn.
   /// \param cam Camera to be used
-  GLScene(QOpenGLWidget& glwidget, SceneGraph<NodeData, SceneData>& scenegraph, Camera& camera) :
-   m_glwidget(glwidget),
-   m_scenegraph(scenegraph),
-   m_camera(camera) {}
+  GLScene(QOpenGLWidget* glwidget) :
+   m_glwidget(glwidget) {}
 
   /// \brief Initializes all state and data required for rendering.
   virtual void initialize() = 0;
@@ -49,10 +47,10 @@ public:
   /// \brief Resize the OpenGL viewport.
   virtual void resize(std::size_t width, std::size_t height) = 0;
 
+  Camera* m_camera;
+  SceneGraph<NodeData, SceneData> m_scenegraph;
 protected:
-  Camera& m_camera;
-  SceneGraph<NodeData, SceneData>& m_scenegraph;
-  QOpenGLWidget& m_glwidget; /// The widget where this scene is drawn
+  QOpenGLWidget* m_glwidget; /// The widget where this scene is drawn
 
   float m_device_pixel_ratio;
   QFont m_font;
