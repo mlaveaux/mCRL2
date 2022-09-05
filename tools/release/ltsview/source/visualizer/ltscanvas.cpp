@@ -39,16 +39,7 @@ LtsCanvas::LtsCanvas(QWidget* parent, LtsManager* ltsManager, MarkManager* markM
   m_zoomCursor = QCursor(QPixmap(zoom_cursor));
   m_rotateCursor = QCursor(QPixmap(rotate_cursor));
 
-  QSurfaceFormat format;
-  format.setDepthBufferSize(24);
-  format.setMajorVersion(4);
-  format.setMinorVersion(3);
-  format.setProfile(QSurfaceFormat::CoreProfile);
-  setFormat(format);
-  QSurfaceFormat::setDefaultFormat(format);
-
   m_ogl = (QOpenGLFunctions_4_3_Core*)context()->versionFunctions();
-  msgAssert(m_ogl, "Could not find version functions in current context.");
   
 
   connect(m_visualizer, SIGNAL(dirtied()), this, SLOT(update()));

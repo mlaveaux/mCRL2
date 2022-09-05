@@ -1,19 +1,19 @@
-#version 430
+#version 430 core
 
 
-layout(std430, binding = 0) buffer b_vertices {
+layout(std140) buffer b_vertices {
 	vec4 vertices[];
 };
 
-layout(std430, binding = 1) buffer b_normals{
+layout(std140) buffer b_normals{
     vec4 normals[];
 };
 
-layout(std430, binding = 2) buffer b_colors {
-    vec3 colors[];
+layout(std140) buffer b_colors {
+    vec4 colors[];
 };
 
-layout(std430, binding = 3) buffer b_matrices {
+layout(std140) buffer b_matrices {
     mat4 matrices[];
 };
 
@@ -26,11 +26,12 @@ uniform float u_alpha;
 // };
 in ivec2 in_vertexData; 
 
-out vec4 out_color;
+out vec4 vs_color;
 
 void main(void)
 {
-    gl_Position =  u_proj * u_view * matrices[in_vertexData.x] * vertices[in_vertexData.y];
-    gl_Position = vec4(fract(10.124172472*in_vertexData.x)*2 - 1, fract(10.124172472*in_vertexData.y)*2 - 1, 0, 1);
-    out_color = vec4(1);
+    // gl_Position =  u_proj * u_view * matrices[in_vertexData.x] * vertices[in_vertexData.y];
+    int x = in_vertexData.x + in_vertexData.y;
+    vs_color = u_proj * u_view * vec4(x, x, x, u_alpha);
+    gl_Position = vec4(x);
 }

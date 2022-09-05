@@ -10,6 +10,7 @@
 #include <QImageWriter>
 #include <QSettings>
 #include <QTimer>
+#include <QSurfaceFormat>
 
 #include "mcrl2/lts/lts_io.h"
 #include "mainwindow.h"
@@ -28,7 +29,17 @@ MainWindow::MainWindow(QThread *atermThread):
   m_simDock = new SimDock(this, m_ltsManager);
   m_settingsDock = new SettingsDock(this);
   m_settingsDialog = new SettingsDialog(this);
+
+  
+  QSurfaceFormat format = QSurfaceFormat(QSurfaceFormat::DebugContext);
+  format.setMajorVersion(4);
+  format.setMinorVersion(3);
+  format.setProfile(QSurfaceFormat::CoreProfile);
+  QSurfaceFormat::setDefaultFormat(format);
+
   m_glwidget = new GLWidget(nullptr, this);
+  m_glwidget->setFormat(format);
+  
   m_graphics_info_dialog = new GraphicsInfoDialog(this);
   setCentralWidget(m_glwidget);
   m_progressDialog = new QProgressDialog("", QString(), 0, 6, this);
@@ -189,9 +200,7 @@ void MainWindow::exportBitmap()
 
 void MainWindow::exportText()
 {
-  m_glwidget->update(m_ltsManager->lts()->getInitialState()->getCluster());
-  std::cout << "num states: " << m_ltsManager->lts()->getNumStates() << " num clusters: " << m_ltsManager->lts()->getNumClusters() << std::endl;
-  std::cout << "m_ltsManager->lts()->getInitialState()->getCluster() " << m_ltsManager->lts()->getInitialState()->getCluster() << std::endl;
+  m_glwidget->setRoot(m_ltsManager->lts()->getInitialState()->getCluster());
   QString filename = m_fileDialog.getSaveFileName("Save text", "All files (*.*)");
   if (filename.isNull())
   {
@@ -203,7 +212,7 @@ void MainWindow::exportText()
 
 void MainWindow::setProgress(int phase, QString message)
 {
-  std::cout << "setProgress(" << phase << ", " << message.toStdString() << ")" << std::endl;
+  mCRL2log(mcrl2::log::verbose) << "LTSView MainWindow::setProgress(" << phase << ", " << message.toStdString() << ")" << std::endl;
   if (!m_progressDialog->isVisible())
   {
     m_progressDialog->setWindowTitle("Structuring LTS");

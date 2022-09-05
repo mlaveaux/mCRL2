@@ -11,25 +11,20 @@
 // std includes
 #include <fstream>
 #include <sstream>
-
 #include <chrono>
 
-#define VERTEX_BINDING 0
-#define NORMAL_BINDING 1
-#define COLOR_BINDING 2
-#define MATRIX_BINDING 3
 
 const char* SSBO_VERTICES_NAME = "b_vertices";
 const char* SSBO_NORMALS_NAME = "b_normals";
 const char* SSBO_COLORS_NAME = "b_colors";
 const char* SSBO_MATRICES_NAME = "b_matrices";
 
+#ifndef NDEBUG
 #define assertGL(msg) msgAssert(reportOpenGLError(), msg)
-#define execAssertGL(expr, msg)                                                \
-  _result = expr;                                                              \
-  msgAssert(_result, msg);
+#else
+#define assertGL(msg) noop
+#endif
 
-bool _result;
 inline int cone_encode_resolution(int res, bool a, bool b)
 {
   return res | (a ? (1 << 30) : 0) | (b ? (1 << 31) : 0);
@@ -80,7 +75,7 @@ int GlLTSView::SphereDB::getSphere(GlUtil::Shapes::Sphere* sphere,
 }
 
 GlLTSView::Scene::Scene(QOpenGLWidget* glwidget, Cluster* root)
-    : LTSScene(glwidget), m_clusterRoot(root)
+    : LTSScene(), m_clusterRoot(root)
 {
 }
 
@@ -116,14 +111,12 @@ GlLTSView::SGNode* GlLTSView::SceneGraphFunctor<sphereRes, coneRes>::operator()(
   return node;
 }
 
-void GlLTSView::Scene::initialize()
+void GlLTSView::Scene::initializeScene()
 {
   if (!built)
-    rebuild();
+    rebuildScene();
   if (!built)
     return;
-  execAssertGL(initializeOpenGLFunctions(),
-               "Failed to initialize OpenGL functions.");
 
   // create shaderprogram
   execAssertGL(program.addShaderFromSourceFile(
@@ -135,11 +128,39 @@ void GlLTSView::Scene::initialize()
                    "C:/Github/mCRL2/tools/release/ltsview/shaders/ltsview.fs"),
                "Fragment shader can't be added.");
 
+  // Tell OpenGL sternly that we will be using in_vertexData
+  glBindAttribLocation(program.programId(), 0, "in_vertexData");
+  
   execAssertGL(program.link(), "Program linking failed.");
   execAssertGL(program.bind(), "Program binding failed.");
+  std::cout << "Program id: " << program.programId() << std::endl;
+  GLint result;
+  glGetProgramiv(program.programId(), GL_LINK_STATUS, &result);
+  std::cout << "Link status: " << (( result == GL_TRUE ) ? "success" : "fail") << std::endl;
   glUseProgram(program.programId());
-  // generate the buffers
+
+
+  // We need to make an explicit vertex array object so modern OpenGL knows what is where
+  glGenVertexArrays(1, &m_vao);
+  glBindVertexArray(m_vao);
+  
+  // generate the buffers with the currently active vao
   genBuffers();
+
+  GLint count;
+  glGetProgramiv(program.programId(), GL_ACTIVE_ATTRIBUTES, &count);
+  GLint length, size;
+  GLenum type;
+  GLchar *name = (GLchar*) malloc(1024);
+  std::cout << "Found: " << count << " attributes to be active." << std::endl;
+  for (int i = 0; i < count; i++){
+    glGetActiveAttrib(program.programId(), (GLuint)i, 64, &length, &size, &type, name);
+    std::cout << "Attr " << i << ": " << name << " length: " << length << " size: " << size << " type: " << type << std::endl;
+  }
+
+
+  // unbind the vao
+  glBindVertexArray(0);
 
   assertGL("Gen buffers function");
 
@@ -147,6 +168,7 @@ void GlLTSView::Scene::initialize()
   m_view_loc = program.uniformLocation("u_view");
   m_proj_loc = program.uniformLocation("u_proj");
   m_alpha_loc = program.uniformLocation("u_alpha");
+  std::cout << "m_alpha_loc: " << m_alpha_loc << std::endl;
 }
 
 bool GlLTSView::Scene::reportOpenGLError()
@@ -167,27 +189,28 @@ bool GlLTSView::Scene::reportOpenGLError()
 }
 
 void GlLTSView::Scene::createBufferObject(void* data, int num_bytes,
-                                          GLuint& buff_id, int binding,
+                                          GLuint& buff_id,
                                           const char* name, int drawmode)
 {
-  // Create and bind buffer
+  // Create buffer
   glGenBuffers(1, &buff_id);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, buff_id);
   // Fill buffer
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, buff_id);
   glBufferData(GL_SHADER_STORAGE_BUFFER, num_bytes, data, drawmode);
-
-  // Bind buffer base
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, buff_id);
-
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
   // Tell shaders where to find this buffer
   GLuint loc = glGetProgramResourceIndex(program.programId(),
                                          GL_SHADER_STORAGE_BLOCK, name);
-  glShaderStorageBlockBinding(program.programId(), loc, buff_id);
+
+  // Bind buffer base
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, loc, buff_id);
+
+
   // Wait until writing is complete
-  glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+  glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT); /// TODO: test if necessary
 
   // Unbind
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+  //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
   /// TODO: Don't use << like this
   assertGL("Attempting to create buffer object: " << name);
@@ -195,6 +218,7 @@ void GlLTSView::Scene::createBufferObject(void* data, int num_bytes,
 
 void GlLTSView::Scene::genBuffers()
 {
+  std::cout << "Genbuffers called. " << std::endl;
   if (!built)
     return;
   assert(built); // we can't create buffers if there's no data
@@ -217,8 +241,12 @@ void GlLTSView::Scene::genBuffers()
   glGenBuffers(1, &m_vbo);
   glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
   glBufferData(GL_ARRAY_BUFFER, index * sizeof(GLuint), vertexdata, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glMemoryBarrier(GL_ALL_BARRIER_BITS);
+  std::cout << "vbo enable vertexattribarray naar "
+            << program.attributeLocation("in_vertexData") << " < QT | OpenGL > " << glGetAttribLocation(program.programId(), "in_vertexData") << std::endl;
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 2, GL_UNSIGNED_INT, GL_FALSE,
+                        0, 0);
+  // glBindBuffer(GL_ARRAY_BUFFER, 0);
   assertGL("VBO create");
 
   // Fill IBO
@@ -233,8 +261,7 @@ void GlLTSView::Scene::genBuffers()
   glGenBuffers(1, &m_ibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, index * sizeof(GLuint), indices, GL_STATIC_DRAW);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  glMemoryBarrier(GL_ELEMENT_ARRAY_BARRIER_BIT);
+  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   assertGL("IBO create");
 
   // Create vertex SSBO
@@ -250,7 +277,8 @@ void GlLTSView::Scene::genBuffers()
     vertices[index++] = 1;
   }
   createBufferObject(vertices, index * sizeof(GLfloat), m_vertex_ssbo,
-                     VERTEX_BINDING, SSBO_VERTICES_NAME, GL_STATIC_DRAW);
+                     SSBO_VERTICES_NAME, GL_STATIC_DRAW);
+  glCheckError();
 
   // Create normal SSBO
   // temporarily copy data to gl array
@@ -265,22 +293,25 @@ void GlLTSView::Scene::genBuffers()
     normals[index++] = 0; // important for transforming normals
   }
   createBufferObject(normals, index * sizeof(GLfloat), m_normal_ssbo,
-                     NORMAL_BINDING, SSBO_NORMALS_NAME, GL_STATIC_DRAW);
+                     SSBO_NORMALS_NAME, GL_STATIC_DRAW);
+  glCheckError();
 
   // Create color SSBO
   // temporarily copy data to gl array
   GLfloat* colors = (GLfloat*)std::malloc(m_scenegraph.sceneData.colors.size() *
-                                          3 * sizeof(GLfloat));
+                                          4 * sizeof(GLfloat));
   index = 0;
   for (auto& color : m_scenegraph.sceneData.colors)
   {
     colors[index++] = color.redF();
     colors[index++] = color.greenF();
     colors[index++] = color.blueF();
+    colors[index++] = 1;
   }
   // NB: GL_DYNAMIC_DRAW because colors can be updated at will
   createBufferObject(colors, index * sizeof(GLfloat), m_color_ssbo,
-                     COLOR_BINDING, SSBO_COLORS_NAME, GL_DYNAMIC_DRAW);
+                     SSBO_COLORS_NAME, GL_DYNAMIC_DRAW);
+  glCheckError();
 
   // Create matrix SSBO
   GLfloat* matrices = (GLfloat*)std::malloc(
@@ -294,7 +325,8 @@ void GlLTSView::Scene::genBuffers()
   // NB: Like with colors, can be updated at will so dynamic draw hint
   createBufferObject(
       matrices, m_scenegraph.sceneData.matrices.size() * 16 * sizeof(GLfloat),
-      m_matrix_ssbo, MATRIX_BINDING, SSBO_MATRICES_NAME, GL_DYNAMIC_DRAW);
+      m_matrix_ssbo, SSBO_MATRICES_NAME, GL_DYNAMIC_DRAW);
+  glCheckError();
 
   assertGL("Create all buffers.");
   buffers_exist = true;
@@ -308,7 +340,7 @@ void GlLTSView::Scene::genBuffers()
   delete colors;
 }
 
-void GlLTSView::Scene::rebuild()
+void GlLTSView::Scene::rebuildScene()
 {
   std::cout << "Scene::rebuild() called" << std::endl;
   if (!m_clusterRoot)
@@ -450,19 +482,17 @@ void GlLTSView::Scene::rebuild()
   built = true;
 }
 
-void GlLTSView::Scene::render(QPainter& painter)
+void GlLTSView::Scene::renderScene()
 {
   if (!built)
     return;
   if (!m_scenegraph.root)
     return; /// TODO: Assert
   if (!buffers_exist)
-    initialize();
+    initializeScene();
   // QPainter _painter = QPainter(&m_glwidget);
   std::cout << "Render called" << std::endl;
-  painter.beginNativePainting();
-  m_glwidget->makeCurrent();
-  glUseProgram(program.programId());
+  program.bind();
   
   /// TODO: Check what needs to be updated.
   QMatrix4x4 view_matrix;
@@ -470,30 +500,22 @@ void GlLTSView::Scene::render(QPainter& painter)
   view_matrix.translate(-10, 0, 0);
   QMatrix4x4 proj_matrix;
   proj_matrix.perspective(45, 16.0 / 9.0, 0.1, 1000);
-#ifndef NDEBUG
-  std::cout << "Projection matrix:\n\t";
-  for (int i = 0; i < 16; i++)
-  {
-    std::cout << *(proj_matrix.data() + i);
-    if (i % 4 == 3)
-      std::cout << std::endl << "\t";
-  }
-  std::cout << "View matrix:\n\t";
-  for (int i = 0; i < 16; i++)
-  {
-    std::cout << *(view_matrix.data() + i);
-    if (i % 4 == 3)
-      std::cout << std::endl << "\t";
-  }
-#endif
-  // glUniformMatrix4fv(m_view_loc, 1, false,
-  // (GLfloat*)m_camera.getViewMatrix().data());
   program.setUniformValue(m_view_loc, view_matrix);
+  glCheckError();
   assertGL("Set uniform; u_view");
-  // glUniformMatrix4fv(m_proj_loc, 1, false,
-  // (GLfloat*)m_camera.getProjectionMatrix().data());
   program.setUniformValue(m_proj_loc, proj_matrix);
+  glCheckError();
   assertGL("Set uniform; u_proj");
+
+  std::vector<const char*> names = {"b_vertices", "b_normals", "b_colors", "b_matrices", "u_view", "u_proj", "u_alpha", "in_vertexData"};
+  std::vector<GLenum>      types = {GL_SHADER_STORAGE_BLOCK, GL_SHADER_STORAGE_BLOCK, GL_SHADER_STORAGE_BLOCK, GL_SHADER_STORAGE_BLOCK, GL_UNIFORM, GL_UNIFORM, GL_UNIFORM, GL_PROGRAM_INPUT};
+  char* namebuff = new char[64];
+  for (int i = 0 ; i < names.size(); i++){
+    GLint resourceIndex = glGetProgramResourceIndex(program.programId(), types[i], names[i]);
+    GLint length;
+    glGetProgramResourceName(program.programId(), types[i], resourceIndex, 64, &length, namebuff);
+    std::cout << "---- " << names[i] << " resource index: " << resourceIndex << " with resource name: " << namebuff << std::endl;
+  }
 
   // set transparency
   program.setUniformValue(m_alpha_loc,
@@ -514,53 +536,27 @@ void GlLTSView::Scene::render(QPainter& painter)
 
   /// TODO: Multiple calls to get proper transparency.
   std::cout << "Before draw elements" << std::endl;
-  std::cout << "m_ibo.bufferid(): " << m_ibo << std::endl;
-  std::cout << "m_vbo.bufferid(): " << m_vbo << std::endl;
-  std::cout << "ssbo_vert.bufferid(): " << m_vertex_ssbo << std::endl;
-  std::cout << "ssbo_norm.bufferid(): " << m_normal_ssbo << std::endl;
-  std::cout << "ssbo_colo.bufferid(): " << m_color_ssbo << std::endl;
-  std::cout << "ssbo_matr.bufferid(): " << m_matrix_ssbo << std::endl;
-  
-  
-  glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 2, GL_UNSIGNED_INT, GL_FALSE,
-                        sizeof(unsigned int) * 2, 0);
-  
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-  assertGL("m_ibo.bind()");
 
-  glDrawElements(GL_TRIANGLES, m_triangles.size() * 3, GL_UNSIGNED_INT, 0);
-  std::cout << "After draw elements" << std::endl;
-  reportOpenGLError();
-
-  const int N = 100;
-  int* index_data = new int[2 * N];
-  glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, 2*N*sizeof(GLuint), index_data);
-  reportOpenGLError();
-  /* for (int i = 0; i < N; i++){
-       std::cout << i << ": (" << vertex_data[4*i+0] << ", "
-       << vertex_data[4*i+1] << ", "
-       << vertex_data[4*i+2] << ", "
-       << vertex_data[4*i+3] << ")" << std::endl;
-   }*/
-  for (int i = 0; i < N; i++)
-  {
-    std::cout << i << ": (" << index_data[2 * i + 0] << ", "
-              << index_data[2 * i + 1] << ")" << std::endl;
+  glBindVertexArray(m_vao); // bind vao
+  std::cout << "bind vao: " << m_vao << std::endl;
+  glCheckError();
+  GLint count;
+  glGetProgramiv(program.programId(), GL_ACTIVE_ATTRIBUTES, &count);
+  GLint length, size;
+  GLenum type;
+  GLchar *name = (GLchar*) malloc(64);
+  std::cout << "Found: " << count << " attributes to be active." << std::endl;
+  for (int i = 0; i < count; i++){
+    glGetActiveAttrib(program.programId(), (GLuint)i, 64, &length, &size, &type, name);
+    
+    std::cout << "Attr " << i << ": " << name << " length: " << length << " size: " << size << " type: " << (type == GL_INT_VEC2 ? "GL_INT_VEC2" : "?????") << std::endl;
   }
-
-  /*
-  assertGL("GlDrawElements for back faces");
-
-  glClear(GL_DEPTH_BUFFER_BIT);
-  glCullFace(GL_BACK);
-  assertGL("GlCullFace(GL_BACK)");
-
-  /// TODO: Multiple calls to get proper transparency.
-  glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
-  assertGL("GlDrawElements for front faces");
-  */
-  painter.endNativePainting();
+  glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)0);
+  //glDrawArrays(GL_TRIANGLES, 0, 3);
+  glCheckError();
+  glBindVertexArray(0); // unbind vao
+  glCheckError();
+  std::cout << "After draw elements" << std::endl;
+  glCheckError();
   std::cout << "Painter done" << std::endl;
 }

@@ -3,6 +3,7 @@
 
 // Assumed usage of Qt for colors
 #include <QColor>
+#include <cmath>
 
 namespace GlUtil
 {

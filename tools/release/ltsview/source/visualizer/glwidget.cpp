@@ -17,19 +17,16 @@
 #include "glscenegraph.h"
 
 GLWidget::GLWidget(Cluster* root, QWidget* parent)
-    : QOpenGLWidget(parent), m_scene(this, root)
+    : QOpenGLWidget(parent), Test::TScene(root)
 {
-  SceneGraph<GlLTSView::NodeData, GlLTSView::SceneData> sg;
-  m_scene.m_camera = new ArcballCamera();
-  m_scene.m_scenegraph = sg;
+  SceneGraph<Test::NodeData, Test::SceneData> sg = SceneGraph<Test::NodeData, Test::SceneData>();
+  m_camera = new ArcballCamera();
+  m_scenegraph = sg;
 }
 
-void GLWidget::update(Cluster* root)
-{
-  std::cout << "GLWidget::update(Cluster* root) called." << std::endl;
-  makeCurrent();
-  m_scene.m_clusterRoot = root;
-  m_scene.rebuild();
+void GLWidget::setRoot(Cluster* root){
+  m_clusterRoot = root;
+  rebuildScene();
 }
 
 GLWidget::~GLWidget(){};
@@ -39,59 +36,12 @@ GLWidget::~GLWidget(){};
  */
 void GLWidget::initializeGL()
 {
-  // Check whether context creation succeeded and print the OpenGL major.minor
-  // version.
-  if (isValid())
-  {
-
-    // Check the minimum run-time requirement; the pair ordering is
-    // lexicographical.
-    QPair<int, int> version = format().version();
-    QPair<int, int> required(4, 3);
-    if (version < required)
-    {
-      // Print a message to the console and show a message box.
-      std::stringstream message;
-
-      message << "The runtime version of OpenGL (" << version.first << "."
-              << version.second
-              << ") is below the least supported version of OpenGL ("
-              << required.first << "." << required.second << ").";
-      mCRL2log(mcrl2::log::error) << message.str().c_str() << "\n";
-
-      QMessageBox box(QMessageBox::Warning, "Unsupported OpenGL Version",
-                      message.str().c_str(), QMessageBox::Ok);
-      box.exec();
-
-      throw mcrl2::runtime_error("Unsupported OpenGL version.");
-    }
-    else
-    {
-      mCRL2log(mcrl2::log::verbose) << "Created an OpenGL " << version.first
-                                    << "." << version.second << " context.\n";
-    }
-  }
-  else
-  {
-    mcrl2::runtime_error("Context creation failed.");
-  }
-
-  // Enable real-time logging of OpenGL errors when the GL_KHR_debug extension
-  // is available.
-  m_ogl_logger = new QOpenGLDebugLogger(this);
-  if (m_ogl_logger->initialize())
-  {
-    connect(m_ogl_logger, &QOpenGLDebugLogger::messageLogged, this,
-            &GLWidget::logMessage);
-    m_ogl_logger->startLogging();
-  }
-  else
-  {
-    mCRL2log(mcrl2::log::debug)
-        << "QOpenGLDebugLogger initialisation failed.\n";
-  }
-  makeCurrent();
-  m_scene.initialize();
+  QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+  f->glClearColor(0, 0, 0, 1);
+  f->glEnable(GL_DEPTH_TEST);
+  f->glEnable(GL_CULL_FACE);
+  mCRL2log(mcrl2::log::debug) << "initializeGL called" << std::endl;
+  initializeScene();
 }
 
 void GLWidget::logMessage(const QOpenGLDebugMessage& debugMessage)
@@ -104,11 +54,34 @@ void GLWidget::logMessage(const QOpenGLDebugMessage& debugMessage)
 
 void GLWidget::paintGL()
 {
-  QPainter painter = QPainter(this);
-  m_scene.render(painter);
+  QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+  mCRL2log(mcrl2::log::debug) << "paintGL called." << std::endl;
+  // Cull polygons that are facing away (back) from the camera, where their front is defined as counter clockwise by default, see glFrontFace, meaning that the
+  // vertices that make up a triangle should be oriented counter clockwise to show the triangle.
+  f->glDisable(GL_CULL_FACE);
+
+  // Enable depth testing, so that we don't have to care too much about rendering in the right order.
+  f->glEnable(GL_DEPTH_TEST);
+
+  // Change the alpha blending function to make an alpha of 1 opaque and 0 fully transparent.
+  f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  f->glEnable(GL_BLEND);
+
+  // Enable multisample antialiasing.
+  f->glEnable(GL_MULTISAMPLE);
+
+  f->glClearColor(Settings::instance().backgroundColor.value().redF(),
+               Settings::instance().backgroundColor.value().greenF(),
+               Settings::instance().backgroundColor.value().blueF(),
+               1.0);
+  f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  renderScene();
 };
 
-void GLWidget::resizeGL(int width, int height){};
+void GLWidget::resizeGL(int width, int height){ 
+  QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+  f->glViewport(0, 0, width, height);
+};
 
 void GLWidget::mousePressEvent(QMouseEvent* e){};
 

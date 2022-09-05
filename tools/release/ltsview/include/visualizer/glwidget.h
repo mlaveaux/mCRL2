@@ -12,10 +12,11 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLDebugLogger>
-#include "scene.h"
+#include "testscene.h"
+
 
 /// \brief A Qt OpenGL widget which uses the GLScene interface to render the contents of a graph.
-class GLWidget : public QOpenGLWidget
+class GLWidget : public QOpenGLWidget, protected Test::TScene
 {
   Q_OBJECT
 public:
@@ -31,23 +32,24 @@ public:
    */
   ~GLWidget() override;
 
+protected:
   /**
    * @brief Initialises the OpenGL context.
    */
-  void initializeGL() override;
+  void initializeGL();
 
   /**
    * @brief Paints the OpenGL context.
    */
-  void paintGL() override;
+  void paintGL();
 
   /**
    * @brief Resize the OpenGL viewport.
    * @param width The new width for the viewport.
    * @param height The new height for the viewport.
    */
-  void resizeGL(int width, int height) override;
-
+  void resizeGL(int width, int height);
+public:
   /**
    * @brief Processes mouse click events.
    * @param e The mouse event.
@@ -72,12 +74,8 @@ public:
    */
   void wheelEvent(QWheelEvent* e) override;
 
-  /// TOOD: Concrete
-  void update(Cluster* root);
+  void setRoot(Cluster* root);
 private:
-  GlLTSView::Scene m_scene;              ///< The GLScene which is used to render the contents.
-  Cluster* m_root;                       ///< Root of cluster tree to be drawn on screen
-
   QOpenGLDebugLogger* m_ogl_logger;
 
   void logMessage(const QOpenGLDebugMessage& debugMessage);

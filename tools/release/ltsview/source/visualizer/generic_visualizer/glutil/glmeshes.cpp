@@ -1,5 +1,6 @@
 #include "glmeshes.h"
 #include <fstream>
+#include <cassert>
 char space = ' ';
 /// TODO: Move to GlUtil::Meshes::Exporters
 void GlUtil::Meshes::MeshTypes::TriangleMesh::toObj(std::string filename){

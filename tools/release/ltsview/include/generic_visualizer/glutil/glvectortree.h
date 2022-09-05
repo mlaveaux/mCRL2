@@ -2,6 +2,7 @@
 #define MCRL2_OPENGL_GLVECTORTREE_H
 
 #include <functional>
+#include <cassert>
 
 namespace GlUtil
 {

@@ -1,8 +1,9 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <QOpenGLSHaderProgram>
+#include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
+#include <QOpenGLFunctions_4_3_Core>
 
 #include "glscene.h"
 #include <vector>
@@ -79,26 +80,29 @@ namespace GlLTSView{
     };
 
 
-    class Scene : public LTSScene{
+    class Scene : public LTSScene, protected QOpenGLFunctions_4_3_Core{
     public:
         explicit Scene(QOpenGLWidget* glwidget, Cluster* root);
         Cluster *m_clusterRoot;
         VisTree::VisTreeNode *m_vistreeRoot;
         // LTSRenderer m_renderer;
 
-        void initialize() override;
+        void initializeScene() override;
 
-        void update() override {};
+        void updateScene() override {};
 
-        void render(QPainter& painter) override;
+        void renderScene() override;
 
-        void resize(std::size_t width, std::size_t height) override {};
+        void resizeScene(std::size_t width, std::size_t height) override {};
 
-        void rebuild() override;
+        void rebuildScene() override;
 
     private:
         bool built = false;
         bool buffers_exist = false;
+
+        GLuint m_vao;  // vertex array object
+
         GLuint m_vbo;  // vertex buffer object contains all vertices as VertexData
         GLuint m_ibo;  // index buffer object contains all triangles
 
@@ -118,7 +122,7 @@ namespace GlLTSView{
         void bindBufferBases();
         bool reportOpenGLError();
         /// \brief Creates a single SSBO with given parameters and binds to the program associated with the scene
-        void createBufferObject(void *data, int num_bytes, GLuint& buff_id, int binding, const char* name, int drawmode = GL_STATIC_DRAW );
+        void createBufferObject(void *data, int num_bytes, GLuint& buff_id, const char* name, int drawmode = GL_STATIC_DRAW );
 
         QOpenGLShaderProgram program;
 

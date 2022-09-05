@@ -33,6 +33,7 @@ mcrl2_add_gui_tool(ltsview
     ./source/visualizer/glwidget.cpp
     ./source/visualizer/ltscanvas.cpp
     ./source/visualizer/ltsview_visualizer/scene.cpp
+    ./source/visualizer/ltsview_visualizer/testscene.cpp
     ./source/visualizer/ltsview_visualizer/vistreegenerator.cpp
     ./source/visualizer/primitivefactory.cpp
     ./source/visualizer/primitives.cpp
