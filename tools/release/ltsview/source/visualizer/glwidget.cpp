@@ -17,9 +17,9 @@
 #include "glscenegraph.h"
 
 GLWidget::GLWidget(Cluster* root, QWidget* parent)
-    : QOpenGLWidget(parent), Test::TScene(root)
+    : QOpenGLWidget(parent), GlLTSView::Scene(this, root)
 {
-  SceneGraph<Test::NodeData, Test::SceneData> sg = SceneGraph<Test::NodeData, Test::SceneData>();
+  SceneGraph<GlLTSView::NodeData, GlLTSView::SceneData> sg = SceneGraph<GlLTSView::NodeData, GlLTSView::SceneData>();
   m_camera = new ArcballCamera();
   m_scenegraph = sg;
 }
@@ -38,8 +38,8 @@ void GLWidget::initializeGL()
 {
   QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
   f->glClearColor(0, 0, 0, 1);
-  f->glEnable(GL_DEPTH_TEST);
-  f->glEnable(GL_CULL_FACE);
+  // f->glEnable(GL_DEPTH_TEST);
+  // f->glEnable(GL_CULL_FACE);
   mCRL2log(mcrl2::log::debug) << "initializeGL called" << std::endl;
   initializeScene();
 }
@@ -61,11 +61,11 @@ void GLWidget::paintGL()
   f->glDisable(GL_CULL_FACE);
 
   // Enable depth testing, so that we don't have to care too much about rendering in the right order.
-  f->glEnable(GL_DEPTH_TEST);
+  // f->glEnable(GL_DEPTH_TEST);
 
   // Change the alpha blending function to make an alpha of 1 opaque and 0 fully transparent.
-  f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  f->glEnable(GL_BLEND);
+  // f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  // f->glEnable(GL_BLEND);
 
   // Enable multisample antialiasing.
   f->glEnable(GL_MULTISAMPLE);

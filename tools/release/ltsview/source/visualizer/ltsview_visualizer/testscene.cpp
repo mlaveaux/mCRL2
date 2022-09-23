@@ -53,8 +53,6 @@ void Test::TScene::initializeScene(){
 
     m_prog->addShaderFromSourceCode(QOpenGLShader::Vertex, VS);
     m_prog->addShaderFromSourceCode(QOpenGLShader::Fragment, FS);
-    m_prog->bindAttributeLocation("vertex", 0);
-    m_prog->bindAttributeLocation("fragment", 1);
     m_prog->link();
 
     m_prog->bind();
@@ -62,7 +60,7 @@ void Test::TScene::initializeScene(){
     
     mCRL2log(mcrl2::log::debug) << "Program linked and bound." << std::endl;
 
-    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+    QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
 
     m_vao.create();
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
@@ -72,7 +70,7 @@ void Test::TScene::initializeScene(){
     m_vbo.bind();
         m_vbo.allocate(new int[9]{-10, -10, 0, 10, -10, 0, 0, 10, 0}, 9*sizeof(int));
         f->glEnableVertexAttribArray(0);
-        f->glVertexAttribPointer(0, 3, GL_INT, GL_FALSE, 0, 0);
+        f->glVertexAttribIPointer(0, 3, GL_INT, 0, 0);
     m_vbo.release();
 
     //IBO

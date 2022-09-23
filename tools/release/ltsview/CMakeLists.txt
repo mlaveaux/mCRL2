@@ -5,6 +5,11 @@ mcrl2_add_gui_tool(ltsview
   SOURCES
     ./source/cluster.cpp
     ./source/fsm_state_positioner.cpp
+    ./source/generic_visualizer/cameras/arcballcamera.cpp
+    ./source/generic_visualizer/glutil/glcolor.cpp
+    ./source/generic_visualizer/glutil/glluts.cpp
+    ./source/generic_visualizer/glutil/glmeshes.cpp
+    ./source/generic_visualizer/glutil/glprimitivefactories.cpp
     ./source/lts.cpp
     ./source/ltsmanager.cpp
     ./source/main.cpp
@@ -25,11 +30,6 @@ mcrl2_add_gui_tool(ltsview
     ./source/ui/simdock.cpp
     ./source/vectors.cpp
     ./source/visualizer/conedb.cpp
-    ./source/visualizer/generic_visualizer/cameras/arcballcamera.cpp
-    ./source/visualizer/generic_visualizer/glutil/glcolor.cpp
-    ./source/visualizer/generic_visualizer/glutil/glluts.cpp
-    ./source/visualizer/generic_visualizer/glutil/glmeshes.cpp
-    ./source/visualizer/generic_visualizer/glutil/glprimitivefactories.cpp
     ./source/visualizer/glwidget.cpp
     ./source/visualizer/ltscanvas.cpp
     ./source/visualizer/ltsview_visualizer/scene.cpp

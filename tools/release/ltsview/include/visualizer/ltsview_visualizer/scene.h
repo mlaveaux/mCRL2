@@ -4,6 +4,8 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions_4_3_Core>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLExtraFunctions>
 
 #include "glscene.h"
 #include <vector>
@@ -101,16 +103,16 @@ namespace GlLTSView{
         bool built = false;
         bool buffers_exist = false;
 
-        GLuint m_vao;  // vertex array object
+        QOpenGLVertexArrayObject m_vao;  // vertex array object
 
-        GLuint m_vbo;  // vertex buffer object contains all vertices as VertexData
-        GLuint m_ibo;  // index buffer object contains all triangles
+        QOpenGLBuffer m_vbo;  // vertex buffer object contains all vertices as VertexData
+        QOpenGLBuffer m_ibo;  // index buffer object contains all triangles
 
-        GLuint m_vertex_ssbo; // shader storage buffer object contains all the mesh vertices
-        GLuint m_normal_ssbo; // shader storage buffer object contains all the mesh vertex normals
+        QOpenGLBuffer m_vertex_ssbo; // shader storage buffer object contains all the mesh vertices
+        QOpenGLBuffer m_normal_ssbo; // shader storage buffer object contains all the mesh vertex normals
 
-        GLuint m_color_ssbo;  // shader storage buffer object contains all the model colors
-        GLuint m_matrix_ssbo; // shader storage buffer object contains all the model matrices
+        QOpenGLBuffer m_color_ssbo;  // shader storage buffer object contains all the model colors
+        QOpenGLBuffer m_matrix_ssbo; // shader storage buffer object contains all the model matrices
 
         GLuint m_view_loc;
         GLuint m_proj_loc;
@@ -122,7 +124,7 @@ namespace GlLTSView{
         void bindBufferBases();
         bool reportOpenGLError();
         /// \brief Creates a single SSBO with given parameters and binds to the program associated with the scene
-        void createBufferObject(void *data, int num_bytes, GLuint& buff_id, const char* name, int drawmode = GL_STATIC_DRAW );
+        void createBufferObject(void *data, int num_bytes, QOpenGLBuffer& buff, const char* name, QOpenGLBuffer::UsagePattern drawmode = QOpenGLBuffer::UsagePattern::StaticDraw );
 
         QOpenGLShaderProgram program;
 

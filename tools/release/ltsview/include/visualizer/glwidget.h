@@ -12,11 +12,11 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLDebugLogger>
-#include "testscene.h"
+#include "scene.h"
 
 
 /// \brief A Qt OpenGL widget which uses the GLScene interface to render the contents of a graph.
-class GLWidget : public QOpenGLWidget, protected Test::TScene
+class GLWidget : public QOpenGLWidget, protected GlLTSView::Scene
 {
   Q_OBJECT
 public:
