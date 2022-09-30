@@ -62,7 +62,8 @@ private:
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vbo;
     QOpenGLBuffer m_ibo;
-    QOpenGLBuffer m_ssbo;
+    QOpenGLBuffer m_ssbo1;
+    QOpenGLBuffer m_ssbo2;
 
     GLuint u_n_colors;
     GLuint u_offset_colors;

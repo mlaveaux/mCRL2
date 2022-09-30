@@ -129,30 +129,36 @@ void GlLTSView::Scene::initializeScene()
                std::cout << "Fragment shader can't be added." << std::endl;
 
   
-  if (!program.link()) std::cout << "Program linking failed." << std::endl;
-  if (!program.bind()) std::cout <<  "Program binding failed." << std::endl;;
-  
+  if(!program.link()){
+        mCRL2log(mcrl2::log::error) << "Fatal error in linking program. Displaying log and exiting..." << std::endl;
+        mCRL2log(mcrl2::log::error) << program.log().toStdString() << std::endl;
+        exit(-1);
+    }
+  if (!program.bind()){
+        mCRL2log(mcrl2::log::error) << "Fatal error in binding program. Displaying log and exiting..." << std::endl;
+        mCRL2log(mcrl2::log::error) << program.log().toStdString() << std::endl;
+        exit(-1);
+    }
   QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
 
-  m_vao.create();
-  QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
+  mCRL2log(mcrl2::log::debug) << "Location of in_vertexData: " << f->glGetAttribLocation(program.programId(), "in_vertexData") << std::endl;
+
   
   // generate the buffers with the currently active vao
   genBuffers();
+  assertGL("Gen buffers function");
 
   GLint count;
   f->glGetProgramiv(program.programId(), GL_ACTIVE_ATTRIBUTES, &count);
   GLint length, size;
   GLenum type;
   GLchar *name = (GLchar*) malloc(1024);
-  std::cout << "Found: " << count << " attributes to be active." << std::endl;
+  mCRL2log(mcrl2::log::debug) << "Found: " << count << " attributes to be active." << std::endl;
   for (int i = 0; i < count; i++){
     f->glGetActiveAttrib(program.programId(), (GLuint)i, 64, &length, &size, &type, name);
-    std::cout << "Attr " << i << ": " << name << " length: " << length << " size: " << size << " type: " << type << std::endl;
+    mCRL2log(mcrl2::log::debug) << "Attr " << i << ": " << name << " length: " << length << " size: " << size << " type: " << type << std::endl;
   }
 
-
-  assertGL("Gen buffers function");
 
   // set all pointers to the right places
   m_view_loc = program.uniformLocation("u_view");
@@ -194,16 +200,19 @@ void GlLTSView::Scene::createBufferObject(void* data, int num_bytes,
   buff.allocate(data, num_bytes);
 
   QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
+    QOpenGLFunctions_4_3_Core *f430 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_4_3_Core>();
 
-  GLuint loc = f->glGetProgramResourceIndex(program.programId(), GL_SHADER_STORAGE_BLOCK, name);
+  GLuint block_index = f->glGetProgramResourceIndex(program.programId(), GL_SHADER_STORAGE_BLOCK, name);
 
-  // Bind buffer base
-  f->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, buff.bufferId());
+  f430->glShaderStorageBlockBinding(program.programId(), block_index, m_ssbo_count);
+  f->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_ssbo_count++, buff.bufferId());
 
 
   // Wait until writing is complete
   f->glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT); /// TODO: test if necessary
-
+  
+  // No longer need the buffer to be bound since data is on GPU and appropriate bindings are made
+  buff.release();
 
   /// TODO: Don't use << like this
   assertGL("Attempting to create buffer object: " << name);
@@ -212,16 +221,26 @@ void GlLTSView::Scene::createBufferObject(void* data, int num_bytes,
 void GlLTSView::Scene::genBuffers()
 {
   QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
-  std::cout << "Genbuffers called. " << std::endl;
   if (!built)
     return;
   assert(built); // we can't create buffers if there's no data
   if (buffers_exist)
   {
     buffers_exist = false;
+    m_vbo.destroy();
+    m_color_ssbo.destroy();
+    m_matrix_ssbo.destroy();
+    m_normal_ssbo.destroy();
+    m_vertex_ssbo.destroy();
+    m_ibo.destroy();
+    m_vao.destroy();
+    m_ssbo_count = 0;
   }
   int index = 0; // used for writing to correct places in arrays
   assert(!buffers_exist);
+  
+  m_vao.create();
+  QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
 
   // Create buffers
   // Fill VBO
@@ -232,13 +251,13 @@ void GlLTSView::Scene::genBuffers()
     vertexdata[index++] = data.model_index;
     vertexdata[index++] = data.vertex_index;
   }
-  m_vbo.create(); m_vbo.bind();
   m_vbo.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
-  m_vbo.allocate(vertexdata, index*sizeof(GLuint));
-  std::cout << "vbo enable vertexattribarray naar "
-            << program.attributeLocation("in_vertexData") << " < QT | OpenGL > " << f->glGetAttribLocation(program.programId(), "in_vertexData") << std::endl;
-  f->glEnableVertexAttribArray(0);
-  f->glVertexAttribIPointer(0, 2, GL_UNSIGNED_INT, 0, 0);
+  m_vbo.create(); 
+  m_vbo.bind();
+    m_vbo.allocate(vertexdata, index*sizeof(GLuint));
+    f->glEnableVertexAttribArray(0);
+    f->glVertexAttribIPointer(0, 2, GL_UNSIGNED_INT, 0, 0);
+  m_vbo.release();
   assertGL("VBO create");
 
   // Fill IBO
@@ -252,7 +271,10 @@ void GlLTSView::Scene::genBuffers()
   }
   m_ibo = QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
   m_ibo.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
-  m_ibo.allocate(indices, index*sizeof(GLuint));
+  m_ibo.create();
+  m_ibo.bind();
+    m_ibo.allocate(indices, index*sizeof(GLuint));
+  m_ibo.release();
   assertGL("IBO create");
 
   // Create vertex SSBO
@@ -329,6 +351,8 @@ void GlLTSView::Scene::genBuffers()
   delete matrices;
   delete normals;
   delete colors;
+
+  vaoBinder.release();
 }
 
 void GlLTSView::Scene::rebuildScene()
@@ -387,8 +411,8 @@ void GlLTSView::Scene::rebuildScene()
   m_triangles.reserve(n_tris);
   auto back_inserter_triangles = std::back_inserter(m_triangles);
 
-  std::cout << "Nodes: " << m_scenegraph.sceneData.nodes.size() << std::endl;
-  std::cout << "Meshes: " << m_scenegraph.sceneData.meshes.size() << std::endl;
+  mCRL2log(mcrl2::log::debug) << "Nodes: " << m_scenegraph.sceneData.nodes.size() << std::endl;
+  mCRL2log(mcrl2::log::debug) << "Meshes: " << m_scenegraph.sceneData.meshes.size() << std::endl;
 
   int compr_verts = 0, compr_tris = 0;
   for (auto& mesh : m_scenegraph.sceneData.meshes)
@@ -396,9 +420,9 @@ void GlLTSView::Scene::rebuildScene()
     compr_verts += mesh.n_vertices;
     compr_tris += mesh.n_triangles;
   }
-  std::cout << "Stored verts: " << compr_verts
+  mCRL2log(mcrl2::log::debug) << "Stored verts: " << compr_verts
             << ". Stored tris: " << compr_tris << std::endl;
-  std::cout << "Total verts: " << n_verts << ". Total tris: " << n_tris
+  mCRL2log(mcrl2::log::debug) << "Total verts: " << n_verts << ". Total tris: " << n_tris
             << std::endl;
 
   int vert_offset = 0;
@@ -431,30 +455,30 @@ void GlLTSView::Scene::rebuildScene()
   }
   auto end = std::chrono::high_resolution_clock::now();
 
-  std::cout << "Took "
+  mCRL2log(mcrl2::log::debug) << "Took "
             << std::chrono::duration_cast<std::chrono::milliseconds>(end -
                                                                      start)
                    .count()
             << "ms to complete." << std::endl;
   long uncompr_bytes = n_verts * 96;
-  std::cout << "Used resolutions: " << std::endl;
-  std::cout << "\t- Sphere: " << sphereRes << std::endl;
-  std::cout << "\t- Cone: " << coneRes << " (adaptive)" << std::endl;
-  std::cout << uncompr_bytes
+  mCRL2log(mcrl2::log::debug) << "Used resolutions: " << std::endl;
+  mCRL2log(mcrl2::log::debug) << "\t- Sphere: " << sphereRes << std::endl;
+  mCRL2log(mcrl2::log::debug) << "\t- Cone: " << coneRes << " (adaptive)" << std::endl;
+  mCRL2log(mcrl2::log::debug) << uncompr_bytes
             << " bytes in total for vertices only with no compression with "
                "pos/color/transform: "
             << std::endl;
-  std::cout << "\t- " << uncompr_bytes / 1024.0 << "KB" << std::endl;
-  std::cout << "\t- " << uncompr_bytes / (1024.0 * 1024.0) << "MB" << std::endl;
-  std::cout << "\t- " << uncompr_bytes / (1024.0 * 1024.0 * 1024) << "GB"
+  mCRL2log(mcrl2::log::debug) << "\t- " << uncompr_bytes / 1024.0 << "KB" << std::endl;
+  mCRL2log(mcrl2::log::debug) << "\t- " << uncompr_bytes / (1024.0 * 1024.0) << "MB" << std::endl;
+  mCRL2log(mcrl2::log::debug) << "\t- " << uncompr_bytes / (1024.0 * 1024.0 * 1024) << "GB"
             << std::endl;
   long compr_bytes =
       compr_verts * 16 + m_scenegraph.sceneData.meshes.size() * (64 + 16);
-  std::cout << compr_bytes
+  mCRL2log(mcrl2::log::debug) << compr_bytes
             << " bytes in total with compressed storage: " << std::endl;
-  std::cout << "\t- " << compr_bytes / 1024.0 << "KB" << std::endl;
-  std::cout << "\t- " << compr_bytes / (1024.0 * 1024.0) << "MB" << std::endl;
-  std::cout << "\t- " << compr_bytes / (1024.0 * 1024.0 * 1024) << "GB"
+  mCRL2log(mcrl2::log::debug) << "\t- " << compr_bytes / 1024.0 << "KB" << std::endl;
+  mCRL2log(mcrl2::log::debug) << "\t- " << compr_bytes / (1024.0 * 1024.0) << "MB" << std::endl;
+  mCRL2log(mcrl2::log::debug) << "\t- " << compr_bytes / (1024.0 * 1024.0 * 1024) << "GB"
             << std::endl;
 
   auto sphereMesh = GlUtil::DefaultFactories::
@@ -482,6 +506,7 @@ void GlLTSView::Scene::renderScene()
     return; /// TODO: Assert
   if (!buffers_exist)
     initializeScene();
+    
   // QPainter _painter = QPainter(&m_glwidget);
   std::cout << "Render called" << std::endl;
   program.bind();
@@ -493,10 +518,10 @@ void GlLTSView::Scene::renderScene()
   QMatrix4x4 proj_matrix;
   proj_matrix.perspective(45, 16.0 / 9.0, 0.1, 1000);
   program.setUniformValue(m_view_loc, view_matrix);
-  glCheckError();
+  //glCheckError();
   assertGL("Set uniform; u_view");
   program.setUniformValue(m_proj_loc, proj_matrix);
-  glCheckError();
+  //glCheckError();
   assertGL("Set uniform; u_proj");
 
   std::vector<const char*> names = {"b_vertices", "b_normals", "b_colors", "b_matrices", "u_view", "u_proj", "u_alpha", "in_vertexData"};
@@ -513,43 +538,31 @@ void GlLTSView::Scene::renderScene()
   program.setUniformValue(m_alpha_loc,
                           Settings::instance().transparency.value() / 100.0f);
 
-  f->glClearColor(Settings::instance().backgroundColor.value().red() / 255.0,
-               Settings::instance().backgroundColor.value().green() / 255.0,
-               Settings::instance().backgroundColor.value().blue() / 255.0,
-               1.0f);
-  // Clear existing buffers
-  f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  f->glEnable(GL_DEPTH_TEST);
-  f->glDepthFunc(GL_LESS); // closer to camera wins
-
-  f->glCullFace(GL_BACK);
   assertGL("GlCullFace(GL_FRONT)");
 
   /// TODO: Multiple calls to get proper transparency.
   std::cout << "Before draw elements" << std::endl;
 
-  QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao); // bind vao
-  std::cout << "bind vao: " << m_vao.isCreated() << std::endl;
-  glCheckError();
+  m_vao.bind();
+  GLenum error = f->glGetError();
   GLint count;
   f->glGetProgramiv(program.programId(), GL_ACTIVE_ATTRIBUTES, &count);
   GLint length, size;
   GLenum type;
   GLchar *name = (GLchar*) malloc(64);
-  std::cout << "Found: " << count << " attributes to be active." << std::endl;
+  mCRL2log(mcrl2::log::debug) << "Found: " << count << " attributes to be active." << std::endl;
   for (int i = 0; i < count; i++){
     f->glGetActiveAttrib(program.programId(), (GLuint)i, 64, &length, &size, &type, name);
     
-    std::cout << "Attr " << i << ": " << name << " length: " << length << " size: " << size << " type: " << (type == GL_INT_VEC2 ? "GL_INT_VEC2" : "?????") << std::endl;
+    mCRL2log(mcrl2::log::debug) << "Attr " << i << ": " << name << " length: " << length << " size: " << size << " type: " << (type == GL_INT_VEC2 ? "GL_INT_VEC2" : "?????") << std::endl;
   }
-  std::cout << "m_vbo: " << m_vbo.bufferId() << std::endl;
-  std::cout << "m_ibo: " << m_ibo.bufferId() << std::endl;
-  f->glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)0);
-
-  glCheckError();
-  std::cout << "After draw elements" << std::endl;
-  glCheckError();
-  std::cout << "Painter done" << std::endl;
-  exit(0);
+  mCRL2log(mcrl2::log::debug) << "m_vbo: " << m_vbo.bufferId() << std::endl;
+  mCRL2log(mcrl2::log::debug) << "m_ibo: " << m_ibo.bufferId() << std::endl;
+  m_ibo.bind();
+  f->glDrawElements(GL_TRIANGLES, 3*m_triangles.size(), GL_UNSIGNED_INT, (void*)0);
+  m_ibo.release();
+  m_vao.release();
+  program.release();
+  mCRL2log(mcrl2::log::debug) << "After draw elements" << std::endl;
+  mCRL2log(mcrl2::log::debug) << "Painter done" << std::endl;
 }

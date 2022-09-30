@@ -16,6 +16,14 @@
 #include "arcballcamera.h"
 #include "glscenegraph.h"
 
+// GLWidget::GLWidget(Cluster* root, QWidget* parent)
+//     : QOpenGLWidget(parent), Test::TScene(root)
+// {
+//   SceneGraph<Test::NodeData, Test::SceneData> sg = SceneGraph<Test::NodeData, Test::SceneData>();
+//   m_camera = new ArcballCamera();
+//   m_scenegraph = sg;
+// }
+
 GLWidget::GLWidget(Cluster* root, QWidget* parent)
     : QOpenGLWidget(parent), GlLTSView::Scene(this, root)
 {
@@ -54,6 +62,8 @@ void GLWidget::logMessage(const QOpenGLDebugMessage& debugMessage)
 
 void GLWidget::paintGL()
 {
+  QPainter* painter = new QPainter(this);
+  painter->beginNativePainting();
   QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
   mCRL2log(mcrl2::log::debug) << "paintGL called." << std::endl;
   // Cull polygons that are facing away (back) from the camera, where their front is defined as counter clockwise by default, see glFrontFace, meaning that the
@@ -70,12 +80,14 @@ void GLWidget::paintGL()
   // Enable multisample antialiasing.
   f->glEnable(GL_MULTISAMPLE);
 
+  f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   f->glClearColor(Settings::instance().backgroundColor.value().redF(),
                Settings::instance().backgroundColor.value().greenF(),
                Settings::instance().backgroundColor.value().blueF(),
                1.0);
-  f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  f->glClearColor(0, 0, 0, 1);
   renderScene();
+  painter->endNativePainting();
 };
 
 void GLWidget::resizeGL(int width, int height){ 

@@ -18,6 +18,8 @@
 #include "glvectortree.h"
 #include "mcrl2/utilities/logger.h"
 
+#include <QOpenGLFunctions>
+
 
 #ifndef NDEBUG
 #include "windows.h"
@@ -25,7 +27,7 @@
 inline GLenum glCheckError_(const char *file, int line)
 {
     GLenum errorCode;
-    while ((errorCode = glGetError()) != GL_NO_ERROR)
+    while ((errorCode = QOpenGLContext::currentContext()->functions()->glGetError()) != GL_NO_ERROR)
     {
         std::string error;
         switch (errorCode)

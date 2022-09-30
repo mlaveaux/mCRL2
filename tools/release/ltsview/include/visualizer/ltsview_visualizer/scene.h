@@ -102,6 +102,7 @@ namespace GlLTSView{
     private:
         bool built = false;
         bool buffers_exist = false;
+        int m_ssbo_count = 0;
 
         QOpenGLVertexArrayObject m_vao;  // vertex array object
 

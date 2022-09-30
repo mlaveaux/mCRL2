@@ -1,19 +1,19 @@
-#version 430 core
+#version 430 compatibility
 
 
-layout(std140) buffer b_vertices {
+layout(std430) buffer b_vertices {
 	vec4 vertices[];
 };
 
-layout(std140) buffer b_normals{
+layout(std430) buffer b_normals{
     vec4 normals[];
 };
 
-layout(std140) buffer b_colors {
+layout(std430) buffer b_colors {
     vec4 colors[];
 };
 
-layout(std140) buffer b_matrices {
+layout(std430) buffer b_matrices {
     mat4 matrices[];
 };
 
