@@ -17,7 +17,7 @@
 
 #undef DEBUG_PRINT_VP
 #undef DEBUG_PRINT_MATRICES
-#define DEBUG_PRINT_VERTICES
+#undef DEBUG_PRINT_VERTICES
 
 inline int cone_encode_resolution(int res, bool a, bool b)
 {
@@ -463,7 +463,8 @@ void Test::TScene::renderScene()
   f->glDepthMask(GL_TRUE);
   f->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   f->glDisable(GL_DEPTH_TEST);
-  //   f->glEnable(GL_CULL_FACE);
+  f->glEnable(GL_CULL_FACE);
+  f->glCullFace(GL_FRONT_FACE);
 
   m_prog.bind();
 
