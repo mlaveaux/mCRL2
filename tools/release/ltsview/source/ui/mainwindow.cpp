@@ -37,7 +37,7 @@ MainWindow::MainWindow(QThread *atermThread):
   format.setProfile(QSurfaceFormat::CoreProfile);
   QSurfaceFormat::setDefaultFormat(format);
 
-  m_glwidget = new GLWidget(nullptr, this);
+  m_glwidget = new GLWidget(nullptr, m_ltsManager, this);
   m_glwidget->setFormat(format);
   
   m_graphics_info_dialog = new GraphicsInfoDialog(this);

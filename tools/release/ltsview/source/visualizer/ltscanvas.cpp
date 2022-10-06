@@ -161,7 +161,7 @@ void LtsCanvas::resizeGL(int width, int height)
 
 void LtsCanvas::paintGL()
 {
-  render(m_dragging);
+  //render(m_dragging);
   return;
   // GLint64 start;
   // GLint64 end;

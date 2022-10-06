@@ -50,6 +50,7 @@ VisTree::VisTreeNode* ConeConvertFunctor::operator()(VisTree::VisTreeNode* paren
     }else{
         color = GlUtil::Color::lerp<GlUtil::Color::InterpolateMode::SHORT, GlUtil::Color::ColorMode::HSV>(c_top, c_bot, cluster->getRank() / max_rank);
     }
+    color.setAlphaF(Settings::instance().transparency.value()*0.01f);
     node->data.color = color;
 
     if (!cluster->hasDescendants()){

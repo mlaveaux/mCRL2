@@ -64,7 +64,7 @@ public:
 private:
   Settings():
     stateSize(0.1f),
-    clusterHeight(0.0f),
+    clusterHeight(0.5f),
     branchRotation(0),
     branchTilt(30),
     quality(32),
