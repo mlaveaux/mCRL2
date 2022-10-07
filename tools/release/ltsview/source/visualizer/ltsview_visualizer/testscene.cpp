@@ -14,6 +14,7 @@
 
 #include <QOpenGLFunctions>
 #include <QOpenGLExtraFunctions>
+#include <QOpenGLFunctions_4_3_Core>
 
 #undef DEBUG_PRINT_VP
 #undef DEBUG_PRINT_MATRICES
@@ -70,15 +71,15 @@ int Test::SphereDB::getSphere(GlUtil::Shapes::Sphere* sphere, int resolution,
 
 void Test::SceneData::clear()
 {
-  nodes.clear();
+  nodes.resize(0);
 
-  meshes.clear();
+  meshes.resize(0);
 
-  aabbs.clear();
+  aabbs.resize(0);
 
-  colors.clear();
+  colors.resize(0);
 
-  matrices.clear();
+  matrices.resize(0);
 }
 
 /// TODO: Fix hardcoded resolutions
@@ -101,7 +102,7 @@ Test::SGNode* Test::SceneGraphFunctor<sphereRes, coneRes>::operator()(
   case GlUtil::ShapeType::TRUNCATED_CONE:
     node->data.model_id = coneDB.getCone(
         static_cast<GlUtil::Shapes::TruncatedCone*>(vistreenode->data.shape),
-        std::max(coneRes, vistreenode->num_children), sceneData);
+        std::max((1+(coneRes/vistreenode->num_children))*vistreenode->num_children, 6*vistreenode->num_children)+1, sceneData);
     break;
   default:
     /// TODO: Log unknown shape
@@ -219,8 +220,6 @@ void Test::TScene::reallocateStorage()
 
 void Test::TScene::rebuildScene()
 {
-  if (!this)
-    return;
   if (m_vao.isCreated() && m_vao.objectId() != -1)
     m_vao.destroy();
   if (m_vbo.isCreated() && m_vbo.bufferId() != -1)
@@ -242,14 +241,15 @@ void Test::TScene::rebuildScene()
     return;
   assert(m_clusterRoot);
 
-  if (m_scenegraph.root)
-    delete m_scenegraph.root;
-
-  /// TODO: Possible memory leak here
-  // if (m_vistreeRoot)
-  //   delete m_vistreeRoot;
-
   m_scenegraph.sceneData.clear();
+
+
+  //if (m_scenegraph.root)
+    //delete m_scenegraph.root;
+
+  /// TODO: Verify delete[] vs delete with someone who has more knowledge - Ruben
+  //if (m_vistreeRoot)
+    //delete m_vistreeRoot;
 
   /// TODO: Change settings.h to have enum of modes instead of bool
   m_vistreeRoot = VisTreeGenerator::generate(
@@ -260,7 +260,7 @@ void Test::TScene::rebuildScene()
 
   /// TODO: Expose and/or make user configurable
   const int sphereRes = 3;
-  const int coneRes = 20;
+  const int coneRes = 1000;
   SceneGraphFunctor<sphereRes, coneRes> sgf(m_scenegraph.sceneData);
 
   m_scenegraph.root =
@@ -286,13 +286,13 @@ void Test::TScene::rebuildScene()
     return;
   }
 
+  reallocateStorage();
+
   std::vector<int> vertex_offsets({0});
   for (const auto& mesh : m_scenegraph.sceneData.meshes)
   {
     vertex_offsets.push_back(vertex_offsets.back() + mesh.n_vertices);
   }
-
-  reallocateStorage();
 
   int vertexdata_index = 0;
   int tri_index = 0;
@@ -411,7 +411,6 @@ void Test::TScene::initializeScene()
   m_ibo.release();
 
   // SSBO
-  float alpha = 0;
   createBufferObject(m_ssbo1, "b_verts", m_vertices_cpu,
                      m_total_vert * 4 * sizeof(float), f, f430);
 
@@ -460,11 +459,17 @@ void Test::TScene::renderScene()
   }
   QOpenGLExtraFunctions* f = QOpenGLContext::currentContext()->extraFunctions();
   f->glEnable(GL_BLEND);
+  glCheckError();
   f->glDepthMask(GL_TRUE);
+  glCheckError();
   f->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+  glCheckError();
   f->glDisable(GL_DEPTH_TEST);
+  glCheckError();
   f->glEnable(GL_CULL_FACE);
-  f->glCullFace(GL_FRONT_FACE);
+  glCheckError();
+  f->glCullFace(GL_BACK);
+  glCheckError();
 
   m_prog.bind();
 

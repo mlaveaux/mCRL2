@@ -79,6 +79,8 @@ GlLTSView::Scene::Scene(QOpenGLWidget* glwidget, Cluster* root)
 {
 }
 
+
+
 /// TODO: Fix hardcoded resolutions
 template <int sphereRes, int coneRes>
 GlLTSView::SGNode* GlLTSView::SceneGraphFunctor<sphereRes, coneRes>::operator()(
@@ -99,7 +101,7 @@ GlLTSView::SGNode* GlLTSView::SceneGraphFunctor<sphereRes, coneRes>::operator()(
   case GlUtil::ShapeType::TRUNCATED_CONE:
     node->data.model_id = coneDB.getCone(
         static_cast<GlUtil::Shapes::TruncatedCone*>(vistreenode->data.shape),
-        std::max(coneRes, vistreenode->num_children), sceneData);
+        std::max((1+(coneRes/vistreenode->num_children))*vistreenode->num_children, 6*vistreenode->num_children), sceneData);
     break;
   default:
     /// TODO: Log unknown shape
@@ -380,7 +382,7 @@ void GlLTSView::Scene::rebuildScene()
           : VisTreeGenerator::Mode::CONES,
       m_clusterRoot);
   const int sphereRes = 3;
-  const int coneRes = 20;
+  const int coneRes = 50;
   SceneGraphFunctor<sphereRes, coneRes> sgf(m_scenegraph.sceneData);
 
   m_scenegraph.root =

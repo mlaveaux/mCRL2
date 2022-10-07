@@ -17,7 +17,7 @@
 #include "icons/pan_cursor.xpm"
 #include "icons/rotate_cursor.xpm"
 
-#include "scene.h"
+// #include "scene.h"
 #include "arcballcamera.h"
 #include "state.h" 
 

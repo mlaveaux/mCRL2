@@ -17,7 +17,7 @@
 
 #include <QtOpenGL>
 
-#include "scene.h"
+// #include "scene.h"
 #include "arcballcamera.h"
 
 #include "glcolor.h"

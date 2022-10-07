@@ -19,7 +19,7 @@ namespace mcrl2
 namespace gui
 {
 
-QQuaternion arcballRotation(const QPoint& p1, const QPoint& p2);
+QQuaternion arcballRotation(const QPoint& p1, const QPoint& p2, const float rotation_speed = 1.0f);
 
 void applyRotation(const QQuaternion& rotation, bool reverse = false);
 

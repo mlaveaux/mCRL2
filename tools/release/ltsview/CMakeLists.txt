@@ -3,6 +3,7 @@ mcrl2_add_gui_tool(ltsview
   DESCRIPTION "Visualisation tool for large state spaces (mCRL2 toolset)"
   ICON "mcrl2-green"
   SOURCES
+    ./deprecated/source/scene.cpp
     ./source/cluster.cpp
     ./source/fsm_state_positioner.cpp
     ./source/generic_visualizer/cameras/arcballcamera.cpp
@@ -32,7 +33,6 @@ mcrl2_add_gui_tool(ltsview
     ./source/visualizer/conedb.cpp
     ./source/visualizer/glwidget.cpp
     ./source/visualizer/ltscanvas.cpp
-    ./source/visualizer/ltsview_visualizer/scene.cpp
     ./source/visualizer/ltsview_visualizer/testscene.cpp
     ./source/visualizer/ltsview_visualizer/vistreegenerator.cpp
     ./source/visualizer/primitivefactory.cpp

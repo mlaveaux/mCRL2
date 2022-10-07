@@ -46,13 +46,13 @@ public:
   void resetRotation();
 
   /// \returns The maximum view distance of this camera.
-  float getViewdistance() const { return m_viewdistance; }
-  void setViewdistance(float viewdistance) { m_viewdistance = viewdistance; }
+  float getViewdistance() const { return m_farPlane; }
+  void setViewdistance(float viewdistance) { m_farPlane = viewdistance; }
 
   /// \brief Rotate camera around center using drag coordinates.
   /// \param p1 Old point
   /// \param p2 New point
-  /// \param rotation_speed TODO: implement
+  /// \param rotation_speed TODO: implement user control
   void applyDragRotate(const QPoint& p1, const QPoint& p2, const float rotation_speed = 1.0f);
 
   /// @brief Applies zoom towards center using drag coordinates.
@@ -60,7 +60,7 @@ public:
   /// @param p2 New point
   /// @param zoom_speed How fast should it zoom (linear)
   /// @param zoom_base How fast should it zoom (exponential)
-  void applyZoom(const QPoint& p1, const QPoint& p2, const float zoom_speed = 1.0f, const float zoom_base = 1.005);
+  void applyZoom(const QPoint& p1, const QPoint& p2, const float zoom_speed = 0.5f, const float zoom_base = 1.005);
 
   /// @brief Applies translation of the center using drag coordinates.
   /// @param p1 Old point
@@ -78,13 +78,15 @@ private:
   /// \brief Distance to the center.
   float m_zoom = ArcballCamera::DEFAULT_ZOOM;
 
-  float m_viewdistance = ArcballCamera::DEFAULT_VIEWDISTANCE;
+  float m_nearPlane = ArcballCamera::DEFAULT_NEAR_PLANE;
+  float m_farPlane = ArcballCamera::DEFAULT_FAR_PLANE;
   float m_vert_fieldofview = ArcballCamera::DEFAULT_VERTFIELDOFVIEW;
 public:
   // Default values
-  static constexpr float DEFAULT_VIEWDISTANCE = 10000.0f;
   static constexpr float DEFAULT_VERTFIELDOFVIEW = 75.0f;
   static constexpr float DEFAULT_ZOOM = 1.0f;
+  static constexpr float DEFAULT_NEAR_PLANE = 0.01f;
+  static constexpr float DEFAULT_FAR_PLANE = 10000.0f;
   static QQuaternion DEFAULT_ROTATION;
   static QVector3D DEFAULT_CENTER;
 };

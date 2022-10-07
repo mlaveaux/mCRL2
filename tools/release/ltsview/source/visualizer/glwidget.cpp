@@ -115,14 +115,14 @@ void GLWidget::paintGL()
   QPainter* painter = new QPainter(this);
   painter->beginNativePainting();
   QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
-  mCRL2log(mcrl2::log::debug) << "paintGL called." << std::endl;
   // Cull polygons that are facing away (back) from the camera, where their
   // front is defined as counter clockwise by default, see glFrontFace, meaning
   // that the vertices that make up a triangle should be oriented counter
   // clockwise to show the triangle.
 
   // Enable depth testing, so that we don't have to care too much about
-  // rendering in the right order. f->glEnable(GL_DEPTH_TEST);
+  // rendering in the right order. 
+  // f->glEnable(GL_DEPTH_TEST);
 
   // Change the alpha blending function to make an alpha of 1 opaque and 0 fully
   // transparent. f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

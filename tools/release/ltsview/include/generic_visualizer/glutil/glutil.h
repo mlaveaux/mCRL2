@@ -22,7 +22,6 @@
 
 
 #ifndef NDEBUG
-#include "windows.h"
 #define msgAssert(expr, msg) if (!expr) { mCRL2log(mcrl2::log::error) << "Assert failed: " << msg << std::endl; assert(expr); }
 inline GLenum glCheckError_(const char *file, int line)
 {

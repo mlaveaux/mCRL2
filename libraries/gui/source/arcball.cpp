@@ -59,11 +59,11 @@ static QVector3D arcballVector(const QPoint& p)
   return QVector3D(x, y, z).normalized();
 }
 
-QQuaternion arcballRotation(const QPoint& p1, const QPoint& p2)
+QQuaternion arcballRotation(const QPoint& p1, const QPoint& p2, const float rotation_speed)
 {
   // update rotation based on the difference in mouse coordinates
   QVector3D v1 = arcballVector(p1).normalized();
-  QVector3D v2 = arcballVector(p2).normalized();
+  QVector3D v2 = arcballVector(p1 + rotation_speed * (p2 - p1)).normalized();
   QVector3D cross = QVector3D::crossProduct(v1, v2);
   float dot = QVector3D::dotProduct(v1, v2);
   return QQuaternion(dot, cross);
