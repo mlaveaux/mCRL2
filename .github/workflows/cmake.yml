@@ -1,4 +1,4 @@
-name: CMake
+name: Build and Test
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug
+  NUMBER_OF_THREADS: 2
 
 jobs:
   build:
@@ -19,30 +20,41 @@ jobs:
 
     steps:
       
-      # Install the packages required for building and testing.
+    # Install the packages required for building and testing.
     - uses: awalsh128/cache-apt-pkgs-action@latest
       with:
         packages: build-essential libboost-dev libgl1-mesa-dev qtbase5-dev python3-psutil python3-yaml
         version: 1.0
                 
-    - uses: actions/checkout@v3
+    # Performs the git checkout in the github.workspace/src directory
+    - uses: actions/checkout@v3 
+      with:
+        path: src
+    
+    - uses: hendrikmuhs/ccache-action@v1.2 # Adds ccache
+      with:
+        key: ${{ github.job }}-${{ matrix.os }}
 
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build \
-        -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-        -DMCRL2_ENABLE_EXPERIMENTAL=ON \
-        -DMCRL2_ENABLE_DEPRECATED=ON \
-        -DMCRL2_ENABLE_TESTS=ON
+    # Configure CMake in a 'build' subdirectory
+    - name: Configure CMake 
+      run: >
+        cmake 
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+          -DMCRL2_ENABLE_EXPERIMENTAL=ON
+          -DMCRL2_ENABLE_DEPRECATED=ON
+          -DMCRL2_ENABLE_TESTS=ON
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          -B ${{github.workspace}}/build
+          ${{github.workspace}}/src
 
+    # Build your program with the given configuration
     - name: Build
-      # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j ${{NUMBER_OF_THREADS}}
 
     - name: Test
       working-directory: ${{github.workspace}}/build
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C ${{env.BUILD_TYPE}}
+      run: ctest -C ${{env.BUILD_TYPE}} -j ${{NUMBER_OF_THREADS}}
 
