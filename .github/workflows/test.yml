@@ -9,22 +9,46 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug
-  NUMBER_OF_THREADS: 2
 
 jobs:
-  test_ubuntu:
-    name: Ubuntu
-    runs-on: ubuntu-20.04
+  test:
+    name: Test
+    runs-on: [ubuntu-20.04, macos-latest, windows-latest]
 
     steps:
+    - name: Get number of CPU cores
+      uses: SimenB/github-actions-cpu-cores@v1
+      id: cpu-cores
       
     # Install the packages required for building and testing.
     #- uses: awalsh128/cache-apt-pkgs-action@latest
     #  with:
     #    packages: build-essential libboost-dev libgl1-mesa-dev qtbase5-dev python3-psutil python3-yaml ccache
     #    version: 1.0
-    - name: Install packages
-      run: sudo apt install -y build-essential libboost-dev libgl1-mesa-dev qtbase5-dev python3-psutil python3-yaml ccache      
+    - name: Install dependencies for Ubuntu
+      run: sudo apt install -y build-essential libboost-dev libgl1-mesa-dev qtbase5-dev python3-psutil python3-yaml ccache
+      if: runner.os == 'Linux' 
+      
+    - name: Install dependencies for MacOS
+      run: |
+        brew update
+        brew install qt boost ccache
+        pip install psutil pyyaml
+      if: runner.os == 'macOS'
+      
+    - name: Set up conda environment
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniconda-version: "latest"
+        auto-update-conda: true
+        activate-environment: conda-env
+      if: runner.os == 'Windows'
+
+    - name: Install dependencies for Windows
+      run: |
+        conda install -c conda-forge qt boost
+        pip install psutil pyyaml
+      if: runner.os == 'Windows'
                 
     # Performs the git checkout in the github.workspace/src directory
     - uses: actions/checkout@v3 
@@ -50,50 +74,25 @@ jobs:
         ${{github.workspace}}/src
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j ${{env.NUMBER_OF_THREADS}}
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j ${{steps.cpu-cores.outputs.count}}
 
-    - name: Test
+    # Test all categories separately to not exceed maximum job time of 6 hours.
+    - name: Test librarytest
       working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}} -j ${{env.NUMBER_OF_THREADS}}
+      run: ctest -L librarytest -C ${{env.BUILD_TYPE}} -j ${{steps.cpu-cores.outputs.count}}
 
-  test_macos:
-    name: MacOS
-    runs-on: macos-latest
-
-    steps:
-    - name: Install packages
-      run: |
-        brew update
-        brew install qt boost
-        brew upgrade
-        pip install -y psutil pyyaml
-
-    # Performs the git checkout in the github.workspace/src directory
-    - uses: actions/checkout@v3 
-      with:
-        path: src
-    
-    # Configure and install (s)ccache
-    - uses: hendrikmuhs/ccache-action@v1.2
-      with:
-        key: ${{ github.job }}-${{ matrix.os }}
-
-    # Configure CMake in a 'build' subdirectory
-    - name: Configure CMake 
-      run: >
-        cmake 
-        -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-        -DMCRL2_ENABLE_EXPERIMENTAL=ON
-        -DMCRL2_ENABLE_DEPRECATED=ON
-        -DMCRL2_ENABLE_TESTS=ON
-        -DCMAKE_C_COMPILER_LAUNCHER=ccache
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-        -B ${{github.workspace}}/build
-        ${{github.workspace}}/src
-
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j ${{env.NUMBER_OF_THREADS}}
-
-    - name: Test
+    - name: Test libraryexample
       working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}} -j ${{env.NUMBER_OF_THREADS}}
+      run: ctest -L libraryexample -C ${{env.BUILD_TYPE}} -j ${{steps.cpu-cores.outputs.count}}
+
+    - name: Test tooltest
+      working-directory: ${{github.workspace}}/build
+      run: ctest -L tooltest -C ${{env.BUILD_TYPE}} -j ${{steps.cpu-cores.outputs.count}}
+      
+    - name: Test randomtest
+      working-directory: ${{github.workspace}}/build
+      run: ctest -L randomtest -C ${{env.BUILD_TYPE}} -j ${{steps.cpu-cores.outputs.count}}
+      
+    - name: Test regressiontest
+      working-directory: ${{github.workspace}}/build
+      run: ctest -L regressiontest -C ${{env.BUILD_TYPE}} -j ${{steps.cpu-cores.outputs.count}}
