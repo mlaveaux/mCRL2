@@ -14,9 +14,15 @@ jobs:
   test:
     name: Test
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    
+    # This step is necessary for Conda to activate the environment
+    defaults:
+      run:
+        shell: bash -el {0}
 
     steps:
     - name: Get number of CPU cores
