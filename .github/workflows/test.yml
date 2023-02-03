@@ -12,10 +12,8 @@ env:
   NUMBER_OF_THREADS: 2
 
 jobs:
-  build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  test_ubuntu:
+    name: Ubuntu
     runs-on: ubuntu-20.04
 
     steps:
@@ -58,3 +56,44 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: ctest -C ${{env.BUILD_TYPE}} -j ${{env.NUMBER_OF_THREADS}}
 
+  test_macos:
+    name: MacOS
+    runs-on: macos-latest
+
+    steps:
+    - name: Install packages
+      run: |
+        brew update
+        brew install qt boost
+        brew upgrade
+        pip install -y psutil pyyaml
+
+    # Performs the git checkout in the github.workspace/src directory
+    - uses: actions/checkout@v3 
+      with:
+        path: src
+    
+    # Configure and install (s)ccache
+    - uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ${{ github.job }}-${{ matrix.os }}
+
+    # Configure CMake in a 'build' subdirectory
+    - name: Configure CMake 
+      run: >
+        cmake 
+        -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        -DMCRL2_ENABLE_EXPERIMENTAL=ON
+        -DMCRL2_ENABLE_DEPRECATED=ON
+        -DMCRL2_ENABLE_TESTS=ON
+        -DCMAKE_C_COMPILER_LAUNCHER=ccache
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        -B ${{github.workspace}}/build
+        ${{github.workspace}}/src
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j ${{env.NUMBER_OF_THREADS}}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest -C ${{env.BUILD_TYPE}} -j ${{env.NUMBER_OF_THREADS}}
