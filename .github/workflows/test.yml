@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:      
-        os: ubuntu-20.04, macos-latest, windows-latest]
+        os: [ubuntu-20.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     
     # This step is necessary for Conda to activate the environment
