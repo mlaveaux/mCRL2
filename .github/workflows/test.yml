@@ -19,7 +19,7 @@ jobs:
         os: [ubuntu-20.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     
-    # This step is necessary for Conda to activate the environment
+    # This step is necessary for Conda to activate the environment properly, bash is available on all runners.
     defaults:
       run:
         shell: bash -el {0}
@@ -69,10 +69,19 @@ jobs:
       with:
         key: ${{ github.job }}-${{ matrix.os }}
 
-    # Configure CMake in a 'build' subdirectory
-    - name: Configure CMake Linux/Windows
-      run: cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DMCRL2_ENABLE_EXPERIMENTAL=ON -DMCRL2_ENABLE_DEPRECATED=ON -DMCRL2_ENABLE_TESTS=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -B ${{github.workspace}}/build -S ${{github.workspace}}/src
-      if: runner.os != 'macOS'
+    # Configure CMake in a 'build' subdirectory        
+    - name: Configure CMake Linux
+      run: >
+        cmake 
+        -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        -DMCRL2_ENABLE_EXPERIMENTAL=ON
+        -DMCRL2_ENABLE_DEPRECATED=ON
+        -DMCRL2_ENABLE_TESTS=ON
+        -DCMAKE_C_COMPILER_LAUNCHER=ccache
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        -B ${{github.workspace}}/build
+        -S ${{github.workspace}}/src
+      if: runner.os == 'Linux'
         
     - name: Configure CMake MacOS
       run: >
@@ -84,9 +93,24 @@ jobs:
         -DCMAKE_C_COMPILER_LAUNCHER=ccache
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
         -DQt5_DIR=$(brew --prefix qt5)/lib/cmake/Qt5
+        -DMACDEPLOYQT=$(brew --prefix qt5)/bin/
         -B ${{github.workspace}}/build
         -S ${{github.workspace}}/src
       if: runner.os == 'macOS'
+      
+    # Note: We have to use this weird ${} construction because we use bash as shell on Windows.
+    - name: Configure CMake Windows
+      run: >
+        cmake 
+        -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        -DMCRL2_ENABLE_EXPERIMENTAL=ON
+        -DMCRL2_ENABLE_DEPRECATED=ON
+        -DMCRL2_ENABLE_TESTS=ON
+        -DCMAKE_C_COMPILER_LAUNCHER=ccache
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        -B ${GITHUB_ACTION_PATH//\\//}/build
+        -S ${GITHUB_ACTION_PATH//\\//}/src
+      if: runner.os == 'Windows'
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j ${{steps.cpu-cores.outputs.count}}
