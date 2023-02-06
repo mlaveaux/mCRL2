@@ -5,6 +5,9 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+    
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -108,8 +111,8 @@ jobs:
         -DMCRL2_ENABLE_TESTS=ON
         -DCMAKE_C_COMPILER_LAUNCHER=ccache
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-        -B ${GITHUB_ACTION_PATH//\\//}/build
-        -S ${GITHUB_ACTION_PATH//\\//}/src
+        -B $GITHUB_ACTION_PATH/build
+        -S $GITHUB_ACTION_PATH/src
       if: runner.os == 'Windows'
 
     - name: Build
