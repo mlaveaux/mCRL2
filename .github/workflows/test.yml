@@ -42,7 +42,7 @@ jobs:
       run: |
         brew update
         brew install qt@5 boost ccache
-        pip install psutil pyyaml
+        pip3 install psutil pyyaml
       if: runner.os == 'macOS'
       
     - name: Set up conda environment
