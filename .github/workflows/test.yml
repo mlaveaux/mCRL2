@@ -41,7 +41,7 @@ jobs:
     - name: Install dependencies for MacOS
       run: |
         brew update
-        brew install qt boost ccache
+        brew install qt@5 boost ccache
         pip install psutil pyyaml
       if: runner.os == 'macOS'
       
@@ -71,7 +71,7 @@ jobs:
 
     # Configure CMake in a 'build' subdirectory
     - name: Configure CMake Linux/Windows
-      run: cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DMCRL2_ENABLE_EXPERIMENTAL=ON -DMCRL2_ENABLE_DEPRECATED=ON -DMCRL2_ENABLE_TESTS=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -B ${{github.workspace}}/build ${{github.workspace}}/src
+      run: cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DMCRL2_ENABLE_EXPERIMENTAL=ON -DMCRL2_ENABLE_DEPRECATED=ON -DMCRL2_ENABLE_TESTS=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -B ${{github.workspace}}/build -S ${{github.workspace}}/src
       if: runner.os != 'macOS'
         
     - name: Configure CMake MacOS
@@ -85,13 +85,12 @@ jobs:
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
         -DQt5_DIR=$(brew --prefix qt5)/lib/cmake/Qt5
         -B ${{github.workspace}}/build
-        ${{github.workspace}}/src
+        -S ${{github.workspace}}/src
       if: runner.os == 'macOS'
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j ${{steps.cpu-cores.outputs.count}}
 
-    # Test all categories separately to not exceed maximum job time of 6 hours.
     - name: Test librarytest
       working-directory: ${{github.workspace}}/build
       run: ctest -L librarytest -C ${{env.BUILD_TYPE}} -j ${{steps.cpu-cores.outputs.count}}
