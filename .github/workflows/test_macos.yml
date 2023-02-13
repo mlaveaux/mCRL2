@@ -1,0 +1,66 @@
+name: Build and Test (macOS)
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+    
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Debug
+
+jobs:
+  test:
+    name: Test
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:      
+        suite: [librarytest, libraryexample, tooltest, randomtest, regressiontest]
+    
+    steps:
+    - name: Get number of CPU cores
+      uses: SimenB/github-actions-cpu-cores@v1
+      id: cpu-cores
+            
+    - name: Install dependencies for MacOS
+      run: |
+        brew update
+        brew install qt@5 boost ccache
+        pip3 install psutil pyyaml
+                
+    # Performs the git checkout in the github.workspace/src directory
+    - uses: actions/checkout@v3 
+      with:
+        path: src
+    
+    # Configure and install (s)ccache
+    - uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ${{ github.job }}
+
+    # Configure CMake in a 'build' subdirectory        
+    - name: Configure CMake MacOS
+      run: >
+        cmake 
+        -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        -DMCRL2_ENABLE_EXPERIMENTAL=ON
+        -DMCRL2_ENABLE_DEPRECATED=ON
+        -DMCRL2_ENABLE_TESTS=ON
+        -DCMAKE_C_COMPILER_LAUNCHER=ccache
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        -DQt5_DIR=$(brew --prefix qt5)/lib/cmake/Qt5
+        -DMACDEPLOYQT=$(brew --prefix qt5)/bin/
+        -B ${{github.workspace}}/build
+        -S ${{github.workspace}}/src
+      
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j ${{steps.cpu-cores.outputs.count}}
+
+    - name: Test - ${{ matrix.suite }}
+      working-directory: ${{github.workspace}}/build
+      run: ctest -L ${{ matrix.suite }} -C ${{env.BUILD_TYPE}} -j ${{steps.cpu-cores.outputs.count}}
