@@ -8,6 +8,7 @@
 //
 
 #include <QtOpenGL>
+#include "glutil.h"
 #include "mcrl2/utilities/logger.h"
 
 #include <QWidget>
@@ -73,18 +74,25 @@ GLWidget::Selection GLWidget::selectObject(QPoint position)
 
 
 GLWidget::GLWidget(Cluster* root, LtsManager* ltsManager, QWidget* parent)
-    : QOpenGLWidget(parent), Test::TScene(root), m_ltsManager(ltsManager)
+    : QOpenGLWidget(parent), m_ltsManager(ltsManager), m_scene(root)
 {
-  SceneGraph<Test::NodeData, Test::SceneData> sg =
-      SceneGraph<Test::NodeData, Test::SceneData>();
-  m_camera = new ArcballCamera();
-  m_scenegraph = sg;
+  connect(&Settings::instance().stateRankStyleCyclic, SIGNAL(changed(bool)),
+          this, SLOT(onClusterStyleChanged()));
+  connect(&Settings::instance().fsmStyle, SIGNAL(changed(bool)), this,
+          SLOT(onClusterStyleChanged()));
+  connect(&Settings::instance().statePosStyleMultiPass, SIGNAL(changed(bool)),
+          this, SLOT(onClusterStyleChanged()));
+  connect(&Settings::instance().clusterVisStyleTubes, SIGNAL(changed(bool)),
+          this, SLOT(onClusterStyleChanged()));
 }
 
 void GLWidget::setRoot(Cluster* root)
 {
-  m_clusterRoot = root;
-  rebuildScene();
+  mCRL2log(mcrl2::log::debug) << "setRoot" << std::endl;
+  m_scene.m_clusterRoot = root;
+  if (m_initialised && QOpenGLContext::currentContext())
+    m_scene.rebuildScene();
+  //if (m_initialised) makeCurrent();
 }
 
 GLWidget::~GLWidget(){};
@@ -94,12 +102,82 @@ GLWidget::~GLWidget(){};
  */
 void GLWidget::initializeGL()
 {
-  QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
-  f->glClearColor(0, 0, 0, 1);
-  f->glEnable(GL_DEPTH_TEST);
-  f->glEnable(GL_CULL_FACE);
-  mCRL2log(mcrl2::log::debug) << "initializeGL called" << std::endl;
-  initializeScene();
+  // Check whether context creation succeeded and print the OpenGL major.minor
+  // version.
+  if (isValid())
+  {
+
+    // Check the minimum run-time requirement; the pair ordering is
+    // lexicographical.
+    QPair<int, int> version = format().version();
+#ifndef __APPLE__
+    QPair<int, int> required(3, 3);
+    if (version < required)
+    {
+      // Print a message to the console and show a message box.
+      std::stringstream message;
+
+      message << "The runtime version of OpenGL (" << version.first << "."
+              << version.second
+              << ") is below the least supported version of OpenGL ("
+              << required.first << "." << required.second << ").";
+      mCRL2log(mcrl2::log::error) << message.str().c_str() << "\n";
+
+      QMessageBox box(QMessageBox::Warning, "Unsupported OpenGL Version",
+                      message.str().c_str(), QMessageBox::Ok);
+      box.exec();
+
+      throw mcrl2::runtime_error("Unsupported OpenGL version.");
+    }
+    else
+#endif
+    {
+
+      QOpenGLContext::currentContext()->setFormat(
+          QSurfaceFormat::defaultFormat());
+      glEnable(GL_MULTISAMPLE);
+      glCheckError();
+      glEnable(GL_BLEND);
+      glCheckError();
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glCheckError();
+
+      mCRL2log(mcrl2::log::verbose) << "Created an OpenGL " << version.first
+                                    << "." << version.second << " context.\n";
+      //makeCurrent();
+    }
+  }
+  else
+  {
+    mcrl2::runtime_error("Context creation failed.");
+  }
+
+  // Enable real-time logging of OpenGL errors when the GL_KHR_debug extension
+  // is available. Ruben: Disabled because this makes the UI unusable with -d
+  // flag
+#if ENABLE_OPENGL_DEBUG_LOG
+  m_logger = new QOpenGLDebugLogger(this);
+  if (m_logger->initialize())
+  {
+    connect(m_logger, &QOpenGLDebugLogger::messageLogged, this,
+            &GLWidget::logMessage);
+    m_logger->startLogging();
+  }
+  else
+  {
+    mCRL2log(mcrl2::log::debug) << "QOpenGLDebugLogger initialisation failed\n";
+  }
+#else
+  mCRL2log(mcrl2::log::debug)
+      << "QOpenGLDebugLogger is disabled manually in \"glwidget.cpp\". Change "
+         "\"#define ENABLE_OPENGL_DEBUG_LOG false\" to \"true\" if needed.\n";
+#endif
+
+  QOpenGLContext* ctx = QOpenGLContext::currentContext();
+  mCRL2log(mcrl2::log::debug)
+      << "GLWidget initializeGL: ctx: " << ctx << std::endl;
+  m_scene.initializeScene();
+  m_initialised = true;
 }
 
 void GLWidget::logMessage(const QOpenGLDebugMessage& debugMessage)
@@ -119,6 +197,7 @@ void GLWidget::paintGL()
   // front is defined as counter clockwise by default, see glFrontFace, meaning
   // that the vertices that make up a triangle should be oriented counter
   // clockwise to show the triangle.
+  f->glFrontFace(GL_CW);
 
   // Enable depth testing, so that we don't have to care too much about
   // rendering in the right order. 
@@ -135,7 +214,7 @@ void GLWidget::paintGL()
   f->glClearColor(Settings::instance().backgroundColor.value().redF(),
                   Settings::instance().backgroundColor.value().greenF(),
                   Settings::instance().backgroundColor.value().blueF(), 1.0);
-  renderScene();
+  m_scene.renderScene();
   painter->endNativePainting();
 };
 
@@ -144,11 +223,12 @@ void GLWidget::resizeGL(int width, int height)
   QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
   f->glViewport(0, 0, width, height);
   m_width = width; m_height = height;
-  m_camera->setViewport(width, height);
+  m_scene.resizeScene(width, height);
 };
 
 void GLWidget::mousePressEvent(QMouseEvent* e)
 {
+  mCRL2log(mcrl2::log::debug) << "CLIKCKK" << std::endl;
   determineActiveTool(e, true);
 
   if (m_activeTool == SelectTool)
@@ -205,11 +285,12 @@ void GLWidget::mouseMoveEvent(QMouseEvent* e)
     return;
   }
 
-  ArcballCamera* cam = dynamic_cast<ArcballCamera*>(m_camera);
+  ArcballCamera* cam = dynamic_cast<ArcballCamera*>(m_scene.m_camera);
 
   if (m_activeTool == PanTool)
   {
-    cam->applyTranslate(oldPosition, m_lastMousePosition);
+    
+    cam->applyTranslate(oldPosition, m_lastMousePosition, 1000);
     e->accept();
     repaint();
   }
@@ -222,13 +303,34 @@ void GLWidget::mouseMoveEvent(QMouseEvent* e)
   else if (m_activeTool == RotateTool)
   {
     cam->applyDragRotate(oldPosition, m_lastMousePosition);
+    mCRL2log(mcrl2::log::debug) << "Rotate..." << std::endl;
     e->accept();
     repaint();
   }
 }
 
+void GLWidget::onClusterStyleChanged()
+{
+  mCRL2log(mcrl2::log::debug) << "Cluster style changed" << std::endl;
+  m_scene.rebuildScene();
+}
+
+void GLWidget::onDisplayOptionChanged()
+{
+  //m_scene.rebuildScene();
+}
+void GLWidget::onObjectsChanged()
+{
+  //m_scene.rebuildScene();
+}
+
+void GLWidget::rebuildScene()
+{
+  m_scene.rebuildScene();
+}
+
 void GLWidget::wheelEvent(QWheelEvent* e){
-  ArcballCamera* cam = dynamic_cast<ArcballCamera*>(m_camera);
+  ArcballCamera* cam = dynamic_cast<ArcballCamera*>(m_scene.m_camera);
   QPoint p1(0, 0);
   QPoint p2(0, -e->angleDelta().y());
   cam->applyZoom(p1, p2, 1.0005f);

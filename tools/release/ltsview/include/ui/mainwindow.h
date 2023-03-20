@@ -36,6 +36,8 @@ class MainWindow : public QMainWindow
     MainWindow(QThread *atermThread);
     ~MainWindow();
 
+signals:
+    void clusterChanged(Cluster* root);
   public slots:
     void open(QString filename);
 

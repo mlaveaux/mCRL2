@@ -32,16 +32,16 @@ MainWindow::MainWindow(QThread *atermThread):
 
   
   QSurfaceFormat format = QSurfaceFormat(QSurfaceFormat::DebugContext);
-  format.setMajorVersion(4);
+  format.setMajorVersion(3);
   format.setMinorVersion(3);
   format.setProfile(QSurfaceFormat::CoreProfile);
   QSurfaceFormat::setDefaultFormat(format);
-
   m_glwidget = new GLWidget(nullptr, m_ltsManager, this);
+
   m_glwidget->setFormat(format);
+  setCentralWidget(m_glwidget);
   
   m_graphics_info_dialog = new GraphicsInfoDialog(this);
-  setCentralWidget(m_glwidget);
   m_progressDialog = new QProgressDialog("", QString(), 0, 6, this);
   m_progressDialog->setMinimumDuration(0);
 
@@ -64,6 +64,9 @@ MainWindow::MainWindow(QThread *atermThread):
   connect(m_ui.exportBitmap, SIGNAL(triggered()), this, SLOT(exportBitmap()));
   connect(m_ui.exportText, SIGNAL(triggered()), this, SLOT(exportText()));
   connect(m_ui.exit, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
+  
+  connect(this, SIGNAL(clusterChanged(Cluster*)), m_glwidget,
+                       SLOT(setRoot(Cluster*)));
 
   /// TODO: restore connection
   // connect(m_ui.resetViewpoint, SIGNAL(triggered()), m_ltsCanvas, SLOT(resetView()));
@@ -93,6 +96,8 @@ MainWindow::MainWindow(QThread *atermThread):
   connect(m_ltsManager, SIGNAL(errorLoadingLts()), this, SLOT(hideProgressDialog()));
   connect(m_ltsManager, SIGNAL(startStructuring()), this, SLOT(startStructuring()));
   connect(m_ltsManager, SIGNAL(stopStructuring()), this, SLOT(stopStructuring()));
+  connect(m_ltsManager, SIGNAL(stopStructuring()), m_glwidget,
+          SLOT(rebuildScene()));
 
   connect(m_ltsManager, SIGNAL(selectionChanged()), this, SLOT(selectionChanged()));
   connect(m_ltsManager, SIGNAL(ltsZoomed(LTS *)), this, SLOT(zoomChanged()));
@@ -141,6 +146,7 @@ void MainWindow::open(QString filename)
   if (m_ltsManager->openLts(filename))
   {
     setWindowTitle(filename + " - LTSView");
+    emit clusterChanged(m_ltsManager->lts()->getInitialState()->getCluster());
   }
 }
 

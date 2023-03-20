@@ -30,14 +30,14 @@ void ArcballCamera::update()
   m_projectionMatrix.setToIdentity();
   m_projectionMatrix.perspective(m_vert_fieldofview, static_cast<float>(m_viewport.width()) / static_cast<float>(m_viewport.height()), m_nearPlane, m_farPlane);
 
-  // mCRL2log(mcrl2::log::debug) << "Cam settings; zoom: " << m_zoom 
-  // << " worldpos: (" << m_worldPosition.x() << ", " << m_worldPosition.y() << ", " << m_worldPosition.z() << ") center: (" << m_center.x() << ", " << m_center.y() << ", " << m_center.z() << ") FOV: " << 
-  // m_vert_fieldofview << " viewport: (" << m_viewport.width() << ", " << m_viewport.height() << ")" << std::endl;
+   mCRL2log(mcrl2::log::debug) << "Cam settings; zoom: " << m_zoom 
+   << " worldpos: (" << m_worldPosition.x() << ", " << m_worldPosition.y() << ", " << m_worldPosition.z() << ") center: (" << m_center.x() << ", " << m_center.y() << ", " << m_center.z() << ") FOV: " << 
+   m_vert_fieldofview << " viewport: (" << m_viewport.width() << ", " << m_viewport.height() << ")" << std::endl;
 
 }
 
 void ArcballCamera::applyTranslate(const QPoint& p1, const QPoint& p2, const float translation_speed){
-  QVector3D translation(windowToWorld(QVector3D(p2.x(), p2.y(), m_worldPosition.z())) - windowToWorld(QVector3D(p1.x(), p1.y(), m_worldPosition.z())));
+  QVector3D translation(windowToWorld(QVector3D(p2.x(), p1.y(), 0)) - windowToWorld(QVector3D(p1.x(), p2.y(), 0)));
   m_center += translation_speed*translation;
   update();
 }
@@ -59,9 +59,11 @@ void ArcballCamera::reset()
   m_center = ArcballCamera::DEFAULT_CENTER;
   m_rotation = ArcballCamera::DEFAULT_ROTATION;
   m_zoom = ArcballCamera::DEFAULT_ZOOM;
+  update();
 }
 
 void ArcballCamera::resetRotation()
 {
   m_rotation = ArcballCamera::DEFAULT_ROTATION;
+  update();
 }

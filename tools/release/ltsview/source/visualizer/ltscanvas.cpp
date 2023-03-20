@@ -38,8 +38,6 @@ LtsCanvas::LtsCanvas(QWidget* parent, LtsManager* ltsManager, MarkManager* markM
   m_panCursor = QCursor(QPixmap(pan_cursor));
   m_zoomCursor = QCursor(QPixmap(zoom_cursor));
   m_rotateCursor = QCursor(QPixmap(rotate_cursor));
-
-  m_ogl = (QOpenGLFunctions_4_3_Core*)context()->versionFunctions();
   
 
   connect(m_visualizer, SIGNAL(dirtied()), this, SLOT(update()));
@@ -123,6 +121,8 @@ void LtsCanvas::setActiveTool(Tool tool)
 
 void LtsCanvas::initializeGL()
 {
+  mCRL2log(mcrl2::log::debug)
+      << "Waarom zijn we in LTSCanvas::initializeGL?" << std::endl;
   return;
   GLfloat gray[] = { 0.35f, 0.35f, 0.35f, 1.0f };
   GLfloat light_pos[] = { 50.0f, 50.0f, 50.0f, 1.0f };
@@ -557,6 +557,8 @@ LtsCanvas::Selection LtsCanvas::parseSelection(GLuint* selectionBuffer, GLint it
 
 QImage LtsCanvas::renderImage(int width, int height)
 {
+  mCRL2log(mcrl2::log::debug)
+      << "Waraom zijn we in renderImage????" << std::endl;
   makeCurrent();
   glReadBuffer(GL_BACK);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);

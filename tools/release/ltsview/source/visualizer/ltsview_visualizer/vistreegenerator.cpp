@@ -133,7 +133,7 @@ VisTree::VisTreeNode* VisTreeGenerator::generate(Mode mode, Cluster* root){
 
     switch (mode){
         case Mode::TUBES:
-            return generateCones(root, rf.max_rank);
+            return generateTubes(root, rf.max_rank);
             break;
         case Mode::CONES:
             return generateCones(root, rf.max_rank);

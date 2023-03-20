@@ -17,8 +17,8 @@
 #include "ltsmanager.h"
 
 /// \brief A Qt OpenGL widget which uses the GLScene interface to render the contents of a graph.
-// class GLWidget : public QOpenGLWidget, protected GlLTSView::Scene
-class GLWidget : public QOpenGLWidget, protected Test::TScene
+ //class GLWidget : public QOpenGLWidget, protected GlLTSView::Scene
+class GLWidget : public QOpenGLWidget
 {
   Q_OBJECT  
   
@@ -41,8 +41,10 @@ private:
     QCursor m_zoomCursor;
     QCursor m_rotateCursor;     
     
+    bool m_initialised = false;
     bool m_dragging;            ///< Mouse currently held down and moving
     QPoint m_lastMousePosition; ///< Last mouse position
+    Test::TScene m_scene; ///< The GLScene which is used to render the contents.
 
 public:
 
@@ -107,6 +109,11 @@ public:
    */
   void mouseDoubleClickEvent(QMouseEvent* e);
 
+ public slots:
+  void onDisplayOptionChanged();
+  void onClusterStyleChanged();
+  void onObjectsChanged();
+  void rebuildScene();
   void setRoot(Cluster* root);
 private:
   QOpenGLDebugLogger* m_ogl_logger;

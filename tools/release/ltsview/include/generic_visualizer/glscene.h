@@ -18,10 +18,9 @@
 #include "glscenegraph.h"
 #include "glcamera.h"
 
-template<typename NodeData, typename SceneData>
-class GLScene
+template <typename NodeData, typename SceneData> class GLScene
 {
-public:
+  public:
   GLScene(){};
 
   /// \brief Initializes all state and data required for rendering.
@@ -39,8 +38,10 @@ public:
   /// \brief Resize the OpenGL viewport.
   virtual void resizeScene(std::size_t width, std::size_t height) = 0;
 
-protected:
+  public:
   Camera* m_camera;
+
+  protected:
   SceneGraph<NodeData, SceneData> m_scenegraph;
   float m_device_pixel_ratio;
   QFont m_font;

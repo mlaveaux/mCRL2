@@ -3,7 +3,8 @@
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
-#include <QOpenGLFunctions_4_3_Core>
+#include <QOpenGLExtraFunctions>
+#include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLVertexArrayObject>
 
 #include "glscene.h"
@@ -83,8 +84,50 @@ struct SceneGraphFunctor{
 // End scenegraph generator classes
 
 
+struct Instance
+{
+  int vertex_offset;
+  int vertex_count;
+  int index_offset;
+  int index_count;
+  int instance_count;
 
-class TScene : public TestScene, protected QOpenGLFunctions_4_3_Core{
+  ~Instance()
+  {
+    vbo.destroy();
+    normal_bo.destroy();
+    ibo.destroy();
+    color_bo.destroy();
+    matrix_bo.destroy();
+  }
+
+
+  // model data
+  QOpenGLBuffer vbo;
+  QOpenGLBuffer normal_bo;
+  QOpenGLBuffer ibo;
+
+  void createModel(QOpenGLFunctions_3_3_Core* f, Mesh& mesh);
+
+  // per instance
+  std::vector<QMatrix4x4> matrix_cpu;
+  std::vector<QVector4D> color_cpu;
+  QOpenGLBuffer matrix_bo;
+  QOpenGLBuffer color_bo;
+
+  // locations
+  int m_vertex_loc;
+  int m_normal_loc;
+  int m_color_loc;
+  int m_matrix_loc;
+
+  void createInstances(QOpenGLFunctions_3_3_Core* f);
+
+  void render(QOpenGLFunctions_3_3_Core* f, QOpenGLShaderProgram& shader);
+};
+
+
+class TScene : public TestScene, private QOpenGLFunctions_3_3_Core{
 public:
     explicit TScene(Cluster* root);
     Cluster *m_clusterRoot;
@@ -97,39 +140,32 @@ public:
 
     void renderScene() override;
 
-    void resizeScene(std::size_t width, std::size_t height) override {};
+    void resizeScene(std::size_t width, std::size_t height) override
+    {
+      m_camera->setViewport(width, height);
+    };
 
     void rebuildScene() override;
 
 
 private:
-    int m_ssbo_count = 0;
-    void createBufferObject(QOpenGLBuffer& buff, const char* buff_name, const void* data, std::size_t size, QOpenGLExtraFunctions *f, QOpenGLFunctions_4_3_Core *f430);
-    
-    QOpenGLShaderProgram m_prog;
+    std::vector<Instance*> m_instances;
     QOpenGLVertexArrayObject m_vao;
-    QOpenGLBuffer m_vbo;
-    QOpenGLBuffer m_ibo;
-    QOpenGLBuffer m_ssbo1;
-    QOpenGLBuffer m_ssbo2;
-    QOpenGLBuffer m_ssbo3;
-    QOpenGLBuffer m_ssbo4;
+    QOpenGLShaderProgram m_prog;
+
 
     int m_total_vert = -1;
     int m_total_tris = -1;
-
-    int* m_vertexdata_cpu;
-    float* m_vertices_cpu;
-    float* m_normals_cpu;
-    int* m_triangles_cpu;
-    float* m_matrices_cpu;
-    float* m_colors_cpu;
     
     bool m_cpu_allocated = false;
-    void reallocateStorage();
 
     GLuint u_n_colors;
     GLuint u_offset_colors;
+
+    int m_vertex_loc;
+    int m_normal_loc;
+    int m_color_loc;
+    int m_model_matrix_loc;
 
     bool m_built = false;
 };

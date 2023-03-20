@@ -1,37 +1,21 @@
-#version 430 compatibility
+#version 330
+// per vertex
+layout(location = 0) in vec3 vertex;
+layout(location = 1) in vec3 normal;
 
+// per shape
+layout(location = 2) in vec4 color;
+layout(location = 3) in mat4 model_mat;
 
-layout(std430) buffer b_vertices {
-	vec4 vertices[];
-};
-
-layout(std430) buffer b_normals{
-    vec4 normals[];
-};
-
-layout(std430) buffer b_colors {
-    vec4 colors[];
-};
-
-layout(std430) buffer b_matrices {
-    mat4 matrices[];
-};
 
 uniform mat4 u_view;
 uniform mat4 u_proj;
 uniform float u_alpha;
-// struct VertexData{
-//     int model_index;
-//     int vertex_index;
-// };
-in ivec2 in_vertexData; 
 
 out vec4 vs_color;
 
 void main(void)
 {
-    // gl_Position =  u_proj * u_view * matrices[in_vertexData.x] * vertices[in_vertexData.y];
-    int x = in_vertexData.x + in_vertexData.y;
-    vs_color = u_proj * u_view * vec4(x, x, x, u_alpha);
-    gl_Position = vec4(x);
+    vs_color = vec4(color.rgb, u_alpha);
+    gl_Position = u_proj * u_view * model_mat * vec4(vertex, 1);
 }

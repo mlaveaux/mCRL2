@@ -6,6 +6,7 @@
 #include "glutil.h"
 #include "glscenegraph.h"
 #include "glprimitivefactories.h"
+#include "arcballcamera.h"
 
 // std includes
 #include <fstream>
@@ -14,7 +15,6 @@
 
 #include <QOpenGLFunctions>
 #include <QOpenGLExtraFunctions>
-#include <QOpenGLFunctions_4_3_Core>
 
 #undef DEBUG_PRINT_VP
 #undef DEBUG_PRINT_MATRICES
@@ -69,6 +69,127 @@ int Test::SphereDB::getSphere(GlUtil::Shapes::Sphere* sphere, int resolution,
   }
 }
 
+void Test::Instance::createModel(QOpenGLFunctions_3_3_Core* f, Mesh& mesh)
+{
+  mCRL2log(mcrl2::log::debug) << "Instance::createModel(...): " << std::endl;
+  std::string yeet = "test.ply";
+  GlUtil::Meshes::Export::exportMesh<GlUtil::Meshes::MeshTypes::TriangleMesh, GlUtil::Meshes::Export::FileType::PLY>(yeet, mesh);
+
+  // IBO
+  ibo = QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
+  ibo.create();
+  ibo.bind();
+  ibo.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
+  GLuint* indices = new GLuint[3 * mesh.n_triangles];
+  int indexindex = 0; // ...
+  for (int i = 0; i < mesh.n_triangles; i++)
+    for (int j = 0; j < 3; j++)
+      indices[indexindex++] = mesh.triangles[i][j];
+  ibo.allocate(indices, indexindex * sizeof(GLuint));
+
+  // VBOs
+  vbo.create();
+  vbo.bind();
+  vbo.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
+  float* temp_vertices = new float[mesh.n_vertices * 3];
+  int temp_vertex_ind = 0;
+  for (auto& vec : mesh.vertices)
+  {
+    temp_vertices[temp_vertex_ind++] = vec.x();
+    temp_vertices[temp_vertex_ind++] = vec.y();
+    temp_vertices[temp_vertex_ind++] = vec.z();
+  }
+  vbo.allocate(temp_vertices, temp_vertex_ind * sizeof(GLfloat));
+
+  normal_bo.create();
+  normal_bo.bind();
+  normal_bo.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
+  normal_bo.allocate(&mesh.vertex_normals[0],
+                     mesh.vertices.size() * sizeof(GLfloat) * 3);
+}
+
+void Test::Instance::createInstances(QOpenGLFunctions_3_3_Core* f)
+{
+  mCRL2log(mcrl2::log::debug) << "Openglcontext: " << f << " inst  count " << instance_count << std::endl;
+
+  glCheckError();
+  // colors first
+  color_bo.create();
+  color_bo.bind();
+  color_bo.setUsagePattern(QOpenGLBuffer::UsagePattern::DynamicDraw);
+  float* temp_color = new float[color_cpu.size() * 4];
+  int temp_color_ind = 0;
+  for (auto& c : color_cpu)
+  {
+    temp_color[temp_color_ind++] = c.x();
+    temp_color[temp_color_ind++] = c.y();
+    temp_color[temp_color_ind++] = c.z();
+    temp_color[temp_color_ind++] = c.w();
+  }
+  color_bo.allocate(temp_color, instance_count * 4 * sizeof(GLfloat));
+  // matrices second
+  matrix_bo.create();
+  matrix_bo.bind();
+  matrix_bo.setUsagePattern(QOpenGLBuffer::UsagePattern::DynamicDraw);
+  float* temp_matrix = new float[matrix_cpu.size() * 16];
+  int temp_matrix_ind = 0;
+  for (auto& m : matrix_cpu)
+  {
+    float* temp = new float[16];
+    m.transposed().copyDataTo(temp);
+    for (int i{0}; i < 16; ++i)
+    {
+      temp_matrix[temp_matrix_ind++] = temp[i];
+    }
+  }
+  matrix_bo.allocate(temp_matrix, instance_count * 16 * sizeof(GLfloat));
+  glCheckError();
+}
+
+void Test::Instance::render(QOpenGLFunctions_3_3_Core* f, QOpenGLShaderProgram& shader)
+{
+  //mCRL2log(mcrl2::log::debug) << "Openglcontext: " << f << std::endl;
+
+  //glCheckError();
+  //int bound_vao;
+  //f->glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &bound_vao);
+  //glCheckError();
+  //mCRL2log(mcrl2::log::debug) << "Instance::render bound_vao: " << bound_vao << std::endl;
+
+  m_vertex_loc = f->glGetAttribLocation(shader.programId(), "vertex");
+  m_normal_loc = f->glGetAttribLocation(shader.programId(), "normal");
+  m_color_loc = f->glGetAttribLocation(shader.programId(), "color");
+  m_matrix_loc = f->glGetAttribLocation(shader.programId(), "model_mat");
+
+  vbo.bind();
+  glCheckError();
+  f->glVertexAttribPointer(m_vertex_loc, 3, GL_FLOAT, false, 0, 0);
+  glCheckError();
+  normal_bo.bind();
+  shader.setAttributeBuffer(m_normal_loc, GL_FLOAT, 0, 3);
+  glCheckError();
+  color_bo.bind();
+  f->glVertexAttribPointer(m_color_loc, 4, GL_FLOAT, false, 0, 0);
+  glCheckError();
+  matrix_bo.bind();
+  f->glVertexAttribPointer(m_matrix_loc, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4,
+                        (void*)(0));
+  f->glVertexAttribPointer(m_matrix_loc+1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4,
+                        (void*)(sizeof(float) * 4));
+  f->glVertexAttribPointer(m_matrix_loc + 2, 4, GL_FLOAT, GL_FALSE,
+                           sizeof(GLfloat) * 4 * 4,
+                        (void*)(sizeof(float) * 8));
+  f->glVertexAttribPointer(m_matrix_loc + 3, 4, GL_FLOAT, GL_FALSE,
+                           sizeof(GLfloat) * 4 * 4,
+                        (void*)(sizeof(float) * 12));
+  glCheckError();
+
+  ibo.bind();
+  f->glDrawElementsInstanced(GL_TRIANGLES, 3*index_count, GL_UNSIGNED_INT, 0,
+                             instance_count);
+  glCheckError();
+}
+
 void Test::SceneData::clear()
 {
   nodes.resize(0);
@@ -102,7 +223,11 @@ Test::SGNode* Test::SceneGraphFunctor<sphereRes, coneRes>::operator()(
   case GlUtil::ShapeType::TRUNCATED_CONE:
     node->data.model_id = coneDB.getCone(
         static_cast<GlUtil::Shapes::TruncatedCone*>(vistreenode->data.shape),
-        std::max((1+(coneRes/vistreenode->num_children))*vistreenode->num_children, 6*vistreenode->num_children)+1, sceneData);
+        std::max((1 + (coneRes / vistreenode->num_children)) *
+                     vistreenode->num_children,
+                 6 * vistreenode->num_children) +
+            1,
+        sceneData);
     break;
   default:
     /// TODO: Log unknown shape
@@ -115,35 +240,31 @@ Test::SGNode* Test::SceneGraphFunctor<sphereRes, coneRes>::operator()(
 }
 
 const char* VS =
-    "#version 430 compatibility\n"
+    "#version 330\n"
+    "// per vertex\n"
+    "layout(location = 0) in vec3 vertex;\n"
+    "layout(location = 1) in vec3 normal;\n"
 
-    "layout(std430) buffer b_verts { vec4 vertices[]; };\n"
-
-    "layout(std430) buffer b_normals { vec4 normals[]; };\n"
-
-    "layout(std430) buffer b_colors { vec4 colors[]; };\n"
-
-    "layout(std430) buffer b_matrices { mat4 matrices[]; };\n"
-    // vert.x = transform/color
-    // vert.y = vertex index
-    "layout(location = 0) in ivec2 vert;\n"
-    "out vec4 vColor;\n"
+    "// per shape\n"
+    "layout(location = 2) in vec4 color;\n"
+    "layout(location = 3) in mat4 model_mat;\n"
 
     "uniform mat4 u_view;\n"
-
     "uniform mat4 u_proj;\n"
+    "uniform float u_alpha;\n"
 
+    "out vec4 vColor;\n"
     "out vec4 vNormal;\n"
 
     "void main(void)\n"
     "{\n"
-    "   gl_Position = u_proj*u_view*matrices[vert.x]*vertices[vert.y];\n"
-    "   vColor      =  colors[vert.x];\n"
-    "   vNormal     = normals[vert.x];\n"
+    "  vColor = vec4(color.rgb, u_alpha);\n"
+    "  vNormal = u_proj * u_view * model_mat * vec4(normal, 0);\n"
+    "  gl_Position = u_proj * u_view * model_mat * vec4(vertex, 1);\n"
     "}";
 
-const char* FS = "#version 430 compatibility\n"
-                 "in vec4 vNormal;"
+const char* FS = "#version 330\n"
+                 "in vec4 vNormal;\n"
                  "in vec4 vColor;\n"
                  "out vec4 fColor;\n"
                  "void main(void)\n"
@@ -153,114 +274,62 @@ const char* FS = "#version 430 compatibility\n"
 
 Test::TScene::TScene(Cluster* root) : TestScene()
 {
+  SceneGraph<Test::NodeData, Test::SceneData> sg =
+      SceneGraph<Test::NodeData, Test::SceneData>();
+  m_camera = new ArcballCamera();
+  m_camera->reset();
+  m_scenegraph = sg;
   m_clusterRoot = root;
 }
 
-void Test::TScene::createBufferObject(QOpenGLBuffer& buff,
-                                      const char* buff_name, const void* data,
-                                      std::size_t size,
-                                      QOpenGLExtraFunctions* f,
-                                      QOpenGLFunctions_4_3_Core* f430)
+static QVector4D color_to_vector(const QColor& color)
 {
-  buff.create();
-  buff.bind();
-  buff.allocate(data, size);
-  mCRL2log(mcrl2::log::debug)
-      << "Buffer \"" << buff_name << "\""
-      << (buff.isCreated() ? " created succesfully" : " failed to create")
-      << "; buffer id : " << buff.bufferId() << std::endl;
-
-  GLuint buffer_index = f->glGetProgramResourceIndex(
-      m_prog.programId(), GL_SHADER_STORAGE_BLOCK, buff_name);
-  f430->glShaderStorageBlockBinding(m_prog.programId(), buffer_index,
-                                    m_ssbo_count);
-  f->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_ssbo_count++,
-                      buff.bufferId());
-  mCRL2log(mcrl2::log::debug)
-      << "Bound \"" << buff_name << "\" to buffer_index: " << buffer_index
-      << std::endl;
-  buff.release();
-}
-
-void Test::TScene::reallocateStorage()
-{
-  if (m_cpu_allocated)
-  {
-    free(m_vertices_cpu);
-    free(m_normals_cpu);
-    free(m_triangles_cpu);
-    free(m_vertexdata_cpu);
-    free(m_matrices_cpu);
-    free(m_colors_cpu);
-
-    m_prog.removeAllShaders();
-
-    m_cpu_allocated = false;
-  }
-
-  if (m_total_vert >= 0 && m_total_tris >= 0)
-  {
-
-    m_vertices_cpu = (float*)std::malloc(m_total_vert * sizeof(float) * 4);
-
-    m_normals_cpu = (float*)std::malloc(m_total_vert * sizeof(float) * 4);
-
-    m_triangles_cpu = (int*)std::malloc(m_total_tris * sizeof(int) * 3);
-
-    m_vertexdata_cpu = (int*)std::malloc(m_total_vert * sizeof(int) * 2);
-
-    m_matrices_cpu = (float*)std::malloc(m_scenegraph.sceneData.nodes.size() *
-                                         sizeof(float) * 16);
-    m_colors_cpu = (float*)std::malloc(m_scenegraph.sceneData.nodes.size() *
-                                       sizeof(float) * 4);
-
-    m_cpu_allocated = true;
-  }
+  return {static_cast<float>(color.redF()), static_cast<float>(color.greenF()),
+          static_cast<float>(color.blueF()),
+          static_cast<float>(color.alphaF())};
 }
 
 void Test::TScene::rebuildScene()
 {
-  if (m_vao.isCreated() && m_vao.objectId() != -1)
-    m_vao.destroy();
-  if (m_vbo.isCreated() && m_vbo.bufferId() != -1)
-    m_vbo.destroy();
-  if (m_ibo.isCreated() && m_ibo.bufferId() != -1)
-    m_ibo.destroy();
-  if (m_ssbo1.isCreated() && m_ssbo1.bufferId() != -1)
-    m_ssbo1.destroy();
-  if (m_ssbo2.isCreated() && m_ssbo2.bufferId() != -1)
-    m_ssbo2.destroy();
-  if (m_ssbo3.isCreated() && m_ssbo3.bufferId() != -1)
-    m_ssbo3.destroy();
-  if (m_ssbo4.isCreated() && m_ssbo4.bufferId() != -1)
-    m_ssbo4.destroy();
-  m_ssbo_count = 0;
-  if (m_camera)
-    m_camera->reset();
+  m_total_tris = 0;
+  m_total_vert = 0;
+  m_prog.bind();
+  std::cout << "Scene::rebuild() called" << std::endl;
   if (!m_clusterRoot)
+  {
+    std::cout << "No root found." << std::endl;
     return;
-  assert(m_clusterRoot);
+  }
+  auto start = std::chrono::high_resolution_clock::now();
+  // clear the scene data
+  m_scenegraph.sceneData.meshes.clear();
+  m_scenegraph.sceneData.nodes.clear();
+  m_instances.clear();
+  if (m_built)
+    free(m_scenegraph.root);
+  if (m_built)
+    free(m_vistreeRoot);
+  if (m_built)
+    m_scenegraph.sceneData = SceneData();
+  m_vertex_loc = m_prog.attributeLocation("vertex");
+  m_normal_loc = m_prog.attributeLocation("normal");
+  m_color_loc = m_prog.attributeLocation("color");
+  m_model_matrix_loc = m_prog.attributeLocation("model_mat");
 
-  m_scenegraph.sceneData.clear();
 
-
-  //if (m_scenegraph.root)
-    //delete m_scenegraph.root;
-
-  /// TODO: Verify delete[] vs delete with someone who has more knowledge - Ruben
-  //if (m_vistreeRoot)
-    //delete m_vistreeRoot;
 
   /// TODO: Change settings.h to have enum of modes instead of bool
+  mCRL2log(mcrl2::log::debug)
+      << "----------------------------------------------------------"
+      << (Settings::instance().clusterVisStyleTubes.value() ? "TUBES" : "CONES")
+      << std::endl;
   m_vistreeRoot = VisTreeGenerator::generate(
       Settings::instance().clusterVisStyleTubes.value()
           ? VisTreeGenerator::Mode::TUBES
           : VisTreeGenerator::Mode::CONES,
       m_clusterRoot);
-
-  /// TODO: Expose and/or make user configurable
   const int sphereRes = 3;
-  const int coneRes = 1000;
+  const int coneRes = 50;
   SceneGraphFunctor<sphereRes, coneRes> sgf(m_scenegraph.sceneData);
 
   m_scenegraph.root =
@@ -271,212 +340,141 @@ void Test::TScene::rebuildScene()
           VisTree::VisTreeNode::getChildBegin,
           VisTree::VisTreeNode::getChildEnd);
 
-  // Scenegraph is now built as a vistree
-  m_total_vert = 0;
-  m_total_tris = 0;
-  for (const NodeData& node : m_scenegraph.sceneData.nodes)
-  {
-    m_total_vert += m_scenegraph.sceneData.meshes[node.model_id].n_vertices;
-    m_total_tris += m_scenegraph.sceneData.meshes[node.model_id].n_triangles;
-  }
-
-  if (!(m_total_vert > 0 && m_total_tris > 0))
-  {
-    // cant fill storage with nothing
-    return;
-  }
-
-  reallocateStorage();
-
-  std::vector<int> vertex_offsets({0});
-  for (const auto& mesh : m_scenegraph.sceneData.meshes)
-  {
-    vertex_offsets.push_back(vertex_offsets.back() + mesh.n_vertices);
-  }
-
-  int vertexdata_index = 0;
-  int tri_index = 0;
-  for (const NodeData& node : m_scenegraph.sceneData.nodes)
-  {
-    Mesh& mesh = m_scenegraph.sceneData.meshes[node.model_id];
-    int vert_offset = vertex_offsets[node.model_id];
-    int tri_offset = vertexdata_index / 2;
-    for (int i = 0; i < mesh.n_vertices; ++i)
-    {
-      m_vertexdata_cpu[vertexdata_index++] = node.data_id;
-      m_vertexdata_cpu[vertexdata_index++] = vert_offset + i;
-    }
-
-    for (const auto& tri : mesh.triangles)
-    {
-      m_triangles_cpu[tri_index++] = tri[0] + tri_offset;
-      m_triangles_cpu[tri_index++] = tri[1] + tri_offset;
-      m_triangles_cpu[tri_index++] = tri[2] + tri_offset;
-    }
-  }
-
-  int vert_index = 0;
-  int norm_index = 0;
-
+  int n_verts = 0;
+  int n_tris = 0;
   for (auto& mesh : m_scenegraph.sceneData.meshes)
   {
-    for (const QVector3D& vec : mesh.vertices)
-    {
-      m_vertices_cpu[vert_index++] = vec.x();
-      m_vertices_cpu[vert_index++] = vec.y();
-      m_vertices_cpu[vert_index++] = vec.z();
-      m_vertices_cpu[vert_index++] = 1; // important to have w = 1 for positions
-#ifdef DEBUG_PRINT_VERTICES
-      mCRL2log(mcrl2::log::debug)
-          << "(" << vec.x() << ", " << vec.y() << ", " << vec.z() << ", "
-          << "1)" << std::endl;
-#endif
-    }
-    for (const QVector3D& vec : mesh.vertex_normals)
-    {
-      m_normals_cpu[norm_index++] = vec.x();
-      m_normals_cpu[norm_index++] = vec.y();
-      m_normals_cpu[norm_index++] = vec.z();
-      m_normals_cpu[norm_index++] = 0; // important to have w = 0 for normals
-    }
-  }
+    m_instances.emplace_back(new Instance());
+    Instance& new_instance = *m_instances.back();
+    new_instance.vertex_count = mesh.n_vertices;
+    new_instance.index_count = mesh.n_triangles;
+    new_instance.createModel(this, mesh);
 
-  int mat_index = 0;
-  for (auto& mat : m_scenegraph.sceneData.matrices)
+    n_verts += mesh.n_vertices;
+    n_tris += mesh.n_triangles;
+  }
+  for (auto& node : m_scenegraph.sceneData.nodes)
   {
-    std::memcpy(m_matrices_cpu + mat_index, mat.data(), 16 * sizeof(float));
-#ifdef DEBUG_PRINT_MATRICES
-    mCRL2log(mcrl2::log::debug) << "Matrix: " << std::endl;
-    for (int i = mat_index; i < mat_index + 16; ++i)
-    {
-      mCRL2log(mcrl2::log::debug)
-          << m_matrices_cpu[i] << (((i + 1) % 4) != 0 ? ", " : "\n");
-    }
-#endif
-    mat_index += 16;
+    Instance& instance = *m_instances[node.model_id];
+    instance.color_cpu.push_back(
+        color_to_vector(m_scenegraph.sceneData.colors[node.data_id]));
+    instance.matrix_cpu.push_back(
+        m_scenegraph.sceneData.matrices[node.data_id]);
+    instance.instance_count++;
   }
 
-  int col_index = 0;
-  for (auto& col : m_scenegraph.sceneData.colors)
+  for (auto& instance : m_instances)
   {
-    m_colors_cpu[col_index++] = col.redF();
-    m_colors_cpu[col_index++] = col.blueF();
-    m_colors_cpu[col_index++] = col.greenF();
-    m_colors_cpu[col_index++] = col.alphaF();
+    instance->createInstances(this);
+    m_total_vert += instance->vertex_count * instance->instance_count;
+    m_total_tris += instance->index_count * instance->instance_count;
   }
-  m_built = true;
-}
-/// @brief Initialize scene. Assumption that initializeOpenGLFunctions() has
-/// been called in advance.
-void Test::TScene::initializeScene()
-{
-  rebuildScene();
-  if (!(m_total_vert > 0 && m_total_tris > 0))
-    return;
-  else
-  {
-    mCRL2log(mcrl2::log::debug)
-        << "Verts: " << m_total_vert << " Tris: " << m_total_tris << std::endl;
-  }
-  // rebuildscene cleaned up
 
-  m_prog.addShaderFromSourceCode(QOpenGLShader::Vertex, VS);
-  m_prog.addShaderFromSourceCode(QOpenGLShader::Fragment, FS);
-  m_prog.link();
-
-  m_prog.bind();
-
-  mCRL2log(mcrl2::log::debug) << "Program linked and bound." << std::endl;
-
-  QOpenGLExtraFunctions* f = QOpenGLContext::currentContext()->extraFunctions();
-  QOpenGLFunctions_4_3_Core* f430 =
-      QOpenGLContext::currentContext()
-          ->versionFunctions<QOpenGLFunctions_4_3_Core>();
-  m_vao.create();
-  QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
-
-  // VBO
-  m_vbo.create();
-  m_vbo.bind();
-  m_vbo.allocate(m_vertexdata_cpu, 2 * sizeof(int) * m_total_vert);
-  f->glEnableVertexAttribArray(0);
-  f->glVertexAttribIPointer(0, 2, GL_INT, 0, 0);
-  m_vbo.release();
-
-  // IBO
-  m_ibo = QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
-  m_ibo.create();
-  m_ibo.bind();
-  m_ibo.allocate(m_triangles_cpu, 3 * sizeof(int) * m_total_tris);
-  m_ibo.release();
-
-  // SSBO
-  createBufferObject(m_ssbo1, "b_verts", m_vertices_cpu,
-                     m_total_vert * 4 * sizeof(float), f, f430);
-
-  mCRL2log(mcrl2::log::debug) << "SSBO1: " << m_ssbo1.isCreated() << ", "
-                              << m_ssbo1.bufferId() << std::endl;
-
-  createBufferObject(m_ssbo2, "b_normals", m_normals_cpu,
-                     m_total_vert * 4 * sizeof(float), f, f430);
-
-  mCRL2log(mcrl2::log::debug) << "SSBO2: " << m_ssbo2.isCreated() << ", "
-                              << m_ssbo2.bufferId() << std::endl;
-
-  createBufferObject(m_ssbo3, "b_colors", m_colors_cpu,
-                     4 * m_scenegraph.sceneData.colors.size() * sizeof(float),
-                     f, f430);
-
-  mCRL2log(mcrl2::log::debug) << "SSBO3: " << m_ssbo3.isCreated() << ", "
-                              << m_ssbo3.bufferId() << std::endl;
-
-  createBufferObject(
-      m_ssbo4, "b_matrices", m_matrices_cpu,
-      16 * m_scenegraph.sceneData.matrices.size() * sizeof(float), f,
-      f430); // column major
-
-  mCRL2log(mcrl2::log::debug) << "SSBO4: " << m_ssbo4.isCreated() << ", "
-                              << m_ssbo4.bufferId() << std::endl;
-
-  glCheckError();
+  auto end = std::chrono::high_resolution_clock::now();
 
   mCRL2log(mcrl2::log::debug)
-      << "[testscene] Device name: " << f->glGetString(GL_RENDERER)
+      << "Took "
+      << std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
+             .count()
+      << "ms to complete CPU->GPU generation." << std::endl;
+  m_built = true;
+
+  mCRL2log(mcrl2::log::debug)
+      << "Verts: " << m_total_vert << " Tris: " << m_total_tris << std::endl;
+  mCRL2log(mcrl2::log::debug)
+      << m_instances.size() << "/" << m_scenegraph.sceneData.nodes.size()
+      << " draw calls" << std::endl;
+}
+/// @brief Initialize scene.
+void Test::TScene::initializeScene()
+{
+  initializeOpenGLFunctions();
+  glCheckError();
+  int* viewport = new int[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  m_camera->setViewport(viewport[2] - viewport[0],
+                        viewport[3] - viewport[1]);
+  m_camera->reset();
+
+
+  m_prog.addShaderFromSourceCode(QOpenGLShader::Vertex, VS);
+  glCheckError();
+  m_prog.addShaderFromSourceCode(QOpenGLShader::Fragment, FS);
+  glCheckError();
+  mCRL2log(mcrl2::log::debug) << "Program linked and bound." << std::endl;
+  
+  if (!m_prog.link())
+  {
+    mCRL2log(mcrl2::log::debug) << "Failed to link shader." << std::endl;
+    mCRL2log(mcrl2::log::debug) << m_prog.log().toStdString() << std::endl;
+  }
+
+  if (!m_prog.bind())
+  {
+    mCRL2log(mcrl2::log::debug) << "Failed to bind shader." << std::endl;
+    mCRL2log(mcrl2::log::debug) << m_prog.log().toStdString() << std::endl;
+  }
+
+  m_vao.create();
+  m_vao.bind();
+
+  m_vertex_loc = m_prog.attributeLocation("vertex");
+  m_normal_loc = m_prog.attributeLocation("normal");
+  m_color_loc = m_prog.attributeLocation("color");
+  m_model_matrix_loc = m_prog.attributeLocation("model_mat");
+
+  m_prog.enableAttributeArray(m_vertex_loc);
+  m_prog.enableAttributeArray(m_normal_loc);
+  m_prog.enableAttributeArray(m_color_loc);
+  glVertexAttribDivisor(m_color_loc, 1);
+  m_prog.enableAttributeArray(m_model_matrix_loc);
+  for (int i = 0; i < 4; i++)
+  {
+    m_prog.enableAttributeArray(m_model_matrix_loc + i);
+    glVertexAttribDivisor(m_model_matrix_loc + i, 1);
+  }
+
+  rebuildScene();
+  // rebuildscene cleaned up
+  mCRL2log(mcrl2::log::debug)
+      << "[testscene] Device name: " << glGetString(GL_RENDERER)
       << std::endl;
 
   mCRL2log(mcrl2::log::debug)
       << "[testscene] " << m_prog.log().toStdString() << std::endl;
+
 }
 
 int color_offset = 0;
 void Test::TScene::renderScene()
 {
+  //mCRL2log(mcrl2::log::debug) << "TScene::renderScene() " << m_built << std::endl;
   if (!m_built)
-    return;
+    rebuildScene();
   if (!m_prog.isLinked())
   {
     initializeScene();
   }
-  QOpenGLExtraFunctions* f = QOpenGLContext::currentContext()->extraFunctions();
-  f->glEnable(GL_BLEND);
-  glCheckError();
-  f->glDepthMask(GL_TRUE);
-  glCheckError();
-  f->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-  glCheckError();
-  f->glDisable(GL_DEPTH_TEST);
-  glCheckError();
-  f->glEnable(GL_CULL_FACE);
-  glCheckError();
-  f->glCullFace(GL_BACK);
-  glCheckError();
 
   m_prog.bind();
+  glDisable(GL_BLEND);
+  glCheckError();
+  glDepthMask(GL_TRUE);
+  glCheckError();
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+  glCheckError();
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+  glCheckError();
+  glDisable(GL_CULL_FACE);
+  glCheckError();
+  //glCullFace(GL_BACK);
+  glCheckError();
 
   QMatrix4x4 view = m_camera->getViewMatrix();
   QMatrix4x4 proj = m_camera->getProjectionMatrix();
 
-#ifdef DEBUG_PRINT_PV
+#ifdef DEBUG_PRINT_VP
   mCRL2log(mcrl2::log::debug) << "View matrix: " << std::endl;
   for (int i = 0; i < 16; ++i)
   {
@@ -496,12 +494,12 @@ void Test::TScene::renderScene()
 
   m_prog.setUniformValue("u_view", view);
   m_prog.setUniformValue("u_proj", proj);
-
-  QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
-
-  m_ibo.bind();
-  f->glDrawElements(GL_TRIANGLES, m_total_tris * 3, GL_UNSIGNED_INT, (void*)0);
   glCheckError();
-  vaoBinder.release();
+  m_vao.bind();
+  for (Instance* instance : m_instances)
+  {
+    instance->render(this, m_prog);
+  }
+
   m_prog.release();
 }

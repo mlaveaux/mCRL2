@@ -1,4 +1,4 @@
-#version 430 compatibility
+#version 330
 
 in vec4 vs_color;
 out vec4 out_color;
