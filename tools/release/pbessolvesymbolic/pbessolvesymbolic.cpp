@@ -54,7 +54,7 @@ public:
       std::array<sylvan::ldds::ldd, 2> Vwon = m_Vwon;
 
       ldd V = union_(m_visited, m_todo);
-      pbes_system::symbolic_parity_game G(pbes(), summand_groups(), data_index(), V, m_options.no_relprod, m_options.chaining);
+      pbes_system::symbolic_parity_game G(pbes(), summand_groups(), data_index(), V, m_options.no_relprod, m_options.chaining, m_options.strategy);
       G.print_information();
       pbes_system::symbolic_pbessolve_algorithm solver(G);
 
@@ -193,6 +193,7 @@ class pbessolvesymbolic_tool: public parallel_tool<rewriter_tool<input_output_to
                       "2 also split conjunctive conditions into multiple equations which often yield more reachable states.\n"
                       "3 alternative split for conjunctive conditions where even more states can become reachable.",
                       'c');
+      desc.add_option("strategy", "computes the winning strategy");
       desc.add_option("total", "make the SRF PBES total", 't');
       desc.add_option("reset", "set constant values when introducing parameters");
       desc.add_hidden_option("aggressive", "apply on-the-fly solving after every iteration to detect bugs");
@@ -227,6 +228,7 @@ class pbessolvesymbolic_tool: public parallel_tool<rewriter_tool<input_output_to
       options.info                                  = parser.has_option("info");
       options.summand_groups                        = parser.option_argument("groups");
       options.variable_order                        = parser.option_argument("reorder");
+      options.strategy                              = parser.has_option("strategy");
       options.make_total                            = parser.has_option("total");
       options.reset_parameters                      = parser.has_option("reset");
       if (!options.make_total)
@@ -316,7 +318,7 @@ class pbessolvesymbolic_tool: public parallel_tool<rewriter_tool<input_output_to
         {
           if (options.max_iterations == 0)
           {
-            pbes_system::symbolic_parity_game G(reach.pbes(), reach.summand_groups(), reach.data_index(), V, options.no_relprod, options.chaining);
+            pbes_system::symbolic_parity_game G(reach.pbes(), reach.summand_groups(), reach.data_index(), V, options.no_relprod, options.chaining, options.strategy);
             G.print_information();
             pbes_system::symbolic_pbessolve_algorithm solver(G);
 
@@ -348,7 +350,8 @@ class pbessolvesymbolic_tool: public parallel_tool<rewriter_tool<input_output_to
       sylvan::sylvan_set_limits(memory_limit * 1024 * 1024 * 1024, std::log2(table_ratio), std::log2(initial_ratio));
       sylvan::sylvan_init_package();
       sylvan::sylvan_init_ldd();
-
+      sylvan::ldds::initialise();
+  
       mCRL2log(log::verbose) << options << std::endl;
 
       pbes_system::pbes pbesspec = pbes_system::detail::load_pbes(input_filename());

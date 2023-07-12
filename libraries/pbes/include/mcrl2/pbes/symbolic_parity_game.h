@@ -206,6 +206,7 @@ class symbolic_parity_game
     std::map<std::size_t, ldd> m_rank_map;
     bool m_no_relprod = false;
     bool m_chaining = false;
+    bool m_strategy = false;
 
     const std::vector<symbolic::data_expression_index>& m_data_index; // for debugging only
     ldd m_all_nodes; // for debugging only
@@ -220,12 +221,19 @@ class symbolic_parity_game
       const std::vector<symbolic::data_expression_index>& data_index,
       const ldd& V,
       bool no_relprod,
-      bool chaining
+      bool chaining,
+      bool strategy
     )
-      : m_summand_groups(summand_groups), m_no_relprod(no_relprod), m_chaining(chaining), m_data_index(data_index), m_all_nodes(V)
+      : m_summand_groups(summand_groups), m_no_relprod(no_relprod), m_chaining(chaining), m_strategy(strategy), m_data_index(data_index), m_all_nodes(V)
     {
       using namespace sylvan::ldds;
       using utilities::detail::contains;
+
+      if (strategy) 
+      {
+        mCRL2log(log::info) << "Solving will not use chaining since it cannot be used while computing the strategy" << std::endl;
+        chaining = false;
+      }
 
       // Determine priority and owner from the given pbes.
       auto equation_info = detail::compute_equation_info(pbes, data_index);
@@ -309,13 +317,13 @@ class symbolic_parity_game
       return detail::print_graph(V, m_all_nodes, m_summand_groups, m_data_index, m_V[0], m_rank_map);
     }
 
-    /// \brief Compute the attractor set for U assuming that sinks(V) = emptyset.
+    /// \brief Compute the attractor set for U assuming that sinks(V) = emptyset. Optionally computes a strategy if enabled, empty otherwise.
     /// \param alpha the current player
     /// \param V is the set of states
     /// \param Vplayer a partitioning of the nodes into the sets of even nodes V[0] and odd V[1].
     /// \param I is a set of incomplete vertices.
     /// \param T A set of states such that iteration stops when one of them occurs in the attractor.
-    ldd safe_attractor(const ldd& U,
+    std::pair<ldd, ldd> safe_attractor(const ldd& U,
       std::size_t alpha,
       const ldd& V,
       const std::array<const ldd, 2>& Vplayer,
@@ -330,21 +338,24 @@ class symbolic_parity_game
       std::size_t iter = 0;
       ldd Z = U;
       ldd todo = U;
-
       ldd Zoutside = minus(V, Z);
+      ldd strategy = empty_set();
+
       while (todo != empty_set())
       {
         // Terminate early when a vertex in T was found.
         if (intersect(T, Z) != empty_set() )
         {
-          return Z;
+          return std::make_pair(Z, strategy);
         }
 
         mCRL2log(log::debug1) << "todo = " << print_nodes(todo) << std::endl;
         mCRL2log(log::debug1) << "Zoutside = " << print_nodes(Zoutside) << std::endl;
         stopwatch iter_start;
 
-        todo = minus(safe_control_predecessors_impl(alpha, todo, Zoutside, Zoutside, V, Vplayer, I), Z);
+        const auto& [pred, pred_strategy] = safe_control_predecessors_impl(alpha, todo, Zoutside, Zoutside, V, Vplayer, I);
+        todo = minus(pred, Z);
+        strategy = union_(strategy, pred_strategy);
         Z = union_(Z, todo);
         Zoutside = minus(Zoutside, todo);
 
@@ -354,7 +365,7 @@ class symbolic_parity_game
       }
 
       mCRL2log(log::debug) << "finished attractor set computation (time = " << std::setprecision(2) << std::fixed << attractor_watch.seconds() << "s)" << std::endl;
-      return Z;
+      return std::make_pair(Z, strategy);
     }
 
     /// \brief Compute the monotone attractor set for U assuming that sinks(V) = emptyset.
@@ -405,7 +416,7 @@ class symbolic_parity_game
         mCRL2log(log::debug1) << "Zoutside = " << print_nodes(Zoutside) << std::endl;
         stopwatch iter_start;
 
-        todo = intersect(Vc, minus(safe_control_predecessors_impl(alpha, union_(todo, U), V, minus(Zoutside, U), Vc, Vplayer, I), Z));
+        todo = intersect(Vc, minus(safe_control_predecessors_impl(alpha, union_(todo, U), V, minus(Zoutside, U), Vc, Vplayer, I).first, Z));
         Z = union_(Z, todo);
         Zoutside = minus(Zoutside, todo);
 
@@ -485,8 +496,8 @@ class symbolic_parity_game
         winning[1] = union_(winning[1], intersect(Vsinks, m_V[0]));
       }
 
-      winning[0] = safe_attractor(winning[0], 0, V, Vplayer, I);
-      winning[1] = safe_attractor(winning[1], 1, V, Vplayer, I);
+      winning[0] = safe_attractor(winning[0], 0, V, Vplayer, I).first;
+      winning[1] = safe_attractor(winning[1], 1, V, Vplayer, I).first;
 
       // After removing the deadlock (winning) states the resulting set of states is a total graph.
       return minus(minus(V, winning[0]), winning[1]);
@@ -503,7 +514,7 @@ class symbolic_parity_game
       // Compute the safe sets from the resulting subgraph.
       std::array<const ldd, 2> Vplayer = players(V);
       ldd S = sinks(I, V);
-      return minus(V, safe_attractor(union_(intersect(I, Vplayer[1-alpha]), S), 1-alpha, V, Vplayer));
+      return minus(V, safe_attractor(union_(intersect(I, Vplayer[1-alpha]), S), 1-alpha, V, Vplayer).first);
     }
 
     /// \brief Returns the mapping from priorities (ranks) to vertex sets.
@@ -538,7 +549,7 @@ class symbolic_parity_game
       const ldd& I = sylvan::ldds::empty_set()) const
     {
       ldd outside = minus(V, U);
-      return safe_control_predecessors_impl(alpha, U, V, outside, W, Vplayer, I);
+      return safe_control_predecessors_impl(alpha, U, V, outside, W, Vplayer, I).first;
     }
 
     /// \brief Computes the set of vertices in U subseteq V that are sinks (no outgoing edges into V).
@@ -580,7 +591,7 @@ private:
 
     /// \brief Compute the safe control attractor set for U where chaining is restricted to W and V are vertices consider as control predecessors (can be different from outside).
     ///        The set outside should be minus(V, U)
-    ldd safe_control_predecessors_impl(std::size_t alpha,
+    std::pair<ldd, ldd> safe_control_predecessors_impl(std::size_t alpha,
       const ldd& U,
       const ldd& V,
       const ldd& outside,
@@ -593,6 +604,7 @@ private:
       ldd P = m_chaining ? predecessors_chaining(V, U, intersect(Vplayer[alpha], W)) : predecessors(V, U);
       ldd Palpha = intersect(P, Vplayer[alpha]);
       ldd Pforced = minus(intersect(P, Vplayer[1-alpha]), I);
+      ldd strategy = m_strategy ? merge(Palpha, U) : empty_set();
 
       for (std::size_t i = 0; i < m_summand_groups.size(); ++i)
       {
@@ -605,7 +617,7 @@ private:
                                << " (time = " << std::setprecision(2) << std::fixed << watch.seconds() << "s)\n";
       }
 
-      return union_(Palpha, Pforced);
+      return std::make_pair(union_(Palpha, Pforced), strategy);
     } 
 };
 

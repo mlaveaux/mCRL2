@@ -39,6 +39,7 @@ struct symbolic_reachability_options
   bool replace_constants_by_variables = false;
   bool remove_unused_rewrite_rules = false;
   bool saturation = false;
+  bool strategy = false;
   bool no_discard = false;
   bool no_discard_read = false;
   bool no_discard_write = false;

@@ -34,9 +34,10 @@
 #include <sylvan.h>
 #include <sylvan_table.h>
 #include <sylvan_ldd.h>
+#include <sylvan_int.h>
 #include <boost/iterator/iterator_facade.hpp>
 
-extern llmsset_t nodes;
+static uint64_t cache_merge_id = 0;
 
 namespace sylvan::ldds
 {
@@ -515,7 +516,7 @@ void ldd_solutions_callback(WorkerP*, Task*, std::uint32_t* v, std::size_t n, vo
 }
 
 inline
-std::vector<std::vector<std::uint32_t>> ldd_solutions(const sylvan::ldds::ldd& x)
+std::vector<std::vector<std::uint32_t>> ldd_solutions(const ldds::ldd& x)
 {
   std::vector<std::vector<std::uint32_t>> result;
   sat_all_nopar(x, ldd_solutions_callback, &result);
@@ -523,7 +524,7 @@ std::vector<std::vector<std::uint32_t>> ldd_solutions(const sylvan::ldds::ldd& x
 }
 
 inline
-std::string print_ldd(const sylvan::ldds::ldd& x)
+std::string print_ldd(const ldds::ldd& x)
 {
   std::ostringstream out;
   auto solutions = ldd_solutions(x);
@@ -555,9 +556,9 @@ std::string print_ldd(const sylvan::ldds::ldd& x)
 }
 
 inline
-std::ostream& operator<<(std::ostream& out, const sylvan::ldds::ldd& x)
+std::ostream& operator<<(std::ostream& out, const ldds::ldd& x)
 {
-  return out << sylvan::ldds::print_ldd(x);
+  return out << ldds::print_ldd(x);
 }
 
 // Returns { x in X | x[0] = value }
@@ -574,6 +575,34 @@ ldd fix_first_element(const ldd& X, std::uint32_t value)
     }
   }
   return node(value, x.down());
+}
+
+// Initialise caches for custom LDD operations.
+void initialise() {
+  cache_merge_id = cache_next_opid();
+}
+
+ldd merge(ldd a, ldd b) {
+  if (a == ldds::empty_list()) {
+    return b;
+  } else if (b == ldds::empty_list()) {
+    return a;
+  } else if (a == ldds::empty_set() || b == ldds::empty_set()) {
+    return ldds::empty_set();
+  } else {
+    
+    MDD result;
+    if (cache_get(cache_merge_id, a.get(), b.get(), &result)) 
+    {
+      return ldd(result);
+    }
+
+    ldd new_result = node(a.value(), merge(b.down(), a), merge(a.right(), b));
+
+    cache_put(cache_merge_id, a.get(), b.get(), new_result.get());
+    return new_result;
+  }
+
 }
 
 // Computes the meta for relprod and relprev
@@ -627,9 +656,8 @@ ldd compute_meta(const std::vector<std::size_t>& read, const std::vector<std::si
 
 // Returns true if V is a subset of U
 inline
-bool includes(const sylvan::ldds::ldd& U, const sylvan::ldds::ldd& V)
+bool includes(const ldds::ldd& U, const ldds::ldd& V)
 {
-  using namespace sylvan::ldds;
   return union_(U, V) == U;
 }
 

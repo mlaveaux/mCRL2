@@ -30,13 +30,13 @@ class symbolic_pbessolve_algorithm
       m_G(G)
     {}
 
-    std::pair<ldd, ldd> zielonka(const ldd& V)
+    std::tuple<ldd, ldd, ldd, ldd> zielonka(const ldd& V)
     {
       using namespace sylvan::ldds;
 
       if (V == empty_set())
       {
-        return { empty_set(), empty_set() };
+        return { empty_set(), empty_set(), empty_set(), empty_set() };
       }
 
       stopwatch timer;
@@ -49,24 +49,30 @@ class symbolic_pbessolve_algorithm
       std::array<const ldd, 2> Vplayer = m_G.players(V);
 
       ldd W[2];
+      ldd strategy[2];
       ldd W_1[2];
+      ldd strategy_1[2];
 
-      ldd A = m_G.safe_attractor(U, alpha, V, Vplayer);
+      const auto [A, A_strategy] = m_G.safe_attractor(U, alpha, V, Vplayer);
       mCRL2log(log::debug1) << "A = attractor(" << m_G.print_nodes(U) << ", " << m_G.print_nodes(V) << ") = " << m_G.print_nodes(A) << std::endl;
-      std::tie(W_1[0], W_1[1]) = zielonka(minus(V, A));
+      std::tie(W_1[0], W_1[1], strategy_1[0], strategy_1[1]) = zielonka(minus(V, A));
 
       // Original Zielonka version
       if (W_1[1 - alpha] == empty_set())
       {
         W[alpha] = union_(A, W_1[alpha]);
         W[1 - alpha] = empty_set();
+        strategy[alpha] = union_(merge(A_strategy, strategy_1[alpha]), merge(U, V));
+        strategy[1 - alpha] = empty_set();
       }
       else
       {
-        ldd B = m_G.safe_attractor(W_1[1 - alpha], 1 - alpha, V, Vplayer);
+        const auto [B, B_strategy] = m_G.safe_attractor(W_1[1 - alpha], 1 - alpha, V, Vplayer);
         mCRL2log(log::debug1) << "B = attractor(" << m_G.print_nodes(W_1[1 - alpha]) << ", " << m_G.print_nodes(V) << ") = " << m_G.print_nodes(B) << std::endl;
-        std::tie(W[0], W[1]) = zielonka(minus(V, B));
+        std::tie(W[0], W[1], strategy[0], strategy[1]) = zielonka(minus(V, B));
         W[1 - alpha] = union_(W[1 - alpha], B);
+        strategy[1 - alpha] = union_(union_(strategy_1[1 - alpha], B_strategy), strategy[1 - alpha]);
+        strategy[alpha] = strategy_1[alpha];
       }
 
       mCRL2log(log::debug) << "finished zielonka recursion (time = " << std::setprecision(2) << std::fixed << timer.seconds() << "s)\n";
@@ -75,7 +81,7 @@ class symbolic_pbessolve_algorithm
       mCRL2log(log::debug1) << "W0 = " << m_G.print_nodes(W[0]) << std::endl;
       mCRL2log(log::debug1) << "W1 = " << m_G.print_nodes(W[1]) << std::endl;
       assert(union_(W[0], W[1]) == V);
-      return { W[0], W[1] };
+      return { W[0], W[1], strategy[0], strategy[1] };
     }
 
   public:
@@ -107,7 +113,7 @@ class symbolic_pbessolve_algorithm
 
       // If the initial vertex has not yet been won then run the zielonka solver as well.
       mCRL2log(log::debug1) << "\n--- apply zielonka to ---\n" << m_G.print_graph(V) << std::endl;
-      auto const& [solved0, solved1] = zielonka(Vtotal);
+      auto const& [solved0, solved1, strategy0, strategy1] = zielonka(Vtotal);
       mCRL2log(log::verbose) << "finished solving (time = " << std::setprecision(2) << std::fixed << timer.seconds() << "s)\n";
       mCRL2log(log::debug1) << "W0 = " << m_G.print_nodes(solved0) << std::endl;
       mCRL2log(log::debug1) << "W1 = " << m_G.print_nodes(solved1) << std::endl;
@@ -145,12 +151,12 @@ class symbolic_pbessolve_algorithm
       }
 
       // Solve with zielonka twice for the safe sets.
-      ldd solved0 = union_(zielonka(m_G.compute_safe_vertices(0, Vtotal, I)).first, winning[0]);
+      ldd solved0 = union_(std::get<0>(zielonka(m_G.compute_safe_vertices(0, Vtotal, I))), winning[0]);
       if (includes(solved0, initial_vertex))
       {
         return { solved0, winning[1] };
       }
-      ldd solved1 = union_(zielonka(m_G.compute_safe_vertices(1, Vtotal, I)).second, winning[1]);
+      ldd solved1 = union_(std::get<1>(zielonka(m_G.compute_safe_vertices(1, Vtotal, I))), winning[1]);
       return { solved0, solved1 };
     }
 
@@ -220,11 +226,11 @@ class symbolic_pbessolve_algorithm
 
         if (safe_variant)
         {
-          winning[alpha] = union_(winning[alpha], m_G.safe_attractor(U, alpha, Vtotal, Vplayer, I));
+          winning[alpha] = union_(winning[alpha], m_G.safe_attractor(U, alpha, Vtotal, Vplayer, I).first);
         }
         else
         {
-          winning[alpha] = union_(winning[alpha], m_G.safe_attractor(U, alpha, Vsafe[alpha], Vplayer));
+          winning[alpha] = union_(winning[alpha], m_G.safe_attractor(U, alpha, Vsafe[alpha], Vplayer).first);
         }
       }
 
@@ -307,11 +313,11 @@ class symbolic_pbessolve_algorithm
 
         if (safe_variant)
         {
-          winning[alpha] = union_(winning[alpha], m_G.safe_attractor(U, alpha, Vtotal, Vplayer, I));
+          winning[alpha] = union_(winning[alpha], m_G.safe_attractor(U, alpha, Vtotal, Vplayer, I).first);
         }
         else
         {
-          winning[alpha] = union_(winning[alpha], m_G.safe_attractor(U, alpha, Vsafe[alpha], Vplayer));
+          winning[alpha] = union_(winning[alpha], m_G.safe_attractor(U, alpha, Vsafe[alpha], Vplayer).first);
         }
       }
 
@@ -370,11 +376,11 @@ class symbolic_pbessolve_algorithm
           {
             if (safe_variant)
             {
-              winning[alpha] = union_(winning[alpha], m_G.safe_attractor(Z, alpha, Vtotal, Vplayer, I));
+              winning[alpha] = union_(winning[alpha], m_G.safe_attractor(Z, alpha, Vtotal, Vplayer, I).first);
             }
             else
             {
-              winning[alpha] = union_(winning[alpha], m_G.safe_attractor(Z, alpha, Vsafe[alpha], Vplayer));
+              winning[alpha] = union_(winning[alpha], m_G.safe_attractor(Z, alpha, Vsafe[alpha], Vplayer).first);
             }
             mCRL2log(log::debug) << "found " << std::setw(12) << satcount(Z) << " states in fatal attractors for priority " << c << "\n";
             break;
