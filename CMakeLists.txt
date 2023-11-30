@@ -42,6 +42,7 @@ option(MCRL2_ENABLE_DOC_PDFLATEX    "Enable generation of reference pdfs using p
 option(MCRL2_ENABLE_BOOST_JSON_SUPPORT "Enable compilation of tools and libraries that require boost::json. This raises the minimal boost version requirement to 1.71.0." OFF)
 option(MCRL2_ENABLE_SYLVAN          "Enable the Sylvan library required by the following symbolic tools: lpsreach, pbessolvesymbolic and ltsconvertsymbolic" ${UNIX})
 option(MCRL2_ENABLE_BENCHMARKS      "Enable benchmarks. Build the 'benchmarks' target to generate the necessary files and tools. Run the benchmarks using ctest." OFF)
+option(MCRL2_ENABLE_PYTHON_BINDINGS "Enable the generation of Python bindings using pybind" OFF)
 
 option(MCRL2_ENABLE_TESTS           "Enable generation of library and random test targets." OFF)
 option(MCRL2_ENABLE_HEADER_TESTS    "Enable generation of headertest targets." OFF)
@@ -102,7 +103,6 @@ include(ConfigureCompiler)
 include(MCRL2Version)
 include(MCRL2AddTarget)
 
-
 if(MCRL2_ENABLE_CODE_COVERAGE)
   include(CodeCoverage)
 endif()
@@ -115,18 +115,23 @@ if (MCRL2_ENABLE_SYLVAN)
   add_subdirectory(3rd-party/sylvan/src)
 endif()
 
-if (MCRL2_ENABLE_BENCHMARKS)
+if(MCRL2_ENABLE_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
 
 add_subdirectory(libraries)
 add_subdirectory(tools)
 
-if (MCRL2_ENABLE_DOCUMENTATION)
+if(MCRL2_ENABLE_PYTHON_BINDINGS)
+  add_subdirectory(3rd-party/pybind11)
+  add_subdirectory(bindings/python)
+endif()
+
+if(MCRL2_ENABLE_DOCUMENTATION)
   add_subdirectory(doc)
 endif()
 
-if (MCRL2_ENABLE_TESTS)
+if(MCRL2_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
