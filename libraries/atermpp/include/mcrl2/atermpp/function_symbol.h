@@ -33,6 +33,16 @@ public:
   function_symbol() = default;
 
   /// \brief Defines a function symbol from a name and arity combination.
+  function_symbol(const detail::_function_symbol* symbol)
+   : m_function_symbol(symbol)
+  {}
+
+  const detail::_function_symbol* address() const
+  {
+    return m_function_symbol.get();
+  }
+
+  /// \brief Defines a function symbol from a name and arity combination.
   function_symbol(const std::string& name, const std::size_t arity_)
    : function_symbol(name, arity_, true)
   {}
