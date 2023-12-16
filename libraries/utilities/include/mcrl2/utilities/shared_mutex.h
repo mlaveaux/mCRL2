@@ -172,6 +172,51 @@ public:
   inline
   lock_guard lock()
   {
+    lock_impl();
+    return lock_guard(*this);
+  }
+
+  // Release exclusive access to the busy-forbidden lock.
+  inline
+  void unlock()
+  {
+    unlock_impl();
+  }
+
+  /// Acquires a shared lock on this instance, returns a shared guard that keeps the lock until it is destroyed.
+  /// Or alternative, unlock_shared is called explicitly.
+  inline
+  shared_guard lock_shared()
+  {
+    lock_shared_impl();
+    return shared_guard(*this);
+  }
+
+  /// \returns True iff the shared mutex is in the shared section
+  bool is_shared_locked() const
+  {
+    return m_lock_depth != 0;
+  }
+
+  friend class lock_guard;
+  friend class shared_guard;
+  friend class shared_mutex_pool;
+  
+  void unlock_impl()
+  {
+    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
+    {
+      for (auto& mutex : m_shared->other)
+      {
+        mutex->set_forbidden(false);
+      }
+
+      m_shared->mutex.unlock();
+    }
+  }
+
+  inline
+  void lock_impl() {
     if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
     {
       // Shared and exclusive sections MUST be disjoint.
@@ -199,48 +244,6 @@ public:
           mutex->wait_for_busy();
         }
       }
-    }
-
-    return lock_guard(*this);
-  }
-
-  // Release exclusive access to the busy-forbidden lock.
-  inline
-  void unlock()
-  {
-    unlock_impl();
-  }
-
-  /// Acquires a shared lock on this instance, returns a shared guard that keeps the lock until it is destroyed.
-  /// Or alternative, unlock_shared is called explicitly.
-  inline
-  shared_guard lock_shared()
-  {
-    lock_shared_impl();
-    return shared_guard(*this);
-  }
-
-  /// \returns True iff the shared mutex is in the shared section
-  bool is_shared_locked() const
-  {
-    return m_lock_depth != 0;
-  }
-
-private:
-  friend class lock_guard;
-  friend class shared_guard;
-  friend class shared_mutex_pool;
-  
-  void unlock_impl()
-  {
-    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
-    {
-      for (auto& mutex : m_shared->other)
-      {
-        mutex->set_forbidden(false);
-      }
-
-      m_shared->mutex.unlock();
     }
   }
     
