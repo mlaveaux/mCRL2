@@ -93,9 +93,8 @@ void aterm_pool::add_deletion_hook(function_symbol sym, term_callback callback)
 
 void aterm_pool::collect(mcrl2::utilities::shared_mutex& mutex)
 {
-  m_count_until_collection = 0;
   collect_impl(mutex);
-} 
+}
 
 void aterm_pool::register_thread_aterm_pool(thread_aterm_pool_interface& pool)
 {
@@ -173,7 +172,7 @@ void aterm_pool::created_term(bool allow_collect, mcrl2::utilities::shared_mutex
   // Defer garbage collection when it happens too often.
   if (m_count_until_collection.load(std::memory_order_relaxed) <= 0)
   {
-    if (allow_collect)
+    if (allow_collect && m_enable_garbage_collection.load(std::memory_order_relaxed))
     {
       collect_impl(shared_mutex);
     }
@@ -198,7 +197,7 @@ void aterm_pool::created_term(bool allow_collect, mcrl2::utilities::shared_mutex
 
 void aterm_pool::collect_impl(mcrl2::utilities::shared_mutex& shared_mutex)
 {
-  if (m_enable_garbage_collection) 
+  if (EnableGarbageCollection && m_count_until_collection.load(std::memory_order_relaxed) == 0) 
   {
     mcrl2::utilities::lock_guard guard = shared_mutex.lock();
     if (m_count_until_collection > 0)
