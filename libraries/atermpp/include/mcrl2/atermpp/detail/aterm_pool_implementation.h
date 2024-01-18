@@ -197,7 +197,7 @@ void aterm_pool::created_term(bool allow_collect, mcrl2::utilities::shared_mutex
 
 void aterm_pool::collect_impl(mcrl2::utilities::shared_mutex& shared_mutex)
 {
-  if (EnableGarbageCollection && m_count_until_collection.load(std::memory_order_relaxed) == 0) 
+  if (EnableGarbageCollection) 
   {
     mcrl2::utilities::lock_guard guard = shared_mutex.lock();
     if (m_count_until_collection > 0)

@@ -129,6 +129,20 @@ public:
   /// \brief Enable garbage collection when passing true and disable otherwise.
   inline void enable_garbage_collection(bool enable) { m_enable_garbage_collection = enable; };
 
+  /// Tests if garbage collection or resizing is necessary and performs it.
+  inline void test_garbage_collection(mcrl2::utilities::shared_mutex& mutex) 
+  { 
+      if (m_count_until_collection.load(std::memory_order_relaxed) <= 0)
+      {
+          collect_impl(mutex);
+      }
+
+      if (m_count_until_resize.load(std::memory_order_relaxed) <= 0)
+      {
+          resize_if_needed(mutex);
+      }
+  }
+
   inline function_symbol_pool& get_symbol_pool() { return m_function_symbol_pool; }
 
   // These functions of the aterm pool should be called through a thread_aterm_pool.
