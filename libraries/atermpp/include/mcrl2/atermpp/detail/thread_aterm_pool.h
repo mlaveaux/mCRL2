@@ -122,6 +122,8 @@ public:
   /// Triggers a global garbage collection
   inline void collect() { m_pool.collect(m_shared_mutex); }
 
+  inline void test_garbage_collection() { m_pool.test_garbage_collection(m_shared_mutex); }
+
 private:
   aterm_pool& m_pool;
 
