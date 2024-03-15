@@ -93,6 +93,7 @@ void aterm_pool::add_deletion_hook(function_symbol sym, term_callback callback)
 
 void aterm_pool::collect(mcrl2::utilities::shared_mutex& mutex)
 {
+  m_count_until_collection = 0;
   collect_impl(mutex);
 }
 
