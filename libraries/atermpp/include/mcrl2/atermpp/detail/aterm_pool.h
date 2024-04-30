@@ -180,7 +180,8 @@ private:
   /// \details threadsafe
   inline void resize_if_needed(mcrl2::utilities::shared_mutex& shared);
 
-  mcrl2::utilities::shared_mutex& shared_mutex() { return m_shared_mutex; }
+  /// Returns a copy of the shared mutex that can be used to acquire access.
+  mcrl2::utilities::shared_mutex shared_mutex() { return m_shared_mutex; }
 
   /// \returns The total number of term variables residing in the protection sets.
   inline std::size_t protection_set_size() const;
@@ -215,8 +216,11 @@ private:
 
   std::atomic<bool> m_enable_garbage_collection = EnableGarbageCollection; /// Garbage collection is enabled.
 
-  /// All the shared mutexes.
+  /// The shared mutex used by the thread_term_pools.
   mcrl2::utilities::shared_mutex m_shared_mutex;
+
+  /// The global mutex used for garbage collection.
+  std::mutex m_mutex;
 
   /// Represents an empty list.
   aterm m_empty_list;

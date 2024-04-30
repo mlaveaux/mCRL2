@@ -92,6 +92,9 @@ struct shared_mutex_data
 
   /// \brief Mutex for adding/removing shared_guards.
   std::mutex mutex;  
+
+  /// \brief The shared forbidden flag.
+  std::atomic<bool> forbidden;
   
   /// Adds a shared mutex to the data.
   inline
@@ -175,21 +178,16 @@ public:
     if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
     {
       // Shared and exclusive sections MUST be disjoint.
-      assert(!m_busy_flag);
+      assert(!m_busy_flag && m_lock_depth == 0);
       
       // Only one thread can halt everything.
       m_shared->mutex.lock();
+      m_lock_depth = 1;
 
       assert(std::find(m_shared->other.begin(), m_shared->other.end(), this) != m_shared->other.end());
 
       // Indicate that threads must wait.
-      for (auto& mutex : m_shared->other)
-      {
-        if (mutex != this)
-        {
-          mutex->set_forbidden(true);
-        }
-      }
+      m_shared->forbidden = true;
 
       // Wait for all pools to indicate that they are not busy.
       for (const auto& mutex : m_shared->other)
@@ -235,11 +233,9 @@ private:
   {
     if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
     {
-      for (auto& mutex : m_shared->other)
-      {
-        mutex->set_forbidden(false);
-      }
-
+      m_shared->forbidden = false;
+      assert(m_lock_depth == 1);      
+      m_lock_depth = 0;
       m_shared->mutex.unlock();
     }
   }
@@ -253,7 +249,7 @@ private:
       m_busy_flag.store(true);
 
       // Wait for the forbidden flag to become false.
-      while (m_forbidden_flag.load())
+      while (m_shared->forbidden.load())
       {
         m_busy_flag = false;
 
@@ -296,15 +292,8 @@ private:
     while (m_busy_flag.load()) { /* wait */ };
   }
 
-  inline
-  void set_forbidden(bool value)
-  {
-    m_forbidden_flag.store(value);
-  }
-
-  /// \brief A boolean flag indicating whether this thread is working inside the global aterm pool.
+  /// \brief A boolean flag indicating whether this thread is working inside the shared section.
   std::atomic<bool> m_busy_flag = false;
-  std::atomic<bool> m_forbidden_flag = false;
 
   /// \brief It can happen that un/lock_shared calls are nested, so keep track of the nesting depth and only
   ///        actually perform un/locking at the root.
