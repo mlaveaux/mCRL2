@@ -11,11 +11,9 @@
 #define MCRL2_UTILITIES_DETAIL_SHARED_MUTEX_H
 
 #include <assert.h>
-#include <algorithm>
 #include <atomic>
 #include <memory>
-#include <mutex>
-#include <vector>
+#include <shared_mutex>
 
 #include "mcrl2/utilities/noncopyable.h"
 #include "mcrl2/utilities/configuration.h"
@@ -85,30 +83,31 @@ private:
   bool is_locked = true;
 };
 
+const std::size_t NUM_SHARED_MUTEXES = 8;
+
+namespace 
+{
+  struct padding
+  {
+    alignas(64)
+    std::shared_mutex mutex;
+  };
+
+  static_assert(sizeof(padding) == 64);
+}
+
 struct shared_mutex_data 
 {
   /// \brief The list of other mutexes.
-  std::vector<shared_mutex*> other;
-
-  /// \brief Mutex for adding/removing shared_guards.
-  std::mutex mutex;  
+  std::array<padding, NUM_SHARED_MUTEXES> mutexes;
+  std::atomic<std::size_t> m_next = 0;
   
-  /// Adds a shared mutex to the data.
+  /// Returns the next index in the queue
   inline
-  void register_mutex(shared_mutex* shared_mutex)
+  std::size_t register_mutex()
   {
-    std::lock_guard guard(mutex);
-    other.emplace_back(shared_mutex);
-  }
-  
-  // Removes a shared mutex from the data
-  inline void unregister_mutex(shared_mutex* shared_mutex) 
-  {
-    std::lock_guard guard(mutex);
-    auto it = std::find(other.begin(), other.end(), shared_mutex);
-    assert(it != other.end());
-
-    other.erase(it);
+    m_next = (m_next + 1) % NUM_SHARED_MUTEXES;
+    return m_next;
   }
 };
 
@@ -120,52 +119,13 @@ public:
   shared_mutex()
     : m_shared(std::make_shared<shared_mutex_data>())
   {
-    m_shared->register_mutex(this);
+    m_index = m_shared->register_mutex();
   }
 
-  ~shared_mutex() 
-  { 
-    m_shared->unregister_mutex(this);
-  }
-
-  /// The copy/move constructor/assignment should not be called while any lock_guard or shared_guard is alive.
   shared_mutex(const shared_mutex& other)
     : m_shared(other.m_shared)
   {
-    m_shared->register_mutex(this);
-  }
-
-  shared_mutex(shared_mutex&& other)  
-    : m_shared(other.m_shared)
-  {
-    m_shared->register_mutex(this);
-    m_shared->unregister_mutex(&other);
-  }
-
-  shared_mutex& operator=(const shared_mutex& other)
-  {
-    if (this != &other)
-    {
-      // Remove ourselves, and register into the other shared.
-      m_shared->unregister_mutex(this);
-
-      m_shared = other.m_shared;
-      m_shared->register_mutex(this);
-    }
-    return *this;
-  }
-
-  shared_mutex& operator=(shared_mutex&& other)
-  {
-    if (this != &other)
-    {
-      m_shared->unregister_mutex(this);
-
-      m_shared = other.m_shared;
-      m_shared->register_mutex(this);
-      m_shared->unregister_mutex(&other);
-    }
-    return *this;
+    m_index = m_shared->register_mutex();
   }
   
   // Obtain exclusive access to the busy-forbidden lock.
@@ -175,29 +135,13 @@ public:
     if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
     {
       // Shared and exclusive sections MUST be disjoint.
-      assert(!m_busy_flag);
-      
-      // Only one thread can halt everything.
-      m_shared->mutex.lock();
+      assert(m_lock_depth == 0);
 
-      assert(std::find(m_shared->other.begin(), m_shared->other.end(), this) != m_shared->other.end());
+      m_lock_depth = 1;
 
-      // Indicate that threads must wait.
-      for (auto& mutex : m_shared->other)
+      for (auto& padding : m_shared->mutexes)
       {
-        if (mutex != this)
-        {
-          mutex->set_forbidden(true);
-        }
-      }
-
-      // Wait for all pools to indicate that they are not busy.
-      for (const auto& mutex : m_shared->other)
-      {
-        if (mutex != this)
-        {
-          mutex->wait_for_busy();
-        }
+        padding.mutex.lock();
       }
     }
 
@@ -235,12 +179,14 @@ private:
   {
     if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
     {
-      for (auto& mutex : m_shared->other)
+      // Unlock in the reverse order.
+      for (auto it = m_shared->mutexes.rbegin(); it != m_shared->mutexes.rend(); ++it)
       {
-        mutex->set_forbidden(false);
+        it->mutex.unlock();
       }
 
-      m_shared->mutex.unlock();
+      assert(m_lock_depth == 1);
+      m_lock_depth = 0;
     }
   }
     
@@ -249,20 +195,7 @@ private:
   {
     if (mcrl2::utilities::detail::GlobalThreadSafe && m_lock_depth == 0)
     {
-      assert(!m_busy_flag);
-      m_busy_flag.store(true);
-
-      // Wait for the forbidden flag to become false.
-      while (m_forbidden_flag.load())
-      {
-        m_busy_flag = false;
-
-        // Wait for the global lock.
-        m_shared->mutex.lock();
-        m_shared->mutex.unlock();
-        
-        m_busy_flag = true;
-      }
+      m_shared->mutexes[m_index].mutex.lock_shared();
     }
 
     ++m_lock_depth;
@@ -277,34 +210,12 @@ private:
     --m_lock_depth;
     if (mcrl2::utilities::detail::GlobalThreadSafe && m_lock_depth == 0)
     {
-      assert(m_busy_flag);
-      m_busy_flag.store(false, std::memory_order_release);
+      m_shared->mutexes[m_index].mutex.unlock_shared();
     }
   }
 
-  /// \returns True iff the shared mutex has its busy flag set. 
-  inline
-  bool is_busy() const
-  {
-    return m_busy_flag.load();
-  }
-
-  /// \brief Waits for the busy flag to become false.
-  inline
-  void wait_for_busy() const
-  {
-    while (m_busy_flag.load()) { /* wait */ };
-  }
-
-  inline
-  void set_forbidden(bool value)
-  {
-    m_forbidden_flag.store(value);
-  }
-
   /// \brief A boolean flag indicating whether this thread is working inside the global aterm pool.
-  std::atomic<bool> m_busy_flag = false;
-  std::atomic<bool> m_forbidden_flag = false;
+  std::size_t m_index = 0;
 
   /// \brief It can happen that un/lock_shared calls are nested, so keep track of the nesting depth and only
   ///        actually perform un/locking at the root.

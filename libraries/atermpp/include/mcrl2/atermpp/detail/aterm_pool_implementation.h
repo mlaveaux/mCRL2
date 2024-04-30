@@ -99,14 +99,14 @@ void aterm_pool::collect(mcrl2::utilities::shared_mutex& mutex)
 
 void aterm_pool::register_thread_aterm_pool(thread_aterm_pool_interface& pool)
 {
-  mcrl2::utilities::lock_guard guard = m_shared_mutex.lock();
+  std::lock_guard guard(m_mutex);
   m_thread_pools.insert(m_thread_pools.end(), &pool);
 }
 
 void aterm_pool::remove_thread_aterm_pool(thread_aterm_pool_interface& pool)
 {
-  mcrl2::utilities::lock_guard guard = m_shared_mutex.lock();
-  
+  std::lock_guard guard(m_mutex);
+    
   auto it = std::find(m_thread_pools.begin(), m_thread_pools.end(), &pool);
   if (it != m_thread_pools.end())
   {
@@ -200,6 +200,7 @@ void aterm_pool::collect_impl(mcrl2::utilities::shared_mutex& shared_mutex)
 {
   if (m_enable_garbage_collection) 
   {
+    std::lock_guard guard_outer(m_mutex);
     mcrl2::utilities::lock_guard guard = shared_mutex.lock();
     if (m_count_until_collection > 0)
     {
@@ -378,6 +379,7 @@ bool aterm_pool::create_appl_dynamic(aterm& term,
 
 void aterm_pool::resize_if_needed(mcrl2::utilities::shared_mutex& mutex)
 {
+  std::lock_guard guard_outer(m_mutex);
   mcrl2::utilities::lock_guard guard = mutex.lock();
   if (m_count_until_resize > 0)
   {

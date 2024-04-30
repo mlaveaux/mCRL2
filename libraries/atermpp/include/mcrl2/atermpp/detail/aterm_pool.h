@@ -217,6 +217,7 @@ private:
 
   /// All the shared mutexes.
   mcrl2::utilities::shared_mutex m_shared_mutex;
+  std::mutex m_mutex;
 
   /// Represents an empty list.
   aterm m_empty_list;
