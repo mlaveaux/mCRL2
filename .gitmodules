@@ -1,0 +1,3 @@
+[submodule "3rd-party/oxidd"]
+	path = 3rd-party/oxidd
+	url = https://github.com/OxiDD/oxidd
