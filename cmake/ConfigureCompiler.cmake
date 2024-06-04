@@ -47,6 +47,11 @@ if(NOT ${MCRL2_ENABLE_SOUNDNESS_CHECKS})
 endif()
 
 # Add compiler definitions
+if(MCRL2_ENABLE_OXIDD)
+  add_compile_definitions(MCRL2_ENABLE_OXIDD)
+endif()
+
+
 if(MCRL2_ENABLE_SYLVAN)
   add_compile_definitions(MCRL2_ENABLE_SYLVAN)
 endif()
