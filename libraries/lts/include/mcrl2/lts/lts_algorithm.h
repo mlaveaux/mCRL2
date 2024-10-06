@@ -27,6 +27,7 @@
 #ifdef BRANCH_BIS_EXPERIMENT_JFG
 #include "mcrl2/lts/detail/liblts_bisim_gj.h"
 #endif
+#include "mcrl2/lts/detail/liblts_bisim_martens.h"
 #include "mcrl2/lts/detail/liblts_branching_bisim_minimal_depth.h"
 #include "mcrl2/lts/detail/liblts_weak_bisim.h"
 #include "mcrl2/lts/detail/liblts_add_an_action_loop.h"
@@ -128,6 +129,10 @@ bool destructive_compare(LTS_TYPE& l1,
       return detail::destructive_bisimulation_compare_gj(l1,l2, true,false,generate_counter_examples,counter_example_file,structured_output);
     }
 #endif
+    case lts_eq_branching_bisim_martens:
+    {
+      return detail::destructive_bisimulation_compare_martens(l1, l2);
+    }
     case lts_eq_divergence_preserving_branching_bisim:
     {
       if (generate_counter_examples)
@@ -683,6 +688,11 @@ void reduce(LTS_TYPE& l,lts_equivalence eq)
       return;
     }
 #endif
+    case lts_eq_branching_bisim_martens:
+    {
+      detail::bisimulation_reduce_martens(l);
+      return;
+    }
     case lts_eq_branching_bisim_sigref:
     {
       sigref<LTS_TYPE, signature_branching_bisim<LTS_TYPE> > s(l);

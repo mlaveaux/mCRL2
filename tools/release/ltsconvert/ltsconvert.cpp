@@ -371,6 +371,7 @@ class ltsconvert_tool : public input_output_tool
 #ifdef BRANCH_BIS_EXPERIMENT_JFG
                       .add_value(lts_eq_branching_bisim_gj)
 #endif
+                      .add_value(lts_eq_branching_bisim_martens)
                       .add_value(lts_eq_branching_bisim_sigref)
                       .add_value(lts_eq_divergence_preserving_branching_bisim)
                       .add_value(lts_eq_divergence_preserving_branching_bisim_gv)
