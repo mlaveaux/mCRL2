@@ -46,6 +46,7 @@ enum lts_equivalence
 #ifdef BRANCH_BIS_EXPERIMENT_JFG
   lts_eq_branching_bisim_gj,     /**< Branching bisimulation equivalence using the expremental O(m log n) algorithm [Groote/Jansen 2024] */
 #endif
+  lts_eq_branching_bisim_martens,
   lts_eq_branching_bisim_sigref, /**< Branching bisimulation equivalence using the signature refinement algorithm [Blom/Orzan 2003] */
   lts_eq_divergence_preserving_branching_bisim, /**< Divergence-preserving branching bisimulation equivalence using the O(m log n) algorithm [Jansen/Groote/Keiren/Wijs 2019] */
   lts_eq_divergence_preserving_branching_bisim_gv,    /**< Divergence-preserving branching bisimulation equivalence using the O(mn) algorithm [Groote/Vaandrager 1990] */
@@ -261,6 +262,8 @@ inline std::string print_equivalence(const lts_equivalence eq)
     case lts_eq_branching_bisim_gj:
       return "branching-bisim-gj";
 #endif
+    case lts_eq_branching_bisim_martens:  
+      return "branching-bisim-martens"; 
     case lts_eq_branching_bisim_sigref:
       return "branching-bisim-sig";
     case lts_eq_divergence_preserving_branching_bisim:
@@ -350,6 +353,8 @@ inline std::string description(const lts_equivalence eq)
     case lts_eq_divergence_preserving_branching_bisim_gj:
       return "divergence-preserving branching bisimilarity using the O(m log n) experimental algorithm [Groote/Jansen 2024]";
 #endif
+    case lts_eq_branching_bisim_martens:
+      return "Martens experimental algorithm";
     case lts_eq_divergence_preserving_branching_bisim_sigref:
       return "divergence-preserving branching bisimilarity using the signature refinement algorithm [Blom/Orzan 2003]";
     case lts_eq_weak_bisim:
