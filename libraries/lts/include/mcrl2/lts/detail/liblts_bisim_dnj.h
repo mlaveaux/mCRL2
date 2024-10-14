@@ -86,6 +86,7 @@
 #include "mcrl2/lts/detail/coroutine.h"
 #include "mcrl2/lts/detail/check_complexity.h"
 #include "mcrl2/lts/detail/fixed_vector.h"
+#include "mcrl2/utilities/execution_timer.h"
 
 #include <cstddef>   // for std::size_t
 
@@ -5499,23 +5500,31 @@ void bisimulation_reduce_dnj(LTS_TYPE& l, bool const branching = false,
     }
     // Line 2.1: Find tau-SCCs and contract each of them to a single state
 mCRL2log(log::verbose) << "Start SCC\n";
+    mcrl2::utilities::execution_timer timer;
     if (branching)
     {
+        timer.start("scc_reduce");
         scc_reduce(l, preserve_divergence);
         // If only 1 state remains after this contraction, we are already
         // finished because scc_reduce() also removes duplicated transitions.
+        timer.finish("scc_reduce");
         if (1 >= l.num_states())  return;
     }
 
 mCRL2log(log::verbose) << "Start Partitioning\n";
     // Now apply the branching bisimulation reduction algorithm.  If there
     // are no taus, this will automatically yield strong bisimulation.
+    timer.start("reduction");
     bisim_partitioner_dnj<LTS_TYPE> bisim_part(l, branching,
                                                           preserve_divergence);
+    timer.finish("reduction");
 
     // Assign the reduced LTS
 mCRL2log(log::verbose) << "Start finalizing\n";
+    timer.start("quotient");
     bisim_part.finalize_minimized_LTS();
+    timer.finish("quotient");
+    timer.report();
 }
 
 

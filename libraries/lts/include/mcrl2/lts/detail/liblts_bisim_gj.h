@@ -29,6 +29,7 @@
 #include "mcrl2/utilities/hash_utility.h"
 #include "mcrl2/lts/detail/liblts_scc.h"
 #include "mcrl2/lts/detail/liblts_merge.h"
+#include "mcrl2/utilities/execution_timer.h"
 
 #ifndef NDEBUG
 #define CHECK_COMPLEXITY_GJ // Check whether coroutines etc. satisfy the O(m log n) time complexity constraint for the concrete input.
@@ -4706,19 +4707,27 @@ void bisimulation_reduce_gj(LTS_TYPE& l, const bool branching = false,
     }
     // Line 1.2: Find tau-SCCs and contract each of them to a single state
 mCRL2log(log::verbose) << "Start SCC\n";
+    mcrl2::utilities::execution_timer timer;
     if (branching)
     {
+        timer.start("scc_reduce");
         scc_reduce(l, preserve_divergence);
+        timer.finish("scc_reduce");
     }
 
     // Now apply the branching bisimulation reduction algorithm.  If there
     // are no taus, this will automatically yield strong bisimulation.
 mCRL2log(log::verbose) << "Start Partitioning\n";
+    timer.start("reduction");
     bisim_partitioner_gj<LTS_TYPE> bisim_part(l, branching, preserve_divergence);
+    timer.finish("reduction");
 
     // Assign the reduced LTS
+    timer.start("quotient");
 mCRL2log(log::verbose) << "Start finalizing\n";
     bisim_part.finalize_minimized_LTS();
+    timer.finish("quotient");
+    timer.report();
 }
 
 

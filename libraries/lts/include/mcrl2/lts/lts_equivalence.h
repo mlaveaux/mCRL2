@@ -144,6 +144,10 @@ lts_equivalence parse_equivalence(std::string const& s)
       return lts_eq_branching_bisim_gj;
   }
 #endif
+  else if (s == "branching-bisim-martens")
+  {
+    return lts_eq_branching_bisim_martens;
+  }
   else if (s == "branching-bisim-sig")
   {
     return lts_eq_branching_bisim_sigref;
