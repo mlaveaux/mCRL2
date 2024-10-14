@@ -210,9 +210,7 @@ class ltsconvert_tool : public input_output_tool
         {
           mCRL2log(verbose) << "Reducing LTS (modulo " <<  description(tool_options.equivalence) << ")..." << std::endl;
           mCRL2log(verbose) << "Before reduction: " << l.num_states() << " states and " << l.num_transitions() << " transitions." << std::endl;
-          timer().start("reduction");
           reduce(l,tool_options.equivalence);
-          timer().finish("reduction");
           mCRL2log(verbose) << "After reduction: " << l.num_states() << " states and " << l.num_transitions() << " transitions." << std::endl;
         }
       }

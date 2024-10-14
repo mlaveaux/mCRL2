@@ -6512,7 +6512,9 @@ void bisimulation_reduce_gj(LTS_TYPE& l, const bool branching = false,
     mCRL2log(log::verbose) << "Start SCC\n";
     if (branching)
     {
+        timer.start("scc_reduce");
         scc_reduce(l, preserve_divergence);
+        timer.finish("scc_reduce");
     }
 
     // Now apply the branching bisimulation reduction algorithm.  If there

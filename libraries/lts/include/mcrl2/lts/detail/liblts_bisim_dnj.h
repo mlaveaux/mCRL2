@@ -4821,9 +4821,11 @@ void bisimulation_reduce_dnj(LTS_TYPE& l, bool const branching = false,
     mCRL2log(log::verbose) << "Start SCC\n";
     if (branching)
     {
+        timer.start("scc_reduce");
         scc_reduce(l, preserve_divergence);
         // If only 1 state remains after this contraction, we are already
         // finished because scc_reduce() also removes duplicated transitions.
+        timer.finish("scc_reduce");
         if (1 >= l.num_states())  return;
     }
     // Now apply the branching bisimulation reduction algorithm.  If there
@@ -4832,6 +4834,7 @@ void bisimulation_reduce_dnj(LTS_TYPE& l, bool const branching = false,
     mCRL2log(log::verbose) << "Start Partitioning\n";
     bisim_partitioner_dnj<LTS_TYPE> bisim_part(l, branching,
                                                           preserve_divergence);
+    timer.finish("reduction");
 
     // Assign the reduced LTS
     const std::clock_t end_part=std::clock();
