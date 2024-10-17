@@ -58,6 +58,7 @@ class lpsreach_tool: public parallel_tool<rewriter_tool<input_output_tool>>
       desc.add_option("reorder", utilities::make_optional_argument("ORDER", "none"),
                       "'none' (default) no variable reordering\n"
                       "'random' variables are put in a random order\n"
+                      "'weighted' variables are put in an order defined by their connectivity weight\n"
                       "'a user defined permutation e.g. '1 3 2 0 4'"
                       );
       desc.add_option("max-iterations", utilities::make_optional_argument("NUM", "0"), "limit number of breadth-first iterations to NUM");

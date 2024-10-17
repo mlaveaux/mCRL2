@@ -134,7 +134,7 @@ class lpsreach_algorithm
       m_summand_patterns = compute_read_write_patterns(lpsspec_);
       symbolic::adjust_read_write_patterns(m_summand_patterns, m_options);
 
-      m_variable_order = symbolic::compute_variable_order(m_options.variable_order, m_lts.process_parameters.size());
+      m_variable_order = symbolic::compute_variable_order(m_options.variable_order, m_lts.process_parameters.size(), m_summand_patterns);
       mCRL2log(log::debug) << "variable order = " << core::detail::print_list(m_variable_order) << std::endl;
       m_summand_patterns = symbolic::reorder_read_write_patterns(m_summand_patterns, m_variable_order);
       mCRL2log(log::debug) << symbolic::print_read_write_patterns(m_summand_patterns);
