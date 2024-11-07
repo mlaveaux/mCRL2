@@ -12,6 +12,7 @@
 
 #include "mcrl2/data/variable.h"
 #include "mcrl2/utilities/detail/container_utility.h"
+#include "mcrl2/utilities/logger.h"
 #include "mcrl2/utilities/parse_numbers.h"
 #include "mcrl2/utilities/text_utility.h"
 
@@ -186,7 +187,7 @@ std::string print_read_write_patterns(const std::vector<boost::dynamic_bitset<>>
 
 /// Returns the distances to each vertex in the graph S from s.
 inline
-std::vector<std::size_t> distances(std::vector<boost::dynamic_bitset<>>& adjacency, boost::dynamic_bitset<> S, std::size_t s) {
+std::vector<std::size_t> distances(const std::vector<boost::dynamic_bitset<>>& adjacency, const boost::dynamic_bitset<> S, std::size_t s) {
   
   // Number of vertices in the graph.
   std::size_t n = adjacency[0].size();
@@ -196,11 +197,12 @@ std::vector<std::size_t> distances(std::vector<boost::dynamic_bitset<>>& adjacen
   dist[s] = 0;
 
   for (std::size_t k = 0; k < n; ++k) {
+
     for (std::size_t i = 0; i < n; ++i) {
       if (S[i]) {      
         for (std::size_t j = 0; j < n; ++j) {
           if (S[j] && i != j) {
-            if (adjacency[i][j] > 0) {
+            if (adjacency[i][j] > 0 && dist[i] !=  std::numeric_limits<size_t>::max())  {
               dist[j] = std::min(dist[j], dist[i] + 1);
             }
           }
@@ -214,16 +216,10 @@ std::vector<std::size_t> distances(std::vector<boost::dynamic_bitset<>>& adjacen
 
 /// Returns the sum of weighted distances to all other vertices.
 inline
-float weight(std::vector<boost::dynamic_bitset<>>& adjacency, boost::dynamic_bitset<> S, std::size_t s)
+float weight(const std::vector<boost::dynamic_bitset<>>& adjacency, boost::dynamic_bitset<> S, std::size_t s)
 {
   // Compute the weight of each vertex.
   std::vector<std::size_t> dist = distances(adjacency, S, s);
-
-  std::cout << S << std::endl;
-  for (const auto& d : dist) {
-    std::cout << d << ", ";
-  }
-  std::cout << std::endl;
 
   // Compute the weight of the set S.
   float weight = 0.0;
@@ -241,6 +237,58 @@ inline
 bool is_used(const boost::dynamic_bitset<>& pattern, std::size_t i)
 {
   return pattern[2*i] || pattern[2*i+1];
+}
+
+/// Details
+///
+/// Let G = (E, V) be the graph defined by the read write patterns, such that (u, v) in E if and only if there is a pattern in which u and v are both used.
+/// G_U, for U subset V, is a subgraph in which only the vertices in U are considered.
+/// 
+/// weight(u, G) = sum_{v in V} 2^(-d(u, v)), where d(u, v) is the distance between u and v in G.
+///
+/// The algorithm is as follows recurse(G, &order):
+/// 1. while G is not empty
+/// 2.  pick u in G such that weight(u, G) is maximal
+/// 3.  order := order u
+/// 4.  determine G_u, the connected component of u in G
+/// 5.  recurse(G_u, &order)
+/// End
+inline
+void weighted_order_rec(std::vector<std::size_t>& order, boost::dynamic_bitset<> S, std::size_t n, const std::vector<boost::dynamic_bitset<>>& adjacency)
+{  
+    while (S.any())
+    {
+      // Determine the maximum weight within U
+      float max_weight = 0.0f;
+      std::size_t index = std::numeric_limits<std::size_t>::max();
+      for (std::size_t i = 0; i < n; ++i) {
+        if (S[i]) {
+          float w = weight(adjacency, S, i);
+          if (w > max_weight) {
+            max_weight = w;
+            index = i;
+          }
+        }
+      }
+
+      // Determine the connected component for the vertex with the maximum weight
+      boost::dynamic_bitset<> U(S.size());
+      auto dist = distances(adjacency, S, index);
+      for (std::size_t j = 0; j < n; ++j) {
+        if (S[j] && index != j) {
+          if (dist[j] != std::numeric_limits<std::size_t>::max()) {
+            S[j] = false;
+            U[j] = true;
+          }
+        }
+      }
+
+      // Remove this vertex from S and add it to the order.
+      S[index] = false;
+      order.push_back(index);
+
+      weighted_order_rec(order, U, n, adjacency);
+    }
 }
 
 inline
@@ -266,66 +314,20 @@ std::vector<std::size_t> compute_variable_order_weighted(const std::vector<boost
         }
       }
     }
-
-    std::cout << adjacency[i] << std::endl;
   }
 
   std::vector<std::size_t> order;  
   boost::dynamic_bitset<> S(n);
   S.set();
   
-  while (S.any()) {
-    boost::dynamic_bitset<> U(S);
+  weighted_order_rec(order, S, n, adjacency);
 
-    // Determine the maximum weight
-    float max_weight = 0.0f;
-    std::size_t index = std::numeric_limits<std::size_t>::max();
-    for (std::size_t i = 0; i < n; ++i) {
-      if (S[i]) {
-        float w = weight(adjacency, S, i);
-        if (w > max_weight) {
-          max_weight = w;
-          index = i;
-        }
-      }
-    }
-
-    std::cout << "Maximum " << max_weight << " parameter " << index << std::endl;
-
-    // Determine the connected component
-    auto dist = distances(adjacency, S, index);
-    for (std::size_t j = 0; j < n; ++j) {
-      if (S[j] && index != j) {
-        if (dist[j] == std::numeric_limits<std::size_t>::max()) {
-          U[j] = false;
-        }
-      }
-    }
-
-    std::cout << "U " << U << std::endl;
-
-    // Determine the maximum weight
-    max_weight = 0.0f;
-    index = std::numeric_limits<std::size_t>::max();
-    for (std::size_t i = 0; i < n; ++i) {
-      if (S[i]) {
-        float w = weight(adjacency, U, i);
-        if (w > max_weight) {
-          max_weight = w;
-          index = i;
-        }
-      }
-    }
-    std::cout << "Maximum " << max_weight << " parameter " << index << std::endl;
-
-    S[index] = false;
-    order.push_back(index);
-  }
-
+  // Print the resulting order. 
+  mCRL2log(log::verbose) << "weighted order = ";
   for (const auto& val : order) {    
-    std::cout << val << ", ";
+    mCRL2log(log::verbose) << val << ", ";
   }
-  std::cout << std::endl;
+  mCRL2log(log::verbose) << std::endl;
 
   return order;
 }
