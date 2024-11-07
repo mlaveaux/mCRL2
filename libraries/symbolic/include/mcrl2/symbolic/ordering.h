@@ -200,13 +200,13 @@ std::vector<std::size_t> distances(std::vector<boost::dynamic_bitset<>>& adjacen
       if (S[i]) {      
         for (std::size_t j = 0; j < n; ++j) {
           if (S[j] && i != j) {
-            if (adjacency[i][j]) {
+            if (adjacency[i][j] > 0) {
               dist[j] = std::min(dist[j], dist[i] + 1);
             }
           }
         }
       }
-    }    
+    }
   }
 
   return dist;
@@ -218,6 +218,12 @@ float weight(std::vector<boost::dynamic_bitset<>>& adjacency, boost::dynamic_bit
 {
   // Compute the weight of each vertex.
   std::vector<std::size_t> dist = distances(adjacency, S, s);
+
+  std::cout << S << std::endl;
+  for (const auto& d : dist) {
+    std::cout << d << ", ";
+  }
+  std::cout << std::endl;
 
   // Compute the weight of the set S.
   float weight = 0.0;
@@ -244,8 +250,6 @@ std::vector<std::size_t> compute_variable_order_weighted(const std::vector<boost
     return {};
   }
 
-  std::cout << symbolic::print_read_write_patterns(read_write_group_patterns);
-
   // Compute an adjacency matrix for the graph
   std::size_t n = read_write_group_patterns[0].size() / 2;
 
@@ -262,6 +266,8 @@ std::vector<std::size_t> compute_variable_order_weighted(const std::vector<boost
         }
       }
     }
+
+    std::cout << adjacency[i] << std::endl;
   }
 
   std::vector<std::size_t> order;  
@@ -271,24 +277,36 @@ std::vector<std::size_t> compute_variable_order_weighted(const std::vector<boost
   while (S.any()) {
     boost::dynamic_bitset<> U(S);
 
-    // Determine the first connected component    
+    // Determine the maximum weight
+    float max_weight = 0.0f;
+    std::size_t index = std::numeric_limits<std::size_t>::max();
     for (std::size_t i = 0; i < n; ++i) {
       if (S[i]) {
-        auto dist = distances(adjacency, S, i);
-
-        for (std::size_t j = 0; j < n; ++j) {
-          if (S[j] && i != j) {
-            if (dist[j] == std::numeric_limits<std::size_t>::max()) {
-              U[j] = false;
-            }
-          }
+        float w = weight(adjacency, S, i);
+        if (w > max_weight) {
+          max_weight = w;
+          index = i;
         }
       }
     }
 
+    std::cout << "Maximum " << max_weight << " parameter " << index << std::endl;
+
+    // Determine the connected component
+    auto dist = distances(adjacency, S, index);
+    for (std::size_t j = 0; j < n; ++j) {
+      if (S[j] && index != j) {
+        if (dist[j] == std::numeric_limits<std::size_t>::max()) {
+          U[j] = false;
+        }
+      }
+    }
+
+    std::cout << "U " << U << std::endl;
+
     // Determine the maximum weight
-    float max_weight = 0.0f;
-    std::size_t index = std::numeric_limits<std::size_t>::max();
+    max_weight = 0.0f;
+    index = std::numeric_limits<std::size_t>::max();
     for (std::size_t i = 0; i < n; ++i) {
       if (S[i]) {
         float w = weight(adjacency, U, i);
@@ -298,12 +316,17 @@ std::vector<std::size_t> compute_variable_order_weighted(const std::vector<boost
         }
       }
     }
+    std::cout << "Maximum " << max_weight << " parameter " << index << std::endl;
 
     S[index] = false;
     order.push_back(index);
   }
 
-  std::cout << "returned" << std::endl;
+  for (const auto& val : order) {    
+    std::cout << val << ", ";
+  }
+  std::cout << std::endl;
+
   return order;
 }
 
