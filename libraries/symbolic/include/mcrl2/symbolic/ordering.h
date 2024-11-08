@@ -319,6 +319,11 @@ std::vector<std::size_t> compute_variable_order_weighted(const std::vector<boost
   std::vector<std::size_t> order;  
   boost::dynamic_bitset<> S(n);
   S.set();
+
+  if (exclude_first_variable) {
+    S[0] = false;
+    order.push_back(0);
+  }
   
   weighted_order_rec(order, S, n, adjacency);
 
