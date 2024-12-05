@@ -1,4 +1,4 @@
-#include "glluts.h"
+#include "generic_visualizer/glutil/glluts.h"
 #include <cmath>
 #include "mathutils.h"
 

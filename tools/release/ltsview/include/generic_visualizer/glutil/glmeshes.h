@@ -1,7 +1,7 @@
 #pragma once
 #ifndef MCRL2_OPENGL_MESHES_H
 #define MCRL2_OPENGL_MESHES_H
-#define INF 10000000000000
+#define INF 10000000000000.0
 
 #include <vector>
 #include <array>

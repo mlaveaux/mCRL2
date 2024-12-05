@@ -11,9 +11,9 @@
 #include <QMatrix4x4>
 #include <QColor> 
 
-#include "glvectortree.h"
-#include "glshapes.h"
-#include "gltree.h"
+#include "generic_visualizer/glutil/glvectortree.h"
+#include "generic_visualizer/glutil/glshapes.h"
+#include "generic_visualizer/glutil/gltree.h"
 
 #ifndef MCRL2_OPENGL_VISTREE_H
 #define MCRL2_OPENGL_VISTREE_H

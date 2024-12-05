@@ -12,7 +12,7 @@
 #include "ui_savepicturedialog.h"
 #include <QDialog>
 
-#include "ltscanvas.h"
+#include "visualizer/ltscanvas.h"
 
 class SavePictureDialog : public QDialog
 {

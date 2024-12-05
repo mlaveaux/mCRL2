@@ -13,8 +13,8 @@
 #include <QVector3D>
 #include <QMatrix4x4>
 #include <stack>
-#include "glscenegraph.h"
-#include "glvistree.h"
+#include "generic_visualizer/glscenegraph.h"
+#include "generic_visualizer/glvistree.h"
 #include "settings.h"
 #include <string>
 #include <iostream>

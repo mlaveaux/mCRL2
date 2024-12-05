@@ -7,13 +7,13 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLExtraFunctions>
 
-#include "glscene.h"
+#include "generic_visualizer/glscene.h"
 #include <vector>
 #include "cluster.h"
 
-#include "glvistree.h"
-#include "glscenegraph.h"
-#include "glmeshes.h"
+#include "generic_visualizer/glvistree.h"
+#include "generic_visualizer/glscenegraph.h"
+#include "generic_visualizer/glutil/glmeshes.h"
 
 #include <map>
 #include <tuple>

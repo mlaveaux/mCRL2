@@ -7,7 +7,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 
 #include "mcrl2/utilities/logger.h"
-#include "ltscanvas.h"
+#include "visualizer/ltscanvas.h"
 #include <tr/tr.h>
 
 #include "mcrl2/gui/arcball.h"
@@ -18,10 +18,10 @@
 #include "icons/rotate_cursor.xpm"
 
 // #include "scene.h"
-#include "arcballcamera.h"
+#include "generic_visualizer/cameras/arcballcamera.h"
 #include "state.h" 
 
-#include "glutil.h"
+#include "generic_visualizer/glutil/glutil.h"
 
 #include <chrono>
 
@@ -32,7 +32,7 @@ LtsCanvas::LtsCanvas(QWidget* parent, LtsManager* ltsManager, MarkManager* markM
   m_width(0),
   m_height(0),
   m_dragging(false),
-  frame_times(QLinkedList<QTime>())
+  frame_times(std::list<QTime>())
 {
   m_selectCursor = QCursor(Qt::ArrowCursor);
   m_panCursor = QCursor(QPixmap(pan_cursor));
@@ -179,7 +179,7 @@ void LtsCanvas::paintGL()
   auto end = std::chrono::high_resolution_clock::now();
   // glGetInteger64v(GL_TIMESTAMP, &end);
 
-  frame_times.append(QTime::currentTime());
+  frame_times.emplace_back(QTime::currentTime());
   while(frame_times.back().msecsSinceStartOfDay() - frame_times.front().msecsSinceStartOfDay() > measuring_time * 1000) frame_times.pop_front();
   graphics_info = QString("Version: ").append((const char *)glGetString(GL_VERSION));
   graphics_info.append("\nAverage frame time: ").append(QString::number(measuring_time / frame_times.size()));

@@ -6,8 +6,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-#include "markdock.h"
-#include "markstateruledialog.h"
+#include "ui/markdock.h"
+#include "ui/markstateruledialog.h"
 #include <QMessageBox>
 
 MarkDock::MarkDock(QWidget *parent, MarkManager *markManager):

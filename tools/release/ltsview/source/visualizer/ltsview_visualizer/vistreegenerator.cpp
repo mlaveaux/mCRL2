@@ -1,8 +1,8 @@
-#include "vistreegenerator.h"
+#include "visualizer/ltsview_visualizer/vistreegenerator.h"
 #include "cluster.h"
 #include "mcrl2/utilities/logger.h"
-#include "glvistree.h"
-#include "glcolor.h"
+#include "generic_visualizer/glvistree.h"
+#include "generic_visualizer/glutil/glcolor.h"
 
 #include <iostream>
 
@@ -108,7 +108,7 @@ VisTree::VisTreeNode* VisTreeGenerator::generateCones(Cluster* root, int max_ran
 struct RankFunctor
 {
   int max_rank = -1;
-  nullptr_t* operator()(nullptr_t* parent,
+  std::nullptr_t* operator()(std::nullptr_t* parent,
                                    Cluster* cluster){ if (cluster) max_rank = std::max(max_rank, cluster->getRank()); return nullptr; };
 };
 
@@ -119,9 +119,9 @@ VisTree::VisTreeNode* VisTreeGenerator::generate(Mode mode, Cluster* root){
       [](Cluster* node) { return node->descendants.begin(); };
     std::function<std::vector<Cluster*>::iterator(Cluster*)> getChildEnd =
       [](Cluster* node) { return node->descendants.end(); };
-    std::function<void(nullptr_t*, nullptr_t*)> dummy_func = std::function<void(nullptr_t*, nullptr_t*)>([](nullptr_t* a, nullptr_t* b) { return; });
+    std::function<void(std::nullptr_t*, std::nullptr_t*)> dummy_func = std::function<void(std::nullptr_t*, std::nullptr_t*)>([](std::nullptr_t* a, std::nullptr_t* b) { return; });
     
-    GlUtil::fold_tree<nullptr_t, Cluster, RankFunctor, std::vector<Cluster*>::iterator>(
+    GlUtil::fold_tree<std::nullptr_t, Cluster, RankFunctor, std::vector<Cluster*>::iterator>(
         nullptr,
         root,
         dummy_func,

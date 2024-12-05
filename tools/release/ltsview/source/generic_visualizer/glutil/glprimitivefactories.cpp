@@ -1,4 +1,4 @@
-#include "glprimitivefactories.h"
+#include "generic_visualizer/glutil/glprimitivefactories.h"
 #include "mathutils.h"
 
 using namespace GlUtil;

@@ -8,14 +8,15 @@
 //
 
 #include <QtOpenGL>
-#include "glutil.h"
+#include "generic_visualizer/glutil/glutil.h"
 #include "mcrl2/utilities/logger.h"
 
 #include <QWidget>
+#include <qmessagebox.h>
 
-#include "glwidget.h"
-#include "arcballcamera.h"
-#include "glscenegraph.h"
+#include "visualizer/glwidget.h"
+#include "generic_visualizer/cameras/arcballcamera.h"
+#include "generic_visualizer/glscenegraph.h"
 
 void GLWidget::determineActiveTool(QMouseEvent* event, bool useModifiers)
 {
@@ -28,7 +29,7 @@ void GLWidget::determineActiveTool(QMouseEvent* event, bool useModifiers)
   {
     setActiveTool(PanTool);
   }
-  else if ((event->buttons() & Qt::MidButton) ||
+  else if ((event->buttons() & Qt::MiddleButton) ||
            ((event->buttons() & Qt::LeftButton) &&
             (event->buttons() & Qt::RightButton)))
   {

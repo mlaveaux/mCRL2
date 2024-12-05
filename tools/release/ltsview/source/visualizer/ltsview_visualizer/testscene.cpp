@@ -1,12 +1,12 @@
-#include "testscene.h"
+#include "visualizer/ltsview_visualizer/testscene.h"
 #include "cluster.h"
-#include "vistreegenerator.h"
+#include "visualizer/ltsview_visualizer/vistreegenerator.h"
 #include "settings.h"
 // Generic opengl files
-#include "glutil.h"
-#include "glscenegraph.h"
-#include "glprimitivefactories.h"
-#include "arcballcamera.h"
+#include "generic_visualizer/glutil/glutil.h"
+#include "generic_visualizer/glscenegraph.h"
+#include "generic_visualizer/glutil/glprimitivefactories.h"
+#include "generic_visualizer/cameras/arcballcamera.h"
 
 // std includes
 #include <fstream>

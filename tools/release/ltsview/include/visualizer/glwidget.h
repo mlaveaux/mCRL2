@@ -12,7 +12,7 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLDebugLogger>
-#include "testscene.h"
+#include "visualizer/ltsview_visualizer/testscene.h"
 // #include "scene.h"
 #include "ltsmanager.h"
 
@@ -107,7 +107,7 @@ public:
    * 
    * @param e The mouse event.
    */
-  void mouseDoubleClickEvent(QMouseEvent* e);
+  void mouseDoubleClickEvent(QMouseEvent* e) override;
 
  public slots:
   void onDisplayOptionChanged();

@@ -41,7 +41,7 @@ public:
   const QVector3D& getCenter() const { return m_center; }
 
   /// \brief Sets the position and orientation of the camera to its default values.
-  void reset();
+  void reset() override;
   /// \brief Sets the rotation of the camera to its default value.
   void resetRotation();
 

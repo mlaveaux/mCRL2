@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-#include "settingsdock.h"
+#include "ui/settingsdock.h"
 
 ComboboxHandler::ComboboxHandler(QComboBox *combobox, Settings::SettingBool &setting):
   QObject(combobox),
@@ -44,21 +44,10 @@ SettingsDock::SettingsDock(QWidget *parent):
   setupSpinbox(m_ui.branchRotation, Settings::instance().branchRotation);
   setupSpinbox(m_ui.branchTilt, Settings::instance().branchTilt);
 
-<<<<<<< HEAD:tools/release/ltsview/settingsdock.cpp
-  new ComboboxHandler(m_ui.stateRanking, m_settings->stateRankStyleCyclic);
-  new ComboboxHandler(m_ui.clusterPositioning, m_settings->fsmStyle);
-  new ComboboxHandler(m_ui.statePositioning, m_settings->statePosStyleMultiPass);
-  new ComboboxHandler(m_ui.visualizationStyle, m_settings->clusterVisStyleTubes);
-=======
-  connect(m_ui.accuracy, SIGNAL(valueChanged(int)), this, SLOT(accuracyChanged(int)));
-  connect(&Settings::instance().quality, SIGNAL(changed(int)), this, SLOT(setAccuracy(int)));
-  setAccuracy(Settings::instance().quality.value());
-
-  new ComboboxHandler(m_ui.stateRanking, Settings::instance().stateRankStyleCyclic);
-  new ComboboxHandler(m_ui.clusterPositioning, Settings::instance().fsmStyle);
-  new ComboboxHandler(m_ui.statePositioning, Settings::instance().statePosStyleMultiPass);
-  new ComboboxHandler(m_ui.visualizationStyle, Settings::instance().clusterVisStyleTubes);
->>>>>>> 49b9c9eb18 (Major structure overhaul):tools/release/ltsview/source/ui/settingsdock.cpp
+  // new ComboboxHandler(m_ui.stateRanking, m_settings->stateRankStyleCyclic);
+  // new ComboboxHandler(m_ui.clusterPositioning, m_settings->fsmStyle);
+  // new ComboboxHandler(m_ui.statePositioning, m_settings->statePosStyleMultiPass);
+  // new ComboboxHandler(m_ui.visualizationStyle, m_settings->clusterVisStyleTubes);
 }
 
 void SettingsDock::stateSizeChanged(int value)
@@ -79,16 +68,6 @@ void SettingsDock::clusterHeightChanged(int value)
 void SettingsDock::setClusterHeight(float value)
 {
   m_ui.clusterHeight->setValue((int)(value * 10.0f));
-}
-
-void SettingsDock::accuracyChanged(int value)
-{
-  Settings::instance().quality.setValue(value * 2);
-}
-
-void SettingsDock::setAccuracy(int value)
-{
-  m_ui.accuracy->setValue(value / 2);
 }
 
 void SettingsDock::setupSpinbox(QSpinBox *spinbox, Settings::SettingInt &setting)

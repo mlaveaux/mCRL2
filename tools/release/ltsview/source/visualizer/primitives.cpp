@@ -9,7 +9,7 @@
 /// \file primitives.cpp
 /// \brief Source file for primitive classes
 
-#include "primitives.h"
+#include "visualizer/primitives.h"
 
 #include <cmath>
 #include <cstdlib>

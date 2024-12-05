@@ -10,7 +10,7 @@
 
 #include "mcrl2/utilities/input_tool.h"
 #include "mcrl2/gui/qt_tool.h"
-#include "mainwindow.h"
+#include "ui/mainwindow.h"
 
 using namespace mcrl2;
 using namespace mcrl2::utilities;

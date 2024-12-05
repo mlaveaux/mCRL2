@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-#include "visualizer.h"
+#include "visualizer/visualizer.h"
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
@@ -18,9 +18,9 @@
 #include <QtOpenGL>
 
 // #include "scene.h"
-#include "arcballcamera.h"
+#include "generic_visualizer/cameras/arcballcamera.h"
 
-#include "glcolor.h"
+#include "generic_visualizer/glutil/glcolor.h"
 
 using namespace MathUtils;
 

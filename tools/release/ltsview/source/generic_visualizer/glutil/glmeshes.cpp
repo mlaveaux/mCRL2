@@ -1,4 +1,4 @@
-#include "glmeshes.h"
+#include "generic_visualizer/glutil/glmeshes.h"
 #include <fstream>
 #include <cassert>
 char space = ' ';

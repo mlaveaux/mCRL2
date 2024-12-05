@@ -9,10 +9,10 @@
 /// \file visobjectfactory.cpp
 /// \brief Source file for VisObjectFactory class
 
-#include "visobjectfactory.h"
+#include "visualizer/visobjectfactory.h"
 #include <algorithm>
 #include <cstdlib>
-#include "primitivefactory.h"
+#include "visualizer/primitivefactory.h"
 
 #include <QtOpenGL>
 

@@ -8,7 +8,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "arcballcamera.h"
+#include "generic_visualizer/cameras/arcballcamera.h"
 
 #include "mcrl2/gui/arcball.h"
 #include "mcrl2/gui/glu.h"

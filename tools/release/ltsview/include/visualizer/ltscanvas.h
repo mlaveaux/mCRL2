@@ -18,7 +18,6 @@
 #include <QWheelEvent>
 #include <QQuaternion>
 
-#include <QLinkedList>
 #include <QTime>
 
 #include "visualizer.h"
@@ -51,11 +50,11 @@ class LtsCanvas : public QOpenGLWidget
     void render(bool light);
     void determineActiveTool(QMouseEvent* event, bool useModifiers);
     void setActiveTool(Tool tool);
-    void mousePressEvent(QMouseEvent* event);
-    void mouseReleaseEvent(QMouseEvent* event);
-    void mouseDoubleClickEvent(QMouseEvent* event);
-    void mouseMoveEvent(QMouseEvent* event);
-    void wheelEvent(QWheelEvent* event);
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void wheelEvent(QWheelEvent* event) override;
     Selection selectObject(QPoint position);
     Selection parseSelection(GLuint* selectionBuffer, GLint items);
     void applyRotation(bool reverse = false);
@@ -94,7 +93,7 @@ class LtsCanvas : public QOpenGLWidget
     QOpenGLContext* m_context;
 
     // graphics info variables
-    QLinkedList<QTime> frame_times; 
+    std::list<QTime> frame_times; 
     double measuring_time = 1; // [s]
   public:
     QString graphics_info;

@@ -11,10 +11,10 @@
 
 #include <cmath>
 #include <cstdlib>
-#include "primitivefactory.h"
-#include "conedb.h"
+#include "visualizer/primitivefactory.h"
+#include "visualizer/conedb.h"
 #include "mathutils.h"
-#include "primitives.h"
+#include "visualizer/primitives.h"
 
 using namespace MathUtils;
 

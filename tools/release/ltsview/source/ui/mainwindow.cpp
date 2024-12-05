@@ -13,8 +13,8 @@
 #include <QSurfaceFormat>
 
 #include "mcrl2/lts/lts_io.h"
-#include "mainwindow.h"
-#include "savepicturedialog.h"
+#include "ui/mainwindow.h"
+#include "ui/savepicturedialog.h"
 
 MainWindow::MainWindow(QThread *atermThread):
   m_fileDialog("", this)

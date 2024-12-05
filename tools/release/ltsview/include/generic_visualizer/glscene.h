@@ -15,8 +15,8 @@
 #include <QOpenGLWidget>
 #include <QPainter>
 
-#include "glscenegraph.h"
-#include "glcamera.h"
+#include "generic_visualizer/glscenegraph.h"
+#include "generic_visualizer/cameras/glcamera.h"
 
 template <typename NodeData, typename SceneData> class GLScene
 {

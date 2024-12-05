@@ -1,4 +1,4 @@
-#include "glcolor.h"
+#include "generic_visualizer/glutil/glcolor.h"
 #include <iostream>
 #include <functional>
 using namespace GlUtil::Color;
@@ -34,7 +34,7 @@ template<>
 QColor GlUtil::Color::blend<ColorMode::RGB>(QColor& from, QColor& to, float t, int _long)
 {
   return _blend(from, to, t,
-                [](QColor& col, qreal* a, qreal* b, qreal* c){ col.getRgbF(a, b, c); },
+                [](QColor& col, qreal* a, qreal* b, qreal* c){ col.getRgbF((float*)a, (float*)b, (float*)c); },
                 [](qreal a, qreal b, qreal c){     return QColor::fromRgbF(a, b, c); },
                 _long);
 }
@@ -42,7 +42,7 @@ QColor GlUtil::Color::blend<ColorMode::RGB>(QColor& from, QColor& to, float t, i
 template<>
 QColor GlUtil::Color::blend<ColorMode::HSV>(QColor& from, QColor& to, float t, int _long){
   return _blend(from, to, t,
-                [](QColor& col, qreal* a, qreal* b, qreal* c){ col.getHsvF(a, b, c); },
+                [](QColor& col, qreal* a, qreal* b, qreal* c){ col.getHsvF((float*)a, (float*)b, (float*)c); },
                 [](qreal a, qreal b, qreal c){     return QColor::fromHsvF(a, b, c); },
                 _long);
 }
@@ -50,7 +50,7 @@ QColor GlUtil::Color::blend<ColorMode::HSV>(QColor& from, QColor& to, float t, i
 template<>
 QColor GlUtil::Color::blend<ColorMode::HSL>(QColor& from, QColor& to, float t, int _long){
   return _blend(from, to, t,
-                [](QColor& col, qreal* a, qreal* b, qreal* c){ col.getHslF(a, b, c); },
+                [](QColor& col, qreal* a, qreal* b, qreal* c){ col.getHslF((float*)a, (float*)b, (float*)c); },
                 [](qreal a, qreal b, qreal c){     return QColor::fromHslF(a, b, c); },
                 _long);
 }

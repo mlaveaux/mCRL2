@@ -9,7 +9,7 @@
 /// \file conedb.cpp
 /// \brief Source file for the ConeDB class.
 
-#include "conedb.h"
+#include "visualizer/conedb.h"
 #include "mathutils.h"
 
 #define ohash(k1,k2,b,m) ((k1*11408669 + k2*97416181 + b*71053447) & m)

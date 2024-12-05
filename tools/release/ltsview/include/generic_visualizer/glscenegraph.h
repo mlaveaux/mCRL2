@@ -14,8 +14,7 @@
 #include <QMatrix4x4>
 #include <QOpenGLShaderProgram>
 
-#include "glvectortree.h"
-
+#include "generic_visualizer/glutil/glvectortree.h"
 
 
 template <typename NodeData, typename SceneData> class SceneGraph
