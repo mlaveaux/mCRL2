@@ -418,9 +418,9 @@ StateFrm
   | StateFrm ('+' $binary_op_right 43) StateFrm                  // Addition (for quantitative formulas)
   | DataValExpr '*' StateFrm                   $unary_right 47   // Left constant multiply (for quantitative formulas)
   | StateFrm '*' DataValExpr                   $unary_right 47   // Right constant multiply (for quantitative formulas)
-  | StateFrm ('=>' $binary_op_right 45) StateFrm                 // Implication
-  | StateFrm ('||' $binary_op_right 46) StateFrm                 // Disjunction, and max
-  | StateFrm ('&&' $binary_op_right 47) StateFrm                 // Conjunction, and min
+  | StateFrm '=>' StateFrm                 $binary_op_right 45   // Implication
+  | StateFrm '||' StateFrm                 $binary_op_right 46   // Disjunction, and max
+  | StateFrm '&&' StateFrm                 $binary_op_right 47   // Conjunction, and min
   | '[' RegFrm ']' StateFrm                    $unary_right 48   // Box modality
   | '<' RegFrm '>' StateFrm                    $unary_right 48   // Diamond modality
   | '-' StateFrm                               $unary_right 48   // Unary minus (for quantitative formulas)
