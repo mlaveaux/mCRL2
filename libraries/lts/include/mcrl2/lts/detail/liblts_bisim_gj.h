@@ -26,6 +26,8 @@
 #include "mcrl2/lts/detail/simple_list.h"
 #define linked_list simple_list
 
+#include "mcrl2/utilities/execution_timer.h"
+
 namespace mcrl2
 {
 namespace lts
@@ -6510,18 +6512,22 @@ void bisimulation_reduce_gj(LTS_TYPE& l, const bool branching = false,
     // Line 1.2: Find tau-SCCs and contract each of them to a single state
     const std::clock_t start_SCC=std::clock();
     mCRL2log(log::verbose) << "Start SCC\n";
+    mcrl2::utilities::execution_timer timer;
     if (branching)
     {
-        timer.start("scc_reduce");
+        timer.start("preprocess");
         scc_reduce(l, preserve_divergence);
-        timer.finish("scc_reduce");
+        timer.finish("preprocess");
     }
 
     // Now apply the branching bisimulation reduction algorithm.  If there
     // are no taus, this will automatically yield strong bisimulation.
     const std::clock_t start_part=std::clock();
+    timer.start("reduction");
     mCRL2log(log::verbose) << "Start Partitioning\n";
     bisim_partitioner_gj<LTS_TYPE> bisim_part(l,branching,preserve_divergence);
+    timer.finish("reduction");
+    timer.report();
 
     // Assign the reduced LTS
     const std::clock_t end_part=std::clock();

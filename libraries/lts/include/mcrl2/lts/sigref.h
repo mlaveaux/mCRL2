@@ -15,6 +15,7 @@
 #define MCRL2_LTS_SIGREF_H
 
 #include "mcrl2/lts/lts_utilities.h"
+#include "mcrl2/utilities/execution_timer.h"
 
 namespace mcrl2
 {
@@ -459,7 +460,13 @@ public:
   {
     // No need for state labels in the reduced LTS.
     m_lts.clear_state_labels();
+    mcrl2::utilities::execution_timer timer;
+
+    // Now apply the branching bisimulation reduction algorithm.  If there
+    // are no taus, this will automatically yield strong bisimulation.
+    timer.start("reduction");
     compute_partition();
+    timer.finish("reduction");
     quotient();
   }
 };

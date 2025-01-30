@@ -718,9 +718,9 @@ void bisimulation_reduce_martens(LTS_TYPE& l)
     // Line 1.2: Find tau-SCCs and contract each of them to a single state
     mcrl2::utilities::execution_timer timer;
     mCRL2log(log::verbose) << "Start SCC\n";
-    timer.start("scc_reduce");
+    timer.start("preprocess");
     scc_reduce(l, false);
-    timer.finish("scc_reduce");
+    timer.finish("preprocess");
 
     // Now apply the branching bisimulation reduction algorithm.  If there
     // are no taus, this will automatically yield strong bisimulation.
