@@ -30,7 +30,7 @@ struct t_tool_options
   lts_type        format_for_first = lts_none;
   lts_type        format_for_second = lts_none;
   lts_equivalence equivalence = lts_eq_none;
-  lts_preorder    preorder = lts_pre_none;
+  lts_preorder    preorder = lts_preorder::lts_pre_none;
   mcrl2::lps::exploration_strategy strategy = mcrl2::lps::es_breadth;
   std::vector<std::string> tau_actions;   // Actions with these labels must be considered equal to tau.
   bool generate_counter_examples = false;
@@ -50,12 +50,12 @@ class ltscompare_tool : public ltscompare_base
     // --equivalence or --preorder options
     void check_preconditions()
     {
-      if (tool_options.equivalence != lts_eq_none && tool_options.preorder != lts_pre_none)
+      if (tool_options.equivalence != lts_eq_none && tool_options.preorder != lts_preorder::lts_pre_none)
       {
         throw mcrl2::runtime_error("options -e/--equivalence and -p/--preorder cannot be used simultaneously");
       }
 
-      if (tool_options.equivalence == lts_eq_none && tool_options.preorder == lts_pre_none)
+      if (tool_options.equivalence == lts_eq_none && tool_options.preorder == lts_preorder::lts_pre_none)
       {
         throw mcrl2::runtime_error("one of the options -e/--equivalence and -p/--preorder must be used");
       }
@@ -108,7 +108,7 @@ class ltscompare_tool : public ltscompare_base
                        << description(tool_options.equivalence) << ")\n";
       }
 
-      if (tool_options.preorder != lts_pre_none)
+      if (tool_options.preorder != lts_preorder::lts_pre_none)
       {
         mCRL2log(verbose) << "comparing LTSs for " <<
                      description(tool_options.preorder) << "..."
@@ -243,16 +243,16 @@ class ltscompare_tool : public ltscompare_base
                  .add_value(lts_eq_coupled_sim),
                  "use equivalence NAME (not allowed in combination with -p/--preorder):", 'e').
       add_option("preorder", make_enum_argument<lts_preorder>("NAME")
-                 .add_value(lts_pre_none, true)
-                 .add_value(lts_pre_sim)
-                 .add_value(lts_pre_ready_sim)
-                 .add_value(lts_pre_trace)
-                 .add_value(lts_pre_weak_trace)
-                 .add_value(lts_pre_trace_anti_chain)
-                 .add_value(lts_pre_weak_trace_anti_chain)
-                 .add_value(lts_pre_failures_refinement)
-                 .add_value(lts_pre_weak_failures_refinement)
-                 .add_value(lts_pre_failures_divergence_refinement),
+                 .add_value(lts_preorder::lts_pre_none, true)
+                 .add_value(lts_preorder::lts_pre_sim)
+                 .add_value(lts_preorder::lts_pre_ready_sim)
+                 .add_value(lts_preorder::lts_pre_trace)
+                 .add_value(lts_preorder::lts_pre_weak_trace)
+                 .add_value(lts_preorder::lts_pre_trace_anti_chain)
+                 .add_value(lts_preorder::lts_pre_weak_trace_anti_chain)
+                 .add_value(lts_preorder::lts_pre_failures_refinement)
+                 .add_value(lts_preorder::lts_pre_weak_failures_refinement)
+                 .add_value(lts_preorder::lts_pre_failures_divergence_refinement),
                  "use preorder NAME (not allowed in combination with -e/--equivalence):", 'p').
       add_option("strategy", make_enum_argument<mcrl2::lps::exploration_strategy>("NAME")
                  .add_value_short(mcrl2::lps::es_breadth, "b", true)
@@ -282,19 +282,19 @@ class ltscompare_tool : public ltscompare_base
 
       if (parser.has_option("counter-example") && parser.has_option("preorder"))
       {
-        if (tool_options.preorder == lts_pre_sim)
+        if (tool_options.preorder == lts_preorder::lts_pre_sim)
         {
           parser.error("counter examples cannot be used with simulation pre-order");
         }
-        if (tool_options.preorder == lts_pre_ready_sim)
+        if (tool_options.preorder == lts_preorder::lts_pre_ready_sim)
         {
           parser.error("counter examples cannot be used with ready simulation pre-order");
         }
-        if (tool_options.preorder == lts_pre_trace)
+        if (tool_options.preorder == lts_preorder::lts_pre_trace)
         {
           parser.error("counter examples cannot be used with the plain trace pre-order (use trace-ac instead)");
         }
-        if (tool_options.preorder == lts_pre_weak_trace)
+        if (tool_options.preorder == lts_preorder::lts_pre_weak_trace)
         {
           parser.error("counter examples cannot be used with the plain weak trace pre-order (use weak-trace-ac instead");
         }
@@ -338,11 +338,11 @@ class ltscompare_tool : public ltscompare_base
           mCRL2log(mcrl2::log::warning) << "Generated counter example might not be the shortest with the " << print_exploration_strategy(tool_options.strategy) << " strategy.\n";
         }
 
-        if (tool_options.preorder != lts_pre_trace_anti_chain
-            && tool_options.preorder != lts_pre_weak_trace_anti_chain
-            && tool_options.preorder != lts_pre_failures_refinement
-            && tool_options.preorder != lts_pre_weak_failures_refinement
-            && tool_options.preorder != lts_pre_failures_divergence_refinement)
+        if (tool_options.preorder != lts_preorder::lts_pre_trace_anti_chain
+            && tool_options.preorder != lts_preorder::lts_pre_weak_trace_anti_chain
+            && tool_options.preorder != lts_preorder::lts_pre_failures_refinement
+            && tool_options.preorder != lts_preorder::lts_pre_weak_failures_refinement
+            && tool_options.preorder != lts_preorder::lts_pre_failures_divergence_refinement)
         {
           parser.error("strategy can only be chosen for antichain based algorithms.");
         }
