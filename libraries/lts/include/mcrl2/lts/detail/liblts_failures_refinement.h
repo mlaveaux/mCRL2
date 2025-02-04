@@ -9,9 +9,8 @@
 /// \file lts/detail/liblts_failures_refinement.h
 
 // This file contains an implementation of
-// T. Wang, S. Song, J. Sun, Y. Liu, J.S. Dong, X. Wang and S. Li.
-// More Anti-Chain Based Refinement Checking. In proceedings ICFEM 2012, editors T. Aoki and K. Tagushi,
-// Lecture Notes in Computer Science no 7635, pages 364-380, 2012.
+// M. Laveaux, J.F. Groote and T.A.C. Willemse
+// Correct and Efficient Antichain Algorithms for Refinement Checking. Logical Methods in Computer Science 17(1) 2021
 //
 // There are six algorithms. One for trace inclusion, one for failures inclusion and one for failures-divergence inclusion.
 // All algorithms come in a variant with and without internal steps.
