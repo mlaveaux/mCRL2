@@ -440,7 +440,7 @@ class generic_aterm_container
 public:
   /// \brief Constructor
   generic_aterm_container(const Container& container)
-   : m_container(std::bind([&container](term_mark_stack& todo) {   
+   : m_container([&container](term_mark_stack& todo) {   
       // Marking contained terms.       
       for (const typename Container::value_type& element: container) 
       {
@@ -455,12 +455,12 @@ public:
           static_assert(!is_reference_aterm<typename Container::value_type >::value);
           reference_aterm<typename Container::value_type>(element).mark(todo);
         }
-      }        
-     }, std::placeholders::_1),
-     std::bind([&container]() -> std::size_t {  
+      }
+    },
+    [&container]() -> std::size_t {  
       // Return the number of elements in the container.
       return container.size();
-     }))
+     })
   {}
 
   // Container is a reference so unclear what to do in these cases.
