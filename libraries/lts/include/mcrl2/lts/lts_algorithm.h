@@ -33,10 +33,12 @@
 #include "mcrl2/lts/detail/liblts_ready_sim.h"
 #include "mcrl2/lts/detail/liblts_failures_refinement.h"
 #include "mcrl2/lts/detail/liblts_coupledsim.h"
+#include "mcrl2/lts/detail/liblts_impossible_futures.h"
 #include "mcrl2/lts/detail/tree_set.h"
 #include "mcrl2/lts/lts_equivalence.h"
 #include "mcrl2/lts/lts_preorder.h"
 #include "mcrl2/lts/sigref.h"
+#include "mcrl2/utilities/exception.h"
 
 namespace mcrl2
 {
@@ -988,6 +990,14 @@ bool destructive_compare(LTS_TYPE& l1, LTS_TYPE& l2, const lts_preorder pre, con
         return destructive_refinement_checker(l1, l2, refinement_type::failures_divergence, true, strategy, preprocess, cec);
       }
       return destructive_refinement_checker(l1, l2, refinement_type::failures_divergence, true, strategy, preprocess);
+    }
+    case lts_preorder::lts_pre_impossible_futures:
+    {
+      return detail::destructive_impossible_futures(l1, l2);
+    }
+    case lts_preorder::lts_pre_none:
+    {
+      throw new mcrl2::runtime_error("Expected a valid preorder");
     }
     default:
       mCRL2log(log::error) << "Comparison for this preorder is not available\n";

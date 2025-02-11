@@ -252,7 +252,8 @@ class ltscompare_tool : public ltscompare_base
                  .add_value(lts_preorder::lts_pre_weak_trace_anti_chain)
                  .add_value(lts_preorder::lts_pre_failures_refinement)
                  .add_value(lts_preorder::lts_pre_weak_failures_refinement)
-                 .add_value(lts_preorder::lts_pre_failures_divergence_refinement),
+                 .add_value(lts_preorder::lts_pre_failures_divergence_refinement)
+                 .add_value(lts_preorder::lts_pre_impossible_futures),
                  "use preorder NAME (not allowed in combination with -e/--equivalence):", 'p').
       add_option("strategy", make_enum_argument<mcrl2::lps::exploration_strategy>("NAME")
                  .add_value_short(mcrl2::lps::es_breadth, "b", true)
