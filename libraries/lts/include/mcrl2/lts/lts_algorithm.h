@@ -993,7 +993,7 @@ bool destructive_compare(LTS_TYPE& l1, LTS_TYPE& l2, const lts_preorder pre, con
     }
     case lts_preorder::lts_pre_impossible_futures:
     {
-      return detail::destructive_impossible_futures(l1, l2);
+      return detail::destructive_impossible_futures(l1, l2, strategy);
     }
     case lts_preorder::lts_pre_none:
     {
