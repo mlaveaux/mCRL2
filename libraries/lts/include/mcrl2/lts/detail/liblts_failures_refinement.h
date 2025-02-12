@@ -301,21 +301,55 @@ bool destructive_refinement_checker(
     }
   }
 
-
-  const detail::lts_cache<LTS_TYPE> weak_property_cache(l1,weak_reduction);
-  std::deque<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>>
-              working(  // let working be a stack containg the triple (init1,{s|init2-->s},root_index);
-                    { detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>(
-                                  l1.initial_state(),
-                                  detail::collect_reachable_states_via_taus(init_l2,weak_property_cache,weak_reduction),
-                                  generate_counter_example.root_index() ) });
-                                                      // let antichain := emptyset;
+  std::deque<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> working;
   detail::anti_chain_type anti_chain;
+  refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> stats(anti_chain, working);
+  const detail::lts_cache<LTS_TYPE> weak_property_cache(l1, weak_reduction);
+
+
+  bool result = check_refinement(l1, 
+    weak_property_cache,
+    working,
+    stats,
+    anti_chain,
+    generate_counter_example,
+    l1.initial_state(),
+    init_l2,
+    refinement,
+    weak_reduction,
+    strategy);
+  report_statistics(stats);
+  return result;
+}
+
+template<typename LTS_TYPE,
+  typename COUNTER_EXAMPLE_CONSTRUCTOR>
+bool check_refinement( 
+  LTS_TYPE& l1,
+  const detail::lts_cache<LTS_TYPE>& weak_property_cache,
+  std::deque<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>>& working,
+  refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>>& stats,
+  detail::anti_chain_type& anti_chain,
+  COUNTER_EXAMPLE_CONSTRUCTOR& generate_counter_example,
+  detail::state_type init_l1,
+  detail::state_type init_l2,
+  const refinement_type refinement,
+  bool weak_reduction,
+  const lps::exploration_strategy strategy)
+{
+  // let working be a stack containg the triple (init1,{s|init2-->s},root_index);
+  working.clear();
+  working.push_back({
+    detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>(
+      init_l1,
+      detail::collect_reachable_states_via_taus(init_l2, weak_property_cache, weak_reduction),
+      generate_counter_example.root_index())});
+    
+  // let antichain := emptyset;
   detail::antichain_insert(anti_chain, working.front());   // antichain := antichain united with (impl,spec);
                                                            // This line occurs at another place in the code than in
                                                            // the original algorithm, where insertion in the anti-chain
                                                            // was too late, causing too many impl-spec pairs to be investigated.
-  refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> stats(anti_chain, working);
 
   while (!working.empty())                            // while working!=empty
   {
@@ -412,7 +446,6 @@ bool destructive_refinement_checker(
     }
   }
 
-  report_statistics(stats);
   return true;                                      // return true;
 }
 
