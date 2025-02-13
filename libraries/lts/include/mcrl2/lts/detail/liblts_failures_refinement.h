@@ -782,7 +782,7 @@ bool refusals_contained_in(const state_type impl,
 }
 
 } // namespace detail
-} // namespace lts
-} // namespace mcrl2
+
+} // namespace mcrl2::lts
 
 #endif //  LIBLTS_FAILURES_REFINEMENT_H
