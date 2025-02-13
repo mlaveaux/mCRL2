@@ -346,6 +346,7 @@ bool check_refinement(
       generate_counter_example.root_index())});
     
   // let antichain := emptyset;
+  anti_chain.clear();
   detail::antichain_insert(anti_chain, working.front());   // antichain := antichain united with (impl,spec);
                                                            // This line occurs at another place in the code than in
                                                            // the original algorithm, where insertion in the anti-chain
