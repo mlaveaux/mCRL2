@@ -75,9 +75,13 @@ public:
   }
 };
 
-template <class COUNTER_EXAMPLE_CONSTRUCTOR>
+inline bool antichain_include(anti_chain_type& anti_chain,
+  const detail::state_type& impl,
+  const detail::set_of_states& spec);
+
 inline bool antichain_insert(anti_chain_type& anti_chain,
-    const state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>& impl_spec);
+  const detail::state_type& impl,
+  const detail::set_of_states& spec);
 
 // The class below recalls what the stable states and the states with a divergent
 // self loop of a transition system are, such that it does not have to be recalculated each time again.
@@ -281,6 +285,7 @@ bool destructive_refinement_checker(LTS_TYPE& l1,
 
   std::deque<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> working;
   detail::anti_chain_type anti_chain;
+  detail::anti_chain_type positive_anti_chain;
   refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> stats(
       anti_chain,
       working);
@@ -291,6 +296,7 @@ bool destructive_refinement_checker(LTS_TYPE& l1,
       working,
       stats,
       anti_chain,
+      positive_anti_chain,
       generate_counter_example,
       l1.initial_state(),
       init_l2,
@@ -307,6 +313,7 @@ bool check_refinement(LTS_TYPE& l1,
     std::deque<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>>& working,
     refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>>& stats,
     detail::anti_chain_type& anti_chain,
+    detail::anti_chain_type& anti_chain_positive,
     COUNTER_EXAMPLE_CONSTRUCTOR& generate_counter_example,
     detail::state_type init_l1,
     detail::state_type init_l2,
@@ -323,7 +330,8 @@ bool check_refinement(LTS_TYPE& l1,
   // let antichain := emptyset;
   anti_chain.clear();
   detail::antichain_insert(anti_chain,
-      working.front()); // antichain := antichain united with (impl,spec);
+      working.front().state(),
+      working.front().states()); // antichain := antichain united with (impl,spec);
                         // This line occurs at another place in the code than in
                         // the original algorithm, where insertion in the anti-chain
                         // was too late, causing too many impl-spec pairs to be investigated.
@@ -386,6 +394,7 @@ bool check_refinement(LTS_TYPE& l1,
       {
         const typename COUNTER_EXAMPLE_CONSTRUCTOR::index_type new_counterexample_index
             = generate_counter_example.add_transition(t.label(), impl_spec.counter_example_index());
+
         detail::set_of_states spec_prime;
         if (l1.is_tau(l1.apply_hidden_label_map(t.label())) && weak_reduction) // if e=tau then
         {
@@ -403,18 +412,20 @@ bool check_refinement(LTS_TYPE& l1,
             spec_prime.insert(reachable_states_from_s_via_e.begin(), reachable_states_from_s_via_e.end());
           }
         }
+
         if (spec_prime.empty()) // if spec'={} then
         {
           generate_counter_example.save_counter_example(new_counterexample_index, l1);
           report_statistics(stats);
           return false; //    return false;
         }
+        
         // if (impl',spec') in antichain is not true then
         ++stats.antichain_inserts;
         const detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR> impl_spec_counterex(t.to(),
             spec_prime,
             new_counterexample_index);
-        if (detail::antichain_insert(anti_chain, impl_spec_counterex))
+        if (!detail::antichain_include(anti_chain_positive, t.to(), spec_prime) && detail::antichain_insert(anti_chain, t.to(), spec_prime))
         {
           ++stats.antichain_misses;
           if (strategy == lps::exploration_strategy::es_breadth)
@@ -428,6 +439,11 @@ bool check_refinement(LTS_TYPE& l1,
         }
       }
     }
+  }
+
+  for (const auto& [impl, spec] : anti_chain)
+  {
+    detail::antichain_insert(anti_chain_positive, impl, spec);
   }
 
   return true; // return true;
@@ -502,6 +518,27 @@ set_of_states collect_reachable_states_via_an_action(const state_type s,
   return collect_reachable_states_via_taus(states_reachable_via_e, weak_property_cache, weak_reduction);
 }
 
+inline bool antichain_include(anti_chain_type& anti_chain,
+  const detail::state_type& impl,
+  const detail::set_of_states& spec)
+{
+  // First check whether there is a set in the antichain for impl_spec.state() which is smaller than impl_spec.states().
+  // If so, impl_spec.states() is included in the antichain.
+  for (anti_chain_type::const_iterator i = anti_chain.lower_bound(impl);
+       i != anti_chain.upper_bound(impl);
+       ++i)
+  {
+    const set_of_states s = i->second;
+    // If s is included in impl_spec.states()
+    if (std::includes(spec.begin(), spec.end(), s.begin(), s.end()))
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /* This function implements the insertion of <p,state(), p.states()> in the anti_chain.
    Concretely, this means that p.states() is inserted among the sets s1,...,sn associated to p.state().
    It is important that an anti_chain contains for each state a set of states of which
@@ -512,33 +549,24 @@ set_of_states collect_reachable_states_via_an_action(const state_type s,
    is already there.
    This function returns true if insertion was succesful, and false otherwise.
  */
-template <class COUNTER_EXAMPLE_CONSTRUCTOR>
 inline bool antichain_insert(anti_chain_type& anti_chain,
-    const state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>& impl_spec)
+  const detail::state_type& impl,
+  const detail::set_of_states& spec)
 {
-  // First check whether there is a set in the antichain for impl_spec.state() which is smaller than impl_spec.states().
-  // If so, impl_spec.states() does not have to be inserted in the anti_chain.
-  for (anti_chain_type::const_iterator i = anti_chain.lower_bound(impl_spec.state());
-       i != anti_chain.upper_bound(impl_spec.state());
-       ++i)
+  if (antichain_include(anti_chain, impl, spec))
   {
-    const set_of_states s = i->second;
-    // If s is included in impl_spec.states()
-    if (std::includes(impl_spec.states().begin(), impl_spec.states().end(), s.begin(), s.end()))
-    {
-      return false;
-    }
+    return false;
   }
 
   // Here impl_spec.states() must be inserted in the antichain. Moreover, all sets in the antichain that
   // are a superset of impl_spec.states() must be removed.
-  for (anti_chain_type::iterator i = anti_chain.lower_bound(impl_spec.state());
-       i != anti_chain.upper_bound(impl_spec.state());)
+  for (anti_chain_type::iterator i = anti_chain.lower_bound(impl);
+       i != anti_chain.upper_bound(impl);)
   {
     const set_of_states s = i->second;
     // if s is a superset of impl_spec.states()
     // if (std::includes(impl_spec.states().begin(),impl_spec.states().end(),s.begin(),s.end()))
-    if (std::includes(s.begin(), s.end(), impl_spec.states().begin(), impl_spec.states().end()))
+    if (std::includes(s.begin(), s.end(), spec.begin(), spec.end()))
     {
       // set s must be removed.
       i = anti_chain.erase(i);
@@ -548,7 +576,7 @@ inline bool antichain_insert(anti_chain_type& anti_chain,
       ++i;
     }
   }
-  anti_chain.insert(std::pair<detail::state_type, detail::set_of_states>(impl_spec.state(), impl_spec.states()));
+  anti_chain.emplace(impl, spec);
   return true;
 }
 
