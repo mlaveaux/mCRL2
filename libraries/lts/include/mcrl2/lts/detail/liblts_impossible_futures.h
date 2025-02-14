@@ -38,11 +38,11 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
           detail::collect_reachable_states_via_taus(init_l2, weak_property_cache, true),
           COUNTER_EXAMPLE_CONSTRUCTOR())});
   detail::anti_chain_type anti_chain;
-  detail::antichain_insert(anti_chain, working.front()); // antichain := antichain united with (impl,spec);
+  detail::antichain_insert(anti_chain, working.front().state(), working.front().states()); // antichain := antichain united with (impl,spec);
 
   // Used for the weak trace refinement checks
+  detail::anti_chain_type positive_anti_chain;
   detail::anti_chain_type inner_anti_chain;
-  detail::anti_chain_type inner_anti_chain_updated;
   std::deque<state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> inner_working;
   refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> stats(inner_anti_chain, inner_working);
   
@@ -64,25 +64,18 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
               // Print the current (impl,spec) pair being inspected
               std::cout << "Checking (" << impl << ", " << t << ")" << std::endl;
 
-              inner_anti_chain = inner_anti_chain_updated;
-              if (!check_refinement(l1,
+              return check_refinement(l1,
                   weak_property_cache,
                   inner_working,
                   stats,
-                  inner_anti_chain_updated,
+                  inner_anti_chain,
+                  positive_anti_chain,
                   inner_generate_counterexample,
                   t,
                   impl,
                   refinement_type::trace,
                   true,
-                  strategy))
-                {
-                  // Reset for failing inclusion checks.
-                  std::swap(inner_anti_chain_updated, inner_anti_chain);
-                  return false;
-                }
-
-                return true;
+                  strategy);
             }))
     {
       return false;
@@ -118,7 +111,7 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
               spec_prime,
               detail::dummy_counter_example_constructor());
 
-      if (detail::antichain_insert(anti_chain, impl_spec_counterex))
+      if (detail::antichain_insert(anti_chain, t.to(), spec_prime))
       {
         if (strategy == lps::exploration_strategy::es_breadth)
         {
