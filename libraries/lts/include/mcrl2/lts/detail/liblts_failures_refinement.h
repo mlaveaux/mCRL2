@@ -285,51 +285,18 @@ bool destructive_refinement_checker(LTS_TYPE& l1,
 
   std::deque<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> working;
   detail::anti_chain_type anti_chain;
-  detail::anti_chain_type positive_anti_chain;
-  refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> stats(
+    refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> stats(
       anti_chain,
       working);
   const detail::lts_cache<LTS_TYPE> weak_property_cache(l1, weak_reduction);
 
-  bool result = check_refinement(l1,
-      weak_property_cache,
-      working,
-      stats,
-      anti_chain,
-      positive_anti_chain,
-      generate_counter_example,
-      l1.initial_state(),
-      init_l2,
-      refinement,
-      weak_reduction,
-      strategy);
-  report_statistics(stats);
-  return result;
-}
-
-template <typename LTS_TYPE, typename COUNTER_EXAMPLE_CONSTRUCTOR>
-bool check_refinement(LTS_TYPE& l1,
-    const detail::lts_cache<LTS_TYPE>& weak_property_cache,
-    std::deque<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>>& working,
-    refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>>& stats,
-    detail::anti_chain_type& anti_chain,
-    detail::anti_chain_type& anti_chain_positive,
-    COUNTER_EXAMPLE_CONSTRUCTOR& generate_counter_example,
-    detail::state_type init_l1,
-    detail::state_type init_l2,
-    const refinement_type refinement,
-    bool weak_reduction,
-    const lps::exploration_strategy strategy)
-{
-  // let working be a stack containg the triple (init1,{s|init2-->s},root_index);
-  working.clear();
-  working.push_back({detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>(init_l1,
+    // let working be a stack containg the triple (init1,{s|init2-->s},root_index);
+    working.push_back({detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>(l1.initial_state(),
       detail::collect_reachable_states_via_taus(init_l2, weak_property_cache, weak_reduction),
       generate_counter_example.root_index())});
 
   // let antichain := emptyset;
-  anti_chain.clear();
-  detail::antichain_insert(anti_chain,
+    detail::antichain_insert(anti_chain,
       working.front().state(),
       working.front().states()); // antichain := antichain united with (impl,spec);
                         // This line occurs at another place in the code than in
@@ -425,7 +392,7 @@ bool check_refinement(LTS_TYPE& l1,
         const detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR> impl_spec_counterex(t.to(),
             spec_prime,
             new_counterexample_index);
-        if (!detail::antichain_include(anti_chain_positive, t.to(), spec_prime) && detail::antichain_insert(anti_chain, t.to(), spec_prime))
+        if (detail::antichain_insert(anti_chain, t.to(), spec_prime))
         {
           ++stats.antichain_misses;
           if (strategy == lps::exploration_strategy::es_breadth)
@@ -441,12 +408,8 @@ bool check_refinement(LTS_TYPE& l1,
     }
   }
 
-  for (const auto& [impl, spec] : anti_chain)
-  {
-    detail::antichain_insert(anti_chain_positive, impl, spec);
-  }
-
-  return true; // return true;
+  report_statistics(stats);
+return true;
 }
 
 namespace detail
@@ -506,13 +469,11 @@ set_of_states collect_reachable_states_via_an_action(const state_type s,
   {
     for (const transition& t : weak_property_cache.transitions(s))
     {
-      {
-        if (l.apply_hidden_label_map(t.label()) == e)
+              if (l.apply_hidden_label_map(t.label()) == e)
         {
           assert(set_before_action_e.count(t.from()) > 0);
           states_reachable_via_e.insert(t.to());
-        }
-      }
+              }
     }
   }
   return collect_reachable_states_via_taus(states_reachable_via_e, weak_property_cache, weak_reduction);
