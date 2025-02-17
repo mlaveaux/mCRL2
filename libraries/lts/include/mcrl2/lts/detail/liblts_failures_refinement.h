@@ -50,23 +50,15 @@ public:
 
   /// \brief Constructor.
   state_states_counter_example_index_triple(const state_type state,
-      const set_of_states& states,
+      set_of_states states,
       const typename COUNTER_EXAMPLE_CONSTRUCTOR::index_type& counter_example_index)
       : m_state(state),
-        m_states(states),
+        m_states(std::move(states)),
         m_counter_example_index(counter_example_index)
   {}
 
   /// \brief Get the state.
   state_type state() const { return m_state; }
-
-  void swap(state_states_counter_example_index_triple& other)
-  {
-    std::swap(m_state, other.m_state);
-    std::swap(m_states, other.m_states);
-    std::swap(m_counter_example_index, other.m_counter_example_index);
-  }
-
   /// \brief Get the set of states.
   const set_of_states& states() const { return m_states; }
 
@@ -101,8 +93,10 @@ private:
   void calculate_weak_property_cache(const bool weak_reduction)
   {
     scc_partitioner<LTS_TYPE> strongly_connected_component_partitioner(m_l);
+    
     for (const transition& t : m_l.get_transitions())
     {
+
       assert(t.from() < m_l.num_states());
       if (m_l.is_tau(m_l.apply_hidden_label_map(t.label())) && weak_reduction)
       {
@@ -307,9 +301,9 @@ bool destructive_refinement_checker(LTS_TYPE& l1,
 
   while (!working.empty()) // while working!=empty
   {
+    // pop (impl,spec) from working;
     detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>
-        impl_spec; // pop (impl,spec) from working;
-    impl_spec.swap(working.front());
+        impl_spec = working.front();
     stats.max_working = std::max(working.size(), stats.max_working);
     stats.max_antichain = std::max(anti_chain.size(), stats.max_antichain);
     working.pop_front(); // At this point it could be checked whether impl_spec still exists in anti_chain.

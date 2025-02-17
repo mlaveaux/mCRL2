@@ -50,9 +50,9 @@ bool check_trace_inclusion(LTS_TYPE& l1,
 
   while (!working.empty()) // while working!=empty
   {
+    // pop (impl,spec) from working;
     detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>
-        impl_spec; // pop (impl,spec) from working;
-    impl_spec.swap(working.front());
+        impl_spec = working.front();
     stats.max_working = std::max(working.size(), stats.max_working);
     stats.max_antichain = std::max(anti_chain.size(), stats.max_antichain);
     working.pop_front(); // At this point it could be checked whether impl_spec still exists in anti_chain.
