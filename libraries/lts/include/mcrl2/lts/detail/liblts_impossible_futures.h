@@ -127,6 +127,10 @@ template <typename LTS,
   typename COUNTER_EXAMPLE_CONSTRUCTOR = detail::dummy_counter_example_constructor>
 bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_strategy strategy)
 {
+  // Remove tau-loops from l1 to allow the (impl, spec) => (impl', spec) optimisation.
+  scc_partitioner<LTS> scc_partitioner(l1);
+  scc_partitioner.replace_transition_system(false);
+
   std::size_t init_l2 = l2.initial_state() + l1.num_states();
   mcrl2::lts::detail::merge(l1, l2);
 
@@ -138,7 +142,7 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
           COUNTER_EXAMPLE_CONSTRUCTOR())});
   detail::anti_chain_type anti_chain;
   detail::antichain_insert(anti_chain, working.front().state(), working.front().states()); // antichain := antichain united with (impl,spec);
-refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> stats(anti_chain, working);
+  refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> stats(anti_chain, working);
 
   // Used for the weak trace refinement checks
   detail::anti_chain_type positive_anti_chain;
@@ -167,13 +171,13 @@ refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_
               return check_trace_inclusion(l1,
                   weak_property_cache,
                   inner_working,
-inner_                  stats,
+                  inner_stats,
                   inner_anti_chain,
                   positive_anti_chain,
                   inner_generate_counterexample,
                   t,
                   impl,
-                                    true,
+                  true,
                   strategy);
             }))
     {
@@ -210,10 +214,10 @@ inner_                  stats,
               spec_prime,
               detail::dummy_counter_example_constructor());
 
-++stats.antichain_inserts;
+      ++stats.antichain_inserts;
       if (detail::antichain_insert(anti_chain, t.to(), spec_prime))
       {
-++stats.antichain_misses;
+        ++stats.antichain_misses;
         if (strategy == lps::exploration_strategy::es_breadth)
         {
           working.push_back(impl_spec_counterex);
@@ -226,7 +230,7 @@ inner_                  stats,
     }
   }
 
-report_statistics(inner_stats);
+  report_statistics(inner_stats);
   report_statistics(stats);
   return true;
 }
