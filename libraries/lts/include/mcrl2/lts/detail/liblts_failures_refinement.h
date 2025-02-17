@@ -23,6 +23,8 @@
 #include "mcrl2/lts/detail/counter_example.h"
 #include "mcrl2/lts/detail/liblts_bisim_dnj.h"
 
+#include <boost/container/flat_set.hpp>
+
 namespace mcrl2::lts 
 {
   
@@ -31,9 +33,9 @@ namespace detail
 
 typedef std::size_t state_type;
 typedef std::size_t label_type;
-typedef std::set<state_type> set_of_states;
+typedef boost::container::flat_set<state_type> set_of_states;
+typedef boost::container::flat_set<label_type> action_label_set;
 typedef std::multimap<detail::state_type, detail::set_of_states> anti_chain_type;
-typedef std::set<label_type> action_label_set;
 
 template <class COUNTER_EXAMPLE_CONSTRUCTOR>
 class state_states_counter_example_index_triple
