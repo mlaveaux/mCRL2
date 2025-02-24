@@ -27,6 +27,7 @@ bool check_trace_inclusion(LTS_TYPE& l1,
     refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>>& stats,
     detail::anti_chain_type& anti_chain,
     detail::anti_chain_type& anti_chain_positive,
+    detail::anti_chain_type& anti_chain_negative,
     COUNTER_EXAMPLE_CONSTRUCTOR& generate_counter_example,
     detail::state_type init_l1,
     detail::state_type init_l2,
@@ -59,6 +60,10 @@ bool check_trace_inclusion(LTS_TYPE& l1,
                          // Small scale experiments show that this is a little bit more expensive than doing the
                          // explicit check below.
 
+    if (detail::antichain_include_inverse(anti_chain_negative, impl_spec.state(), impl_spec.states())) {
+      return false;
+    }
+
     for (const transition& t : weak_property_cache.transitions(impl_spec.state()))
     {
       const typename COUNTER_EXAMPLE_CONSTRUCTOR::index_type new_counterexample_index
@@ -86,6 +91,7 @@ bool check_trace_inclusion(LTS_TYPE& l1,
       {
         generate_counter_example.save_counter_example(new_counterexample_index, l1);
         report_statistics(stats);
+        detail::antichain_insert(anti_chain_negative, init_l1, detail::collect_reachable_states_via_taus(init_l2, weak_property_cache, weak_reduction));
         return false; //    return false;
       }
       
@@ -146,6 +152,7 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
 
   // Used for the weak trace refinement checks
   detail::anti_chain_type positive_anti_chain;
+  detail::anti_chain_type negative_anti_chain;
   detail::anti_chain_type inner_anti_chain;
   std::deque<state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> inner_working;
   refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> inner_stats(inner_anti_chain, inner_working);
@@ -174,6 +181,7 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
                   inner_stats,
                   inner_anti_chain,
                   positive_anti_chain,
+                  negative_anti_chain,
                   inner_generate_counterexample,
                   t,
                   impl,

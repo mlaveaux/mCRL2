@@ -496,6 +496,27 @@ inline bool antichain_include(anti_chain_type& anti_chain,
   return false;
 }
 
+inline bool antichain_include_inverse(anti_chain_type& anti_chain,
+  const detail::state_type& impl,
+  const detail::set_of_states& spec)
+{
+  // First check whether there is a set in the antichain for impl_spec.state() which is smaller than impl_spec.states().
+  // If so, impl_spec.states() is included in the antichain.
+  for (anti_chain_type::const_iterator i = anti_chain.lower_bound(impl);
+       i != anti_chain.upper_bound(impl);
+       ++i)
+  {
+    const set_of_states s = i->second;
+    // If s is included in impl_spec.states()
+    if (std::includes(s.begin(), s.end(), spec.begin(), spec.end()))
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /* This function implements the insertion of <p,state(), p.states()> in the anti_chain.
    Concretely, this means that p.states() is inserted among the sets s1,...,sn associated to p.state().
    It is important that an anti_chain contains for each state a set of states of which
