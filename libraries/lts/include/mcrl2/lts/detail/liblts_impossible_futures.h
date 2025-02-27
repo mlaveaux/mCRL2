@@ -141,9 +141,6 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
             spec.end(),
             [&](const auto& t)
             {
-              // Print the current (impl,spec) pair being inspected
-              std::cout << "Checking (" << impl << ", " << t << ")" << std::endl;
-
               return check_trace_inclusion_naive(l1,
                   weak_property_cache,
                   inner_working,
