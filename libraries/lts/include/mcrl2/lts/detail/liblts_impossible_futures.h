@@ -21,13 +21,10 @@ namespace mcrl2::lts
 {
   
 template <typename LTS_TYPE, typename COUNTER_EXAMPLE_CONSTRUCTOR>
-bool check_trace_inclusion(LTS_TYPE& l1,
+bool check_trace_inclusion_naive(LTS_TYPE& l1,
     const detail::lts_cache<LTS_TYPE>& weak_property_cache,
     std::deque<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>>& working,
-    refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>>& stats,
-    detail::anti_chain_type& anti_chain,
-    detail::anti_chain_type& anti_chain_positive,
-    detail::anti_chain_type& anti_chain_negative,
+    std::multiset<std::pair<detail::state_type, detail::set_of_states>>& discovered,
     COUNTER_EXAMPLE_CONSTRUCTOR& generate_counter_example,
     detail::state_type init_l1,
     detail::state_type init_l2,
@@ -41,28 +38,17 @@ bool check_trace_inclusion(LTS_TYPE& l1,
       generate_counter_example.root_index())});
 
   // let antichain := emptyset;
-  anti_chain.clear();
-  detail::antichain_insert(anti_chain,
-      working.front().state(),
-      working.front().states()); // antichain := antichain united with (impl,spec);
-                        // This line occurs at another place in the code than in
-                        // the original algorithm, where insertion in the anti-chain
-                        // was too late, causing too many impl-spec pairs to be investigated.
+  discovered.clear();
+  discovered.insert({working.front().state(), working.front().states()});
 
   while (!working.empty()) // while working!=empty
   {
     // pop (impl,spec) from working;
     detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>
         impl_spec = working.front();
-    stats.max_working = std::max(working.size(), stats.max_working);
-    stats.max_antichain = std::max(anti_chain.size(), stats.max_antichain);
     working.pop_front(); // At this point it could be checked whether impl_spec still exists in anti_chain.
                          // Small scale experiments show that this is a little bit more expensive than doing the
                          // explicit check below.
-
-    if (detail::antichain_include_inverse(anti_chain_negative, impl_spec.state(), impl_spec.states())) {
-      return false;
-    }
 
     for (const transition& t : weak_property_cache.transitions(impl_spec.state()))
     {
@@ -89,20 +75,15 @@ bool check_trace_inclusion(LTS_TYPE& l1,
 
       if (spec_prime.empty()) // if spec'={} then
       {
-        generate_counter_example.save_counter_example(new_counterexample_index, l1);
-        report_statistics(stats);
-        detail::antichain_insert(anti_chain_negative, init_l1, detail::collect_reachable_states_via_taus(init_l2, weak_property_cache, weak_reduction));
         return false; //    return false;
       }
       
       // if (impl',spec') in antichain is not true then
-      ++stats.antichain_inserts;
       const detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR> impl_spec_counterex(t.to(),
           spec_prime,
           new_counterexample_index);
-      if (!detail::antichain_include(anti_chain_positive, t.to(), spec_prime) && detail::antichain_insert(anti_chain, t.to(), spec_prime))
+      if (discovered.find({t.to(), spec_prime}) == discovered.end())
       {
-        ++stats.antichain_misses;
         if (strategy == lps::exploration_strategy::es_breadth)
         {
           working.push_back(impl_spec_counterex); // add(impl,spec') at the bottom of the working;
@@ -113,11 +94,6 @@ bool check_trace_inclusion(LTS_TYPE& l1,
         }
       }
     }
-  }
-
-  for (const auto& [impl, spec] : anti_chain)
-  {
-    detail::antichain_insert(anti_chain_positive, impl, spec);
   }
 
   return true; // return true;
@@ -133,10 +109,6 @@ template <typename LTS,
   typename COUNTER_EXAMPLE_CONSTRUCTOR = detail::dummy_counter_example_constructor>
 bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_strategy strategy)
 {
-  // Remove tau-loops from l1 to allow the (impl, spec) => (impl', spec) optimisation.
-  scc_partitioner<LTS> scc_partitioner(l1);
-  scc_partitioner.replace_transition_system(false);
-
   std::size_t init_l2 = l2.initial_state() + l1.num_states();
   mcrl2::lts::detail::merge(l1, l2);
 
@@ -146,16 +118,13 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
       {state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>(l1.initial_state(),
           detail::collect_reachable_states_via_taus(init_l2, weak_property_cache, true),
           COUNTER_EXAMPLE_CONSTRUCTOR())});
-  detail::anti_chain_type anti_chain;
-  detail::antichain_insert(anti_chain, working.front().state(), working.front().states()); // antichain := antichain united with (impl,spec);
-  refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> stats(anti_chain, working);
+          
+  std::multiset<std::pair<detail::state_type, detail::set_of_states>> discovered;
+  discovered.insert({working.front().state(), working.front().states()}); // antichain := antichain united with (impl,spec);
 
   // Used for the weak trace refinement checks
-  detail::anti_chain_type positive_anti_chain;
-  detail::anti_chain_type negative_anti_chain;
-  detail::anti_chain_type inner_anti_chain;
   std::deque<state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> inner_working;
-  refinement_statistics<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> inner_stats(inner_anti_chain, inner_working);
+  std::multiset<std::pair<detail::state_type, detail::set_of_states>> inner_discovered;
   
   COUNTER_EXAMPLE_CONSTRUCTOR inner_generate_counterexample = COUNTER_EXAMPLE_CONSTRUCTOR();
 
@@ -175,13 +144,10 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
               // Print the current (impl,spec) pair being inspected
               std::cout << "Checking (" << impl << ", " << t << ")" << std::endl;
 
-              return check_trace_inclusion(l1,
+              return check_trace_inclusion_naive(l1,
                   weak_property_cache,
                   inner_working,
-                  inner_stats,
-                  inner_anti_chain,
-                  positive_anti_chain,
-                  negative_anti_chain,
+                  inner_discovered,
                   inner_generate_counterexample,
                   t,
                   impl,
@@ -222,10 +188,8 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
               spec_prime,
               detail::dummy_counter_example_constructor());
 
-      ++stats.antichain_inserts;
-      if (detail::antichain_insert(anti_chain, t.to(), spec_prime))
+      if (discovered.find({t.to(), spec_prime}) == discovered.end())
       {
-        ++stats.antichain_misses;
         if (strategy == lps::exploration_strategy::es_breadth)
         {
           working.push_back(impl_spec_counterex);
@@ -238,8 +202,6 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
     }
   }
 
-  report_statistics(inner_stats);
-  report_statistics(stats);
   return true;
 }
 
