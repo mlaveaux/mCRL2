@@ -24,7 +24,7 @@ template <typename LTS_TYPE, typename COUNTER_EXAMPLE_CONSTRUCTOR>
 bool check_trace_inclusion_naive(LTS_TYPE& l1,
     const detail::lts_cache<LTS_TYPE>& weak_property_cache,
     std::deque<detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>>& working,
-    std::multiset<std::pair<detail::state_type, detail::set_of_states>>& discovered,
+    std::set<std::pair<detail::state_type, detail::set_of_states>>& discovered,
     COUNTER_EXAMPLE_CONSTRUCTOR& generate_counter_example,
     detail::state_type init_l1,
     detail::state_type init_l2,
@@ -119,12 +119,12 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
           detail::collect_reachable_states_via_taus(init_l2, weak_property_cache, true),
           COUNTER_EXAMPLE_CONSTRUCTOR())});
           
-  std::multiset<std::pair<detail::state_type, detail::set_of_states>> discovered;
+  std::set<std::pair<detail::state_type, detail::set_of_states>> discovered;
   discovered.insert({working.front().state(), working.front().states()}); // antichain := antichain united with (impl,spec);
 
   // Used for the weak trace refinement checks
   std::deque<state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR>> inner_working;
-  std::multiset<std::pair<detail::state_type, detail::set_of_states>> inner_discovered;
+  std::set<std::pair<detail::state_type, detail::set_of_states>> inner_discovered;
   
   COUNTER_EXAMPLE_CONSTRUCTOR inner_generate_counterexample = COUNTER_EXAMPLE_CONSTRUCTOR();
 
