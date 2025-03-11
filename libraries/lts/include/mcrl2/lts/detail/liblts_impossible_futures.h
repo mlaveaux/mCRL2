@@ -137,7 +137,7 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
     const detail::state_type impl = front.state();
     const detail::set_of_states& spec = front.states();
 
-    if (weak_property_cache.stable(impl) && !std::any_of(spec.begin(),
+    if (!std::any_of(spec.begin(),
             spec.end(),
             [&](const auto& t)
             {
