@@ -82,7 +82,7 @@ bool check_trace_inclusion_naive(LTS_TYPE& l1,
       const detail::state_states_counter_example_index_triple<COUNTER_EXAMPLE_CONSTRUCTOR> impl_spec_counterex(t.to(),
           spec_prime,
           new_counterexample_index);
-      if (discovered.find({t.to(), spec_prime}) == discovered.end())
+      if (discovered.insert({t.to(), spec_prime}).second)
       {
         if (strategy == lps::exploration_strategy::es_breadth)
         {
@@ -185,7 +185,7 @@ bool destructive_impossible_futures(LTS& l1, LTS& l2, const lps::exploration_str
               spec_prime,
               detail::dummy_counter_example_constructor());
 
-      if (discovered.find({t.to(), spec_prime}) == discovered.end())
+      if (discovered.insert({t.to(), spec_prime}).second)
       {
         if (strategy == lps::exploration_strategy::es_breadth)
         {
