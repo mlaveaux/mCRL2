@@ -12,11 +12,13 @@ import sys
 # used to parse mCRL2 version information from CMake file
 from pathlib import Path
 
-_CMAKE_SOURCE_DIR = os.environ['CMAKE_SOURCE_DIR']
-_MCRL2_TOOL_PATH = os.environ['MCRL2_TOOL_PATH']
-_MCRL2_TOOLS = os.environ['MCRL2_TOOLS']
-_SPHINX_BUILD_TEMP_DIR = os.environ['SPHINX_BUILD_TEMP_DIR']
-_SPHINX_BUILD_OUT_DIR = os.environ['SPHINX_BUILD_OUT_DIR']
+_CMAKE_SOURCE_DIR = '@CMAKE_SOURCE_DIR@'
+_MCRL2_TOOL_PATH = '@MCRL2_TOOL_PATH@'
+_MCRL2_TOOLS = '@MCRL2_TOOLS@'
+_SPHINX_BUILD_TEMP_DIR = '@SPHINX_BUILD_TEMP_DIR@'
+_SPHINX_BUILD_OUT_DIR = '@SPHINX_BUILD_OUT_DIR@'
+
+os.environ['CMAKE_SOURCE_DIR'] = _CMAKE_SOURCE_DIR
 
 # -- Path setup --------------------------------------------------------------
 

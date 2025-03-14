@@ -56,15 +56,18 @@ function(add_build_doc_target NAME DESC)
     list(APPEND SPHINX_TAGS -t build_manual)
   endif()
   
+  # Replace the cmake variables by their values (we do not use the environment since we want to be able to call sphinx_build from the command line)
+  configure_file(${SPHINX_SOURCE_DIR}/conf.in.py ${SPHINX_BUILD_ROOT_DIR}/conf.py @ONLY)
+
   add_custom_target(${NAME}
     COMMENT ${DESC}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     # copy the Sphinx source to the build directory, because some of the
     # extensions modify the source and we don't want to pollute the source dir
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${SPHINX_SOURCE_DIR} ${SPHINX_BUILD_SRC_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${SPHINX_BUILD_ROOT_DIR}/conf.py ${SPHINX_BUILD_SRC_DIR}/conf.py
     # run the Sphinx build command
-    COMMAND ${CMAKE_COMMAND} -E env CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR} SPHINX_BUILD_OUT_DIR=${SPHINX_BUILD_OUT_DIR} SPHINX_BUILD_TEMP_DIR=${SPHINX_BUILD_TEMP_DIR} MCRL2_TOOL_PATH=${MCRL2_TOOL_PATH} MCRL2_TOOLS=${MCRL2_TOOLS}
-      ${SPHINX_BUILD_CMD}
+    COMMAND ${SPHINX_BUILD_CMD}
       -b html 
       -d "${SPHINX_BUILD_TEMP_DIR}/doctrees"
       -T
