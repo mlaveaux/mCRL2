@@ -66,10 +66,18 @@ extensions = [
     'mcrl2_dparser',
     'mcrl2_pygment',
     'sphinx.ext.ifconfig',
-    'sphinx.ext.mathjax',
+    'sphinx.ext.imgmath',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
     'sphinx_rtd_theme',
+]
+
+imgmath_image_format = 'svg'
+imgmath_font_size = 14
+imgmath_latex_preamble = '\\usepackage{newtxsf}'
+
+myst_enable_extensions = [
+    "dollarmath"
 ]
 
 # List of patterns, relative to source directory, that match files and
