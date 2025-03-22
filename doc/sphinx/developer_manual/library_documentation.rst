@@ -110,6 +110,14 @@ Utilities
    :maxdepth: 1
 
    libraries/utilities/utilities_library
+   
+Symbolic
+===========
+          
+.. toctree::
+   :maxdepth: 1
+
+   libraries/symbolic/symbolic_library
 
 Source code reference
 =====================
