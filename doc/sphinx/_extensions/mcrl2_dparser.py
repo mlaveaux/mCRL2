@@ -88,7 +88,7 @@ class DParserGrammarDirective(ProductionList):
       return []
 
 def setup(app):
-  with open(os.path.join(os.environ['CMAKE_SOURCE_DIR'], 'libraries', 'core', 'source', 'mcrl2_syntax.g'), 'r') as file:
+  with open(os.path.join(os.environ['CMAKE_SOURCE_DIR'], 'libraries', 'core', 'source', 'mcrl2_syntax.g'), 'r', encoding="utf-8") as file:
     global rules
 
     text = file.read()
@@ -96,4 +96,4 @@ def setup(app):
     
     app.add_directive('dparser', DParserGrammarDirective)  
     
-  return {'parallel_read_safe': False, 'parallel_write_safe': False}
+  return {'parallel_read_safe': True, 'parallel_write_safe': True}
