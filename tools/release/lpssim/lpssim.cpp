@@ -318,6 +318,21 @@ class sim_tool : public rewriter_tool< input_tool >
         lps::detail::instantiate_global_variables(spec);
       }
 
+
+      // Print the parameters of the linear process.
+      std::cout << "process parameters: ";
+      bool first = true;
+      for (const data::data_expression& d: spec.process().process_parameters())
+      {
+        if (!first)
+        {
+          std::cout << ", ";
+        }
+
+        std::cout << d << ":" << d.sort();
+        first = false;
+      }
+
       lps::simulation simulation(spec, rewrite_strategy());
       std::size_t state_index = 0;
 
