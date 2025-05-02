@@ -127,6 +127,7 @@ class sim_tool : public rewriter_tool< input_tool >
                 "   u/undo           go to previous state in trace\n"
                 "   r/redo           go to next state in trace\n"
                 "   i/initial        go to initial state (preserving trace)\n"
+                "   e/env            update the parameters of the current state by environment\n"
                 "   g/goto N         go to position N in trace\n"
                 "   t/trace          print trace (current state is indicated with '>')\n"
                 "   l/load FILENAME  load trace from file FILENAME\n"
@@ -263,6 +264,61 @@ class sim_tool : public rewriter_tool< input_tool >
       show_state_or_transition_menu(simulation, state_index);
     }
 
+    void handle_env(const std::string& s,
+                    lps::simulation& simulation,
+                    std::size_t& state_index)
+    {
+      std::string env((s[1] == ' ') ? s.substr(2) : s.substr(4));
+
+      try
+      {
+        // Check if the string is properly formatted with square brackets
+        if (env.empty() || env[0] != '[' || env[env.length() - 1] != ']')
+        {
+           std::cout << "Invalid environment format. Expected [value, value, ...]";
+           return;
+        }
+
+        // Extract the content between the brackets
+        std::string content = env.substr(1, env.length() - 2);
+
+        // Split the content by commas and collect values
+        std::vector<std::string> values;
+        std::size_t pos = 0;
+        std::string token;
+
+        while ((pos = content.find(',')) != std::string::npos)
+        {
+          token = content.substr(0, pos);
+          // Trim whitespace
+          token.erase(0, token.find_first_not_of(" \t"));
+          token.erase(token.find_last_not_of(" \t") + 1);
+          if (!token.empty())
+          {
+            values.push_back(token);
+          }
+          content.erase(0, pos + 1);
+        }
+
+        // Add the last value after the last comma (or the only value if no commas)
+        content.erase(0, content.find_first_not_of(" \t"));
+        content.erase(content.find_last_not_of(" \t") + 1);
+        if (!content.empty())
+        {
+          values.push_back(content);
+        }
+
+        simulation.environment(values);
+        state_index = 0;
+
+        show_state_or_transition_menu(simulation, state_index);
+      }
+      catch (mcrl2::runtime_error& err)
+      {
+        std::cout << "error updating environment: " << err.what() << std::endl;
+      }
+    }
+
     void handle_save(const std::string& s,
                      const lps::simulation& simulation)
     {
@@ -358,6 +414,10 @@ class sim_tool : public rewriter_tool< input_tool >
             std::cout << std::endl;
           }
           notdone = false;
+        }
+        else if ((s.substr(0,2) == "e ") || (s.substr(0,4) == "env "))
+        {
+          handle_env(s, simulation, state_index);
         }
         else if ((s == "h") || (s == "help"))
         {

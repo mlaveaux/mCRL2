@@ -8,6 +8,7 @@
 
 #include <limits>
 #include "mcrl2/data//standard_numbers_utility.h"
+#include "mcrl2/lps/stochastic_state.h"
 #include "mcrl2/lts/simulation.h"
 
 using namespace mcrl2;
@@ -65,6 +66,25 @@ void simulation::select_state(std::size_t state_number)
   assert(state_number<state.source_state.states.size());
   state.state_number=state_number;
   state.transitions = transitions(state.source_state.states[state_number]);
+}
+
+void simulation::environment(std::vector<std::string> values)
+{
+  assert(values.size() == m_specification.process().process_parameters().size());
+  std::vector<data::data_expression> data_values;
+  for (std::size_t i = 0; i < values.size(); ++i)
+  {
+    data_values.push_back(data::parse_data_expression(values[i], m_specification.data()));
+  }
+
+  simulator_state_t result_state;
+  compute_stochastic_state(result_state.source_state, stochastic_distribution(), data_values, m_global_sigma, m_global_rewr, m_global_enumerator);
+  result_state.transitions = transitions(result_state.source_state.states[0]);
+  result_state.state_number = 0;
+  result_state.transition_number = 0;
+
+  m_full_trace.clear();
+  m_full_trace.emplace_back(result_state);
 }
 
 void simulation::randomly_select_state()

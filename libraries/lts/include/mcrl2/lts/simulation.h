@@ -54,6 +54,9 @@ class simulation : protected explorer<true, false, stochastic_specification>
     /// Choose outgoing transition indexed by transition_number and add its state to the state vector.
     void select_transition(std::size_t transition_number);
 
+    /// Goto the state indicated by the environment, which is given by a vector of strings.
+    void environment(std::vector<std::string> values);
+
     /// Randomly choose an outgoing transition and add its state to the state vector.
     void randomly_select_transition();
 
