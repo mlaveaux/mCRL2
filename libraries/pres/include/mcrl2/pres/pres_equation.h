@@ -179,10 +179,10 @@ atermpp::aterm pres_equation_to_aterm(const pres_equation& eqn)
 }
 
 // Overload for pp for propositional variables.
-std::string pp(const propositional_variable& v);
+std::string pp(const propositional_variable& v, bool precedence_aware = true);
 
 // template function overloads
-std::string pp(const pres_equation_vector& x);
+std::string pp(const pres_equation_vector& x, bool precedence_aware = true);
 void normalize_sorts(pres_equation_vector& x, const data::sort_specification& sortspec);
 std::set<data::variable> find_free_variables(const pres_system::pres_equation& x);
 

@@ -672,10 +672,10 @@ inline void swap(exists& t1, exists& t2)
 //--- end generated classes ---//
 
 // template function overloads
-std::string pp(const pbes_expression_list& x);
-std::string pp(const pbes_expression_vector& x);
-std::string pp(const propositional_variable_instantiation_list& x);
-std::string pp(const propositional_variable_instantiation_vector& x);
+std::string pp(const pbes_expression_list& x, bool precedence_aware = true);
+std::string pp(const pbes_expression_vector& x, bool precedence_aware = true);
+std::string pp(const propositional_variable_instantiation_list& x, bool precedence_aware = true);
+std::string pp(const propositional_variable_instantiation_vector& x, bool precedence_aware = true);
 std::set<pbes_system::propositional_variable_instantiation> find_propositional_variable_instantiations(const pbes_system::pbes_expression& x);
 std::set<core::identifier_string> find_identifiers(const pbes_system::pbes_expression& x);
 std::set<data::variable> find_free_variables(const pbes_system::pbes_expression& x);

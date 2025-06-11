@@ -135,19 +135,19 @@ struct pfnf_printer: public pbes_system::detail::printer<Derived>
 struct pfnf_stream_printer
 {
   template <typename T>
-  void operator()(const T& x, std::ostream& out)
+  void operator()(const T& x, std::ostream& out, bool precedence_aware)
   {
-    core::detail::apply_printer<pbes_system::detail::pfnf_printer> printer(out);
+    core::detail::apply_printer<pbes_system::detail::pfnf_printer> printer(out, precedence_aware);
     printer.apply(x);
   }
 };
 
 /// \brief Returns a PFNF string representation of the object x.
 template <typename T>
-std::string pfnf_pp(const T& x)
+std::string pfnf_pp(const T& x, bool precedence_aware = true)
 {
   std::ostringstream out;
-  pfnf_stream_printer()(x, out);
+  pfnf_stream_printer()(x, out, precedence_aware);
   return out.str();
 }
 

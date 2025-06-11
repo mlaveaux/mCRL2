@@ -26,7 +26,7 @@ class pbes;
 void complete_data_specification(pbes&);
 
 // template function overloads
-std::string pp(const pbes& x);
+std::string pp(const pbes& x, bool precedence_aware = true);
 void normalize_sorts(pbes& x, const data::sort_specification& sortspec);
 void translate_user_notation(pbes_system::pbes& x);
 std::set<data::sort_expression> find_sort_expressions(const pbes_system::pbes& x);
@@ -294,7 +294,7 @@ class pbes
 
 //--- start generated class pbes ---//
 // prototype declaration
-std::string pp(const pbes& x, bool precedence_aware = true);
+std::string pp(const pbes& x, bool precedence_aware);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

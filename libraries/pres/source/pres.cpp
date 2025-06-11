@@ -9,6 +9,7 @@
 /// \file pres.cpp
 /// \brief
 
+#include "mcrl2/pbes/propositional_variable.h"
 #include "mcrl2/pres/detail/has_propositional_variables.h"
 #include "mcrl2/pres/detail/instantiate_global_variables.h"
 #include "mcrl2/pres/detail/is_well_typed.h"
@@ -65,6 +66,8 @@ std::set<pres_system::propositional_variable_instantiation> find_propositional_v
 std::set<core::identifier_string> find_identifiers(const pres_system::pres_expression& x) { return pres_system::find_identifiers< pres_system::pres_expression >(x); }
 bool search_variable(const pres_system::pres_expression& x, const data::variable& v) { return pres_system::search_variable< pres_system::pres_expression >(x, v); }
 //--- end generated pres_system overloads ---//
+
+std::string pp(const pbes_system::propositional_variable& x, bool arg0) { return pres_system::pp< pbes_system::propositional_variable >(x, arg0); }
 
 namespace algorithms {
 

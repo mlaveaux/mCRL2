@@ -75,7 +75,7 @@ void mcrl2::combine_specification(const lps::stochastic_specification& left_spec
   stream << left_spec.data();
 
   // Merge the action labels as some actions might not occur in only one component.
-  core::detail::apply_printer<process::detail::printer> printer(stream);
+  core::detail::apply_printer<process::detail::printer> printer(stream, true);
   std::set<action_label> actions(left_spec.action_labels().begin(), left_spec.action_labels().end());
   actions.insert(right_spec.action_labels().begin(), right_spec.action_labels().end());
 
