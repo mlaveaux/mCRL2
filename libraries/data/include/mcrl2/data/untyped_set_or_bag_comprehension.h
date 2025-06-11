@@ -67,7 +67,7 @@ void make_untyped_set_or_bag_comprehension(atermpp::aterm& result, ARGUMENTS... 
 
 //--- start generated class untyped_set_or_bag_comprehension ---//
 // prototype declaration
-std::string pp(const untyped_set_or_bag_comprehension& x);
+std::string pp(const untyped_set_or_bag_comprehension& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

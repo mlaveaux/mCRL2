@@ -68,7 +68,7 @@ inline void make_untyped_possible_sorts(atermpp::aterm& t, const ARGUMENTS&... a
 }
 
 // prototype declaration
-std::string pp(const untyped_possible_sorts& x);
+std::string pp(const untyped_possible_sorts& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

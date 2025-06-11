@@ -83,7 +83,7 @@ void make_lambda(atermpp::aterm& result, ARGUMENTS... arguments)
 
 //--- start generated class lambda ---//
 // prototype declaration
-std::string pp(const lambda& x);
+std::string pp(const lambda& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

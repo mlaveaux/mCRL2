@@ -101,7 +101,7 @@ bool is_action_formula(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const action_formula& x);
+std::string pp(const action_formula& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -154,7 +154,7 @@ bool is_true(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const true_& x);
+std::string pp(const true_& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -207,7 +207,7 @@ bool is_false(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const false_& x);
+std::string pp(const false_& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -278,7 +278,7 @@ bool is_not(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const not_& x);
+std::string pp(const not_& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -354,7 +354,7 @@ bool is_and(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const and_& x);
+std::string pp(const and_& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -430,7 +430,7 @@ bool is_or(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const or_& x);
+std::string pp(const or_& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -506,7 +506,7 @@ bool is_imp(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const imp& x);
+std::string pp(const imp& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -582,7 +582,7 @@ bool is_forall(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const forall& x);
+std::string pp(const forall& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -658,7 +658,7 @@ bool is_exists(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const exists& x);
+std::string pp(const exists& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -734,7 +734,7 @@ bool is_at(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const at& x);
+std::string pp(const at& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -805,7 +805,7 @@ bool is_multi_action(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const multi_action& x);
+std::string pp(const multi_action& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

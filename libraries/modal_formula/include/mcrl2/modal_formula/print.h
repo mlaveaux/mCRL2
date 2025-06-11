@@ -164,18 +164,18 @@ struct printer: public action_formulas::add_traverser_sort_expressions<lps::deta
 
 /// \brief Prints the object t to a stream.
 template <typename T>
-void pp(const T& t, std::ostream& out)
+void pp(const T& t, std::ostream& out, bool precendence_aware)
 {
-  core::detail::apply_printer<action_formulas::detail::printer> printer(out);
+  core::detail::apply_printer<action_formulas::detail::printer> printer(out, precendence_aware);
   printer.apply(t);
 }
 
 /// \brief Returns a string representation of the object t.
 template <typename T>
-std::string pp(const T& t)
+std::string pp(const T& t, bool precendence_aware = true)
 {
   std::ostringstream out;
-  action_formulas::pp(t, out);
+  action_formulas::pp(t, out, precendence_aware);
   return out.str();
 }
 
@@ -276,18 +276,18 @@ struct printer: public regular_formulas::add_traverser_sort_expressions<action_f
 
 /// \brief Prints the object t to a stream.
 template <typename T>
-void pp(const T& t, std::ostream& out)
+void pp(const T& t, std::ostream& out, bool precendence_aware)
 {
-  core::detail::apply_printer<regular_formulas::detail::printer> printer(out);
+  core::detail::apply_printer<regular_formulas::detail::printer> printer(out, precendence_aware);
   printer.apply(t);
 }
 
 /// \brief Returns a string representation of the object t.
 template <typename T>
-std::string pp(const T& t)
+std::string pp(const T& t, bool precendence_aware = true)
 {
   std::ostringstream out;
-  regular_formulas::pp(t, out);
+  regular_formulas::pp(t, out, precendence_aware);
   return out.str();
 }
 
@@ -675,18 +675,18 @@ struct printer: public state_formulas::add_traverser_sort_expressions<regular_fo
 
 /// \brief Prints the object t to a stream.
 template <typename T>
-void pp(const T& t, std::ostream& out)
+void pp(const T& t, std::ostream& out, bool precendence_aware)
 {
-  core::detail::apply_printer<state_formulas::detail::printer> printer(out);
+  core::detail::apply_printer<state_formulas::detail::printer> printer(out, precendence_aware);
   printer.apply(t);
 }
 
 /// \brief Returns a string representation of the object t.
 template <typename T>
-std::string pp(const T& t)
+std::string pp(const T& t, bool precendence_aware = true)
 {
   std::ostringstream out;
-  state_formulas::pp(t, out);
+  state_formulas::pp(t, out, precendence_aware);
   return out.str();
 }
 

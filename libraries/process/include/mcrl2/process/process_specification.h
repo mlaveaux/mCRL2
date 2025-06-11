@@ -30,7 +30,7 @@ atermpp::aterm process_specification_to_aterm(const process_specification& spec)
 void complete_data_specification(process_specification&);
 
 // template function overloads
-std::string pp(const process_specification& x);
+std::string pp(const process_specification& x, bool precedence_aware);
 void normalize_sorts(process_specification& x, const data::sort_specification& sortspec);
 void translate_user_notation(process::process_specification& x);
 std::set<data::sort_expression> find_sort_expressions(const process::process_specification& x);
@@ -190,7 +190,7 @@ class process_specification
 
 //--- start generated class process_specification ---//
 // prototype declaration
-std::string pp(const process_specification& x);
+std::string pp(const process_specification& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

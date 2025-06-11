@@ -117,7 +117,7 @@ bool is_process_expression(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const process_expression& x);
+std::string pp(const process_expression& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -199,7 +199,7 @@ bool is_action(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const action& x);
+std::string pp(const action& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -275,7 +275,7 @@ bool is_process_instance(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const process_instance& x);
+std::string pp(const process_instance& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -351,7 +351,7 @@ bool is_process_instance_assignment(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const process_instance_assignment& x);
+std::string pp(const process_instance_assignment& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -404,7 +404,7 @@ bool is_delta(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const delta& x);
+std::string pp(const delta& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -457,7 +457,7 @@ bool is_tau(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const tau& x);
+std::string pp(const tau& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -533,7 +533,7 @@ bool is_sum(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const sum& x);
+std::string pp(const sum& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -609,7 +609,7 @@ bool is_block(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const block& x);
+std::string pp(const block& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -685,7 +685,7 @@ bool is_hide(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const hide& x);
+std::string pp(const hide& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -761,7 +761,7 @@ bool is_rename(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const rename& x);
+std::string pp(const rename& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -837,7 +837,7 @@ bool is_comm(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const comm& x);
+std::string pp(const comm& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -913,7 +913,7 @@ bool is_allow(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const allow& x);
+std::string pp(const allow& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -989,7 +989,7 @@ bool is_sync(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const sync& x);
+std::string pp(const sync& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -1065,7 +1065,7 @@ bool is_at(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const at& x);
+std::string pp(const at& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -1141,7 +1141,7 @@ bool is_seq(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const seq& x);
+std::string pp(const seq& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -1217,7 +1217,7 @@ bool is_if_then(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const if_then& x);
+std::string pp(const if_then& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -1298,7 +1298,7 @@ bool is_if_then_else(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const if_then_else& x);
+std::string pp(const if_then_else& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -1374,7 +1374,7 @@ bool is_bounded_init(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const bounded_init& x);
+std::string pp(const bounded_init& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -1450,7 +1450,7 @@ bool is_merge(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const merge& x);
+std::string pp(const merge& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -1526,7 +1526,7 @@ bool is_left_merge(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const left_merge& x);
+std::string pp(const left_merge& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -1602,7 +1602,7 @@ bool is_choice(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const choice& x);
+std::string pp(const choice& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -1683,7 +1683,7 @@ bool is_stochastic_operator(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const stochastic_operator& x);
+std::string pp(const stochastic_operator& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -1764,7 +1764,7 @@ bool is_untyped_process_assignment(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const untyped_process_assignment& x);
+std::string pp(const untyped_process_assignment& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -1784,11 +1784,11 @@ inline void swap(untyped_process_assignment& t1, untyped_process_assignment& t2)
 //--- end generated classes ---//
 
 // template function overloads
-std::string pp(const process_expression_list& x);
-std::string pp(const process_expression_vector& x);
+std::string pp(const process_expression_list& x, bool precedence_aware = true);
+std::string pp(const process_expression_vector& x, bool precedence_aware = true);
 std::set<data::sort_expression> find_sort_expressions(const process::process_expression& x);
-std::string pp(const action_list& x);
-std::string pp(const action_vector& x);
+std::string pp(const action_list& x, bool precedence_aware = true);
+std::string pp(const action_vector& x, bool precedence_aware = true);
 action normalize_sorts(const action& x, const data::sort_specification& sortspec);
 action translate_user_notation(const action& x);
 process::process_expression translate_user_notation(const process::process_expression& x);

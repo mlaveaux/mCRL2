@@ -84,7 +84,7 @@ bool is_regular_formula(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const regular_formula& x);
+std::string pp(const regular_formula& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -160,7 +160,7 @@ bool is_seq(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const seq& x);
+std::string pp(const seq& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -236,7 +236,7 @@ bool is_alt(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const alt& x);
+std::string pp(const alt& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -307,7 +307,7 @@ bool is_trans(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const trans& x);
+std::string pp(const trans& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -378,7 +378,7 @@ bool is_trans_or_nil(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const trans_or_nil& x);
+std::string pp(const trans_or_nil& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -464,7 +464,7 @@ bool is_untyped_regular_formula(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const untyped_regular_formula& x);
+std::string pp(const untyped_regular_formula& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

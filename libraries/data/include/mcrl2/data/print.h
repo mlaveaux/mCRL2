@@ -2529,19 +2529,19 @@ struct printer: public data::add_traverser_sort_expressions<core::detail::printe
 struct stream_printer
 {
   template <typename T>
-  void operator()(const T& x, std::ostream& out)
+  void operator()(const T& x, std::ostream& out, bool precendence_aware)
   {
-    core::detail::apply_printer<data::detail::printer> printer(out);
+    core::detail::apply_printer<data::detail::printer> printer(out, precendence_aware);
     printer.apply(x);
   }
 };
 
 /// \brief Returns a string representation of the object x.
 template <typename T>
-std::string pp(const T& x)
+std::string pp(const T& x, bool precendence_aware = true)
 {
   std::ostringstream out;
-  stream_printer()(x, out);
+  stream_printer()(x, out, precendence_aware);
   return out.str();
 }
 

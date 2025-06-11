@@ -89,7 +89,7 @@ typedef atermpp::term_list<variable> variable_list;
 typedef std::vector<variable>    variable_vector;
 
 // prototype declaration
-std::string pp(const variable& x);
+std::string pp(const variable& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -110,10 +110,9 @@ inline void swap(variable& t1, variable& t2)
 
 
 // template function overloads
-std::string pp(const variable_list& x);
-std::string pp(const variable_vector& x);
-std::string pp(const std::set<variable>& x);
-std::string pp(const std::set<variable>& x);
+std::string pp(const variable_list& x, bool precedence_aware = true);
+std::string pp(const variable_vector& x, bool precedence_aware = true);
+std::string pp(const std::set<variable>& x, bool precedence_aware = true);
 std::set<data::variable> find_all_variables(const data::variable& x);
 std::set<data::variable> find_all_variables(const data::variable_list& x);
 std::set<core::identifier_string> find_identifiers(const data::variable_list& x);

@@ -92,7 +92,7 @@ typedef atermpp::term_list<deadlock> deadlock_list;
 typedef std::vector<deadlock>    deadlock_vector;
 
 // prototype declaration
-std::string pp(const deadlock& x);
+std::string pp(const deadlock& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -114,7 +114,6 @@ inline void swap(deadlock& t1, deadlock& t2)
 // template function overloads
 std::set<data::variable> find_all_variables(const lps::deadlock& x);
 std::set<data::variable> find_free_variables(const lps::deadlock& x);
-std::string pp(const lps::deadlock& x);
 
 } // namespace lps
 

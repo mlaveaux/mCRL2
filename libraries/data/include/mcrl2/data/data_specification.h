@@ -31,7 +31,7 @@ void normalize_sorts(data_equation_vector& x, const data::sort_specification& so
 // prototype
 class data_specification;
 
-std::string pp(const data::data_specification& x);
+std::string pp(const data::data_specification& x, bool precedence_aware);
 
 /// \brief Test for a data specification expression
 /// \param x A term
@@ -714,7 +714,7 @@ class data_specification: public sort_specification
 
 //--- start generated class data_specification ---//
 // prototype declaration
-std::string pp(const data_specification& x);
+std::string pp(const data_specification& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

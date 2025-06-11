@@ -202,7 +202,7 @@ typedef atermpp::term_list<data_expression> data_expression_list;
 typedef std::vector<data_expression>    data_expression_vector;
 
 // prototype declaration
-std::string pp(const data_expression& x);
+std::string pp(const data_expression& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -259,8 +259,8 @@ inline data_expression_list make_data_expression_list(Container const& r, typena
 class variable;
 
 // template function overloads
-std::string pp(const data_expression_list& x);
-std::string pp(const data_expression_vector& x);
+std::string pp(const data_expression_list& x, bool precedence_aware = true);
+std::string pp(const data_expression_vector& x, bool precedence_aware = true);
 data::data_expression translate_user_notation(const data::data_expression& x);
 std::set<data::sort_expression> find_sort_expressions(const data::data_expression& x);
 std::set<data::variable> find_all_variables(const data::data_expression& x);

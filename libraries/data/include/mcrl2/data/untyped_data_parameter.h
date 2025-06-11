@@ -87,7 +87,7 @@ bool is_untyped_data_parameter(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const untyped_data_parameter& x);
+std::string pp(const untyped_data_parameter& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

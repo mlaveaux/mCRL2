@@ -70,7 +70,7 @@ class stochastic_specification: public specification_base<stochastic_linear_proc
 
 //--- start generated class stochastic_specification ---//
 // prototype declaration
-std::string pp(const stochastic_specification& x);
+std::string pp(const stochastic_specification& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

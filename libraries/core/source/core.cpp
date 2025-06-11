@@ -23,7 +23,7 @@ atermpp::function_symbol function_symbols_DataApplFixed[DataApplFixed];
 } // namespace detail
 
 //--- start generated core overloads ---//
-std::string pp(const core::identifier_string& x) { return core::pp< core::identifier_string >(x); }
+std::string pp(const core::identifier_string& x, bool arg0) { return core::pp< core::identifier_string >(x, arg0); }
 //--- end generated core overloads ---//
 
 //--- start generated function symbol definitions ---//

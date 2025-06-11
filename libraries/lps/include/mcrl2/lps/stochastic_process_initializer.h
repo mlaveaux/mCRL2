@@ -72,7 +72,7 @@ bool is_stochastic_process_initializer(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const stochastic_process_initializer& x);
+std::string pp(const stochastic_process_initializer& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

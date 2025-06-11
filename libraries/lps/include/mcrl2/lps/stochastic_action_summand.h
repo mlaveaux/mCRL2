@@ -76,7 +76,7 @@ typedef atermpp::term_list<stochastic_action_summand> stochastic_action_summand_
 typedef std::vector<stochastic_action_summand>    stochastic_action_summand_vector;
 
 // prototype declaration
-std::string pp(const stochastic_action_summand& x);
+std::string pp(const stochastic_action_summand& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

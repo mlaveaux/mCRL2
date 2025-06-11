@@ -53,7 +53,7 @@ typedef atermpp::term_list<container_type> container_type_list;
 typedef std::vector<container_type>    container_type_vector;
 
 // prototype declaration
-std::string pp(const container_type& x);
+std::string pp(const container_type& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -106,7 +106,7 @@ bool is_list_container(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const list_container& x);
+std::string pp(const list_container& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -159,7 +159,7 @@ bool is_set_container(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const set_container& x);
+std::string pp(const set_container& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -212,7 +212,7 @@ bool is_bag_container(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const bag_container& x);
+std::string pp(const bag_container& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -265,7 +265,7 @@ bool is_fset_container(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const fset_container& x);
+std::string pp(const fset_container& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -318,7 +318,7 @@ bool is_fbag_container(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const fbag_container& x);
+std::string pp(const fbag_container& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

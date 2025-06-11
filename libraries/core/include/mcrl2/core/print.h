@@ -43,6 +43,7 @@ struct printer: public core::traverser<Derived>
   using super::apply;
 
   std::ostream* m_out;
+  bool m_precedence_aware {true}; /// \brief Indicates whether the printer should take the precedence of operators into account.
 
   Derived& derived()
   {
@@ -62,12 +63,12 @@ struct printer: public core::traverser<Derived>
   template <typename T>
   void print_expression(const T& x, bool needs_parentheses)
   {
-    if (needs_parentheses)
+    if (!m_precedence_aware || needs_parentheses)
     {
       derived().print("(");
     }
     derived().apply(x);
-    if (needs_parentheses)
+    if (!m_precedence_aware || needs_parentheses)
     {
       derived().print(")");
     }
@@ -76,7 +77,7 @@ struct printer: public core::traverser<Derived>
   template <typename T, typename U>
   void print_unary_operand(const T& x, const U& operand)
   {
-    print_expression(operand, precedence(operand) < precedence(x));
+    print_expression(operand, !m_precedence_aware || precedence(operand) < precedence(x));
   }
 
   template <typename T>
@@ -101,9 +102,9 @@ struct printer: public core::traverser<Derived>
     auto p = precedence(x);
     auto p1 = precedence(x1);
     auto p2 = precedence(x2);
-    print_expression(x1, (p1 < p) || (p1 == p && !is_left_associative(x)));
+    print_expression(x1, !m_precedence_aware || (p1 < p) || (p1 == p && !is_left_associative(x)));
     derived().print(op);
-    print_expression(x2, (p2 < p) || (p2 == p && !is_right_associative(x)));
+    print_expression(x2, !m_precedence_aware || (p2 < p) || (p2 == p && !is_right_associative(x)));
   }
 
   template <typename Container>
@@ -199,10 +200,12 @@ struct apply_printer: public Traverser<apply_printer<Traverser>>
   using super::leave;
   using super::apply;
 
-  explicit apply_printer(std::ostream& out)
+  /// \brief precedence_aware Indicates whether the printer should take precendence into account when printing expressions.
+  apply_printer(std::ostream& out, bool precedence_aware)
   {
     typedef printer<apply_printer<Traverser> > Super;
     static_cast<Super&>(*this).m_out = &out;
+    static_cast<Super&>(*this).m_precedence_aware = precedence_aware;
   }
 
 };
@@ -214,19 +217,19 @@ struct apply_printer: public Traverser<apply_printer<Traverser>>
 struct stream_printer
 {
   template <typename T>
-  void operator()(const T& x, std::ostream& out)
+  void operator()(const T& x, std::ostream& out, bool precedence_aware)
   {
-    core::detail::apply_printer<core::detail::printer> printer(out);
+    core::detail::apply_printer<core::detail::printer> printer(out, precedence_aware);
     printer.apply(x);
   }
 };
 
 /// \brief Returns a string representation of the object x.
 template <typename T>
-std::string pp(const T& x)
+std::string pp(const T& x, bool precedence_aware = true)
 {
   std::ostringstream out;
-  stream_printer()(x, out);
+  stream_printer()(x, out, precedence_aware);
   return out.str();
 }
 

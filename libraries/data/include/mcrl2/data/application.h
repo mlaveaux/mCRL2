@@ -710,7 +710,7 @@ static inline void make_application(
 
 //--- start generated class application ---//
 // prototype declaration
-std::string pp(const application& x);
+std::string pp(const application& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

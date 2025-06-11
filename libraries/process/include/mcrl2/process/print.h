@@ -477,19 +477,19 @@ struct printer: public process::add_traverser_sort_expressions<data::detail::pri
 struct stream_printer
 {
   template <typename T>
-  void operator()(const T& x, std::ostream& out)
+  void operator()(const T& x, std::ostream& out, bool precedence_aware)
   {
-    core::detail::apply_printer<process::detail::printer> printer(out);
+    core::detail::apply_printer<process::detail::printer> printer(out, precedence_aware);
     printer.apply(x);
   }
 };
 
 /// \brief Returns a string representation of the object x.
 template <typename T>
-std::string pp(const T& x)
+std::string pp(const T& x, bool precedence_aware = true)
 {
   std::ostringstream out;
-  stream_printer()(x, out);
+  stream_printer()(x, out, precedence_aware);
   return out.str();
 }
 

@@ -68,7 +68,7 @@ void make_forall(atermpp::aterm& result, ARGUMENTS... arguments)
 
 //--- start generated class forall ---//
 // prototype declaration
-std::string pp(const forall& x);
+std::string pp(const forall& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

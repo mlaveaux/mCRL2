@@ -84,7 +84,7 @@ void make_abstraction(atermpp::aterm& result, ARGUMENTS... arguments)
 
 //--- start generated class abstraction ---//
 // prototype declaration
-std::string pp(const abstraction& x);
+std::string pp(const abstraction& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

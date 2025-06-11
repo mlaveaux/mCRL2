@@ -53,7 +53,7 @@ typedef atermpp::term_list<binder_type> binder_type_list;
 typedef std::vector<binder_type>    binder_type_vector;
 
 // prototype declaration
-std::string pp(const binder_type& x);
+std::string pp(const binder_type& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -106,7 +106,7 @@ bool is_untyped_set_or_bag_comprehension_binder(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const untyped_set_or_bag_comprehension_binder& x);
+std::string pp(const untyped_set_or_bag_comprehension_binder& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -159,7 +159,7 @@ bool is_set_comprehension_binder(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const set_comprehension_binder& x);
+std::string pp(const set_comprehension_binder& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -212,7 +212,7 @@ bool is_bag_comprehension_binder(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const bag_comprehension_binder& x);
+std::string pp(const bag_comprehension_binder& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -265,7 +265,7 @@ bool is_forall_binder(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const forall_binder& x);
+std::string pp(const forall_binder& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -318,7 +318,7 @@ bool is_exists_binder(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const exists_binder& x);
+std::string pp(const exists_binder& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -371,7 +371,7 @@ bool is_lambda_binder(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const lambda_binder& x);
+std::string pp(const lambda_binder& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

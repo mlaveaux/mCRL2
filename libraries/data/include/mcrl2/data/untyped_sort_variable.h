@@ -77,7 +77,7 @@ bool is_untyped_sort_variable(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const untyped_sort_variable& x);
+std::string pp(const untyped_sort_variable& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

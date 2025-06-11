@@ -75,7 +75,7 @@ inline void make_function_sort(atermpp::aterm& t, const ARGUMENTS&... args)
 }
 
 // prototype declaration
-std::string pp(const function_sort& x);
+std::string pp(const function_sort& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

@@ -105,7 +105,7 @@ typedef atermpp::term_list<sort_expression> sort_expression_list;
 typedef std::vector<sort_expression>    sort_expression_vector;
 
 // prototype declaration
-std::string pp(const sort_expression& x);
+std::string pp(const sort_expression& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -139,8 +139,8 @@ bool is_sort_expression(const atermpp::aterm& x)
 }
 
 // template function overloads
-std::string pp(const sort_expression_list& x);
-std::string pp(const sort_expression_vector& x);
+std::string pp(const sort_expression_list& x, bool precedence_aware = true);
+std::string pp(const sort_expression_vector& x, bool precedence_aware = true);
 std::set<data::sort_expression> find_sort_expressions(const data::sort_expression& x);
 
 } // namespace data

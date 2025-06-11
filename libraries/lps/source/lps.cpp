@@ -23,18 +23,18 @@ namespace lps
 {
 
 //--- start generated lps overloads ---//
-std::string pp(const lps::action_summand& x) { return lps::pp< lps::action_summand >(x); }
-std::string pp(const lps::deadlock& x) { return lps::pp< lps::deadlock >(x); }
-std::string pp(const lps::deadlock_summand& x) { return lps::pp< lps::deadlock_summand >(x); }
-std::string pp(const lps::linear_process& x) { return lps::pp< lps::linear_process >(x); }
-std::string pp(const lps::multi_action& x) { return lps::pp< lps::multi_action >(x); }
-std::string pp(const lps::process_initializer& x) { return lps::pp< lps::process_initializer >(x); }
-std::string pp(const lps::specification& x) { return lps::pp< lps::specification >(x); }
-std::string pp(const lps::stochastic_action_summand& x) { return lps::pp< lps::stochastic_action_summand >(x); }
-std::string pp(const lps::stochastic_distribution& x) { return lps::pp< lps::stochastic_distribution >(x); }
-std::string pp(const lps::stochastic_linear_process& x) { return lps::pp< lps::stochastic_linear_process >(x); }
-std::string pp(const lps::stochastic_process_initializer& x) { return lps::pp< lps::stochastic_process_initializer >(x); }
-std::string pp(const lps::stochastic_specification& x) { return lps::pp< lps::stochastic_specification >(x); }
+std::string pp(const lps::action_summand& x, bool arg0) { return lps::pp< lps::action_summand >(x, arg0); }
+std::string pp(const lps::deadlock& x, bool arg0) { return lps::pp< lps::deadlock >(x, arg0); }
+std::string pp(const lps::deadlock_summand& x, bool arg0) { return lps::pp< lps::deadlock_summand >(x, arg0); }
+std::string pp(const lps::linear_process& x, bool arg0) { return lps::pp< lps::linear_process >(x, arg0); }
+std::string pp(const lps::multi_action& x, bool arg0) { return lps::pp< lps::multi_action >(x, arg0); }
+std::string pp(const lps::process_initializer& x, bool arg0) { return lps::pp< lps::process_initializer >(x, arg0); }
+std::string pp(const lps::specification& x, bool arg0) { return lps::pp< lps::specification >(x, arg0); }
+std::string pp(const lps::stochastic_action_summand& x, bool arg0) { return lps::pp< lps::stochastic_action_summand >(x, arg0); }
+std::string pp(const lps::stochastic_distribution& x, bool arg0) { return lps::pp< lps::stochastic_distribution >(x, arg0); }
+std::string pp(const lps::stochastic_linear_process& x, bool arg0) { return lps::pp< lps::stochastic_linear_process >(x, arg0); }
+std::string pp(const lps::stochastic_process_initializer& x, bool arg0) { return lps::pp< lps::stochastic_process_initializer >(x, arg0); }
+std::string pp(const lps::stochastic_specification& x, bool arg0) { return lps::pp< lps::stochastic_specification >(x, arg0); }
 lps::multi_action normalize_sorts(const lps::multi_action& x, const data::sort_specification& sortspec) { return lps::normalize_sorts< lps::multi_action >(x, sortspec); }
 void normalize_sorts(lps::specification& x, const data::sort_specification& /* sortspec */) { lps::normalize_sorts< lps::specification >(x, x.data()); }
 void normalize_sorts(lps::stochastic_specification& x, const data::sort_specification& /* sortspec */) { lps::normalize_sorts< lps::stochastic_specification >(x, x.data()); }
@@ -74,7 +74,7 @@ data::data_expression_list action_summand::next_state(const data::variable_list&
 std::string pp_with_summand_numbers(const specification& x)
 {
   std::ostringstream out;
-  core::detail::apply_printer<lps::detail::printer> printer(out);
+  core::detail::apply_printer<lps::detail::printer> printer(out, true);
   printer.print_summand_numbers() = true;
   printer.apply(x);
   return out.str();
@@ -83,7 +83,7 @@ std::string pp_with_summand_numbers(const specification& x)
 std::string pp_with_summand_numbers(const stochastic_specification& x)
 {
   std::ostringstream out;
-  core::detail::apply_printer<lps::detail::printer> printer(out);
+  core::detail::apply_printer<lps::detail::printer> printer(out, true);
   printer.print_summand_numbers() = true;
   printer.apply(x);
   return out.str();

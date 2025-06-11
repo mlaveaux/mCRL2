@@ -91,7 +91,7 @@ typedef atermpp::term_list<function_symbol> function_symbol_list;
 typedef std::vector<function_symbol>    function_symbol_vector;
 
 // prototype declaration
-std::string pp(const function_symbol& x);
+std::string pp(const function_symbol& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -111,8 +111,8 @@ inline void swap(function_symbol& t1, function_symbol& t2)
 //--- end generated class function_symbol ---//
 
 // template function overloads
-std::string pp(const function_symbol_list& x);
-std::string pp(const function_symbol_vector& x);
+std::string pp(const function_symbol_list& x, bool precedence_aware = true);
+std::string pp(const function_symbol_vector& x, bool precedence_aware = true);
 std::set<data::variable> find_all_variables(const data::function_symbol& x);
 
 } // namespace data

@@ -79,7 +79,7 @@ bool is_action_name_multiset(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const action_name_multiset& x);
+std::string pp(const action_name_multiset& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

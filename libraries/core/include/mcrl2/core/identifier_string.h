@@ -33,7 +33,7 @@ typedef atermpp::term_list<identifier_string> identifier_string_list;
 typedef std::vector<identifier_string>    identifier_string_vector;
 
 // prototype declaration
-std::string pp(const identifier_string& x);
+std::string pp(const identifier_string& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

@@ -67,7 +67,7 @@ void make_bag_comprehension(atermpp::aterm& result, ARGUMENTS... arguments)
 
 //--- start generated class bag_comprehension ---//
 // prototype declaration
-std::string pp(const bag_comprehension& x);
+std::string pp(const bag_comprehension& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

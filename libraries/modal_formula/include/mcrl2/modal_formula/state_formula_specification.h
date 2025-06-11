@@ -87,7 +87,7 @@ class state_formula_specification
 
 //--- start generated classes ---//
 // prototype declaration
-std::string pp(const state_formula_specification& x);
+std::string pp(const state_formula_specification& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

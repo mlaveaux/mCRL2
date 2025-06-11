@@ -25,28 +25,31 @@ namespace pres_system
 {
 
 //--- start generated pres_system overloads ---//
-std::string pp(const pres_system::pres_equation_vector& x) { return pres_system::pp< pres_system::pres_equation_vector >(x); }
-std::string pp(const pres_system::pres_expression_list& x) { return pres_system::pp< pres_system::pres_expression_list >(x); }
-std::string pp(const pres_system::pres_expression_vector& x) { return pres_system::pp< pres_system::pres_expression_vector >(x); }
-std::string pp(const pres_system::propositional_variable_list& x) { return pres_system::pp< pres_system::propositional_variable_list >(x); }
-std::string pp(const pres_system::propositional_variable_vector& x) { return pres_system::pp< pres_system::propositional_variable_vector >(x); }
-std::string pp(const pres_system::propositional_variable_instantiation_list& x) { return pres_system::pp< pres_system::propositional_variable_instantiation_list >(x); }
-std::string pp(const pres_system::propositional_variable_instantiation_vector& x) { return pres_system::pp< pres_system::propositional_variable_instantiation_vector >(x); }
-std::string pp(const pres_system::and_& x) { return pres_system::pp< pres_system::and_ >(x); }
-std::string pp(const pres_system::or_& x) { return pres_system::pp< pres_system::or_ >(x); }
-std::string pp(const pres_system::supremum& x) { return pres_system::pp< pres_system::supremum >(x); }
-std::string pp(const pres_system::fixpoint_symbol& x) { return pres_system::pp< pres_system::fixpoint_symbol >(x); }
-std::string pp(const pres_system::infimum& x) { return pres_system::pp< pres_system::infimum >(x); }
-std::string pp(const pres_system::sum& x) { return pres_system::pp< pres_system::sum >(x); }
-std::string pp(const pres_system::imp& x) { return pres_system::pp< pres_system::imp >(x); }
-std::string pp(const pres_system::minus& x) { return pres_system::pp< pres_system::minus >(x); }
-std::string pp(const pres_system::const_multiply& x) { return pres_system::pp< pres_system::const_multiply >(x); }
-std::string pp(const pres_system::const_multiply_alt& x) { return pres_system::pp< pres_system::const_multiply_alt >(x); }
-std::string pp(const pres_system::pres& x) { return pres_system::pp< pres_system::pres >(x); }
-std::string pp(const pres_system::pres_equation& x) { return pres_system::pp< pres_system::pres_equation >(x); }
-std::string pp(const pres_system::pres_expression& x) { return pres_system::pp< pres_system::pres_expression >(x); }
-std::string pp(const pres_system::propositional_variable& x) { return pres_system::pp< pres_system::propositional_variable >(x); }
-std::string pp(const pres_system::propositional_variable_instantiation& x) { return pres_system::pp< pres_system::propositional_variable_instantiation >(x); }
+std::string pp(const pres_system::pres_equation_vector& x, bool arg0) { return pres_system::pp< pres_system::pres_equation_vector >(x, arg0); }
+std::string pp(const pres_system::pres_expression_list& x, bool arg0) { return pres_system::pp< pres_system::pres_expression_list >(x, arg0); }
+std::string pp(const pres_system::pres_expression_vector& x, bool arg0) { return pres_system::pp< pres_system::pres_expression_vector >(x, arg0); }
+std::string pp(const pres_system::propositional_variable_list& x, bool arg0) { return pres_system::pp< pres_system::propositional_variable_list >(x, arg0); }
+std::string pp(const pres_system::propositional_variable_vector& x, bool arg0) { return pres_system::pp< pres_system::propositional_variable_vector >(x, arg0); }
+std::string pp(const pres_system::propositional_variable_instantiation_list& x, bool arg0) { return pres_system::pp< pres_system::propositional_variable_instantiation_list >(x, arg0); }
+std::string pp(const pres_system::propositional_variable_instantiation_vector& x, bool arg0) { return pres_system::pp< pres_system::propositional_variable_instantiation_vector >(x, arg0); }
+std::string pp(const pres_system::and_& x, bool arg0) { return pres_system::pp< pres_system::and_ >(x, arg0); }
+std::string pp(const pres_system::condeq& x, bool arg0) { return pres_system::pp< pres_system::condeq >(x, arg0); }
+std::string pp(const pres_system::condsm& x, bool arg0) { return pres_system::pp< pres_system::condsm >(x, arg0); }
+std::string pp(const pres_system::const_multiply& x, bool arg0) { return pres_system::pp< pres_system::const_multiply >(x, arg0); }
+std::string pp(const pres_system::const_multiply_alt& x, bool arg0) { return pres_system::pp< pres_system::const_multiply_alt >(x, arg0); }
+std::string pp(const pres_system::eqinf& x, bool arg0) { return pres_system::pp< pres_system::eqinf >(x, arg0); }
+std::string pp(const pres_system::eqninf& x, bool arg0) { return pres_system::pp< pres_system::eqninf >(x, arg0); }
+std::string pp(const pres_system::imp& x, bool arg0) { return pres_system::pp< pres_system::imp >(x, arg0); }
+std::string pp(const pres_system::infimum& x, bool arg0) { return pres_system::pp< pres_system::infimum >(x, arg0); }
+std::string pp(const pres_system::minus& x, bool arg0) { return pres_system::pp< pres_system::minus >(x, arg0); }
+std::string pp(const pres_system::or_& x, bool arg0) { return pres_system::pp< pres_system::or_ >(x, arg0); }
+std::string pp(const pres_system::plus& x, bool arg0) { return pres_system::pp< pres_system::plus >(x, arg0); }
+std::string pp(const pres_system::pres& x, bool arg0) { return pres_system::pp< pres_system::pres >(x, arg0); }
+std::string pp(const pres_system::pres_equation& x, bool arg0) { return pres_system::pp< pres_system::pres_equation >(x, arg0); }
+std::string pp(const pres_system::pres_expression& x, bool arg0) { return pres_system::pp< pres_system::pres_expression >(x, arg0); }
+std::string pp(const pres_system::propositional_variable_instantiation& x, bool arg0) { return pres_system::pp< pres_system::propositional_variable_instantiation >(x, arg0); }
+std::string pp(const pres_system::sum& x, bool arg0) { return pres_system::pp< pres_system::sum >(x, arg0); }
+std::string pp(const pres_system::supremum& x, bool arg0) { return pres_system::pp< pres_system::supremum >(x, arg0); }
 void normalize_sorts(pres_system::pres_equation_vector& x, const data::sort_specification& sortspec) { pres_system::normalize_sorts< pres_system::pres_equation_vector >(x, sortspec); }
 void normalize_sorts(pres_system::pres& x, const data::sort_specification& /* sortspec */) { pres_system::normalize_sorts< pres_system::pres >(x, x.data()); }
 pres_system::pres_expression normalize_sorts(const pres_system::pres_expression& x, const data::sort_specification& sortspec) { return pres_system::normalize_sorts< pres_system::pres_expression >(x, sortspec); }

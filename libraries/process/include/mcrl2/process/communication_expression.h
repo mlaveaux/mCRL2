@@ -89,7 +89,7 @@ bool is_communication_expression(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const communication_expression& x);
+std::string pp(const communication_expression& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

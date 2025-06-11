@@ -448,7 +448,7 @@ typedef atermpp::term_list<structured_sort> structured_sort_list;
 typedef std::vector<structured_sort>    structured_sort_vector;
 
 // prototype declaration
-std::string pp(const structured_sort& x);
+std::string pp(const structured_sort& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

@@ -246,7 +246,7 @@ atermpp::aterm linear_process_to_aterm(const linear_process_base<ActionSummand>&
 
 //--- start generated class linear_process ---//
 // prototype declaration
-std::string pp(const linear_process& x);
+std::string pp(const linear_process& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

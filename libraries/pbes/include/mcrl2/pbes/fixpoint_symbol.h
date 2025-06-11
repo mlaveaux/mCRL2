@@ -81,7 +81,7 @@ typedef atermpp::term_list<fixpoint_symbol> fixpoint_symbol_list;
 typedef std::vector<fixpoint_symbol>    fixpoint_symbol_vector;
 
 // prototype declaration
-std::string pp(const fixpoint_symbol& x);
+std::string pp(const fixpoint_symbol& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

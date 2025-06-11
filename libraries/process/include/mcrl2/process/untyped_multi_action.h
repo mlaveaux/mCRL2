@@ -77,7 +77,7 @@ bool is_untyped_multi_action(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const untyped_multi_action& x);
+std::string pp(const untyped_multi_action& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

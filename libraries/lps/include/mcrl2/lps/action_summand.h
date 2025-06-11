@@ -119,7 +119,7 @@ typedef atermpp::term_list<action_summand> action_summand_list;
 typedef std::vector<action_summand>    action_summand_vector;
 
 // prototype declaration
-std::string pp(const action_summand& x);
+std::string pp(const action_summand& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

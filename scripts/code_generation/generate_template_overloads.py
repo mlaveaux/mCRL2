@@ -190,10 +190,14 @@ def is_modifiable(type):
 def extract_namespace(classname):
     return re.sub('::.*', '', classname)
 
-def generate_traverser_overloads(classnames, function, return_type, code_map):
+def generate_traverser_overloads(classnames, function, return_type, parameters: list[str], code_map):
     for classname in classnames:
         namespace = extract_namespace(classname)
-        text = re.sub('>>', '> >', '%s %s(const %s& x) { return %s::%s< %s >(x); }\n' % (return_type, function, classname, namespace, function, classname))
+        params = [(f'const {classname}&', 'x')]
+        params.extend([(p, f'arg{i}') for i, p in enumerate(parameters)])
+
+        text = re.sub('>>', '> >', '%s %s(%s) { return %s::%s< %s >(%s); }\n' % (return_type, function, ", ".join(map(lambda x : x[0] + " " + x[1], params)), namespace, function, classname, 
+                                                                                 ", ".join(map(lambda x : x[1], params))))
         if namespace in code_map:
             code_map[namespace].append(text)
 
@@ -239,7 +243,7 @@ for name in sorted(all_classes):
     PP_CLASSNAMES = PP_CLASSNAMES + '\n%s::%s' % (c.namespace(), c.classname())
 
 classnames = PP_CLASSNAMES.strip().split()
-generate_traverser_overloads(classnames, 'pp', 'std::string', code_map)
+generate_traverser_overloads(classnames, 'pp', 'std::string', ['bool'], code_map)
 
 classnames = NORMALIZE_SORTS_CLASSNAMES.strip().split()
 generate_normalize_sorts_overloads(classnames, code_map)
@@ -248,25 +252,25 @@ classnames = TRANSLATE_USER_NOTATION_CLASSNAMES.strip().split()
 generate_builder_overloads(classnames, 'translate_user_notation', code_map)
 
 classnames = FIND_SORT_EXPRESSIONS_CLASSNAMES.strip().split()
-generate_traverser_overloads(classnames, 'find_sort_expressions', 'std::set<data::sort_expression>', code_map)
+generate_traverser_overloads(classnames, 'find_sort_expressions', 'std::set<data::sort_expression>', [], code_map)
 
 classnames = FIND_VARIABLES_CLASSNAMES.strip().split()
-generate_traverser_overloads(classnames, 'find_all_variables', 'std::set<data::variable>', code_map)
+generate_traverser_overloads(classnames, 'find_all_variables', 'std::set<data::variable>', [], code_map)
 
 classnames = FIND_FREE_VARIABLES_CLASSNAMES.strip().split()
-generate_traverser_overloads(classnames, 'find_free_variables', 'std::set<data::variable>', code_map)
+generate_traverser_overloads(classnames, 'find_free_variables', 'std::set<data::variable>', [], code_map)
 
 classnames = FIND_FUNCTION_SYMBOLS_CLASSNAMES.strip().split()
-generate_traverser_overloads(classnames, 'find_function_symbols', 'std::set<data::function_symbol>', code_map)
+generate_traverser_overloads(classnames, 'find_function_symbols', 'std::set<data::function_symbol>', [], code_map)
 
 classnames = FIND_PROPOSITIONAL_VARIABLE_INSTANTIATIONS_CLASSNAMES.strip().split()
-generate_traverser_overloads(classnames, 'find_propositional_variable_instantiations', 'std::set<pbes_system::propositional_variable_instantiation>', code_map)
+generate_traverser_overloads(classnames, 'find_propositional_variable_instantiations', 'std::set<pbes_system::propositional_variable_instantiation>', [], code_map)
 
 classnames = FIND_IDENTIFIERS_CLASSNAMES.strip().split()
-generate_traverser_overloads(classnames, 'find_identifiers', 'std::set<core::identifier_string>', code_map)
+generate_traverser_overloads(classnames, 'find_identifiers', 'std::set<core::identifier_string>', [], code_map)
 
 classnames = FIND_ACTION_LABELS_CLASSNAMES.strip().split()
-generate_traverser_overloads(classnames, 'find_action_labels', 'std::set<process::action_label>', code_map)
+generate_traverser_overloads(classnames, 'find_action_labels', 'std::set<process::action_label>', [], code_map)
 
 classnames = SEARCH_VARIABLE_CLASSNAMES.strip().split()
 generate_search_variable_overloads(classnames, 'search_variable', 'bool', code_map)

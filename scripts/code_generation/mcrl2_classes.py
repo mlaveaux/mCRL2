@@ -1080,7 +1080,7 @@ class <CLASSNAME><SUPERCLASS_DECLARATION>
     # Returns an overload of operator<<(ostream&)
     def ostream_overload(self):
         text = r'''// prototype declaration
-std::string pp(const <CLASSNAME>& x);
+std::string pp(const <CLASSNAME>& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

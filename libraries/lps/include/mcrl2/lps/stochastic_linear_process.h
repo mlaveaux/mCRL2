@@ -78,7 +78,7 @@ class stochastic_linear_process: public linear_process_base<stochastic_action_su
 
 //--- start generated class stochastic_linear_process ---//
 // prototype declaration
-std::string pp(const stochastic_linear_process& x);
+std::string pp(const stochastic_linear_process& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

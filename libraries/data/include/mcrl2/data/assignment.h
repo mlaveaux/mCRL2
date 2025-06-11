@@ -67,7 +67,7 @@ bool is_assignment_expression(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const assignment_expression& x);
+std::string pp(const assignment_expression& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -158,7 +158,7 @@ bool is_assignment(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const assignment& x);
+std::string pp(const assignment& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -254,7 +254,7 @@ bool is_untyped_identifier_assignment(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const untyped_identifier_assignment& x);
+std::string pp(const untyped_identifier_assignment& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -321,8 +321,8 @@ data_expression_list right_hand_sides(const assignment_list& x)
 }
 
 // template function overloads
-std::string pp(const assignment_list& x);
-std::string pp(const assignment_vector& x);
+std::string pp(const assignment_list& x, bool precedence_aware = true);
+std::string pp(const assignment_vector& x, bool precedence_aware = true);
 
 } // namespace data
 

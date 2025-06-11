@@ -20,14 +20,14 @@ void test_print()
 {
   // print directly using core::detail::printer
   std::ostringstream out1;
-  core::detail::apply_printer<core::detail::printer> printer(out1);
+  core::detail::apply_printer<core::detail::printer> printer(out1, true);
   core::identifier_string s("abc");
   printer.apply(s);
   BOOST_CHECK(out1.str() == "abc");
 
   // print using the one argument function print
   std::ostringstream out2;
-  core::stream_printer()(s, out2);
+  core::stream_printer()(s, out2, true);
   BOOST_CHECK(out2.str() == "abc");
 
   // print using the two argument function print

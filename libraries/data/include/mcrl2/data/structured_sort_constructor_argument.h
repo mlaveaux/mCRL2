@@ -105,7 +105,7 @@ bool is_structured_sort_constructor_argument(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const structured_sort_constructor_argument& x);
+std::string pp(const structured_sort_constructor_argument& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

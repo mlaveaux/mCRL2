@@ -22,47 +22,47 @@ namespace process
 {
 
 //--- start generated process overloads ---//
-std::string pp(const process::action_list& x) { return process::pp< process::action_list >(x); }
-std::string pp(const process::action_vector& x) { return process::pp< process::action_vector >(x); }
-std::string pp(const process::action_label_list& x) { return process::pp< process::action_label_list >(x); }
-std::string pp(const process::action_label_vector& x) { return process::pp< process::action_label_vector >(x); }
-std::string pp(const process::process_identifier_list& x) { return process::pp< process::process_identifier_list >(x); }
-std::string pp(const process::process_identifier_vector& x) { return process::pp< process::process_identifier_vector >(x); }
-std::string pp(const process::process_expression_list& x) { return process::pp< process::process_expression_list >(x); }
-std::string pp(const process::process_expression_vector& x) { return process::pp< process::process_expression_vector >(x); }
-std::string pp(const process::process_equation_list& x) { return process::pp< process::process_equation_list >(x); }
-std::string pp(const process::process_equation_vector& x) { return process::pp< process::process_equation_vector >(x); }
-std::string pp(const process::action& x) { return process::pp< process::action >(x); }
-std::string pp(const process::action_label& x) { return process::pp< process::action_label >(x); }
-std::string pp(const process::action_name_multiset& x) { return process::pp< process::action_name_multiset >(x); }
-std::string pp(const process::allow& x) { return process::pp< process::allow >(x); }
-std::string pp(const process::at& x) { return process::pp< process::at >(x); }
-std::string pp(const process::block& x) { return process::pp< process::block >(x); }
-std::string pp(const process::bounded_init& x) { return process::pp< process::bounded_init >(x); }
-std::string pp(const process::choice& x) { return process::pp< process::choice >(x); }
-std::string pp(const process::comm& x) { return process::pp< process::comm >(x); }
-std::string pp(const process::communication_expression& x) { return process::pp< process::communication_expression >(x); }
-std::string pp(const process::delta& x) { return process::pp< process::delta >(x); }
-std::string pp(const process::hide& x) { return process::pp< process::hide >(x); }
-std::string pp(const process::if_then& x) { return process::pp< process::if_then >(x); }
-std::string pp(const process::if_then_else& x) { return process::pp< process::if_then_else >(x); }
-std::string pp(const process::left_merge& x) { return process::pp< process::left_merge >(x); }
-std::string pp(const process::merge& x) { return process::pp< process::merge >(x); }
-std::string pp(const process::process_equation& x) { return process::pp< process::process_equation >(x); }
-std::string pp(const process::process_expression& x) { return process::pp< process::process_expression >(x); }
-std::string pp(const process::process_identifier& x) { return process::pp< process::process_identifier >(x); }
-std::string pp(const process::process_instance& x) { return process::pp< process::process_instance >(x); }
-std::string pp(const process::process_instance_assignment& x) { return process::pp< process::process_instance_assignment >(x); }
-std::string pp(const process::process_specification& x) { return process::pp< process::process_specification >(x); }
-std::string pp(const process::rename& x) { return process::pp< process::rename >(x); }
-std::string pp(const process::rename_expression& x) { return process::pp< process::rename_expression >(x); }
-std::string pp(const process::seq& x) { return process::pp< process::seq >(x); }
-std::string pp(const process::stochastic_operator& x) { return process::pp< process::stochastic_operator >(x); }
-std::string pp(const process::sum& x) { return process::pp< process::sum >(x); }
-std::string pp(const process::sync& x) { return process::pp< process::sync >(x); }
-std::string pp(const process::tau& x) { return process::pp< process::tau >(x); }
-std::string pp(const process::untyped_multi_action& x) { return process::pp< process::untyped_multi_action >(x); }
-std::string pp(const process::untyped_process_assignment& x) { return process::pp< process::untyped_process_assignment >(x); }
+std::string pp(const process::action_list& x, bool arg0) { return process::pp< process::action_list >(x, arg0); }
+std::string pp(const process::action_vector& x, bool arg0) { return process::pp< process::action_vector >(x, arg0); }
+std::string pp(const process::action_label_list& x, bool arg0) { return process::pp< process::action_label_list >(x, arg0); }
+std::string pp(const process::action_label_vector& x, bool arg0) { return process::pp< process::action_label_vector >(x, arg0); }
+std::string pp(const process::process_identifier_list& x, bool arg0) { return process::pp< process::process_identifier_list >(x, arg0); }
+std::string pp(const process::process_identifier_vector& x, bool arg0) { return process::pp< process::process_identifier_vector >(x, arg0); }
+std::string pp(const process::process_expression_list& x, bool arg0) { return process::pp< process::process_expression_list >(x, arg0); }
+std::string pp(const process::process_expression_vector& x, bool arg0) { return process::pp< process::process_expression_vector >(x, arg0); }
+std::string pp(const process::process_equation_list& x, bool arg0) { return process::pp< process::process_equation_list >(x, arg0); }
+std::string pp(const process::process_equation_vector& x, bool arg0) { return process::pp< process::process_equation_vector >(x, arg0); }
+std::string pp(const process::action& x, bool arg0) { return process::pp< process::action >(x, arg0); }
+std::string pp(const process::action_label& x, bool arg0) { return process::pp< process::action_label >(x, arg0); }
+std::string pp(const process::action_name_multiset& x, bool arg0) { return process::pp< process::action_name_multiset >(x, arg0); }
+std::string pp(const process::allow& x, bool arg0) { return process::pp< process::allow >(x, arg0); }
+std::string pp(const process::at& x, bool arg0) { return process::pp< process::at >(x, arg0); }
+std::string pp(const process::block& x, bool arg0) { return process::pp< process::block >(x, arg0); }
+std::string pp(const process::bounded_init& x, bool arg0) { return process::pp< process::bounded_init >(x, arg0); }
+std::string pp(const process::choice& x, bool arg0) { return process::pp< process::choice >(x, arg0); }
+std::string pp(const process::comm& x, bool arg0) { return process::pp< process::comm >(x, arg0); }
+std::string pp(const process::communication_expression& x, bool arg0) { return process::pp< process::communication_expression >(x, arg0); }
+std::string pp(const process::delta& x, bool arg0) { return process::pp< process::delta >(x, arg0); }
+std::string pp(const process::hide& x, bool arg0) { return process::pp< process::hide >(x, arg0); }
+std::string pp(const process::if_then& x, bool arg0) { return process::pp< process::if_then >(x, arg0); }
+std::string pp(const process::if_then_else& x, bool arg0) { return process::pp< process::if_then_else >(x, arg0); }
+std::string pp(const process::left_merge& x, bool arg0) { return process::pp< process::left_merge >(x, arg0); }
+std::string pp(const process::merge& x, bool arg0) { return process::pp< process::merge >(x, arg0); }
+std::string pp(const process::process_equation& x, bool arg0) { return process::pp< process::process_equation >(x, arg0); }
+std::string pp(const process::process_expression& x, bool arg0) { return process::pp< process::process_expression >(x, arg0); }
+std::string pp(const process::process_identifier& x, bool arg0) { return process::pp< process::process_identifier >(x, arg0); }
+std::string pp(const process::process_instance& x, bool arg0) { return process::pp< process::process_instance >(x, arg0); }
+std::string pp(const process::process_instance_assignment& x, bool arg0) { return process::pp< process::process_instance_assignment >(x, arg0); }
+std::string pp(const process::process_specification& x, bool arg0) { return process::pp< process::process_specification >(x, arg0); }
+std::string pp(const process::rename& x, bool arg0) { return process::pp< process::rename >(x, arg0); }
+std::string pp(const process::rename_expression& x, bool arg0) { return process::pp< process::rename_expression >(x, arg0); }
+std::string pp(const process::seq& x, bool arg0) { return process::pp< process::seq >(x, arg0); }
+std::string pp(const process::stochastic_operator& x, bool arg0) { return process::pp< process::stochastic_operator >(x, arg0); }
+std::string pp(const process::sum& x, bool arg0) { return process::pp< process::sum >(x, arg0); }
+std::string pp(const process::sync& x, bool arg0) { return process::pp< process::sync >(x, arg0); }
+std::string pp(const process::tau& x, bool arg0) { return process::pp< process::tau >(x, arg0); }
+std::string pp(const process::untyped_multi_action& x, bool arg0) { return process::pp< process::untyped_multi_action >(x, arg0); }
+std::string pp(const process::untyped_process_assignment& x, bool arg0) { return process::pp< process::untyped_process_assignment >(x, arg0); }
 process::action normalize_sorts(const process::action& x, const data::sort_specification& sortspec) { return process::normalize_sorts< process::action >(x, sortspec); }
 process::action_label_list normalize_sorts(const process::action_label_list& x, const data::sort_specification& sortspec) { return process::normalize_sorts< process::action_label_list >(x, sortspec); }
 void normalize_sorts(process::process_equation_vector& x, const data::sort_specification& sortspec) { process::normalize_sorts< process::process_equation_vector >(x, sortspec); }

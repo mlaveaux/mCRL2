@@ -143,7 +143,7 @@ typedef atermpp::term_list<pbes_equation> pbes_equation_list;
 typedef std::vector<pbes_equation>    pbes_equation_vector;
 
 // prototype declaration
-std::string pp(const pbes_equation& x);
+std::string pp(const pbes_equation& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

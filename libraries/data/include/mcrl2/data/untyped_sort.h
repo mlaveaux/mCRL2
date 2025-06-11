@@ -44,7 +44,7 @@ class untyped_sort: public sort_expression
 };
 
 // prototype declaration
-std::string pp(const untyped_sort& x);
+std::string pp(const untyped_sort& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

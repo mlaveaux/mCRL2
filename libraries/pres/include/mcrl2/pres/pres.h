@@ -300,7 +300,7 @@ class pres
 
 //--- start generated class pres ---//
 // prototype declaration
-std::string pp(const pres& x);
+std::string pp(const pres& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

@@ -90,7 +90,7 @@ bool is_rename_expression(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const rename_expression& x);
+std::string pp(const rename_expression& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

@@ -94,7 +94,7 @@ bool is_process_identifier(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const process_identifier& x);
+std::string pp(const process_identifier& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

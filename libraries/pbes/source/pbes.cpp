@@ -25,25 +25,25 @@ namespace pbes_system
 {
 
 //--- start generated pbes_system overloads ---//
-std::string pp(const pbes_system::pbes_equation_vector& x) { return pbes_system::pp< pbes_system::pbes_equation_vector >(x); }
-std::string pp(const pbes_system::pbes_expression_list& x) { return pbes_system::pp< pbes_system::pbes_expression_list >(x); }
-std::string pp(const pbes_system::pbes_expression_vector& x) { return pbes_system::pp< pbes_system::pbes_expression_vector >(x); }
-std::string pp(const pbes_system::propositional_variable_list& x) { return pbes_system::pp< pbes_system::propositional_variable_list >(x); }
-std::string pp(const pbes_system::propositional_variable_vector& x) { return pbes_system::pp< pbes_system::propositional_variable_vector >(x); }
-std::string pp(const pbes_system::propositional_variable_instantiation_list& x) { return pbes_system::pp< pbes_system::propositional_variable_instantiation_list >(x); }
-std::string pp(const pbes_system::propositional_variable_instantiation_vector& x) { return pbes_system::pp< pbes_system::propositional_variable_instantiation_vector >(x); }
-std::string pp(const pbes_system::and_& x) { return pbes_system::pp< pbes_system::and_ >(x); }
-std::string pp(const pbes_system::exists& x) { return pbes_system::pp< pbes_system::exists >(x); }
-std::string pp(const pbes_system::fixpoint_symbol& x) { return pbes_system::pp< pbes_system::fixpoint_symbol >(x); }
-std::string pp(const pbes_system::forall& x) { return pbes_system::pp< pbes_system::forall >(x); }
-std::string pp(const pbes_system::imp& x) { return pbes_system::pp< pbes_system::imp >(x); }
-std::string pp(const pbes_system::not_& x) { return pbes_system::pp< pbes_system::not_ >(x); }
-std::string pp(const pbes_system::or_& x) { return pbes_system::pp< pbes_system::or_ >(x); }
-std::string pp(const pbes_system::pbes& x) { return pbes_system::pp< pbes_system::pbes >(x); }
-std::string pp(const pbes_system::pbes_equation& x) { return pbes_system::pp< pbes_system::pbes_equation >(x); }
-std::string pp(const pbes_system::pbes_expression& x) { return pbes_system::pp< pbes_system::pbes_expression >(x); }
-std::string pp(const pbes_system::propositional_variable& x) { return pbes_system::pp< pbes_system::propositional_variable >(x); }
-std::string pp(const pbes_system::propositional_variable_instantiation& x) { return pbes_system::pp< pbes_system::propositional_variable_instantiation >(x); }
+std::string pp(const pbes_system::pbes_equation_vector& x, bool arg0) { return pbes_system::pp< pbes_system::pbes_equation_vector >(x, arg0); }
+std::string pp(const pbes_system::pbes_expression_list& x, bool arg0) { return pbes_system::pp< pbes_system::pbes_expression_list >(x, arg0); }
+std::string pp(const pbes_system::pbes_expression_vector& x, bool arg0) { return pbes_system::pp< pbes_system::pbes_expression_vector >(x, arg0); }
+std::string pp(const pbes_system::propositional_variable_list& x, bool arg0) { return pbes_system::pp< pbes_system::propositional_variable_list >(x, arg0); }
+std::string pp(const pbes_system::propositional_variable_vector& x, bool arg0) { return pbes_system::pp< pbes_system::propositional_variable_vector >(x, arg0); }
+std::string pp(const pbes_system::propositional_variable_instantiation_list& x, bool arg0) { return pbes_system::pp< pbes_system::propositional_variable_instantiation_list >(x, arg0); }
+std::string pp(const pbes_system::propositional_variable_instantiation_vector& x, bool arg0) { return pbes_system::pp< pbes_system::propositional_variable_instantiation_vector >(x, arg0); }
+std::string pp(const pbes_system::and_& x, bool arg0) { return pbes_system::pp< pbes_system::and_ >(x, arg0); }
+std::string pp(const pbes_system::exists& x, bool arg0) { return pbes_system::pp< pbes_system::exists >(x, arg0); }
+std::string pp(const pbes_system::fixpoint_symbol& x, bool arg0) { return pbes_system::pp< pbes_system::fixpoint_symbol >(x, arg0); }
+std::string pp(const pbes_system::forall& x, bool arg0) { return pbes_system::pp< pbes_system::forall >(x, arg0); }
+std::string pp(const pbes_system::imp& x, bool arg0) { return pbes_system::pp< pbes_system::imp >(x, arg0); }
+std::string pp(const pbes_system::not_& x, bool arg0) { return pbes_system::pp< pbes_system::not_ >(x, arg0); }
+std::string pp(const pbes_system::or_& x, bool arg0) { return pbes_system::pp< pbes_system::or_ >(x, arg0); }
+std::string pp(const pbes_system::pbes& x, bool arg0) { return pbes_system::pp< pbes_system::pbes >(x, arg0); }
+std::string pp(const pbes_system::pbes_equation& x, bool arg0) { return pbes_system::pp< pbes_system::pbes_equation >(x, arg0); }
+std::string pp(const pbes_system::pbes_expression& x, bool arg0) { return pbes_system::pp< pbes_system::pbes_expression >(x, arg0); }
+std::string pp(const pbes_system::propositional_variable& x, bool arg0) { return pbes_system::pp< pbes_system::propositional_variable >(x, arg0); }
+std::string pp(const pbes_system::propositional_variable_instantiation& x, bool arg0) { return pbes_system::pp< pbes_system::propositional_variable_instantiation >(x, arg0); }
 void normalize_sorts(pbes_system::pbes_equation_vector& x, const data::sort_specification& sortspec) { pbes_system::normalize_sorts< pbes_system::pbes_equation_vector >(x, sortspec); }
 void normalize_sorts(pbes_system::pbes& x, const data::sort_specification& /* sortspec */) { pbes_system::normalize_sorts< pbes_system::pbes >(x, x.data()); }
 pbes_system::pbes_expression normalize_sorts(const pbes_system::pbes_expression& x, const data::sort_specification& sortspec) { return pbes_system::normalize_sorts< pbes_system::pbes_expression >(x, sortspec); }

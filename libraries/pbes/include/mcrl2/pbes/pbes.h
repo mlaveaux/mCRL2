@@ -294,7 +294,7 @@ class pbes
 
 //--- start generated class pbes ---//
 // prototype declaration
-std::string pp(const pbes& x);
+std::string pp(const pbes& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

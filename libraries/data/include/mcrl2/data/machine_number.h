@@ -74,7 +74,7 @@ typedef atermpp::term_list<machine_number> machine_number_list;
 typedef std::vector<machine_number>    machine_number_vector;
 
 // prototype declaration
-std::string pp(const machine_number& x);
+std::string pp(const machine_number& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -105,8 +105,8 @@ inline std::string max_machine_number_string()
 
 
 // template function overloads
-std::string pp(const machine_number_list& x);
-std::string pp(const machine_number_vector& x);
+std::string pp(const machine_number_list& x, bool precedence_aware = true);
+std::string pp(const machine_number_vector& x, bool precedence_aware = true);
 std::set<data::variable> find_all_variables(const data::machine_number& x);
 
 } // namespace data

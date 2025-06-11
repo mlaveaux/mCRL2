@@ -89,7 +89,7 @@ bool is_action_label(const atermpp::aterm& x)
 }
 
 // prototype declaration
-std::string pp(const action_label& x);
+std::string pp(const action_label& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
@@ -109,8 +109,8 @@ inline void swap(action_label& t1, action_label& t2)
 //--- end generated class action_label ---//
 
 // template function overloads
-std::string pp(const action_label_list& x);
-std::string pp(const action_label_vector& x);
+std::string pp(const action_label_list& x, bool precedence_aware = true);
+std::string pp(const action_label_vector& x, bool precedence_aware = true);
 action_label_list normalize_sorts(const action_label_list& x, const data::sort_specification& sortspec);
 std::set<data::sort_expression> find_sort_expressions(const process::action_label_list& x);
 

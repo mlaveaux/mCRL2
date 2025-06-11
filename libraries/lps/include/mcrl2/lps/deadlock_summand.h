@@ -84,7 +84,7 @@ typedef atermpp::term_list<deadlock_summand> deadlock_summand_list;
 typedef std::vector<deadlock_summand>    deadlock_summand_vector;
 
 // prototype declaration
-std::string pp(const deadlock_summand& x);
+std::string pp(const deadlock_summand& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream

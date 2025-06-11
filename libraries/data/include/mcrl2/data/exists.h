@@ -69,7 +69,7 @@ void make_exists(atermpp::aterm& result, ARGUMENTS... arguments)
 
 //--- start generated class exists ---//
 // prototype declaration
-std::string pp(const exists& x);
+std::string pp(const exists& x, bool precedence_aware = true);
 
 /// \\brief Outputs the object to a stream
 /// \\param out An output stream
