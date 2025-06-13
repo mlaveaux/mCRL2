@@ -30,6 +30,8 @@ class mcrl22lps_tool : public rewriter_tool< input_output_tool >
     // bool noalpha;   // indicates whether alpha reduction is needed.
     bool opt_check_only;
 
+    bool m_print_ast {false}; // indicates whether the abstract syntax tree should be printed
+
   protected:
 
     void add_options(mcrl2::utilities::interface_description& desc)
@@ -124,6 +126,7 @@ class mcrl22lps_tool : public rewriter_tool< input_output_tool >
       desc.add_option("balance-summands",
                       "transform inputs expressions p1 + ... + pn into a balanced tree before "
                       "linearising. Sometimes helpful in preventing stack overflow.");
+      desc.add_hidden_option("print-ast", "print the abstract syntax tree of the input specification to stdout", 'A');
     }
 
     void parse_options(const mcrl2::utilities::command_line_parser& parser)
@@ -131,6 +134,7 @@ class mcrl22lps_tool : public rewriter_tool< input_output_tool >
       super::parse_options(parser);
 
       opt_check_only                                  = 0 < parser.options.count("check-only");
+      m_print_ast                                     = 0 < parser.options.count("print-ast");
       m_linearisation_options.apply_alphabet_axioms   = 0 == parser.options.count("no-alpha");
       m_linearisation_options.final_cluster           = 0 < parser.options.count("cluster");
       m_linearisation_options.no_intermediate_cluster = 0 < parser.options.count("no-cluster");
@@ -170,7 +174,6 @@ class mcrl22lps_tool : public rewriter_tool< input_output_tool >
 
     bool run()
     {
-      //linearise infilename with options
       mcrl2::process::process_specification spec;
       if (input_filename().empty())
       {
@@ -180,7 +183,6 @@ class mcrl22lps_tool : public rewriter_tool< input_output_tool >
       }
       else
       {
-        //parse specification from infilename
         mCRL2log(mcrl2::log::verbose) << "Reading input from file '"
                                       <<  input_filename() << "'..." << std::endl;
         std::ifstream instream(input_filename().c_str(), std::ifstream::in|std::ifstream::binary);
@@ -191,7 +193,8 @@ class mcrl22lps_tool : public rewriter_tool< input_output_tool >
         spec = mcrl2::process::parse_process_specification(instream);
         instream.close();
       }
-      //report on well-formedness (if needed)
+
+      // Report on well-formedness if requested
       if (opt_check_only)
       {
         if (input_filename().empty())
@@ -207,11 +210,11 @@ class mcrl22lps_tool : public rewriter_tool< input_output_tool >
         return true;
       }
 
-      /* if (!noalpha)  // Apply alphabet reduction. 
+      if (m_print_ast) 
       {
-        alphabet_reduce(spec, 1000ul);
-      } */
-
+        std::cout << mcrl2::process::pp(spec, false) << std::endl;
+        return true;
+      }
 
       //store the result
       mcrl2::lps::stochastic_specification linear_spec(mcrl2::lps::linearise(spec, m_linearisation_options));

@@ -12,6 +12,9 @@
 #include "mcrl2/utilities/input_output_tool.h"
 #include "mcrl2/pbes/tools.h"
 #include "mcrl2/pbes/pbes_output_tool.h"
+#include "mcrl2/lps/io.h"
+#include "mcrl2/modal_formula/parse.h"
+#include "mcrl2/pbes/lps2pbes.h"
 
 using namespace mcrl2;
 using namespace mcrl2::pbes_system;
@@ -32,6 +35,7 @@ class lps2pbes_tool : public pbes_output_tool<input_output_tool>
     bool preprocess_modal_operators = false;
     bool generate_counter_example = false;
     bool check_only = false;
+    bool print_ast = false;
 
     std::string synopsis() const override
     {
@@ -55,6 +59,8 @@ class lps2pbes_tool : public pbes_output_tool<input_output_tool>
                       "add counter example equations to the generated PBES", 'c');
       desc.add_option("check-only",
                       "check syntax and semantics of state formula; do not generate PBES", 'e');
+      desc.add_hidden_option("print-ast",
+                      "prints the abstract syntax tree of the state formula; do not generate PBES", 'A');
     }
 
     void parse_options(const command_line_parser& parser) override
@@ -70,6 +76,7 @@ class lps2pbes_tool : public pbes_output_tool<input_output_tool>
       unoptimized = parser.options.count("unoptimized") > 0;
       generate_counter_example = parser.options.count("counter-example") > 0;
       check_only = parser.options.count("check-only") > 0;
+      print_ast = parser.options.count("print-ast") > 0;
     }
 
   public:
@@ -85,6 +92,30 @@ class lps2pbes_tool : public pbes_output_tool<input_output_tool>
 
     bool run() override
     {
+      if (print_ast) 
+      {
+        lps::specification plain_lpsspec;
+        load_lps(plain_lpsspec, input_filename());  // Read as a non stochastic lps, because lps2pbes cannot handle stochastic lps's.
+        lps::stochastic_specification lpsspec(plain_lpsspec);
+        mCRL2log(log::verbose) << "Reading input from file '" <<  formula_filename << "'..." << std::endl;
+        std::ifstream from(formula_filename.c_str(), std::ifstream::in | std::ifstream::binary);
+        if (!from)
+        {
+          throw mcrl2::runtime_error("Cannot open state formula file: " + formula_filename);
+        }
+        std::string text = utilities::read_text(from);
+        mcrl2::state_formulas::parse_state_formula_options options;
+        options.type_check = false;
+        options.translate_regular_formulas = false;
+        options.translate_user_notation = false;
+        options.resolve_name_clashes = false;
+        options.check_monotonicity = false;
+        state_formulas::state_formula_specification formspec = mcrl2::state_formulas::parse_state_formula_specification(text, lpsspec, false, options);
+        mCRL2log(log::verbose) << "Converting state formula and LPS to a PBES..." << std::endl;
+        std::cout << pp(formspec, false) << std::endl;
+        return true;
+      }
+
       lps2pbes(input_filename(),
                output_filename(),
                pbes_output_format(),
