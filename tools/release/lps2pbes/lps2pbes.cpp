@@ -94,9 +94,7 @@ class lps2pbes_tool : public pbes_output_tool<input_output_tool>
     {
       if (print_ast) 
       {
-        lps::specification plain_lpsspec;
-        load_lps(plain_lpsspec, input_filename());  // Read as a non stochastic lps, because lps2pbes cannot handle stochastic lps's.
-        lps::stochastic_specification lpsspec(plain_lpsspec);
+        lps::stochastic_specification lpsspec;
         mCRL2log(log::verbose) << "Reading input from file '" <<  formula_filename << "'..." << std::endl;
         std::ifstream from(formula_filename.c_str(), std::ifstream::in | std::ifstream::binary);
         if (!from)
