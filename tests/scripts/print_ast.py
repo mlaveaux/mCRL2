@@ -51,7 +51,7 @@ def main():
         )
 
         # Write the AST output to a file
-        output_path = Path(path).with_suffix('.txt')
+        output_path = Path(path).with_name(Path(path).stem + '_old.txt')
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(process.stdout)
 
@@ -68,7 +68,7 @@ def main():
         )
 
         # Write the AST output to a file
-        output_path = Path(path).with_suffix('.txt')
+        output_path = Path(path).with_name(Path(path).stem + '_old.txt')
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(process.stdout)
 
