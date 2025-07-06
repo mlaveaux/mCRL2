@@ -132,6 +132,8 @@ if(MCRL2_ENABLE_CODE_COVERAGE)
 endif()
 
 add_subdirectory(3rd-party/dparser)
+add_subdirectory(3rd-party/mCRL3/bindings/)
+
 if(MCRL2_ENABLE_GUI_TOOLS)
   add_subdirectory(3rd-party/tr)
 endif()
