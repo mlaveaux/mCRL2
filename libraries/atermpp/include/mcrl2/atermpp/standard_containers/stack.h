@@ -18,10 +18,11 @@
 #ifndef MCRL2_ATERMPP_STANDARD_CONTAINER_STACK_H
 #define MCRL2_ATERMPP_STANDARD_CONTAINER_STACK_H
 
+#include "mcrl2/atermpp/unprotected_aterm.h"
 #include "mcrl2/atermpp/detail/aterm_container.h"
-#include "mcrl2/atermpp/detail/thread_aterm_pool.h"
 #include "mcrl2/atermpp/standard_containers/deque.h"
-#include "mcrl2/utilities/shared_mutex.h"
+
+#include <mcrl3/mutex.h>
 
 /// \brief The main namespace for the aterm++ library.
 namespace atermpp
@@ -38,13 +39,13 @@ private:
 public:
   
   /// Standard typedefs.
-  typedef typename Container::allocator_type allocator_type;
-  typedef typename Container::value_type value_type;
-  typedef typename Container::size_type size_type;
-  typedef typename Container::reference reference;
-  typedef typename Container::const_reference const_reference;
-  typedef typename Container::iterator iterator;
-  typedef typename Container::const_iterator const_iterator;
+  using allocator_type = typename Container::allocator_type;
+  using value_type = typename Container::value_type;
+  using size_type = typename Container::size_type;
+  using reference = typename Container::reference;
+  using const_reference = typename Container::const_reference;
+  using iterator = typename Container::iterator;
+  using const_iterator = typename Container::const_iterator;
   
   /// \brief Constructor.
   explicit stack(const Container& cont = Container())
@@ -157,7 +158,7 @@ public:
     using std::swap; swap(m_container, other.m_container);
   }
 
-  void mark(std::stack<std::reference_wrapper<detail::_aterm>>& todo) const
+  void mark(std::stack<unprotected_aterm>& todo) const
   {
     m_container.mark(todo);
   }

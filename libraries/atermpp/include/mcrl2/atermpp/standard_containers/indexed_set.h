@@ -9,12 +9,9 @@
 #ifndef MCRL2_ATERMPP_INDEXED_SET_H
 #define MCRL2_ATERMPP_INDEXED_SET_H
 
-#include "mcrl2/atermpp/detail/thread_aterm_pool.h"
 #include "mcrl2/atermpp/standard_containers/deque.h"
 #include "mcrl2/utilities/detail/container_utility.h"
 #include "mcrl2/utilities/indexed_set.h"
-#include "mcrl2/utilities/shared_mutex.h"
-
 
 namespace atermpp
 {
@@ -28,10 +25,10 @@ template<typename Key,
          typename KeyTable = atermpp::deque<Key > >
 class indexed_set: public mcrl2::utilities::indexed_set<Key, ThreadSafe, Hash, Equals, Allocator, KeyTable>
 {
-  typedef mcrl2::utilities::indexed_set<Key, ThreadSafe, Hash, Equals, Allocator, KeyTable> super;
+  using super = mcrl2::utilities::indexed_set<Key, ThreadSafe, Hash, Equals, Allocator, KeyTable>;
 
 public:
-  typedef typename super::size_type size_type;
+  using size_type = typename super::size_type;
 
   /// \brief Constructor of an empty indexed set. Starts with a hashtable of size 128.
   indexed_set()
@@ -56,13 +53,13 @@ public:
   
   void clear(std::size_t thread_index=0)
   {
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     super::clear(thread_index);
   }
 
   std::pair<size_type, bool> insert(const Key& key, std::size_t thread_index=0)
   {
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     return super::insert(key, thread_index);
   }
 };
