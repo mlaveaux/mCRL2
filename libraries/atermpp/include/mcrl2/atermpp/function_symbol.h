@@ -10,25 +10,20 @@
 #ifndef MCRL2_ATERMPP_FUNCTION_SYMBOL_H
 #define MCRL2_ATERMPP_FUNCTION_SYMBOL_H
 
+#include <mcrl3_ffi.h>
+
+#include <string>
+#include <string_view>
 #include <utility>
-#include "mcrl2/atermpp/detail/function_symbol.h"
 
 namespace atermpp
 {
-namespace detail
-{
-class function_symbol_pool;
-class _aterm;
-}
 
 class function_symbol
 {
   friend class function_symbol_generator;
-  friend class detail::function_symbol_pool;
-  friend class detail::_aterm;
-
   friend struct std::hash<function_symbol>;
-
+  
 public:
   function_symbol() = default;
 
@@ -48,23 +43,23 @@ public:
   function_symbol(function_symbol&& other) noexcept = default;
   function_symbol& operator=(function_symbol&& other) noexcept = default;
 
-  bool defined() const
+  [[nodiscard]] bool defined() const
   {
-    return m_function_symbol.defined();
+    return m_function_symbol.ptr != nullptr;
   }
 
   /// \brief Return the name of the function_symbol.
   /// \return The name of the function symbol.
-  const std::string& name() const
+  [[nodiscard]] std::string_view name() const
   {
-    return m_function_symbol->name();
+    return mcrl3::ffi::function_symbol_get_name(&m_function_symbol);
   }
 
   /// \brief Return the arity (number of arguments) of the function symbol (function_symbol).
   /// \return The arity of the function symbol.
-  std::size_t arity() const
+  [[nodiscard]] std::size_t arity() const
   {
-    return m_function_symbol->arity();
+    return mcrl3::ffi::function_symbol_get_arity(&m_function_symbol);
   }
 
   /// \brief Equality test.
@@ -73,47 +68,15 @@ public:
   /// \returns True iff the function symbols are the same.
   bool operator ==(const function_symbol& f) const
   {
-    return m_function_symbol == f.m_function_symbol;
-  }
-
-  /// \brief Inequality test.
-  /// \details This operator takes constant time.
-  /// \returns True iff the function symbols are not equal.
-  bool operator !=(const function_symbol& f) const
-  {
-    return m_function_symbol != f.m_function_symbol;
+    return m_function_symbol.ptr == f.m_function_symbol.ptr;
   }
 
   /// \brief Comparison operation.
   /// \details This operator takes constant time.
   /// \returns True iff this function has a lower index than the argument.
-  bool operator <(const function_symbol& f) const
+  std::weak_ordering operator <=>(const function_symbol& f) const
   {
-    return m_function_symbol < f.m_function_symbol;
-  }
-
-  /// \brief Comparison operation.
-  /// \details This operator takes constant time.
-  /// \returns True iff this function has a higher index than the argument.
-  bool operator >(const function_symbol& f) const
-  {
-    return m_function_symbol > f.m_function_symbol;
-  }
-
-  /// \brief Comparison operation.
-  /// \details This operator takes constant time.
-  /// \returns True iff this function has a lower or equal index than the argument.
-  bool operator <=(const function_symbol& f) const
-  {
-    return m_function_symbol <= f.m_function_symbol;
-  }
-
-  /// \brief Comparison operation.
-  /// \details This operator takes constant time.
-  /// \returns True iff this function has a larger or equal index than the argument.
-  bool operator >=(const function_symbol& f) const
-  {
-    return m_function_symbol >= f.m_function_symbol;
+    return m_function_symbol.ptr <=> f.m_function_symbol.ptr;
   }
 
   /// \brief Swap this function with its argument.
@@ -126,22 +89,15 @@ public:
   }
 
 private:
-  /// \brief Constructor for internal use only.
-  function_symbol(detail::_function_symbol::ref&& f)
-   : m_function_symbol(std::forward<detail::_function_symbol::ref>(f))
-  {}
-
   /// \brief Constructor for internal use only
-  function_symbol(const std::string& name, const std::size_t arity, const bool check_for_registered_functions);
-
-  /// \brief Constructor for internal use only
-  function_symbol(std::string&& name, const std::size_t arity, const bool check_for_registered_functions);
-
-  /// \brief Calls the function symbol pool to free our used memory.
-  void destroy();
+  inline
+  function_symbol(const std::string& name, const std::size_t arity, const bool check_for_registered_functions)
+  {
+    mcrl3::ffi::function_symbol_create(name.c_str(), name.length(), arity, check_for_registered_functions);
+  }
 
   /// \brief The shared reference to the underlying function symbol.
-  detail::_function_symbol::ref m_function_symbol;
+  mcrl3::ffi::function_symbol_t m_function_symbol;
 };
 
 class global_function_symbol : public function_symbol
@@ -149,18 +105,31 @@ class global_function_symbol : public function_symbol
 public:
   /// \brief Defines a function symbol from a name and arity combination.
   /// \details This constructor should be used by global function symbols.
-  global_function_symbol(const std::string& name, const std::size_t arity);
+  inline
+  global_function_symbol(const std::string& name, const std::size_t arity)
+  {
+
+  }
 };
 
-namespace detail
-{
-  /// \brief These function symbols are used to indicate integer, list and empty list terms.
-  /// \details They are copied from the function_symbol_pool so that type_is_{int|list|appl} can be defined in the header.
-  extern function_symbol g_as_int;
-  extern function_symbol g_as_list;
-  extern function_symbol g_as_empty_list;
-}
-
 } // namespace atermpp
+
+namespace std 
+{
+
+  /// \brief Specialisation of the standard hash function for function_symbol.
+template<>
+struct hash<atermpp::function_symbol>
+{
+  std::size_t operator()(const atermpp::function_symbol& f) const
+  {
+    // Function symbols take 48 bytes in memory, so when they are packed there
+    // are at least 32 bits that do not distinguish two function symbols. As
+    // such these can be removed.
+    return reinterpret_cast<std::uint64_t>(f.m_function_symbol.ptr) >> 5;
+  }
+};
+
+} // namespace std
 
 #endif // MCRL2_ATERMPP_FUNCTION_SYMBOL_H
