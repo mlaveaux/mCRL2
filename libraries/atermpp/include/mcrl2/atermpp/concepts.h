@@ -7,9 +7,11 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#pragma once
+#ifndef MCRL2_ATERMPP_CONCEPTS_H
+#define MCRL2_ATERMPP_CONCEPTS_H
 
-#include "mcrl2/atermpp/aterm_core.h"
+#include "mcrl2/atermpp/unprotected_aterm.h"
+
 #include <type_traits>
 
 namespace atermpp {
@@ -19,10 +21,10 @@ template<typename T>
 concept IsATerm = requires(T t)
 {
     /// Term must be derived from the base aterm.
-    requires std::is_base_of<atermpp::unprotected_aterm_core, std::remove_reference_t<T>>::value;
+    requires std::is_base_of<atermpp::unprotected_aterm, std::remove_reference_t<T>>::value;
 
-    /// aterm cast cannot be applied types derived from aterms where extra fields are added.
-    requires sizeof(std::remove_reference_t<T>) == sizeof(atermpp::unprotected_aterm_core);
+    /// aterm can only contain the unprotected_aterm, and optionally the root index.
+    requires sizeof(std::remove_reference_t<T>) <= sizeof(atermpp::unprotected_aterm) + sizeof(std::size_t);
 
     /// A pointer to a standard-layout class may be converted (with reinterpret_cast) to a pointer to its first non-static data member and vice versa. 
     requires std::is_standard_layout_v<T>;
@@ -33,11 +35,12 @@ template<typename T>
 concept IsTermConverter = requires(T t)
 {
     /// Calling the function with an aterm must yield an aterm.
-    std::is_convertible<std::remove_reference_t<T>, atermpp::unprotected_aterm_core>::value;
-    std::is_invocable<std::remove_reference_t<T>, atermpp::unprotected_aterm_core>::value;
+    std::is_convertible<std::remove_reference_t<T>, atermpp::unprotected_aterm>::value;
+    std::is_invocable<std::remove_reference_t<T>, atermpp::unprotected_aterm>::value;
 };
 
-static_assert(atermpp::IsATerm<unprotected_aterm_core>, "unprotected_aterm_core must be an aterm");
-static_assert(atermpp::IsATerm<aterm_core>, "aterm_core must be an aterm");
+static_assert(atermpp::IsATerm<unprotected_aterm>, "unprotected_aterm_core must be an aterm");
 
 } // namespace atermpp
+
+#endif // MCRL2_ATERMPP_CONCEPTS_H
