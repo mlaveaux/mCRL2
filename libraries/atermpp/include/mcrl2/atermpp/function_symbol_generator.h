@@ -12,24 +12,25 @@
 #ifndef MCRL2_ATERMPP_FUNCTION_SYMBOL_GENERATOR_H
 #define MCRL2_ATERMPP_FUNCTION_SYMBOL_GENERATOR_H
 
-#include "mcrl2/atermpp/detail/global_aterm_pool.h"
+#include "mcrl2/atermpp/function_symbol.h"
+#include "mcrl2/utilities/configuration.h"
+#include "mcrl2/utilities/text_utility.h"
 
+#include <mcrl3/shared_counter.h>
+
+#include <atomic>
+#include <cassert>
 #include <cctype>
+#include <string>
 
-namespace atermpp {
-
-static inline std::mutex& function_symbol_generator_mutex()
+namespace atermpp
 {
-  static std::mutex m_function_symbol_generator_mutex;
-  return m_function_symbol_generator_mutex;
-}
 
-static inline std::size_t& generator_sequence_number()
+static inline std::atomic<std::size_t>& generator_sequence_number()
 {
-  static size_t n=0;
+  static std::atomic<size_t> n = 0;
   return n;
 }
-
 
 /// \brief Generates unique function symbols with a given prefix.
 class function_symbol_generator // : private mcrl2::utilities::noncopyable
@@ -47,7 +48,7 @@ protected:
   std::size_t m_index;
 
   /// \brief The address of the central index for this prefix.
-  std::shared_ptr<std::size_t> m_central_index;
+  mcrl3::shared_counter m_central_index;
 
 public:
   /// \brief Constructor
@@ -55,47 +56,35 @@ public:
   /// \pre The prefix may not be empty, and it may not have trailing digits
   function_symbol_generator(const std::string& prefix)
   {
-    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe) function_symbol_generator_mutex().lock();
+    std::size_t index = generator_sequence_number().fetch_add(1);
 
-    m_prefix=prefix + (generator_sequence_number()>0?std::to_string(generator_sequence_number()) + "_":"");
-    generator_sequence_number()++;
-    m_string_buffer=m_prefix;
+    m_prefix = prefix + (index > 0 ? std::to_string(index) + "_" : "");
+    m_string_buffer = m_prefix;
     assert(!prefix.empty() && !(std::isdigit(*prefix.rbegin())));
 
     // Obtain a reference to the first index possible.
-    m_central_index = detail::g_term_pool().get_symbol_pool().register_prefix(m_prefix);
+    m_central_index
+        = mcrl3::shared_counter(mcrl3::ffi::function_symbol_register_prefix(m_prefix.c_str(), m_prefix.length()));
     m_index = *m_central_index;
 
     m_initial_index = m_index;
-
-    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe) function_symbol_generator_mutex().unlock();
   }
 
   /// \brief Restores the index back to the value that was initially assigned in the constructor.
 
-  void clear()
-  {
-    m_index = m_initial_index;
-  } 
+  void clear() { m_index = m_initial_index; }
 
-  ~function_symbol_generator()
-  {
-    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe) function_symbol_generator_mutex().lock();
-    detail::g_term_pool().get_symbol_pool().deregister(m_prefix);
-    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe) function_symbol_generator_mutex().unlock();
-  }
+  ~function_symbol_generator() { mcrl3::ffi::function_symbol_deregister_prefix(m_prefix.c_str(), m_prefix.length()); }
 
   /// \brief Generates a unique function symbol with the given prefix followed by a number.
   function_symbol operator()(std::size_t arity = 0)
   {
-    // Check whether in the meantime other variables have been used with the same prefix. 
-    // if (m_index<=*detail::g_term_pool().get_symbol_pool().register_prefix(m_prefix))
-    if (m_index<=*m_central_index)
+    // Check whether in the meantime other variables have been used with the same prefix.
+    if (m_index <= *m_central_index)
     {
-      // m_index=*detail::g_term_pool().get_symbol_pool().register_prefix(m_prefix);
-      m_index=*m_central_index;
-      m_initial_index=m_index;
-    } 
+      m_index = *m_central_index;
+      m_initial_index = m_index;
+    }
     // Put the number m_index after the prefix in the string buffer.
     mcrl2::utilities::number2string(m_index, m_string_buffer, m_prefix.size());
 
