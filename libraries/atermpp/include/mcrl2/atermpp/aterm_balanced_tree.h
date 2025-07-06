@@ -12,6 +12,8 @@
 
 #include "mcrl2/atermpp/aterm.h"
 
+#include <mcrl3_ffi.h>
+
 #include <boost/iterator/iterator_facade.hpp>
 
 namespace atermpp
@@ -102,7 +104,7 @@ class term_balanced_tree : public aterm
       }
     }
 
-    explicit term_balanced_tree(detail::_term_appl* t)
+    explicit term_balanced_tree(mcrl3::ffi::unprotected_aterm_t t)
          : aterm(t)
     {}
 
@@ -267,14 +269,14 @@ class term_balanced_tree : public aterm
 
     /// \brief Returns true if tree is empty.
     /// \return True iff the tree is empty.
-    bool empty() const
+    [[nodiscard]] bool empty() const
     {
-      return m_term->function() == tree_empty_function();
+      return function() == tree_empty_function();
     }
 
     /// \brief Returns true iff the tree is a node with a left and right subtree.
     /// \return True iff the tree is a node with a left and right subtree.
-    bool is_node() const
+    [[nodiscard]] bool is_node() const
     {
       return function() == tree_node_function();
     }
@@ -293,7 +295,7 @@ class term_balanced_tree : public aterm
     
         static constexpr std::size_t maximal_size_of_stack = 20;      // We assume here that a tree never has more than 2^20 leaves, o
                                                            // equivalently that states consist of not more than 2^20 data_expressions.
-        unprotected_aterm_core m_stack[maximal_size_of_stack];
+        unprotected_aterm m_stack[maximal_size_of_stack];
         std::size_t m_top_of_stack;                             // First element in the stack that is empty.
     
         /// \brief Dereference operator
@@ -328,7 +330,7 @@ class term_balanced_tree : public aterm
           --m_top_of_stack;
           if (m_top_of_stack>0)
           {
-            unprotected_aterm_core current = m_stack[m_top_of_stack-1];
+            unprotected_aterm current = m_stack[m_top_of_stack-1];
             if (current.function() != Tree::tree_node_function())
             {
               // This subtree is empty.
@@ -360,7 +362,7 @@ class term_balanced_tree : public aterm
           }
           else
           {
-            unprotected_aterm_core current = tree;
+            unprotected_aterm current = tree;
     
             while (current.function() == Tree::tree_node_function())
             {

@@ -13,7 +13,8 @@
 #define MCRL2_ATERMPP_ATERM_INT_H
 
 #include "mcrl2/atermpp/aterm.h"
-#include "mcrl2/atermpp/detail/global_aterm_pool.h"
+
+#include <mcrl3_ffi.h>
 
 namespace atermpp
 {
@@ -26,19 +27,24 @@ class aterm_int : public aterm
 {
 public:
   /// \brief Default constructor.
-  aterm_int() noexcept
-  {}
+  aterm_int() noexcept = default;
 
   /// \brief Constructs an integer term from a value.
   /// \param value The value of the new integer.
   explicit aterm_int(std::size_t value)
+    : aterm( mcrl3::ffi::term_create_int(value)) 
+  {}
+
+  /// Construct a term from the internal representation of an integer term.
+  explicit aterm_int(mcrl3::ffi::aterm_t term)
+    : aterm(term)
   {
-    detail::g_thread_term_pool().create_int(*this, value);
+    assert(type_is_int() || !defined());
   }
 
   /// \brief Constructs an integer term from an aterm.
   explicit aterm_int(const aterm& t)
-   : aterm(t)
+      : aterm(t)
   {
     assert(type_is_int() || !defined());
   }
@@ -49,26 +55,20 @@ public:
   aterm_int(aterm_int&& other) noexcept = default;
   aterm_int& operator=(aterm_int&& other) noexcept = default;
 
-  /// \brief Provide the value stored in an aterm. 
+  /// \brief Provide the value stored in an aterm.
   /// \returns The value of the integer term.
-  std::size_t value() const noexcept
-  {
-    return reinterpret_cast<const detail::_aterm_int*>(m_term)->value();
-  }
+  [[nodiscard]] std::size_t value() const noexcept { return mcrl3::ffi::term_get_int_value(&m_term); }
 
   /// \brief Swaps two integer terms without changing the protection.
-  /// \param t The term that is swapped with the current term. 
-  void swap(aterm_int& t) noexcept
-  {
-    aterm::swap(t);
-  }
+  /// \param t The term that is swapped with the current term.
+  void swap(aterm_int& t) noexcept { aterm::swap(t); }
 };
 
 /// \brief Constructs an integer term from a value.
 /// \param target The term into which the term is constructed.
 inline void make_aterm_int(aterm_int& target, std::size_t value)
 {
-  detail::g_thread_term_pool().create_int(target, value);
+  target.unprotected_assign(aterm_int(mcrl3::ffi::term_create_int(value)));
 }
 
 } // namespace atermpp
@@ -83,11 +83,11 @@ namespace std
 ///          be preceded by an empty template declaration.
 /// \param t1 The first term
 /// \param t2 The second term
-template <>  
+template <>
 inline void swap(atermpp::aterm_int& t1, atermpp::aterm_int& t2) noexcept
 {
   t1.swap(t2);
-} 
-} // namespace std 
+}
+} // namespace std
 
 #endif // MCRL2_ATERMPP_ATERM_INT_H

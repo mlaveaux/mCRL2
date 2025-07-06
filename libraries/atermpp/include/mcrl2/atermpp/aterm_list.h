@@ -11,9 +11,13 @@
 #define MCRL2_ATERMPP_ATERM_LIST_H
 
 #include "mcrl2/atermpp/aterm.h"
+#include "mcrl2/atermpp/aterm_core.h"
 #include "mcrl2/atermpp/detail/aterm_list.h"
 #include "mcrl2/atermpp/detail/aterm_list_iterator.h"
 #include "mcrl2/atermpp/type_traits.h"
+
+#include <mcrl3_ffi.h>
+
 #include <ranges>
 #include <type_traits>
 
@@ -26,38 +30,38 @@ class term_list: public aterm
 {
 protected:
   /// \brief Constructor for term lists from internally constructed terms delivered as reference.
-  explicit term_list(detail::_aterm_appl<>* t) noexcept : aterm(t)
+  explicit term_list(mcrl3::ffi::unprotected_aterm_t t) noexcept : aterm(t)
   {
     assert(!defined() || type_is_list());
   }
 
 public:
   /// The type of object, T stored in the term_list.
-  typedef Term value_type;
+  using value_type = Term;
 
   /// Pointer to T.
-  typedef Term* pointer;
+  using pointer = Term *;
 
   /// Reference to T.
-  typedef Term& reference;
+  using reference = Term &;
 
   /// Const reference to T.
-  typedef const Term& const_reference;
+  using const_reference = const Term &;
 
   /// An unsigned integral type.
-  typedef std::size_t size_type;
+  using size_type = std::size_t;
 
   /// A signed integral type.
-  typedef ptrdiff_t difference_type;
+  using difference_type = ptrdiff_t;
 
   /// Iterator used to iterate through an term_list.
-  typedef term_list_iterator<Term> iterator;
+  using iterator = term_list_iterator<Term>;
 
   /// Const iterator used to iterate through an term_list.
-  typedef term_list_iterator<Term> const_iterator;
+  using const_iterator = term_list_iterator<Term>;
 
   /// Const iterator used to iterate through an term_list.
-  typedef reverse_term_list_iterator<Term> const_reverse_iterator;
+  using const_reverse_iterator = reverse_term_list_iterator<Term>;
 
   /// \brief Default constructor. Creates an empty list.
   term_list() noexcept
@@ -237,13 +241,13 @@ public:
   const term_list<Term>& tail() const
   {
     assert(!empty());
-    return (static_cast<const detail::_aterm_list<Term>&>(*m_term)).tail();
+    return m_term[1];
   }
 
   /// \brief Removes the first element of the list.
   void pop_front()
   {
-    *this = tail();
+    *this = m_term[1];
   }
 
   /// \brief Returns the first element of the list.
@@ -277,9 +281,9 @@ public:
 
   /// \brief Returns true if the list's size is 0.
   /// \return True iff the list is empty.
-  bool empty() const
+  [[nodiscard]] bool empty() const
   {
-    return m_term->function() == detail::g_term_pool().as_empty_list();
+    return type_is_empty_list();
   }
 
   /// \brief Returns a const_iterator pointing to the beginning of the term_list.
@@ -293,7 +297,7 @@ public:
   /// \return The end of the list.
   const_iterator end() const
   {
-    return const_iterator(detail::address(detail::g_term_pool().empty_list()));
+    return const_iterator(unprotected_aterm(detail::mcrl3::ffi::term_empty_list()));
   }
 
   /// \brief Returns a const_reverse_iterator pointing to the end of the term_list.
@@ -313,7 +317,7 @@ public:
 
   /// \brief Returns the largest possible size of the term_list.
   /// \return The largest possible size of the list.
-  size_type max_size() const
+  [[nodiscard]] size_type max_size() const
   {
     return std::numeric_limits<std::size_t>::max();
   }
@@ -476,38 +480,10 @@ template < typename T >
 struct is_container_impl< atermpp::term_list< T > > : public std::true_type
 { };
 
-
-template <class Term>
-class _aterm_list : public _aterm_appl<2>
-{
-public:
-  /// \returns A reference to the head of the list.
-  const Term& head() const { return static_cast<const Term&>(arg(0)); }
-
-  /// \returns A reference to the tail of the list.
-  const term_list<Term>& tail() const { return static_cast<const term_list<Term>&>(arg(1)); }
-
-  std::size_t size() const
-  {
-    std::size_t size=0;
-    for(_aterm_list const* i=this; 
-        i->function()!=detail::g_term_pool().as_empty_list(); 
-        i=static_cast<_aterm_list const*>(address(i->tail())))
-    {
-      ++size;
-    }
-    return size;
-  }
-
-};
-
 } // namespace detail
-/// \endcond
-
 
 /// \brief A term_list with elements of type aterm.
-typedef term_list<aterm> aterm_list;
-
+using aterm_list = term_list<aterm>;
 
 /// \brief Returns the list with the elements in reversed order.
 /// \param l A list.

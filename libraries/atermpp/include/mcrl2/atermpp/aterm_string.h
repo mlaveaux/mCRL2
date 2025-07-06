@@ -12,6 +12,8 @@
 
 #include "mcrl2/atermpp/aterm.h"
 
+#include <string_view>
+
 namespace atermpp
 {
 
@@ -66,7 +68,7 @@ public:
 
   /// \brief Conversion operator
   /// \return The term converted to string
-  operator const std::string&() const
+  operator std::string_view() const
   {
     return function().name();
   }
