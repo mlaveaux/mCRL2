@@ -12,57 +12,85 @@
 #ifndef MCRL2_ATERMPP_ATERM_APPL_H
 #define MCRL2_ATERMPP_ATERM_APPL_H
 
-#include "mcrl2/atermpp/aterm_core.h"
 #include "mcrl2/atermpp/concepts.h"
-#include "mcrl2/atermpp/detail/aterm_appl_iterator.h"
-#include "mcrl2/atermpp/detail/aterm_core.h"
-#include "mcrl2/atermpp/detail/aterm_list.h"
-#include "mcrl2/atermpp/detail/global_aterm_pool.h"
+#include "mcrl2/atermpp/function_symbol.h"
+#include "mcrl2/atermpp/unprotected_aterm.h"
 #include "mcrl2/utilities/type_traits.h"
+
+#include <cassert>
+#include <sstream>
 #include <type_traits>
+
+#include <mcrl3_ffi.h>
 
 namespace atermpp
 {
-
-class aterm : public aterm_core
+class aterm : public unprotected_aterm
 {
-protected:
-  /// \brief Constructor.
-  /// \param t A pointer internal data structure from which the term is constructed.
-  /// \details This function is explicitly protected such that is not used in common code.
-  explicit aterm(detail::_term_appl* t)
-      : aterm_core(reinterpret_cast<detail::_aterm*>(t))
-  {}
-
 public:
   /// An unsigned integral type.
-  typedef std::size_t size_type;
+  using size_type = std::size_t;
 
   /// A signed integral type.
-  typedef ptrdiff_t difference_type;
-
-  /// Iterator used to iterate through an term_appl.
-  typedef term_appl_iterator<aterm> iterator;
-
-  /// Const iterator used to iterate through an term_appl.
-  typedef term_appl_iterator<aterm> const_iterator;
+  using difference_type = ptrdiff_t;
 
   /// \brief Default constructor.
   aterm()
-      : aterm_core()
+      : unprotected_aterm()
   {}
 
-  /* /// \brief Explicit constructor from an aterm_core.
-  /// \param t The aterm_core from which the term is constructed.
-  explicit aterm(const aterm_core& t)
-   : aterm_core(t)
-  {} */
+  /// \brief Copy constructor.
+  /// \param other The term that is copied.
+  /// \details  This class has a non-trivial destructor so explicitly define the copy and move operators.
+  aterm(const aterm& other) noexcept { m_term = other.m_term; m_root = mcrl3::ffi::term_protect(&other.m_term); }
 
-  /// This class has user-declared copy constructor so declare default copy and move operators.
-  aterm(const aterm& other) noexcept = default;
-  aterm& operator=(const aterm& other) noexcept = default;
+  /// Construct a term from the internal representation of an integer term.
+  explicit aterm(mcrl3::ffi::aterm_t term)
+    : unprotected_aterm(term.term),
+      m_root(term.root)
+  {}
+
+  /// Construct an aterm from an unprotected term, does NOT change the protection of the term.
+  explicit aterm(mcrl3::ffi::unprotected_aterm_t term)
+    : unprotected_aterm(term)
+  {
+    assert(defined());
+  }
+
+  /// Desstructor of the term.
+  ~aterm() { if (defined()) { mcrl3::ffi::term_unprotect(&m_root); } }
+
+  /// \brief Assignment operator.
+  /// \param other The term that is assigned.
+  /// \details This class has a non-trivial destructor so explicitly define the copy and move assignments.
+  aterm& operator=(const aterm& other) noexcept
+  {
+    m_term = other.m_term;
+    m_root = mcrl3::ffi::term_protect(&other.m_term);
+    return *this;
+  }
+
   aterm(aterm&& other) noexcept = default;
   aterm& operator=(aterm&& other) noexcept = default;
+
+  /// \brief Assignment operator, to be used when the busy flags do not need to be set.
+  /// \details This is only safe in the parallel context when the busy flag is already
+  ///          known to be set. This is also checked by an assert. This can be used for
+  ///          instance in a lambda function that is passed in a make_.... function, as
+  ///          this unprotected assign will only be called when a term is constructed.
+  /// \param other The aterm_core that will be assigned.
+  template <bool CHECK_BUSY_FLAG = true>
+  aterm& unprotected_assign(const aterm& other) noexcept
+  {
+    if constexpr (CHECK_BUSY_FLAG)
+    {
+      assert(mcrl3::ffi::term_pool_is_busy_set() && "The busy flag must be set before unprotected_assign is called.");
+    }
+
+    m_term = other.m_term;
+    m_root = mcrl3::ffi::term_protect(&other.m_term);
+    return *this;
+  }
 
   /// \brief Constructor that provides an aterm based on a function symbol and forward iterator providing the arguments.
   /// \details The iterator range is traversed more than once. If only one traversal is required
@@ -80,7 +108,6 @@ public:
           !std::is_same<typename ForwardIterator::iterator_category, std::output_iterator_tag>::value>::type* = nullptr>
   aterm(const function_symbol& sym, ForwardIterator begin, ForwardIterator end)
   {
-    detail::g_thread_term_pool().create_appl_dynamic(*this, sym, begin, end);
     static_assert(!std::is_same<typename ForwardIterator::iterator_category, std::input_iterator_tag>::value,
         "A forward iterator has more requirements than an input iterator.");
     static_assert(!std::is_same<typename ForwardIterator::iterator_category, std::output_iterator_tag>::value,
@@ -99,7 +126,7 @@ public:
       typename std::enable_if<
           std::is_same<typename InputIterator::iterator_category, std::input_iterator_tag>::value>::type* = nullptr>
   aterm(const function_symbol& sym, InputIterator begin, InputIterator end)
-      : aterm(sym, begin, end, [](const unprotected_aterm_core& term) -> const unprotected_aterm_core& { return term; })
+      : aterm(sym, begin, end, [](const unprotected_aterm& term) -> const unprotected_aterm& { return term; })
   {
     static_assert(std::is_same<typename InputIterator::iterator_category, std::input_iterator_tag>::value,
         "The InputIterator is missing the input iterator tag.");
@@ -118,67 +145,42 @@ public:
       typename std::enable_if<mcrl2::utilities::is_iterator<InputIterator>::value>::type* = nullptr>
   aterm(const function_symbol& sym, InputIterator begin, InputIterator end, TermConverter converter)
   {
-    detail::g_thread_term_pool().create_appl_dynamic(*this, sym, converter, begin, end);
     static_assert(!std::is_same<typename InputIterator::iterator_category, std::output_iterator_tag>::value,
         "The InputIterator has the output iterator tag.");
   }
 
   /// \brief Constructor.
   /// \param sym A function symbol.
-  aterm(const function_symbol& sym) { detail::g_thread_term_pool().create_term(*this, sym); }
+  aterm(const function_symbol& sym) {}
 
   /// \brief Constructor for n-arity function application.
   /// \param symbol A function symbol.
   /// \param arguments The arguments of the function application.
   template <typename... Terms>
   aterm(const function_symbol& symbol, const Terms&... arguments)
-  {
-    detail::g_thread_term_pool().create_appl(*this, symbol, arguments...);
-  }
+  {}
 
   /// \brief Returns the function symbol belonging to an aterm.
   /// \return The function symbol of this term.
-  const function_symbol& function() const { return m_term->function(); }
-
-  /// \brief Returns the number of arguments of this term.
-  /// \return The number of arguments of this term.
-  size_type size() const { return m_term->function().arity(); }
+  [[nodiscard]] const function_symbol& function() const
+  {
+    // return reinterpret_cast<const function_symbol&>(mcrl3::ffi::term_get_function_symbol(&m_term).ptr);
+  }
 
   /// \brief Returns true if the term has no arguments.
   /// \return True if this term has no arguments.
-  bool empty() const { return size() == 0; }
-
-  /// \brief Returns an iterator pointing to the first argument.
-  /// \return An iterator pointing to the first argument.
-  const_iterator begin() const
-  {
-    return const_iterator(&static_cast<const aterm&>(reinterpret_cast<const detail::_term_appl*>(m_term)->arg(0)));
-  }
-
-  /// \brief Returns a const_iterator pointing past the last argument.
-  /// \return A const_iterator pointing past the last argument.
-  const_iterator end() const
-  {
-    return const_iterator(&static_cast<const aterm&>(reinterpret_cast<const detail::_term_appl*>(m_term)->arg(size())));
-  }
-
-  /// \brief Returns the largest possible number of arguments.
-  /// \return The largest possible number of arguments.
-  constexpr size_type max_size() const { return std::numeric_limits<size_type>::max(); }
-
-  /// \brief Returns the i-th argument.
-  /// \param i A positive integer.
-  /// \return The argument with the given index.
-  const aterm& operator[](const size_type i) const
-  {
-    assert(i < size()); // Check the bounds.
-    return static_cast<const aterm&>(reinterpret_cast<const detail::_term_appl*>(m_term)->arg(i));
-  }
+  [[nodiscard]] bool empty() const { return size() == 0; }
+private:
+  mcrl3::ffi::root_index_t m_root;
 };
 
-typedef void (*term_callback)(const aterm&);
+using term_callback = void (*)(const aterm&);
 
-extern void add_deletion_hook(const function_symbol&, term_callback);
+inline
+void add_deletion_hook(const function_symbol& symbol, term_callback hook)
+{
+  mcrl3::ffi::add_deletion_hook(symbol, hook);
+}
 
 /// \brief Constructor an aterm in a variable based on a function symbol and an forward iterator providing the
 /// arguments. \details The iterator range is traversed more than once. If only one traversal is required
@@ -198,8 +200,6 @@ template <class Term,
         !std::is_same<typename ForwardIterator::iterator_category, std::output_iterator_tag>::value>::type* = nullptr>
 void make_term_appl(Term& target, const function_symbol& sym, ForwardIterator begin, ForwardIterator end)
 {
-  detail::g_thread_term_pool().create_appl_dynamic(target, sym, begin, end);
-
   static_assert((std::is_base_of<aterm, Term>::value), "Term must be derived from an aterm");
   static_assert(sizeof(Term) == sizeof(std::size_t), "Term derived from an aterm must not have extra fields");
   static_assert(!std::is_same<typename ForwardIterator::iterator_category, std::input_iterator_tag>::value,
@@ -251,8 +251,6 @@ void make_term_appl(Term& target,
     InputIterator end,
     TermConverter converter)
 {
-  detail::g_thread_term_pool().create_appl_dynamic(target, sym, converter, begin, end);
-
   static_assert(std::is_base_of<aterm, Term>::value, "Term must be derived from an aterm");
   static_assert(sizeof(Term) == sizeof(std::size_t), "Term derived from an aterm must not have extra fields");
   static_assert(!std::is_same<typename InputIterator::iterator_category, std::output_iterator_tag>::value,
@@ -265,8 +263,6 @@ void make_term_appl(Term& target,
 template <class Term>
 void make_term_appl(Term& target, const function_symbol& sym)
 {
-  detail::g_thread_term_pool().create_term(target, sym);
-
   static_assert(std::is_base_of<aterm, Term>::value, "Term must be derived from an aterm");
   static_assert(sizeof(Term) == sizeof(std::size_t), "Term derived from an aterm must not have extra fields");
 }
@@ -277,9 +273,7 @@ void make_term_appl(Term& target, const function_symbol& sym)
 /// \param arguments The arguments of the function application.
 template <class Term, typename... Terms>
 void make_term_appl(Term& target, const function_symbol& symbol, const Terms&... arguments)
-{
-  detail::g_thread_term_pool().create_appl(target, symbol, arguments...);
-}
+{}
 
 /// \brief Constructor for n-arity function application with an index.
 /// \param target The variable in which the result will be put. This variable may be used for scratch purposes.
@@ -287,23 +281,20 @@ void make_term_appl(Term& target, const function_symbol& symbol, const Terms&...
 /// \param arguments The arguments of the function application.
 template <class Term, class INDEX_TYPE, typename... Terms>
 void make_term_appl_with_index(aterm& target, const function_symbol& symbol, const Terms&... arguments)
-{
-  detail::g_thread_term_pool().create_appl_index<Term, INDEX_TYPE>(target, symbol, arguments...);
-}
+{}
 
-/// \brief A universal cast from an aterm to another aterm that is convertible in either direction. Less strict than vertical_cast.
-/// \param  t A term of a type inheriting from an aterm.
-/// \return  A term of type const Derived&.
+/// \brief A universal cast from an aterm to another aterm that is convertible in either direction. Less strict than
+/// vertical_cast. \param  t A term of a type inheriting from an aterm. \return  A term of type const Derived&.
 template <IsATerm Derived, IsATerm Base>
   requires std::is_convertible_v<std::remove_reference_t<Base>, std::remove_reference_t<Derived>>
-        || std::is_convertible_v<std::remove_reference_t<Derived>, std::remove_reference_t<Base>>
+           || std::is_convertible_v<std::remove_reference_t<Derived>, std::remove_reference_t<Base>>
 const Derived& down_cast(const Base& t)
 {
   // Runtime check that the cast is valid.
   assert(Derived(static_cast<const aterm&>(t)) != aterm());
 
   // UB: Only allowed when we constructed an actual Derived type
-  return reinterpret_cast<const Derived&>(reinterpret_cast<const detail::_aterm&>(t));
+  return reinterpret_cast<const Derived&>(t.m_term);
 }
 
 /// \brief A cast form an aterm derived class to a class that inherits in (possibly multiple steps) from this class.
@@ -318,8 +309,8 @@ const Derived& vertical_cast(const Base& t)
 {
   // Runtime check that the cast is valid.
   assert(Derived(static_cast<const aterm&>(t)) != aterm());
-  
-  return reinterpret_cast<const Derived&>(reinterpret_cast<const detail::_aterm&>(t));
+
+  return reinterpret_cast<const Derived&>(t.m_term);
 }
 
 /// \brief Send the term in textual form to the ostream.
@@ -343,24 +334,6 @@ inline std::string pp(const atermpp::aterm& t)
 namespace std
 {
 
-/// \brief Swaps two aterms.
-/// \details This operation is more efficient than exchanging terms by an assignment,
-///          as swapping does not require to change the protection of terms.
-///          In order to be used in the standard containers, the declaration must
-///          be preceded by an empty template declaration. This swap function is
-///          not used for classes that derive from the aterm class. A specific
-///          swap function must be provided for derived classes.
-/// \param t1 The first term
-/// \param t2 The second term
-template <>
-inline void swap(atermpp::unprotected_aterm_core& t1, atermpp::unprotected_aterm_core& t2) noexcept
-{
-  t1.swap(t2);
-}
-} // namespace std
-namespace std
-{
-
 /// \brief Swaps two term_applss.
 /// \details This operation is more efficient than exchanging terms by an assignment,
 ///          as swapping does not require to change the protection of terms.
@@ -375,7 +348,7 @@ inline void swap(atermpp::aterm& t1, atermpp::aterm& t2) noexcept
 template <>
 struct hash<atermpp::aterm>
 {
-  std::size_t operator()(const atermpp::aterm& t) const { return std::hash<atermpp::aterm_core>()(t); }
+  std::size_t operator()(const atermpp::aterm& t) const { return std::hash<atermpp::unprotected_aterm>()(t); }
 };
 
 } // namespace std
