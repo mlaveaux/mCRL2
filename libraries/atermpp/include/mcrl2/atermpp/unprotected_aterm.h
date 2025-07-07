@@ -27,6 +27,9 @@ namespace atermpp
 /// Forward declaration of the unprotected_aterm class.
 class unprotected_aterm;
 
+/// Forward declaration of the aterm class.
+class aterm;
+
 namespace detail
 {
 /// \brief Returns the address of the unprotected term.
@@ -41,17 +44,17 @@ class unprotected_aterm
 
 public:
   /// Iterator used to iterate through an term_appl.
-  using iterator = term_appl_iterator<unprotected_aterm>;
+  using iterator = term_appl_iterator<aterm>;
 
   /// Const iterator used to iterate through an term_appl.
-  using const_iterator = term_appl_iterator<unprotected_aterm>;
+  using const_iterator = term_appl_iterator<aterm>;
 
   /// \brief Default constuctor.
   unprotected_aterm() noexcept = default;
 
   /// \brief Constructor.
   /// \param term The term from which the new term is constructed.
-  unprotected_aterm(const mcrl3::ffi::unprotected_aterm_t term) noexcept
+  explicit unprotected_aterm(mcrl3::ffi::unprotected_aterm_t term) noexcept
     : m_term(term)
   {}
 
@@ -64,17 +67,17 @@ public:
   /// \brief Dynamic check whether the term is an aterm_int.
   /// \return True iff this term has internal structure of an aterm_int.
   /// \details This function has constant complexity.
-  [[nodiscard]] bool type_is_int() const noexcept { return mcrl3::ffi::term_is_int(&m_term); }
+  [[nodiscard]] bool type_is_int() const noexcept { return mcrl3::ffi::term_is_int(m_term); }
 
   /// \brief Dynamic check whether the term is an aterm_list.
   /// \returns True iff this term has the structure of an term_list
   /// \details This function has constant complexity.
-  [[nodiscard]] bool type_is_list() const noexcept { return mcrl3::ffi::term_is_list(&m_term); }
+  [[nodiscard]] bool type_is_list() const noexcept { return mcrl3::ffi::term_is_list(m_term); }
 
   /// \brief Dynamic check whether the term is an empty aterm_list.
   /// \returns True iff this term has the structure of an term_list
   /// \details This function has constant complexity.
-  [[nodiscard]] bool type_is_empty_list() const noexcept { return mcrl3::ffi::term_is_empty_list(&m_term); }
+  [[nodiscard]] bool type_is_empty_list() const noexcept { return mcrl3::ffi::term_is_empty_list(m_term); }
 
   /// \brief Comparison operator.
   /// \details Terms are stored in a maximally shared way. This
@@ -113,16 +116,15 @@ public:
   /// \details This is for internal use only.
   [[nodiscard]] const function_symbol& function() const
   {
-    mcrl3::ffi::function_symbol_t func = mcrl3::ffi::term_get_function_symbol(&m_term);
-    return reinterpret_cast<const function_symbol&>(func);
+    // return reinterpret_cast<const function_symbol&>(mcrl3::ffi::term_get_function_symbol(m_term).ptr);
   }
   
   /// \brief Returns the number of arguments of this term.
   /// \return The number of arguments of this term.
   [[nodiscard]] std::size_t size() const
   {
-    mcrl3::ffi::function_symbol_t func = mcrl3::ffi::term_get_function_symbol(&m_term);
-    return mcrl3::ffi::function_symbol_get_arity(&func);
+    mcrl3::ffi::function_symbol_t func = mcrl3::ffi::term_get_function_symbol(m_term);
+    return mcrl3::ffi::function_symbol_get_arity(func);
   }
 
   /// \brief Returns the largest possible number of arguments.
@@ -135,21 +137,30 @@ public:
   const unprotected_aterm operator[](const std::size_t i) const
   {
     assert(i < size()); // Check the bounds.
-    return unprotected_aterm(mcrl3::ffi::term_get_argument(&m_term, i));
+    return unprotected_aterm(mcrl3::ffi::term_get_argument(m_term, i));
   }
   
   /// \brief Returns an iterator pointing to the first argument.
   /// \return An iterator pointing to the first argument.
   [[nodiscard]] const_iterator begin() const
   {
-    return const_iterator(operator[](0));
+    return const_iterator(static_cast<const aterm*>(operator[](0).m_term.ptr));
   }
 
   /// \brief Returns a const_iterator pointing past the last argument.
   /// \return A const_iterator pointing past the last argument.
   [[nodiscard]] const_iterator end() const
   {
-    return const_iterator(operator[](size()));
+    return const_iterator(static_cast<const aterm*>(operator[](size()).m_term.ptr));
+  }
+
+  /// Marks the term as used during garbage collection.
+  void mark() const
+  {
+    if (defined())
+    {
+      mcrl3::ffi::term_mark(m_term);
+    }
   }
 
 protected:

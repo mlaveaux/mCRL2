@@ -13,7 +13,6 @@
 #define MCRL2_ATERMPP_FUNCTION_SYMBOL_GENERATOR_H
 
 #include "mcrl2/atermpp/function_symbol.h"
-#include "mcrl2/utilities/configuration.h"
 #include "mcrl2/utilities/text_utility.h"
 
 #include <mcrl3/shared_counter.h>

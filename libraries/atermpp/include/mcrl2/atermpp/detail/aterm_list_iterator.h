@@ -80,14 +80,14 @@ public:
   const Term& operator*() const
   {
     assert(m_list.type_is_list());
-    return m_list[0];
+    return down_cast<Term>(m_list[0]);
   }
 
   /// Arrow operator on an iterator
   const Term* operator->() const
   {
     assert(m_list.type_is_list());
-    return &m_list[0];
+    return &down_cast<Term>(m_list[0]);
   }
 
   /// \brief Prefix increment operator on iterator.

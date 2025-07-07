@@ -11,7 +11,6 @@
 #define MCRL2_ATERMPP_ATERM_LIST_H
 
 #include "mcrl2/atermpp/aterm.h"
-#include "mcrl2/atermpp/aterm_core.h"
 #include "mcrl2/atermpp/detail/aterm_list.h"
 #include "mcrl2/atermpp/detail/aterm_list_iterator.h"
 #include "mcrl2/atermpp/type_traits.h"
@@ -65,7 +64,7 @@ public:
 
   /// \brief Default constructor. Creates an empty list.
   term_list() noexcept
-    : aterm(detail::g_term_pool().empty_list())
+    : aterm(mcrl3::ffi::term_empty_list())
   {}
 
   /// \brief Constructor from an aterm.
@@ -269,7 +268,7 @@ public:
   /// \brief Returns the size of the term_list.
   /// \details The complexity of this function is linear in the size of the list.
   /// \return The size of the list.
-  size_type size() const
+  [[nodiscard]] size_type size() const
   {
     std::size_t size=0;
     for(const_iterator i=begin(); i!=end(); ++i)
@@ -290,14 +289,14 @@ public:
   /// \return The beginning of the list.
   const_iterator begin() const
   {
-    return const_iterator(m_term);
+    return const_iterator(*this);
   }
 
   /// \brief Returns a const_iterator pointing to the end of the term_list.
   /// \return The end of the list.
   const_iterator end() const
   {
-    return const_iterator(unprotected_aterm(detail::mcrl3::ffi::term_empty_list()));
+    return const_iterator(unprotected_aterm(mcrl3::ffi::term_empty_list()));
   }
 
   /// \brief Returns a const_reverse_iterator pointing to the end of the term_list.
@@ -329,7 +328,7 @@ public:
 template <class Term>
 void make_term_list(term_list<Term>& target)
 {
-  target=atermpp::down_cast<term_list<Term>>(detail::g_term_pool().empty_list());
+  target=atermpp::down_cast<term_list<Term>>(mcrl3::ffi::term_empty_list());
 }
 
 /// \brief Creates a term_list with the elements from first to last.
@@ -590,7 +589,5 @@ struct hash<atermpp::term_list<Term> >
 };
 
 } // namespace std
-
-#include "mcrl2/atermpp/detail/aterm_list_implementation.h"
 
 #endif // MCRL2_ATERMPP_ATERM_LIST_H

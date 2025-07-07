@@ -16,7 +16,7 @@ namespace atermpp
 
 // utility functions
 
-static void write_string_with_escape_symbols(const std::string& s, std::ostream& os)
+static void write_string_with_escape_symbols(std::string_view s, std::ostream& os)
 {
   // Check whether the string starts with a - or a number, or contains the symbols
   // \, ", (, ), [, ], comma, space, \t, \n or \r. If yes, the string will be
@@ -26,7 +26,7 @@ static void write_string_with_escape_symbols(const std::string& s, std::ostream&
   char c = s[0];
   bool contains_special_symbols = ((c =='-') || isdigit(c));
 
-  for(std::string::const_iterator i=s.begin(); !contains_special_symbols && i!=s.end(); ++i)
+  for(std::string_view::const_iterator i=s.begin(); !contains_special_symbols && i!=s.end(); ++i)
   {
     if (*i=='\\' || *i=='"' || *i=='(' || *i==')' || *i=='[' || *i==']' || *i==',' || *i==' ' || *i=='\n' || *i=='\t' || *i=='\r')
     {
@@ -38,7 +38,7 @@ static void write_string_with_escape_symbols(const std::string& s, std::ostream&
   {
     // This function symbol needs quotes.
     os << "\"";
-    for(std::string::const_iterator i=s.begin(); i!=s.end(); ++i)
+    for(std::string_view::const_iterator i=s.begin(); i!=s.end(); ++i)
     {
       // We need to escape special characters.
       switch (*i)

@@ -10,7 +10,6 @@
 #include "mcrl2/atermpp/aterm_io_binary.h"
 #include "mcrl2/atermpp/standard_containers/stack.h"
 
-
 namespace atermpp
 {
 using namespace mcrl2::utilities;
@@ -79,16 +78,16 @@ binary_aterm_ostream::~binary_aterm_ostream()
 /// \brief Keep track of whether the term can be written to the stream.
 struct write_todo
 {
-  detail::reference_aterm<aterm> term;
+  unprotected_aterm term;
   bool write = false;
 
-  write_todo(const aterm& term)
+  write_todo(unprotected_aterm term)
    : term(term)
   {}
 
-  void mark(std::stack<std::reference_wrapper<detail::_aterm>>& todo) const
+  void mark() const
   {
-    term.mark(todo);
+    term.mark();
   }
 };
 
@@ -105,7 +104,7 @@ void binary_aterm_ostream::put(const aterm& term)
 
     // Indicates that this term is output and not a subterm, these should always be written.
     bool is_output = stack.size() == 1;
-    if (m_terms.index(current.term) >= m_terms.size() || is_output)
+    if (m_terms.index(down_cast<aterm>(current.term)) >= m_terms.size() || is_output)
     {
       if (current.write)
       {
@@ -147,7 +146,7 @@ void binary_aterm_ostream::put(const aterm& term)
         {
           // Only regular terms (not output) are shared and as such need a unique index.
           [[maybe_unused]]
-          bool assigned = m_terms.insert(current.term).second;
+          bool assigned = m_terms.insert(down_cast<aterm>(current.term)).second;
           assert(assigned); // This term should have a new index assigned.
           m_term_index_width = static_cast<std::uint8_t>(std::log2(m_terms.size()) + 1);
         }
@@ -157,7 +156,7 @@ void binary_aterm_ostream::put(const aterm& term)
       else
       {
         // Add all the arguments to the stack; to be processed first.
-        for (const aterm& argument : transformed)
+        for (const unprotected_aterm& argument : transformed)
         {
           const aterm& term = static_cast<const aterm&>(argument);
           if (m_terms.index(term) >= m_terms.size())
@@ -272,7 +271,7 @@ void binary_aterm_istream::get(aterm& t)
         t=aterm();
         return;
       }
-      else if (symbol == detail::g_as_int)
+      else if (symbol.type_is_int())
       {
         // Read the integer from the stream and construct a shared aterm_int in the index.
         std::size_t value = m_stream->read_integer();

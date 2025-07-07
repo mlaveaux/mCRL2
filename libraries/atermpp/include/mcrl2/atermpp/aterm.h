@@ -42,7 +42,7 @@ public:
   /// \brief Copy constructor.
   /// \param other The term that is copied.
   /// \details  This class has a non-trivial destructor so explicitly define the copy and move operators.
-  aterm(const aterm& other) noexcept { m_term = other.m_term; m_root = mcrl3::ffi::term_protect(&other.m_term); }
+  aterm(const aterm& other) noexcept { m_term = other.m_term; m_root = mcrl3::ffi::term_protect(other.m_term); }
 
   /// Construct a term from the internal representation of an integer term.
   explicit aterm(mcrl3::ffi::aterm_t term)
@@ -58,15 +58,23 @@ public:
   }
 
   /// Desstructor of the term.
-  ~aterm() { if (defined()) { mcrl3::ffi::term_unprotect(&m_root); } }
+  ~aterm() { if (defined()) { mcrl3::ffi::term_unprotect(m_root); } }
 
   /// \brief Assignment operator.
   /// \param other The term that is assigned.
   /// \details This class has a non-trivial destructor so explicitly define the copy and move assignments.
   aterm& operator=(const aterm& other) noexcept
   {
+    if (this != &other)
+    {
+      if (defined())
+      {
+        mcrl3::ffi::term_unprotect(m_root);
+      }
+    }
+
     m_term = other.m_term;
-    m_root = mcrl3::ffi::term_protect(&other.m_term);
+    m_root = mcrl3::ffi::term_protect(other.m_term);
     return *this;
   }
 
@@ -88,7 +96,7 @@ public:
     }
 
     m_term = other.m_term;
-    m_root = mcrl3::ffi::term_protect(&other.m_term);
+    m_root = mcrl3::ffi::term_protect(other.m_term);
     return *this;
   }
 
@@ -156,15 +164,32 @@ public:
   /// \brief Constructor for n-arity function application.
   /// \param symbol A function symbol.
   /// \param arguments The arguments of the function application.
-  template <typename... Terms>
+  template <IsATerm... Terms>
   aterm(const function_symbol& symbol, const Terms&... arguments)
+    : aterm(mcrl3::ffi::term_create_appl(symbol.get(), convert_to_array(arguments...).data(), sizeof...(Terms)))
   {}
 
   /// \brief Returns the function symbol belonging to an aterm.
   /// \return The function symbol of this term.
-  [[nodiscard]] const function_symbol& function() const
+  [[nodiscard]] const function_symbol function() const
   {
-    // return reinterpret_cast<const function_symbol&>(mcrl3::ffi::term_get_function_symbol(&m_term).ptr);
+    return reinterpret_cast<const function_symbol&>(mcrl3::ffi::term_get_function_symbol(m_term).ptr);
+  }
+
+  /// \brief Returns the i-th argument.
+  /// \param i A positive integer.
+  /// \return The argument with the given index.
+  const aterm& operator[](const std::size_t i) const
+  {
+    assert(i < size()); // Check the bounds.
+    // return reinterpret_cast<const aterm&>(mcrl3::ffi::term_get_argument(m_term, i).ptr);
+  }
+
+private:
+  template<typename... Args>
+  static std::array<mcrl3::ffi::unprotected_aterm_t, sizeof...(Args)> convert_to_array(const Args&... args)
+  {
+    return {static_cast<mcrl3::ffi::unprotected_aterm_t>(args)...};
   }
 
   /// \brief Returns true if the term has no arguments.
@@ -179,7 +204,8 @@ using term_callback = void (*)(const aterm&);
 inline
 void add_deletion_hook(const function_symbol& symbol, term_callback hook)
 {
-  mcrl3::ffi::add_deletion_hook(symbol, hook);
+  // mcrl3::ffi::function_symbol_t func = symbol.get();
+  // mcrl3::ffi::register_deletion_hook(&func, remap(hook);
 }
 
 /// \brief Constructor an aterm in a variable based on a function symbol and an forward iterator providing the
@@ -294,7 +320,7 @@ const Derived& down_cast(const Base& t)
   assert(Derived(static_cast<const aterm&>(t)) != aterm());
 
   // UB: Only allowed when we constructed an actual Derived type
-  return reinterpret_cast<const Derived&>(t.m_term);
+  return reinterpret_cast<const Derived&>(t);
 }
 
 /// \brief A cast form an aterm derived class to a class that inherits in (possibly multiple steps) from this class.
@@ -310,7 +336,7 @@ const Derived& vertical_cast(const Base& t)
   // Runtime check that the cast is valid.
   assert(Derived(static_cast<const aterm&>(t)) != aterm());
 
-  return reinterpret_cast<const Derived&>(t.m_term);
+  return reinterpret_cast<const Derived&>(t);
 }
 
 /// \brief Send the term in textual form to the ostream.

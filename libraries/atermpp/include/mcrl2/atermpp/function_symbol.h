@@ -10,6 +10,7 @@
 #ifndef MCRL2_ATERMPP_FUNCTION_SYMBOL_H
 #define MCRL2_ATERMPP_FUNCTION_SYMBOL_H
 
+#include "mcrl3/string_view.h"
 #include <mcrl3_ffi.h>
 
 #include <string>
@@ -19,13 +20,26 @@
 namespace atermpp
 {
 
+// Forward declaration
+class aterm;
+class unprotected_aterm;
+
 class function_symbol
 {
   friend class function_symbol_generator;
+  friend class aterm;
+  friend class unprotected_aterm;
   friend struct std::hash<function_symbol>;
   
 public:
   function_symbol() = default;
+  ~function_symbol() 
+  {
+    if (m_function_symbol.ptr != nullptr)
+    {
+      mcrl3::ffi::function_symbol_unprotect(m_function_symbol.root);
+    }
+  }
 
   /// \brief Defines a function symbol from a name and arity combination.
   function_symbol(const std::string& name, const std::size_t arity_)
@@ -37,9 +51,27 @@ public:
    : function_symbol(std::forward<std::string>(name), arity_, true)
   {}
 
-  /// This class has non-trivial destructor so declare default copy and move operators.
-  function_symbol(const function_symbol& other) noexcept = default;
-  function_symbol& operator=(const function_symbol& other) noexcept = default;
+  function_symbol(const function_symbol& other) noexcept
+  {
+    m_function_symbol = other.m_function_symbol;
+    m_function_symbol.root = mcrl3::ffi::function_symbol_protect(other.m_function_symbol);
+  }
+
+  function_symbol& operator=(const function_symbol& other) noexcept
+  {
+    if (this != &other)
+    {
+      if (defined())
+      {
+        mcrl3::ffi::function_symbol_unprotect(m_function_symbol.root);
+      }
+    }
+
+    m_function_symbol = other.m_function_symbol;
+    m_function_symbol.root = mcrl3::ffi::function_symbol_protect(other.m_function_symbol);
+    return *this;
+  }
+  
   function_symbol(function_symbol&& other) noexcept = default;
   function_symbol& operator=(function_symbol&& other) noexcept = default;
 
@@ -52,14 +84,14 @@ public:
   /// \return The name of the function symbol.
   [[nodiscard]] std::string_view name() const
   {
-    return mcrl3::ffi::function_symbol_get_name(&m_function_symbol);
+    return mcrl3::to_string_view(mcrl3::ffi::function_symbol_get_name(m_function_symbol));
   }
 
   /// \brief Return the arity (number of arguments) of the function symbol (function_symbol).
   /// \return The arity of the function symbol.
   [[nodiscard]] std::size_t arity() const
   {
-    return mcrl3::ffi::function_symbol_get_arity(&m_function_symbol);
+    return mcrl3::ffi::function_symbol_get_arity(m_function_symbol);
   }
 
   /// \brief Equality test.
@@ -88,12 +120,23 @@ public:
     swap(f.m_function_symbol, m_function_symbol);
   }
 
-private:
+  /// Returns true if this function symbol is an integer function symbol.
+  [[nodiscard]] bool type_is_int() const noexcept
+  {
+    return mcrl3::ffi::function_symbol_is_int(m_function_symbol);
+  }
+
+protected:
   /// \brief Constructor for internal use only
   inline
   function_symbol(const std::string& name, const std::size_t arity, const bool check_for_registered_functions)
   {
     mcrl3::ffi::function_symbol_create(name.c_str(), name.length(), arity, check_for_registered_functions);
+  }
+
+  [[nodiscard]] inline mcrl3::ffi::function_symbol_t get() const
+  {
+    return m_function_symbol;
   }
 
   /// \brief The shared reference to the underlying function symbol.
@@ -107,9 +150,8 @@ public:
   /// \details This constructor should be used by global function symbols.
   inline
   global_function_symbol(const std::string& name, const std::size_t arity)
-  {
-
-  }
+    : function_symbol(name, arity, false)
+  {}
 };
 
 } // namespace atermpp

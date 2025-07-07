@@ -18,11 +18,11 @@
 #ifndef MCRL2_ATERMPP_STANDARD_CONTAINER_VECTOR_H
 #define MCRL2_ATERMPP_STANDARD_CONTAINER_VECTOR_H
 
-#include <vector>
-
 #include "mcrl2/atermpp/detail/aterm_container.h"
-#include "mcrl2/atermpp/detail/thread_aterm_pool.h"
-#include "mcrl2/utilities/shared_mutex.h"
+
+#include <mcrl3/shared_mutex.h>
+
+#include <vector>
 
 /// \brief The main namespace for the aterm++ library.
 namespace atermpp
@@ -118,10 +118,10 @@ public:
   void shrink_to_fit()
   {
     if constexpr (ThreadSafe) {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       super::shrink_to_fit();
     } else {
-      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      mcrl3::shared_guard guard = mcrl3::global_lock_shared();
       super::shrink_to_fit();
     }
   }
@@ -129,10 +129,10 @@ public:
   void clear() noexcept
   {
     if constexpr (ThreadSafe) {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       super::clear();
     } else {
-      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      mcrl3::shared_guard guard = mcrl3::global_lock_shared();
       super::clear();
     }
   }
@@ -140,35 +140,35 @@ public:
   iterator insert( const_iterator pos, const T& value )
   {
     if constexpr (ThreadSafe) {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
 
       // This is not thread safe otherwise since the length or end iterator is updated during this producedure.
       return super::insert(pos, value);
     }
 
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     return super::insert(pos, value);
   }
 
   iterator insert( const_iterator pos, T&& value )
   {
     if constexpr (ThreadSafe) {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       return super::insert(pos, value);
     }
 
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     return super::insert(pos, value);
   }
   
   iterator insert( const_iterator pos, size_type count, const T& value )
   {
     if constexpr (ThreadSafe) {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       return super::insert(pos, count, value);
     }
 
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     return super::insert(pos, count, value);
   }
     
@@ -177,22 +177,22 @@ public:
                   InputIt first, InputIt last )
   {
     if constexpr (ThreadSafe) {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       return super::insert(pos, first, last); 
     }
 
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     return super::insert(pos, first, last);  
   }
     
   iterator insert( const_iterator pos, std::initializer_list<T> ilist )
   {
     if constexpr (ThreadSafe) {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       return super::insert(pos, ilist);
     }
 
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     return super::insert(pos, ilist);
   }
   
@@ -200,33 +200,33 @@ public:
   iterator emplace( const_iterator pos, Args&&... args )
   {
     if constexpr (ThreadSafe) {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       return super::emplace(pos, args...);   
     }
 
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     return super::emplace(pos, args...);   
   }
 
   iterator erase( const_iterator pos )
   {
     if constexpr (ThreadSafe) {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       return super::erase(pos);
     }
 
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     return super::erase(pos);
   }
 
   iterator erase( const_iterator first, const_iterator last )
   {
     if constexpr (ThreadSafe) {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       return super::erase(first, last);
     }
 
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     return super::erase(first, last);
   }
 
@@ -234,12 +234,12 @@ public:
   {
     if constexpr (ThreadSafe) 
     {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       super::push_back(value);
     } 
     else 
     {
-      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      mcrl3::shared_guard guard = mcrl3::global_lock_shared();
       super::push_back(value);
     }
   }
@@ -248,12 +248,12 @@ public:
   {
     if constexpr (ThreadSafe) 
     {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       super::push_back(value);
     } 
     else 
     {
-      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      mcrl3::shared_guard guard = mcrl3::global_lock_shared();
       super::push_back(value);
     }
   }
@@ -262,11 +262,11 @@ public:
   reference emplace_back( Args&&... args )
   {
     if constexpr (ThreadSafe) {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       return super::emplace_back(args...);  
     }
 
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     return super::emplace_back(args...);  
   }
 
@@ -274,12 +274,12 @@ public:
   {
     if constexpr (ThreadSafe) 
     {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       super::pop_back();
     } 
     else 
     {
-      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      mcrl3::shared_guard guard = mcrl3::global_lock_shared();
       super::pop_back();
     }
   }
@@ -288,12 +288,12 @@ public:
   {
     if constexpr (ThreadSafe) 
     {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       super::resize(count);
     } 
     else 
     {
-      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      mcrl3::shared_guard guard = mcrl3::global_lock_shared();
       super::resize(count);
     }
   }
@@ -302,12 +302,12 @@ public:
   {
     if constexpr (ThreadSafe) 
     {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       super::resize(count, value);
     } 
     else 
     {
-      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      mcrl3::shared_guard guard = mcrl3::global_lock_shared();
       super::resize(count, value);
     }
   }
@@ -316,12 +316,12 @@ public:
   {
     if constexpr (ThreadSafe) 
     {
-      mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+      mcrl3::lock_guard guard = mcrl3::global_lock_exclusive();
       super::swap(other); // Invalidates end() so must be protected.
     } 
     else 
     {
-      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      mcrl3::shared_guard guard = mcrl3::global_lock_shared();
       super::swap(other); // Invalidates end() so must be protected.
     }
   }
@@ -329,7 +329,7 @@ public:
   std::size_t size() const
   {
     // Concurrent read/write on the size.
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    mcrl3::shared_guard guard = mcrl3::global_lock_shared();
     return super::size();
   }
 };

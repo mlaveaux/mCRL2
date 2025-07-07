@@ -25,9 +25,6 @@ concept IsATerm = requires(T t)
 
     /// aterm can only contain the unprotected_aterm, and optionally the root index.
     requires sizeof(std::remove_reference_t<T>) <= sizeof(atermpp::unprotected_aterm) + sizeof(std::size_t);
-
-    /// A pointer to a standard-layout class may be converted (with reinterpret_cast) to a pointer to its first non-static data member and vice versa. 
-    requires std::is_standard_layout_v<T>;
 };
 
 /// Concept that can be used to indicate that T is a function that can convert an aterm to another aterm.

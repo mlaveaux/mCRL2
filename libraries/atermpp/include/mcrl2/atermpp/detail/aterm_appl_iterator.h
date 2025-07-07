@@ -74,11 +74,11 @@ public:
 
   /// \brief The dereference operator.
   /// \return The dereferenced term.
-  const Term& operator*() const { return *m_term; }
+  const Term& operator*() const { return down_cast<Term>(*m_term); }
 
   /// \brief Dereference the current iterator.
   /// \return The dereference term.
-  const Term* operator->() const { return m_term; }
+  const Term* operator->() const { return reinterpret_cast<Term*>(m_term); }
 
   /// \brief The dereference operator.
   /// \param n The index of the element to be dereferenced.

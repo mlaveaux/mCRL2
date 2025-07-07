@@ -12,7 +12,7 @@
 #ifndef MCRL2_ATERMPP_DETAIL_ATERM_LIST_H
 #define MCRL2_ATERMPP_DETAIL_ATERM_LIST_H
 
-#include "mcrl2/atermpp/detail/aterm.h"
+#include "mcrl2/atermpp/aterm.h"
 
 namespace atermpp
 {
@@ -20,14 +20,8 @@ namespace atermpp
 template <class Term>
 class term_list;
 
-typedef term_list<aterm> aterm_list;
-
 namespace detail
 {
-
-template <class Term>
-class _term_list;
-
 
 template <class Term>
 struct do_not_convert_term

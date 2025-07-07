@@ -14,9 +14,8 @@
 #include <cstdint>
 #include <vector>
 
-namespace mcrl2
-{
-namespace utilities
+
+namespace mcrl2::utilities
 {
 
 /// \returns The number of bits needed to represent a value of type T in most significant bit encoding.
@@ -42,7 +41,7 @@ public:
 
   /// \brief Write the given string to the output stream.
   /// \details Encoded in bits using <length, string>
-  void write_string(const std::string& string);
+  void write_string(std::string_view string);
 
   /// \brief Write the given value to the output stream.
   /// \details Uses most significant bit encoding.
@@ -99,7 +98,7 @@ private:
   std::vector<char> m_text_buffer; ///< A temporary buffer to store char array strings.
 };
 
-} // namespace utilities
-} // namespace mcrl2
+} // namespace mcrl2::utilities
+
 
 #endif // MCRL2_UTILITIES_BITSTREAM_H

@@ -22,7 +22,7 @@
 #include "mcrl2/atermpp/detail/aterm_container.h"
 #include "mcrl2/atermpp/standard_containers/deque.h"
 
-#include <mcrl3/mutex.h>
+#include <mcrl3/shared_mutex.h>
 
 /// \brief The main namespace for the aterm++ library.
 namespace atermpp
@@ -158,9 +158,9 @@ public:
     using std::swap; swap(m_container, other.m_container);
   }
 
-  void mark(std::stack<unprotected_aterm>& todo) const
+  void mark() const
   {
-    m_container.mark(todo);
+    m_container.mark();
   }
 };
 

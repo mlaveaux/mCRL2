@@ -14,6 +14,8 @@
 #include "mcrl2/atermpp/aterm_list.h"
 #include "mcrl2/atermpp/concepts.h"
 
+#include <string_view>
+
 namespace atermpp
 {
 
@@ -39,7 +41,7 @@ public:
   void set_transformer(aterm_transformer transformer) { m_transformer = transformer; }
 
   /// \returns The currently assigned transformer function.
-  aterm_transformer* get_transformer() const { return m_transformer; }
+  [[nodiscard]] aterm_transformer* get_transformer() const { return m_transformer; }
 
 protected:
   aterm_transformer* m_transformer = identity;
@@ -179,7 +181,7 @@ inline std::ostream& operator<<(std::ostream& out, const function_symbol& f)
 /// \brief Prints the name of a function symbol as a string.
 /// \param f The function symbol.
 /// \return The string representation of r.
-inline const std::string& pp(const function_symbol& f)
+inline std::string_view pp(const function_symbol& f)
 {
   return f.name();
 }

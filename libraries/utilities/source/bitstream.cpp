@@ -142,13 +142,13 @@ void obitstream::write_bits(std::size_t value, unsigned int number_of_bits)
   }
 }
 
-void obitstream::write_string(const std::string& string)
+void obitstream::write_string(std::string_view string)
 {
   // Write length.
   write_integer(string.size());
 
   // Write actual string.
-  write(reinterpret_cast<const std::uint8_t*>(string.c_str()), string.size());
+  write(reinterpret_cast<const std::uint8_t*>(string.data()), string.size());
 }
 
 void obitstream::write_integer(std::size_t val)

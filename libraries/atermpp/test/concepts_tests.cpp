@@ -31,7 +31,7 @@ static_assert(IsATerm<derived>, "This class remains an aterm since it derives fr
 static_assert(!IsATerm<derived_with_extra>, "This class has extra fields that are not allowed");
 
 
-std::size_t not_term_converter(const atermpp::unprotected_aterm_core& term) {
+std::size_t not_term_converter(const atermpp::unprotected_aterm& term) {
   return term.function().arity();
 }
 

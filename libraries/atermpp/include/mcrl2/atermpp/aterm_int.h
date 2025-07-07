@@ -57,7 +57,7 @@ public:
 
   /// \brief Provide the value stored in an aterm.
   /// \returns The value of the integer term.
-  [[nodiscard]] std::size_t value() const noexcept { return mcrl3::ffi::term_get_int_value(&m_term); }
+  [[nodiscard]] std::size_t value() const noexcept { return mcrl3::ffi::term_get_int_value(m_term); }
 
   /// \brief Swaps two integer terms without changing the protection.
   /// \param t The term that is swapped with the current term.

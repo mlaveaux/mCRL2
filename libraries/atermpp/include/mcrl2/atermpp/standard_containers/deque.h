@@ -20,7 +20,7 @@
 
 #include "mcrl2/atermpp/detail/aterm_container.h"
 
-#include <mcrl3/mutex.h>
+#include <mcrl3/shared_mutex.h>
 
 #include <deque>
 
@@ -33,19 +33,19 @@ template < class T, class Alloc = std::allocator<detail::reference_aterm<T> > >
 class deque : public std::deque< detail::reference_aterm<T>, Alloc >              
 {
 protected:
-  typedef std::deque< detail::reference_aterm<T>, Alloc > super;
+  using super = std::deque<detail::reference_aterm<T>, Alloc>;
   
   detail::generic_aterm_container<std::deque<detail::reference_aterm<T>, Alloc>> container_wrapper;
 
 public:
   
   /// Standard typedefs.
-  typedef typename super::allocator_type allocator_type;
-  typedef typename super::value_type value_type;
-  typedef typename super::size_type size_type;
-  typedef typename super::reference reference;
-  typedef typename super::iterator iterator;
-  typedef typename super::const_iterator const_iterator;
+  using allocator_type = typename super::allocator_type;
+  using value_type = typename super::value_type;
+  using size_type = typename super::size_type;
+  using reference = typename super::reference;
+  using iterator = typename super::iterator;
+  using const_iterator = typename super::const_iterator;
   
   /// \brief Default constructor.
   deque()

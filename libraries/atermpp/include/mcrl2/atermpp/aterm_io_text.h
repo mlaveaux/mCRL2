@@ -12,6 +12,8 @@
 
 #include "mcrl2/atermpp/aterm_io.h"
 
+#include <deque>
+
 namespace atermpp
 {
 
