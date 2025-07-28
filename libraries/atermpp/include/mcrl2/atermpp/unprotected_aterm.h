@@ -116,7 +116,8 @@ public:
   /// \details This is for internal use only.
   [[nodiscard]] const function_symbol& function() const
   {
-    // return reinterpret_cast<const function_symbol&>(mcrl3::ffi::term_get_function_symbol(m_term).ptr);
+    mcrl3::ffi::function_symbol_t func = mcrl3::ffi::term_get_function_symbol(m_term);
+    return reinterpret_cast<const function_symbol&>(func.ptr);
   }
   
   /// \brief Returns the number of arguments of this term.
@@ -134,6 +135,7 @@ public:
   /// \brief Returns the i-th argument.
   /// \param i A positive integer.
   /// \return The argument with the given index.
+  inline
   const unprotected_aterm operator[](const std::size_t i) const
   {
     assert(i < size()); // Check the bounds.
@@ -169,6 +171,8 @@ protected:
 
 namespace detail
 {
+
+inline
 mcrl3::ffi::unprotected_aterm_t address(const unprotected_aterm& t) noexcept
 {
   return t.m_term;

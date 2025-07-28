@@ -217,7 +217,7 @@ void add_deletion_hook(const function_symbol& symbol, term_callback hook)
 /// \param sym A function symbol.
 /// \param begin The start of a range of elements.
 /// \param end The end of a range of elements.
-template <class Term,
+template <IsATerm Term,
     class ForwardIterator,
     typename std::enable_if<mcrl2::utilities::is_iterator<ForwardIterator>::value>::type* = nullptr,
     typename std::enable_if<
@@ -226,8 +226,6 @@ template <class Term,
         !std::is_same<typename ForwardIterator::iterator_category, std::output_iterator_tag>::value>::type* = nullptr>
 void make_term_appl(Term& target, const function_symbol& sym, ForwardIterator begin, ForwardIterator end)
 {
-  static_assert((std::is_base_of<aterm, Term>::value), "Term must be derived from an aterm");
-  static_assert(sizeof(Term) == sizeof(std::size_t), "Term derived from an aterm must not have extra fields");
   static_assert(!std::is_same<typename ForwardIterator::iterator_category, std::input_iterator_tag>::value,
       "A forward iterator has more requirements than an input iterator.");
   static_assert(!std::is_same<typename ForwardIterator::iterator_category, std::output_iterator_tag>::value,
@@ -242,7 +240,7 @@ void make_term_appl(Term& target, const function_symbol& sym, ForwardIterator be
 /// \param sym A function symbol.
 /// \param begin The start of a range of elements.
 /// \param end The end of a range of elements.
-template <class Term,
+template <IsATerm Term,
     class InputIterator,
     typename std::enable_if<mcrl2::utilities::is_iterator<InputIterator>::value>::type* = nullptr,
     typename std::enable_if<
@@ -251,8 +249,6 @@ void make_term_appl(Term& target, const function_symbol& sym, InputIterator begi
 {
   make_term_appl(target, sym, begin, end, [](const Term& term) -> const Term& { return term; });
 
-  static_assert((std::is_base_of<aterm, Term>::value), "Term must be derived from an aterm");
-  static_assert(sizeof(Term) == sizeof(std::size_t), "Term derived from an aterm must not have extra fields");
   static_assert(std::is_same<typename InputIterator::iterator_category, std::input_iterator_tag>::value,
       "The InputIterator is missing the input iterator tag.");
 }
@@ -267,7 +263,7 @@ void make_term_appl(Term& target, const function_symbol& sym, InputIterator begi
 /// \param end The end of a range of elements.
 /// \param converter An class or lambda term containing an operator Term operator()(const Term& t) which is
 ///        applied to each each element in the iterator range before it becomes an argument of this term.
-template <class Term,
+template <IsATerm Term,
     class InputIterator,
     class TermConverter,
     typename std::enable_if<mcrl2::utilities::is_iterator<InputIterator>::value>::type* = nullptr>
@@ -277,8 +273,6 @@ void make_term_appl(Term& target,
     InputIterator end,
     TermConverter converter)
 {
-  static_assert(std::is_base_of<aterm, Term>::value, "Term must be derived from an aterm");
-  static_assert(sizeof(Term) == sizeof(std::size_t), "Term derived from an aterm must not have extra fields");
   static_assert(!std::is_same<typename InputIterator::iterator_category, std::output_iterator_tag>::value,
       "The InputIterator has the output iterator tag.");
 }
@@ -286,11 +280,10 @@ void make_term_appl(Term& target,
 /// \brief Make an term_appl consisting of a single function symbol.
 /// \param target The variable in which the result will be put. This variable may be used for scratch purposes.
 /// \param sym A function symbol.
-template <class Term>
+template <IsATerm Term>
 void make_term_appl(Term& target, const function_symbol& sym)
 {
-  static_assert(std::is_base_of<aterm, Term>::value, "Term must be derived from an aterm");
-  static_assert(sizeof(Term) == sizeof(std::size_t), "Term derived from an aterm must not have extra fields");
+
 }
 
 /// \brief Make an aterm application for n-arity function application.

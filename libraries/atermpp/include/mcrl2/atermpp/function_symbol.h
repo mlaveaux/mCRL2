@@ -154,6 +154,16 @@ public:
   {}
 };
 
+namespace detail 
+{
+  /// \brief Returns the function symbol that represents a list.
+  inline
+  const function_symbol& as_list() {
+    static const function_symbol result("list", 1);
+    return result;
+  }
+}
+
 } // namespace atermpp
 
 namespace std 

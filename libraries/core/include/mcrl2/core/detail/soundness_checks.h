@@ -18,6 +18,7 @@
 #include "mcrl2/atermpp/concepts.h"
 #include "mcrl2/atermpp/aterm_string.h"
 #include "mcrl2/core/detail/function_symbols.h"
+#include "mcrl2/utilities/logger.h"
 
 namespace mcrl2
 {
