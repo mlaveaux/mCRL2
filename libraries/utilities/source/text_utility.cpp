@@ -8,17 +8,24 @@
 //
 /// \file mcrl2/utilities/text_utility.h
 /// \brief String manipulation functions.
+MCRL2_MODULE;
 
 #include <fstream>
 #include <regex>
-#include <boost/algorithm/string.hpp>  // for the functions trim, split, trim_copy, is_any_of, trim_right, trim_right_copy. 
+
+#include <boost/algorithm/string.hpp>  // for the functions trim, split, trim_copy, is_any_of, trim_right, trim_right_copy.
 
 #include "mcrl2/utilities/logger.h"
 
 #ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/logger.cxx"
   #include "mcrl2/utilities/exception.cxx"
 #else
-  import utilities;
+  module utilities:text_utility_impl;
+
+  import :exception;
+  import :logger;
+  import :text_utility;
 #endif
 
 namespace mcrl2::utilities

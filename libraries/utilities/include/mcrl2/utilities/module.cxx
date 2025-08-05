@@ -15,8 +15,20 @@
 #ifdef MCRL2_ENABLE_MODULES
   export module utilities;
 
+  export import :block_allocator;
+  export import :configuration;
   export import :exception;
   export import :execution_timer;
+  // export import :indexed_set;
+  export import :power_of_two;
+  export import :logger;
+  export import :memory_pool;
+  export import :mutex;
+  export import :noncopyable;
+  export import :shared_mutex;
+  export import :text_utility;
+  // export import :unordered_map;
+  // export import :unordered_set;
 #endif
 
 #endif // MCRL2_UTILITIES_UTILTIES_H

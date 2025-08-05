@@ -9,14 +9,20 @@
 
 #ifndef MCRL2_UTILITIES_BLOCK_ALLOCATOR_H_
 #define MCRL2_UTILITIES_BLOCK_ALLOCATOR_H_
-
-#include "memory_pool.h"
+MCRL2_MODULE;
 
 #include <memory>
 #include <stddef.h>
 
+#ifndef MCRL2_ENABLE_MODULES
+  #include "memory_pool.h"
+#else
+  export module utilities:block_allocator;
 
-namespace mcrl2::utilities
+  import :memory_pool;
+#endif
+
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 
 /// \brief The block allocator provides the allocator interface for the memory pool class.

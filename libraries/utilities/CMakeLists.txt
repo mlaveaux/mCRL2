@@ -23,9 +23,27 @@ if (MCRL2_ENABLE_MODULES)
   target_sources(mcrl2_utilities
     PUBLIC
       FILE_SET CXX_MODULES FILES
-        include/mcrl2/utilities/utilities.cxx
+        include/mcrl2/utilities/block_allocator.cxx
+        include/mcrl2/utilities/configuration.cxx
         include/mcrl2/utilities/exception.cxx
         include/mcrl2/utilities/execution_timer.cxx
+        include/mcrl2/utilities/indexed_set.cxx
+        include/mcrl2/utilities/logger.cxx
+        include/mcrl2/utilities/memory_pool.cxx
+        include/mcrl2/utilities/module.cxx
+        include/mcrl2/utilities/mutex.cxx  
+        include/mcrl2/utilities/noncopyable.cxx    
+        include/mcrl2/utilities/power_of_two.cxx
+        include/mcrl2/utilities/shared_mutex.cxx  
+        include/mcrl2/utilities/text_utility.cxx
+        include/mcrl2/utilities/unordered_map.cxx
+        include/mcrl2/utilities/unordered_set.cxx
+        include/mcrl2/utilities/detail/atomic_wrapper.cxx
+        include/mcrl2/utilities/detail/bucket_list.cxx
+        include/mcrl2/utilities/detail/free_list.cxx
+        include/mcrl2/utilities/detail/module.cxx
+        source/logger.cpp
+        source/text_utility.cpp
   )
 endif()
 

@@ -13,11 +13,18 @@
 #define MCRL2_UNORDERED_SET_TEMPLATES template<typename Key, typename Hash, typename Equals, typename Allocator, bool ThreadSafe, bool Resize>
 #define MCRL2_UNORDERED_SET_CLASS unordered_set<Key, Hash, Equals, Allocator, ThreadSafe, Resize>
 
-#include "mcrl2/utilities/unordered_set.h"
-
-#include "mcrl2/utilities/power_of_two.h"
-
 #include <algorithm>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/unordered_set.cxx"
+  #include "mcrl2/utilities/power_of_two.cxx"
+#else
+  // Implementation unit
+  module utilities:unordered_set;
+
+  import :unordered_set;
+  import :power_of_two;
+#endif
 
 namespace mcrl2::utilities
 {

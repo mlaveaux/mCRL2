@@ -9,12 +9,19 @@
 
 #ifndef MCRL2_UTILITIES_MUTEX_H_
 #define MCRL2_UTILITIES_MUTEX_H_
+MCRL2_MODULE;
 
 #include <mutex>
 
-#include "mcrl2/utilities/configuration.h"
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/configuration.h"
+#else
+  export module utilities:mutex;
 
-namespace mcrl2::utilities
+  import :configuration;
+#endif
+
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 
 /// \brief This is simply an exclusive lock based on the standard library with the ability to perform no locks when 

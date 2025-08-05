@@ -8,23 +8,33 @@
 
 #ifndef MCRL2_UTILITIES_UNORDERED_SET_H
 #define MCRL2_UTILITIES_UNORDERED_SET_H
+MCRL2_MODULE;
 
-#include "mcrl2/utilities/block_allocator.h"
-#include "mcrl2/utilities/logger.h"
-#include "mcrl2/utilities/detail/bucket_list.h"
-
+#include <atomic>
 #include <cmath>
 #include <mutex>
 #include <vector>
 
-namespace mcrl2::utilities
+#include "mcrl2/utilities/logger.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/block_allocator.h"
+  #include "mcrl2/utilities/detail/bucket_list.h"
+#else
+  export module utilities:unordered_set;
+
+  import :block_allocator;
+  import utilities_detail;
+#endif
+
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 
 /// \brief Enables lockfree implementation of emplace.
-constexpr static bool EnableLockfreeInsertion = true;
+constexpr bool EnableLockfreeInsertion = true;
 
 /// \brief Number of buckets per mutex.
-constexpr static long BucketsPerMutex = 256;
+constexpr long BucketsPerMutex = 256;
 
 /// \brief Prints various information for unordered_set like data structures.
 template<typename T>
@@ -394,6 +404,8 @@ using unordered_set_large = unordered_set<Key, Hash, Equals, Allocator, ThreadSa
 
 } // namespace mcrl2::utilities
 
-#include "mcrl2/utilities/detail/unordered_set_implementation.h"
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/detail/unordered_set_implementation.cxx"
+#endif
 
 #endif // MCRL2_UTILITIES_UNORDERED_SET_H

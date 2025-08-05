@@ -9,18 +9,29 @@
 
 #ifndef MCRL2_UTILITIES_MEMORY_POOL_H_
 #define MCRL2_UTILITIES_MEMORY_POOL_H_
-
-#include "mcrl2/utilities/detail/free_list.h"
-#include "mcrl2/utilities/noncopyable.h"
-#include "mcrl2/utilities/mutex.h"
+MCRL2_MODULE;
 
 #include <array>
+#include <cassert>
+#include <atomic>
 #include <cstdint>
 #include <forward_list>
-#include <type_traits>
 #include <mutex>
+#include <type_traits>
 
-namespace mcrl2::utilities
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/detail/free_list.h"
+  #include "mcrl2/utilities/noncopyable.h"
+  #include "mcrl2/utilities/mutex.h"
+#else
+  export module utilities:memory_pool;
+
+  import utilities_detail;
+  import :noncopyable;
+  import :mutex;
+#endif
+
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 
 /// \brief The memory pool allocates elements of size T from blocks.

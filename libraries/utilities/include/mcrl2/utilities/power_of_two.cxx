@@ -9,19 +9,24 @@
 
 #ifndef MCRL2_UTILITY_POWER_OF_TWO_H_
 #define MCRL2_UTILITY_POWER_OF_TWO_H_
+MCRL2_MODULE;
 
 #include <cassert>
 #include <cstddef>
 #include <limits>
 #include <type_traits>
 
+#ifdef MCRL2_ENABLE_MODULES
+  export module utilities:power_of_two;
+#endif
 
-namespace mcrl2::utilities
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 
 /// \returns True when the given value is a power of two.
 template <typename T>
-static constexpr bool is_power_of_two(T value)
+inline
+constexpr bool is_power_of_two(T value)
   requires std::is_integral_v<T>
 {
   // It is a power of two whenever exactly a single bit is one.
@@ -30,7 +35,8 @@ static constexpr bool is_power_of_two(T value)
 
 /// \returns The smallest power of two that is larger than the given value.
 template <typename T>
-static T round_up_to_power_of_two(T value)
+inline
+T round_up_to_power_of_two(T value)
   requires std::is_integral_v<T>
 {
   if (is_power_of_two(value)) {

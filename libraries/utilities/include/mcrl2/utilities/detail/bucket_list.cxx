@@ -8,6 +8,7 @@
 
 #ifndef MCRL2_UTILITIES_DETAIL_BUCKETLIST_H_
 #define MCRL2_UTILITIES_DETAIL_BUCKETLIST_H_
+MCRL2_MODULE;
 
 #include <cassert>
 #include <atomic>
@@ -15,13 +16,17 @@
 #include <iterator>
 #include <memory>
 
-namespace mcrl2::utilities::detail
+#ifdef MCRL2_ENABLE_MODULES
+  export module utilities_detail:bucket_list;
+#endif
+
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities::detail
 {
 
 struct Sentinel{};
 
 /// \brief A end of the iterator sentinel.
-static constexpr Sentinel EndIterator = {};
+constexpr Sentinel EndIterator = {};
 
 /// \brief A compile time check for allocate_args in the given allocator, calls allocate(1) otherwise.
 template<typename Allocator, typename ...Args>

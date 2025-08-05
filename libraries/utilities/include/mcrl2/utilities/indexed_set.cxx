@@ -8,16 +8,27 @@
 
 #ifndef MCRL2_UTILITIES_INDEXED_SET_H
 #define MCRL2_UTILITIES_INDEXED_SET_H
+MCRL2_MODULE;
 
 #include <deque>
 #include <mutex>
+#include <vector>
+#include <utility>
+#include <memory>
 
-#include "mcrl2/utilities/unordered_map.h"
-#include "mcrl2/utilities/detail/atomic_wrapper.h"
-#include "mcrl2/utilities/shared_mutex.h"
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/unordered_map.h"
+  #include "mcrl2/utilities/detail/atomic_wrapper.h"
+  #include "mcrl2/utilities/shared_mutex.h"  
+#else
+  export module utilities:indexed_set;
 
+  import :unordered_map;
+  import :shared_mutex;
+  import utilities_detail;
+#endif
 
-namespace mcrl2::utilities
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 
 /// \brief A set that assigns each element an unique index.
@@ -55,7 +66,7 @@ private:
   std::size_t put_in_hashtable(const Key& key, std::size_t value, std::size_t& new_position);
 
   /// \brief Resizes the hash table to twice its current size.
-  inline void resize_hashtable();
+  void resize_hashtable();
 
 public:
   using key_type = Key;
@@ -237,7 +248,8 @@ public:
 } // end namespace utilities
 // end namespace mcrl2
 
-#include "mcrl2/utilities/detail/indexed_set.h"
-
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/detail/indexed_set_implementation.cxx"
+#endif
 
 #endif // MCRL2_UTILITIES_INDEXED_SET_H

@@ -14,6 +14,10 @@
 #include <regex>
 #include <iostream>
 
+#ifdef MCRL2_ENABLE_MODULES
+  import utilities;
+#endif
+
 namespace mcrl2::utilities
 {
 

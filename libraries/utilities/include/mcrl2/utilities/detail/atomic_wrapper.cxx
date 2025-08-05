@@ -8,10 +8,15 @@
 
 #ifndef MCRL2_UTILITIES_DETAIL_ATOMIC_WRAPPER_H_
 #define MCRL2_UTILITIES_DETAIL_ATOMIC_WRAPPER_H_
+MCRL2_MODULE;
 
 #include <atomic>
 
-namespace mcrl2::utilities::detail
+#ifdef MCRL2_ENABLE_MODULES
+  export module utilities_detail:atomic_wrapper;
+#endif
+
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities::detail
 {
 
 // The purpose of this wrapper is to allow copying of atomics.

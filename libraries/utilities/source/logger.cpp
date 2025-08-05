@@ -7,11 +7,20 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 /// \file logger.cpp
-
-#include "mcrl2/utilities/logger.h"
+MCRL2_MODULE;
 
 #include <cassert>
 #include <string>
+#include <iostream>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/logger.cxx"
+#else
+  module utilities:logger_impl;
+
+  import :logger;
+#endif
+
 
 namespace mcrl2::log {
 

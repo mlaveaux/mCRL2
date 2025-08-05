@@ -8,8 +8,8 @@
 //
 
 #include "mcrl2/utilities/bitstream.h"
-#include "mcrl2/utilities/power_of_two.h"
 
+#include <cassert>
 #include <iostream>
 
 #ifdef MCRL2_PLATFORM_WINDOWS
@@ -18,7 +18,8 @@
 #endif
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/exception.h"
+  #include "mcrl2/utilities/exception.cxx"
+  #include "mcrl2/utilities/power_of_two.cxx"
 #else
   import utilities;
 #endif

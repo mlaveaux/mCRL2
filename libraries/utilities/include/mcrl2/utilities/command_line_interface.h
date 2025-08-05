@@ -12,18 +12,20 @@
 #ifndef MCRL2_UTILITIES_COMMAND_LINE_INTERFACE_H
 #define MCRL2_UTILITIES_COMMAND_LINE_INTERFACE_H
 
+#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
 #include <map>
 #include <memory>
+#include <vector>
+
+#include "mcrl2/utilities/toolset_version.h"
 
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/utilities/exception.cxx"
-#else
   #include "mcrl2/utilities/text_utility.h"
-  #include "mcrl2/utilities/toolset_version.h"
-  
+#else  
   import utilities;
 #endif
 

@@ -11,6 +11,7 @@
 
 #ifndef MCRL2_UTILITIES_TEXT_UTILITY_H
 #define MCRL2_UTILITIES_TEXT_UTILITY_H
+MCRL2_MODULE;
 
 #include <algorithm>
 #include <iostream>
@@ -20,9 +21,11 @@
 #include <string>
 #include <vector>
 
+#ifdef MCRL2_ENABLE_MODULES
+  export module utilities:text_utility;
+#endif
 
-
-namespace mcrl2::utilities
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 
 /// \brief Transform parameter into string.

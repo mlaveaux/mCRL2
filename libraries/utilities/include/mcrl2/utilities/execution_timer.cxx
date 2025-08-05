@@ -11,7 +11,7 @@
 
 #ifndef MCRL2_UTILITIES_EXECUTION_TIMER_H
 #define MCRL2_UTILITIES_EXECUTION_TIMER_H
-module;
+MCRL2_MODULE;
 
 #include <chrono>
 #include <fstream>
@@ -27,7 +27,7 @@ module;
   import :exception;
 #endif
 
-MCRL2_EXPORT namespace mcrl2::utilities
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 
 /// \brief Simple timer to time the CPU time used by a piece of code.

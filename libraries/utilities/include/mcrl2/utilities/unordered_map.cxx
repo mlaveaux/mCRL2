@@ -8,13 +8,23 @@
 
 #ifndef MCRL2_UTILITIES_UNORDERED_MAP_H
 #define MCRL2_UTILITIES_UNORDERED_MAP_H
+MCRL2_MODULE;
 
 #include <utility>
 #include <functional>
-#include "mcrl2/utilities/unordered_set.h"
+#include <cmath>
 
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/unordered_set.cxx"
+#else
+  export module utilities:unordered_map;
 
-namespace mcrl2::utilities
+  import :unordered_set;
+  import :block_allocator;
+  import utilities_detail;
+#endif
+
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 
 /// \brief A class for a map of keys to values in T based using the simple hash table set implementation.
@@ -261,6 +271,8 @@ using unordered_map_large = unordered_map<Key, T, Hash, Equals, Allocator, Threa
 
 } // namespace mcrl2::utilities
 
-#include "mcrl2/utilities/detail/unordered_map_implementation.h"
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/detail/unordered_map_implementation.cxx"
+#endif
 
 #endif // MCRL2_UTILITIES_UNORDERED_MAP_H

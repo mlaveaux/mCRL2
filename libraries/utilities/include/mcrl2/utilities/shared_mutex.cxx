@@ -9,6 +9,7 @@
 
 #ifndef MCRL2_UTILITIES_DETAIL_SHARED_MUTEX_H
 #define MCRL2_UTILITIES_DETAIL_SHARED_MUTEX_H
+MCRL2_MODULE;
 
 #include <assert.h>
 #include <algorithm>
@@ -17,11 +18,17 @@
 #include <mutex>
 #include <vector>
 
-#include "mcrl2/utilities/noncopyable.h"
-#include "mcrl2/utilities/configuration.h"
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/noncopyable.h"
+  #include "mcrl2/utilities/configuration.h"
+#else
+  export module utilities:shared_mutex;
 
+  import :noncopyable;
+  import :configuration;
+#endif
 
-namespace mcrl2::utilities
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 
 // Forward declaration.

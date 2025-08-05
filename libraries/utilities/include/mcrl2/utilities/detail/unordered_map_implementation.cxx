@@ -11,7 +11,12 @@
 #define MCRL2_UTILITIES_UNORDERED_MAP_IMPLEMENTATION_H
 #pragma once
 
-#include "mcrl2/utilities/unordered_map.h"
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/unordered_map.cxx" // necessary for header test. 
+#else
+  // Implementation unit
+  module utilities:unordered_map;
+#endif
 
 #define MCRL2_UNORDERED_MAP_TEMPLATES template<typename Key, typename T, typename Hash, typename Equals, typename Allocator, bool ThreadSafe, bool Resize>
 #define MCRL2_UNORDERED_MAP_CLASS unordered_map<Key, T, Hash, Equals, Allocator, ThreadSafe, Resize>

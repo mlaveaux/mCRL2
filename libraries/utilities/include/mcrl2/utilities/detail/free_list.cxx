@@ -8,6 +8,7 @@
 
 #ifndef MCRL2_UTILITIES_DETAIL_FREELIST_H_
 #define MCRL2_UTILITIES_DETAIL_FREELIST_H_
+MCRL2_MODULE;
 
 #include <cassert>
 #include <atomic>
@@ -16,9 +17,11 @@
 #include <limits>
 #include <iterator>
 
+#ifdef MCRL2_ENABLE_MODULES
+  export module utilities_detail:free_list;
+#endif
 
-
-namespace mcrl2::utilities::detail
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities::detail
 {
 
 /// \brief This essentially implements the std::forward_list, with the difference that

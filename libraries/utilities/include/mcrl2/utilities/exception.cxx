@@ -11,7 +11,7 @@
 
 #ifndef MCRL2_UTILITIES_EXCEPTION_H
 #define MCRL2_UTILITIES_EXCEPTION_H
-module;
+MCRL2_MODULE;
 
 #include <cassert>
 #include <sstream>
@@ -21,7 +21,7 @@ module;
   export module utilities:exception;
 #endif
 
-MCRL2_EXPORT namespace mcrl2
+MCRL2_MODULE_EXPORT namespace mcrl2
 {
 
 /**

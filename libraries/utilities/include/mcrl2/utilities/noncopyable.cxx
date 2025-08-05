@@ -9,9 +9,13 @@
 
 #ifndef MCRL2_UTILITIES_NONCOPYABLE_H_
 #define MCRL2_UTILITIES_NONCOPYABLE_H_
+MCRL2_MODULE;
 
+#ifdef MCRL2_ENABLE_MODULES
+  export module utilities:noncopyable;
+#endif
 
-namespace mcrl2::utilities
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 
 /// \brief Inherit from this class to prevent it from being copyable.

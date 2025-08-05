@@ -9,12 +9,17 @@
 
 #ifndef MCRL2_UTILITIES_CONFIGURATION_H
 #define MCRL2_UTILITIES_CONFIGURATION_H
+MCRL2_MODULE;
 
-namespace mcrl2::utilities::detail
+#ifdef MCRL2_ENABLE_MODULES
+  export module utilities:configuration;
+#endif
+
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities::detail
 {
 
 /// Enables thread safety for the whole toolset.
-  constexpr static bool GlobalThreadSafe =     
+  constexpr bool GlobalThreadSafe =     
 #ifdef MCRL2_ENABLE_MULTITHREADING 
     true;
 #else
