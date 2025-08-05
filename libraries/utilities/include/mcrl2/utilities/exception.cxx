@@ -28,7 +28,7 @@ namespace mcrl2
 /**
  * \brief Standard exception class for reporting runtime errors.
  **/
-export class runtime_error : public std::runtime_error
+MCRL2_EXPORT class runtime_error : public std::runtime_error
 {
 public:
   /// \brief Constructor
@@ -40,7 +40,7 @@ public:
 /**
  * \brief Exception class for errors raised by the command-line parser.
  **/
-export class command_line_error : public runtime_error
+MCRL2_EXPORT class command_line_error : public runtime_error
 {
 private:
   std::string m_msg;

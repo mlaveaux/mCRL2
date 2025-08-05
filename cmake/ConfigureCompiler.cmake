@@ -81,7 +81,7 @@ if(MCRL2_ENABLE_MODULES)
   add_compile_definitions(MCRL2_ENABLE_MODULES)
   
   # Only add the export keyword when modules are enabled, otherwise leave blank.
-  add_compile_definitions(MCRL2_EXPORT export)
+  add_compile_definitions(MCRL2_EXPORT=export)
 endif()
 
 # Enable the new JFG branching bisimulation algorithm.
