@@ -2292,7 +2292,6 @@ class specification():
     code += "\n"
     code += "#ifndef MCRL2_DATA_%s_H\n" % (infilename.stem.upper())
     code += "#define MCRL2_DATA_%s_H\n\n" % (infilename.stem.upper())
-    code += "#include \"functional\"    // std::function\n"
     code += "#include \"mcrl2/utilities/exception.h\"\n"
     code += "#include \"mcrl2/data/basic_sort.h\"\n"
     code += "#include \"mcrl2/data/function_sort.h\"\n"
@@ -2300,6 +2299,7 @@ class specification():
     code += "#include \"mcrl2/data/application.h\"\n"
     code += "#include \"mcrl2/data/data_equation.h\"\n"
     code += "#include \"mcrl2/data/standard.h\"\n"
+
     if self.has_lambda():
       code += "#include \"mcrl2/data/lambda.h\"\n"
     if self.has_forall():
@@ -2312,6 +2312,15 @@ class specification():
       code += "#include \"mcrl2/data/structured_sort.h\"\n"
     if self.includes != None:
       code += self.includes.code()
+
+    code += "\n";
+    code += "#include <functional>\n\n"
+    code += "#ifndef MCRL2_ENABLE_MODULES\n"
+    code += "  #include \"mcrl2/utilities/exception.cxx\"\n"
+    code += "#else\n"
+    code += " import utilities;\n"
+    code += "#endif\n"
+
     code += "\n"
     code += "namespace mcrl2 {\n\n"
     code += "  namespace data {\n\n"
