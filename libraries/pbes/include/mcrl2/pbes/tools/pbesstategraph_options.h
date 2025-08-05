@@ -13,9 +13,12 @@
 #define MCRL2_PBES_TOOLS_PBESSTATEGRAPH_OPTIONS_H
 
 #include "mcrl2/data/rewrite_strategy.h"
-#include "mcrl2/utilities/execution_timer.h"
 
-
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/execution_timer.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::pbes_system {
 

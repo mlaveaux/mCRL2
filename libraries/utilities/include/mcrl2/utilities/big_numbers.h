@@ -21,6 +21,7 @@
 #include "mcrl2/utilities/hash_utility.h"
 
 #include <algorithm>
+#include <iostream>
 #include <limits>
 #include <ranges>
 #include <string>

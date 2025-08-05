@@ -8,9 +8,13 @@
 //
 /// \file ./graph.cpp
 
-#include "mcrl2/utilities/exception.h"
 #include "graph.h"
 
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 Graph::Graph()
 {

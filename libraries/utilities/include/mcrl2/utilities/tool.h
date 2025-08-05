@@ -15,12 +15,17 @@
 #include "mcrl2/utilities/logger.h"
 
 #include "mcrl2/utilities/command_line_interface.h"
-#include "mcrl2/utilities/execution_timer.h"
 #include "mcrl2/utilities/platform.h"
 
 #ifdef MCRL2_PLATFORM_WINDOWS
   #include <io.h>
   #include <fcntl.h>
+#endif
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/execution_timer.cxx"
+#else  
+  import utilities;
 #endif
 
 /// \brief The namespace for command line tool classes

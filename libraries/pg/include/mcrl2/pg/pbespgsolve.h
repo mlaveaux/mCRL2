@@ -21,9 +21,12 @@
 #include "mcrl2/pg/DeloopSolver.h"
 #include "mcrl2/pg/PredecessorLiftingStrategy.h"
 #include "mcrl2/pg/PriorityPromotionSolver.h"
-#include "mcrl2/utilities/execution_timer.h"
 
-
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/execution_timer.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::pbes_system {
 

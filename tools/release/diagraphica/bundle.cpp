@@ -8,8 +8,13 @@
 //
 /// \file ./bundle.cpp
 
-#include "mcrl2/utilities/exception.h"
 #include "bundle.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 // -- constructors and destructors ----------------------------------
 

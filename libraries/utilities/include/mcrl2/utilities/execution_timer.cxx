@@ -11,19 +11,23 @@
 
 #ifndef MCRL2_UTILITIES_EXECUTION_TIMER_H
 #define MCRL2_UTILITIES_EXECUTION_TIMER_H
+module;
 
 #include <chrono>
 #include <fstream>
 #include <map>
 #include <string>
+#include <iostream>
 
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/utilities/exception.cxx"
 #else  
-  import utilities;
+  export module utilities:execution_timer;
+
+  import :exception;
 #endif
 
-namespace mcrl2::utilities
+MCRL2_EXPORT namespace mcrl2::utilities
 {
 
 /// \brief Simple timer to time the CPU time used by a piece of code.

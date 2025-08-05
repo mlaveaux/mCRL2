@@ -12,7 +12,6 @@ mcrl2_add_library(mcrl2_utilities
     source/logger.cpp
     source/text_utility.cpp
     source/toolset_version.cpp
-    include/mcrl2/utilities/exception.cxx
   INCLUDE_DIRS
     ${CMAKE_CURRENT_BINARY_DIR}
   DEPENDS
@@ -24,7 +23,9 @@ if (MCRL2_ENABLE_MODULES)
   target_sources(mcrl2_utilities
     PUBLIC
       FILE_SET CXX_MODULES FILES
+        include/mcrl2/utilities/utilities.cxx
         include/mcrl2/utilities/exception.cxx
+        include/mcrl2/utilities/execution_timer.cxx
   )
 endif()
 

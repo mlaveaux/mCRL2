@@ -14,9 +14,14 @@
 #include <QMessageBox>
 
 #include "mcrl2/utilities/logger.h"
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/gui/arcball.h"
 #include "settingsmanager.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 /// \brief Minimum distance for a drag to be registered (pixels)
 constexpr float DRAG_MIN_DIST = 20.0f;

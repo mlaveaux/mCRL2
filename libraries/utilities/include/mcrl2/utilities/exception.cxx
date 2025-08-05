@@ -11,7 +11,6 @@
 
 #ifndef MCRL2_UTILITIES_EXCEPTION_H
 #define MCRL2_UTILITIES_EXCEPTION_H
-
 module;
 
 #include <cassert>
@@ -19,16 +18,16 @@ module;
 #include <stdexcept>
 
 #ifdef MCRL2_ENABLE_MODULES
-  export module utilities;
+  export module utilities:exception;
 #endif
 
-namespace mcrl2
+MCRL2_EXPORT namespace mcrl2
 {
 
 /**
  * \brief Standard exception class for reporting runtime errors.
  **/
-MCRL2_EXPORT class runtime_error : public std::runtime_error
+class runtime_error : public std::runtime_error
 {
 public:
   /// \brief Constructor
@@ -40,7 +39,7 @@ public:
 /**
  * \brief Exception class for errors raised by the command-line parser.
  **/
-MCRL2_EXPORT class command_line_error : public runtime_error
+class command_line_error : public runtime_error
 {
 private:
   std::string m_msg;

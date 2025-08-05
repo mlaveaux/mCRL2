@@ -8,10 +8,16 @@
 //
 /// \file lts/detail/liblts_pbisim_bem.h
 
-#ifndef _LIBLTS_PBISIM_BEM_H
-#define _LIBLTS_PBISIM_BEM_H
-#include "mcrl2/utilities/execution_timer.h"
+#ifndef MCRL2_LTS_DETAIL_LIBLTS_PBISIM_BEM_H
+#define MCRL2_LTS_DETAIL_LIBLTS_PBISIM_BEM_H
+
 #include "mcrl2/lts/detail/liblts_plts_merge.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/execution_timer.cxx"
+#else  
+  import utilities;
+#endif
 
 namespace mcrl2::lts::detail
 {
@@ -852,4 +858,4 @@ bool destructive_probabilistic_bisimulation_compare_bem(
 
 } // namespace mcrl2::lts::detail
 
-#endif // _LIBLTS_PBISIM_BEM_H
+#endif // MCRL2_LTS_DETAIL_LIBLTS_PBISIM_BEM_H
