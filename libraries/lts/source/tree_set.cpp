@@ -11,7 +11,12 @@
 #include "mcrl2/utilities/detail/memory_utility.h"
 #include "mcrl2/utilities/logger.h"
 #include "mcrl2/lts/detail/tree_set.h"
-#include "mcrl2/utilities/exception.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 #define EMPTY_SET (-1)
 #define EMPTY_LIST (-1)

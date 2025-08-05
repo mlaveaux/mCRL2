@@ -13,7 +13,6 @@
 #define MCRL2_CORE_DETAIL_DPARSER_FUNCTIONS_H
 
 #include "mcrl2/core/dparser.h"
-#include "mcrl2/utilities/exception.h"
 
 // prototypes
 struct D_ParseNode;

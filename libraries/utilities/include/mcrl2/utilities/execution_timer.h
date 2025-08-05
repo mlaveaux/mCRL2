@@ -12,12 +12,16 @@
 #ifndef MCRL2_UTILITIES_EXECUTION_TIMER_H
 #define MCRL2_UTILITIES_EXECUTION_TIMER_H
 
-#include "mcrl2/utilities/exception.h"
-
 #include <chrono>
 #include <fstream>
 #include <map>
 #include <string>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else  
+  import utilities;
+#endif
 
 namespace mcrl2::utilities
 {

@@ -13,7 +13,12 @@
 #define MCRL2_PRES_PRES_REWRITER_TYPE_H
 
 #include <string>
-#include "mcrl2/utilities/exception.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::pres_system
 {

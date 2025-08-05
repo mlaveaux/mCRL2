@@ -12,9 +12,15 @@
 #ifndef MCRL2_UTILITIES_DETAIL_IO_H
 #define MCRL2_UTILITIES_DETAIL_IO_H
 
-#include <fstream>
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/utilities/text_utility.h"
+
+#include <fstream>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::utilities::detail
 {

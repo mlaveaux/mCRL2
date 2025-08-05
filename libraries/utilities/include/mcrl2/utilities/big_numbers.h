@@ -18,12 +18,18 @@
 #ifndef MCRL2_UTILITIES_BIG_NUMBERS_H
 #define MCRL2_UTILITIES_BIG_NUMBERS_H
 
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/utilities/hash_utility.h"
+
 #include <algorithm>
 #include <limits>
 #include <ranges>
 #include <string>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 // Prototype.
 

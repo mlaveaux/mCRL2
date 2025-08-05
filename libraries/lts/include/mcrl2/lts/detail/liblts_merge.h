@@ -28,9 +28,15 @@
 #ifndef MCRL2_LTS_LIBLTS_MERGE_H
 #define MCRL2_LTS_LIBLTS_MERGE_H
 
-#include <map>
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/lts/lts.h"
+
+#include <map>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::lts::detail
 {

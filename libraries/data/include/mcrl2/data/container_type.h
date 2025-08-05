@@ -68,6 +68,7 @@ inline void swap(container_type& t1, container_type& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief Container type for lists
 class list_container: public container_type
 {
@@ -119,6 +120,7 @@ inline void swap(list_container& t1, list_container& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief Container type for sets
 class set_container: public container_type
@@ -172,6 +174,7 @@ inline void swap(set_container& t1, set_container& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief Container type for bags
 class bag_container: public container_type
 {
@@ -224,6 +227,7 @@ inline void swap(bag_container& t1, bag_container& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief Container type for finite sets
 class fset_container: public container_type
 {
@@ -275,6 +279,7 @@ inline void swap(fset_container& t1, fset_container& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief Container type for finite bags
 class fbag_container: public container_type

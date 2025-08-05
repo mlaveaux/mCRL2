@@ -10,11 +10,19 @@
 /// \brief add your file description here.
 
 #include "mcrl2/core/dparser.h"
-#include <d.h>
 #include "mcrl2/core/detail/dparser_functions.h"
 #include "mcrl2/utilities/logger.h"
+
+#include <d.h>
+
 #include <iomanip>
 #include <locale>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else  
+  import utilities;
+#endif
 
 // This corresponds to the D_ParseNode_to_PNode macro in parse.c.
 PNode* D_ParseNode_to_PNode(D_ParseNode* _apn)

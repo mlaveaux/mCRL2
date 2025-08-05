@@ -14,7 +14,12 @@
 #define MCRL2_LTS_DETAIL_SWAP_TO_FROM_PROBABILISTIC_LTS_H
 
 #include "mcrl2/lts/probabilistic_lts.h"
-#include "mcrl2/utilities/exception.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::lts::detail
 {

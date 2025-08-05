@@ -132,6 +132,7 @@ inline void swap(process_expression& t1, process_expression& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief An action
 class action: public process_expression
 {
@@ -213,6 +214,7 @@ inline void swap(action& t1, action& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief A process
 class process_instance: public process_expression
 {
@@ -287,6 +289,7 @@ inline void swap(process_instance& t1, process_instance& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief A process assignment
 class process_instance_assignment: public process_expression
@@ -363,6 +366,7 @@ inline void swap(process_instance_assignment& t1, process_instance_assignment& t
   t1.swap(t2);
 }
 
+
 /// \\brief The value delta
 class delta: public process_expression
 {
@@ -415,6 +419,7 @@ inline void swap(delta& t1, delta& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The value tau
 class tau: public process_expression
 {
@@ -466,6 +471,7 @@ inline void swap(tau& t1, tau& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The sum operator
 class sum: public process_expression
@@ -542,6 +548,7 @@ inline void swap(sum& t1, sum& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The block operator
 class block: public process_expression
 {
@@ -616,6 +623,7 @@ inline void swap(block& t1, block& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The hide operator
 class hide: public process_expression
@@ -692,6 +700,7 @@ inline void swap(hide& t1, hide& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The rename operator
 class rename: public process_expression
 {
@@ -766,6 +775,7 @@ inline void swap(rename& t1, rename& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The communication operator
 class comm: public process_expression
@@ -842,6 +852,7 @@ inline void swap(comm& t1, comm& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The allow operator
 class allow: public process_expression
 {
@@ -916,6 +927,7 @@ inline void swap(allow& t1, allow& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The synchronization operator
 class sync: public process_expression
@@ -992,6 +1004,7 @@ inline void swap(sync& t1, sync& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The at operator
 class at: public process_expression
 {
@@ -1066,6 +1079,7 @@ inline void swap(at& t1, at& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The sequential composition
 class seq: public process_expression
@@ -1142,6 +1156,7 @@ inline void swap(seq& t1, seq& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The if-then operator
 class if_then: public process_expression
 {
@@ -1216,6 +1231,7 @@ inline void swap(if_then& t1, if_then& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The if-then-else operator
 class if_then_else: public process_expression
@@ -1297,6 +1313,7 @@ inline void swap(if_then_else& t1, if_then_else& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The bounded initialization
 class bounded_init: public process_expression
 {
@@ -1371,6 +1388,7 @@ inline void swap(bounded_init& t1, bounded_init& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The merge operator
 class merge: public process_expression
@@ -1447,6 +1465,7 @@ inline void swap(merge& t1, merge& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The left merge operator
 class left_merge: public process_expression
 {
@@ -1522,6 +1541,7 @@ inline void swap(left_merge& t1, left_merge& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The choice operator
 class choice: public process_expression
 {
@@ -1596,6 +1616,7 @@ inline void swap(choice& t1, choice& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The distribution operator
 class stochastic_operator: public process_expression
@@ -1676,6 +1697,7 @@ inline void swap(stochastic_operator& t1, stochastic_operator& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief An untyped process assginment
 class untyped_process_assignment: public process_expression

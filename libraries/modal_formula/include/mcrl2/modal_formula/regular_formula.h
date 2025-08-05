@@ -99,6 +99,7 @@ inline void swap(regular_formula& t1, regular_formula& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The seq operator for regular formulas
 class seq: public regular_formula
 {
@@ -173,6 +174,7 @@ inline void swap(seq& t1, seq& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The alt operator for regular formulas
 class alt: public regular_formula
@@ -249,6 +251,7 @@ inline void swap(alt& t1, alt& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The trans operator for regular formulas
 class trans: public regular_formula
 {
@@ -319,6 +322,7 @@ inline void swap(trans& t1, trans& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The 'trans or nil' operator for regular formulas
 class trans_or_nil: public regular_formula
 {
@@ -388,6 +392,7 @@ inline void swap(trans_or_nil& t1, trans_or_nil& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief An untyped regular formula or action formula
 class untyped_regular_formula: public regular_formula

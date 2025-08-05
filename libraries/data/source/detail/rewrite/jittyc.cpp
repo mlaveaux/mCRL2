@@ -16,8 +16,6 @@
 
 #define NAME "rewr_jittyc"
 
-#include <unistd.h>
-#include <sys/stat.h>
 
 #include "mcrl2/atermpp/algorithm.h"
 #include "mcrl2/atermpp/detail/aterm_list_implementation.h"
@@ -26,7 +24,11 @@
 #include "mcrl2/data/replace.h"
 #include "mcrl2/utilities/basename.h"
 #include "mcrl2/utilities/stopwatch.h"
+
+#include <unistd.h>
+#include <sys/stat.h>
 #include <memory>
+#include <fstream>
 
 #ifdef MCRL2_DISPLAY_REWRITE_STATISTICS
 #include "mcrl2/data/detail/rewrite_statistics.h"

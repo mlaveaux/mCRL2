@@ -10,8 +10,13 @@
 #ifndef MCRL2_PG_PARITY_GAME_H
 #define MCRL2_PG_PARITY_GAME_H
 
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/pg/Graph.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 // Forward declaration of mcrl2::pbes_system::pbes, which may or may not be
 // defined later depending on whether mCRL2 support is compiled in.

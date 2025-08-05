@@ -14,10 +14,13 @@
 #ifdef MCRL2_ENABLE_SYLVAN
 
 #include "symbolic_parity_game.h"
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/utilities/logger.h"
 
-
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::pbes_system {
 

@@ -82,6 +82,7 @@ inline void swap(assignment_expression& t1, assignment_expression& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief Assignment of a data expression to a variable
 class assignment: public assignment_expression
 {
@@ -171,6 +172,7 @@ inline void swap(assignment& t1, assignment& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief Assignment of a data expression to a string
 class untyped_identifier_assignment: public assignment_expression

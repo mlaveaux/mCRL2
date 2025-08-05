@@ -9,7 +9,6 @@
 /// \file child_process.cpp
 
 #include "mcrl2/smt/child_process.h"
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/utilities/platform.h"
 
 #ifdef MCRL2_PLATFORM_WINDOWS
@@ -27,7 +26,11 @@
 #include <csignal>
 #include <cerrno>
 
-
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::smt
 {

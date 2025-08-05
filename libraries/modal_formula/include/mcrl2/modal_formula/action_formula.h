@@ -116,6 +116,7 @@ inline void swap(action_formula& t1, action_formula& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The value true for action formulas
 class true_: public action_formula
 {
@@ -168,6 +169,7 @@ inline void swap(true_& t1, true_& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The value false for action formulas
 class false_: public action_formula
 {
@@ -219,6 +221,7 @@ inline void swap(false_& t1, false_& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The not operator for action formulas
 class not_: public action_formula
@@ -289,6 +292,7 @@ inline void swap(not_& t1, not_& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The and operator for action formulas
 class and_: public action_formula
@@ -365,6 +369,7 @@ inline void swap(and_& t1, and_& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The or operator for action formulas
 class or_: public action_formula
 {
@@ -439,6 +444,7 @@ inline void swap(or_& t1, or_& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The implication operator for action formulas
 class imp: public action_formula
@@ -515,6 +521,7 @@ inline void swap(imp& t1, imp& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The universal quantification operator for action formulas
 class forall: public action_formula
 {
@@ -589,6 +596,7 @@ inline void swap(forall& t1, forall& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The existential quantification operator for action formulas
 class exists: public action_formula
@@ -665,6 +673,7 @@ inline void swap(exists& t1, exists& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief The at operator for action formulas
 class at: public action_formula
 {
@@ -739,6 +748,7 @@ inline void swap(at& t1, at& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief The multi action for action formulas
 class multi_action: public action_formula

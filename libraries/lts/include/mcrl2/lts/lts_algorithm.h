@@ -36,7 +36,12 @@
 #include "mcrl2/lts/lts_equivalence.h"
 #include "mcrl2/lts/lts_preorder.h"
 #include "mcrl2/lts/sigref.h"
-#include "mcrl2/utilities/exception.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else  
+  import utilities;
+#endif
 
 namespace mcrl2::lts
 {

@@ -1,8 +1,13 @@
 #ifndef MCRL2_DATA_REWRITE_STRATEGY_H
 #define MCRL2_DATA_REWRITE_STRATEGY_H
 
-#include "mcrl2/utilities/exception.h"
 #include <string>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::data
 {

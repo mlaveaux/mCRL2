@@ -19,9 +19,15 @@
 #ifndef MCRL2_LTS_ACTION_LABEL_STRING_H
 #define MCRL2_LTS_ACTION_LABEL_STRING_H
 
-#include <set>
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/utilities/text_utility.h"
+
+#include <set>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::lts
 {

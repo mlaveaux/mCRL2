@@ -16,7 +16,12 @@
 #include <map>
 #include <set>
 #include <unordered_set>
-#include "mcrl2/utilities/exception.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::utilities::detail {
 

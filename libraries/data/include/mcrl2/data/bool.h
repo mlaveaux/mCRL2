@@ -15,7 +15,6 @@
 #ifndef MCRL2_DATA_BOOL_H
 #define MCRL2_DATA_BOOL_H
 
-#include "functional"    // std::function
 #include "mcrl2/utilities/exception.h"
 #include "mcrl2/data/basic_sort.h"
 #include "mcrl2/data/function_sort.h"
@@ -23,6 +22,14 @@
 #include "mcrl2/data/application.h"
 #include "mcrl2/data/data_equation.h"
 #include "mcrl2/data/standard.h"
+
+#include <functional>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+ import utilities;
+#endif
 
 namespace mcrl2 {
 

@@ -18,10 +18,15 @@
 #ifndef MCRL2_LTS_PROBABILISTIC_STATE_H
 #define MCRL2_LTS_PROBABILISTIC_STATE_H
 
-#include <sstream>
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/lps/state_probability_pair.h"
 
+#include <sstream>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::lts
 {

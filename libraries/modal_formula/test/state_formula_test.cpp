@@ -9,7 +9,6 @@
 /// \file rename_test.cpp
 /// \brief Add your file description here.
 
-#include "mcrl2/utilities/exception.h"
 #include <boost/core/no_exceptions_support.hpp>
 #define MCRL2_STATE_FORMULA_BUILDER_DEBUG
 
@@ -21,6 +20,12 @@
 #include "mcrl2/modal_formula/maximal_closed_subformula.h"
 #include "mcrl2/modal_formula/parse.h"
 #include "mcrl2/modal_formula/preprocess_state_formula.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 using namespace mcrl2;
 using namespace mcrl2::core;

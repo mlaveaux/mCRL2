@@ -16,7 +16,6 @@
 
 #include <cstdio>
 #include <string>
-#include "mcrl2/utilities/exception.h"
 
 #ifdef MCRL2_PLATFORM_LINUX
 #include <unistd.h>
@@ -28,6 +27,12 @@
 
 #ifdef MCRL2_PLATFORM_MAC
 #include <mach-o/dyld.h>
+#endif
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
 #endif
 
 namespace mcrl2::utilities

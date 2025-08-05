@@ -13,9 +13,12 @@
 #define MCRL2_PBES_REMOVE_LEVEL_H
 
 #include <string>
-#include "mcrl2/utilities/exception.h"
 
-
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::pbes_system
 {

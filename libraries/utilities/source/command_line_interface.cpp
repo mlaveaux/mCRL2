@@ -6,12 +6,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-#include <locale>
-#include <regex>
 
 #include "mcrl2/utilities/platform.h"
 #include "mcrl2/utilities/command_line_interface.h"
 
+#include <locale>
+#include <regex>
 
 namespace mcrl2::utilities
 {

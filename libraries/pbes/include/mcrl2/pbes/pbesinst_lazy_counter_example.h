@@ -17,9 +17,14 @@
 #include "mcrl2/pbes/replace.h"
 #include "mcrl2/pbes/rewriters/simplify_quantifiers_rewriter.h"
 #include "mcrl2/pbes/structure_graph.h"
-#include "mcrl2/utilities/exception.h"
 
 #include <regex>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::pbes_system
 {

@@ -15,7 +15,6 @@
 #ifndef MCRL2_DATA_LIST64_H
 #define MCRL2_DATA_LIST64_H
 
-#include "functional"    // std::function
 #include "mcrl2/utilities/exception.h"
 #include "mcrl2/data/basic_sort.h"
 #include "mcrl2/data/function_sort.h"
@@ -27,6 +26,14 @@
 #include "mcrl2/data/bool.h"
 #include "mcrl2/data/pos64.h"
 #include "mcrl2/data/nat64.h"
+
+#include <functional>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+ import utilities;
+#endif
 
 namespace mcrl2 {
 

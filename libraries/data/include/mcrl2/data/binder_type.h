@@ -68,6 +68,7 @@ inline void swap(binder_type& t1, binder_type& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief Binder for untyped set or bag comprehension
 class untyped_set_or_bag_comprehension_binder: public binder_type
 {
@@ -119,6 +120,7 @@ inline void swap(untyped_set_or_bag_comprehension_binder& t1, untyped_set_or_bag
 {
   t1.swap(t2);
 }
+
 
 /// \\brief Binder for set comprehension
 class set_comprehension_binder: public binder_type
@@ -172,6 +174,7 @@ inline void swap(set_comprehension_binder& t1, set_comprehension_binder& t2) noe
   t1.swap(t2);
 }
 
+
 /// \\brief Binder for bag comprehension
 class bag_comprehension_binder: public binder_type
 {
@@ -223,6 +226,7 @@ inline void swap(bag_comprehension_binder& t1, bag_comprehension_binder& t2) noe
 {
   t1.swap(t2);
 }
+
 
 /// \\brief Binder for universal quantification
 class forall_binder: public binder_type
@@ -276,6 +280,7 @@ inline void swap(forall_binder& t1, forall_binder& t2) noexcept
   t1.swap(t2);
 }
 
+
 /// \\brief Binder for existential quantification
 class exists_binder: public binder_type
 {
@@ -327,6 +332,7 @@ inline void swap(exists_binder& t1, exists_binder& t2) noexcept
 {
   t1.swap(t2);
 }
+
 
 /// \\brief Binder for lambda abstraction
 class lambda_binder: public binder_type

@@ -13,9 +13,12 @@
 #define MCRL2_PBES_SOLUTION_STRATEGY_H
 
 #include <fstream>
-#include "mcrl2/utilities/exception.h"
 
-
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::pbes_system
 {

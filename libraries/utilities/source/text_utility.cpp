@@ -12,10 +12,14 @@
 #include <fstream>
 #include <regex>
 #include <boost/algorithm/string.hpp>  // for the functions trim, split, trim_copy, is_any_of, trim_right, trim_right_copy. 
-#include "mcrl2/utilities/exception.h"
+
 #include "mcrl2/utilities/logger.h"
 
-
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::utilities
 {

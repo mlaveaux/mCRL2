@@ -11,7 +11,6 @@
 #define MCRL2_PBES_DETAIL_PBESSOLVE_ALGORITHM_H
 
 #include "mcrl2/pbes/pbessolve_options.h"
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/utilities/input_output_tool.h"
 #include "mcrl2/utilities/logger.h"
 #include "mcrl2/utilities/parallel_tool.h"
@@ -24,6 +23,12 @@
 #include "mcrl2/pbes/detail/pbes_remove_counterexample_info.h"
 #include "mcrl2/pbes/pbesinst_lazy_counter_example.h"
 #include "mcrl2/pbes/pbesinst_structure_graph2.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::pbes_system::detail {
 

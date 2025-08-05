@@ -15,7 +15,11 @@
 #include "mcrl2/atermpp/aterm.h"
 #include "mcrl2/atermpp/aterm_list.h"
 
-#include "mcrl2/utilities/exception.h"
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace atermpp
 {

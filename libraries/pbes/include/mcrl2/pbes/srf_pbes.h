@@ -23,8 +23,13 @@
 #include "mcrl2/pbes/pbes_functions.h"
 #include "mcrl2/pbes/pbes.h"
 #include "mcrl2/pbes/rewriters/pbes2data_rewriter.h"
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/utilities/logger.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2
 {
