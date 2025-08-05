@@ -1,4 +1,4 @@
-// Author(s): Jeroen van der Wulp
+// Author(s): Wieger Wesselink
 // Copyright: see the accompanying file COPYING or copy at
 // https://github.com/mCRL2org/mCRL2/blob/master/COPYING
 //
@@ -6,16 +6,21 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/utilities/exception.h
-/// \brief Exception classes for use in libraries and tools
+/// \file mcrl2/utilities/execution_timer.h
+/// \brief Class to obtain running times of code.
 
 #ifndef MCRL2_UTILITIES_EXCEPTION_H
 #define MCRL2_UTILITIES_EXCEPTION_H
 
+module;
+
 #include <cassert>
-#include <iostream>
 #include <sstream>
 #include <stdexcept>
+
+#ifdef MCRL2_ENABLE_MODULES
+  export module utilities;
+#endif
 
 namespace mcrl2
 {
@@ -23,7 +28,7 @@ namespace mcrl2
 /**
  * \brief Standard exception class for reporting runtime errors.
  **/
-class runtime_error : public std::runtime_error
+export class runtime_error : public std::runtime_error
 {
 public:
   /// \brief Constructor
@@ -35,7 +40,7 @@ public:
 /**
  * \brief Exception class for errors raised by the command-line parser.
  **/
-class command_line_error : public runtime_error
+export class command_line_error : public runtime_error
 {
 private:
   std::string m_msg;
