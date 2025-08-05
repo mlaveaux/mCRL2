@@ -99,6 +99,10 @@ if(MCRL2_ENABLE_MODULES)
   # Enable module scanning by default.
   cmake_policy(SET CMP0155 NEW)
 
+  if(MCRL2_ENABLE_GUI_TOOLS AND CMAKE_VERSION VERSION_LESS "4.0")
+    message(FATAL_ERROR "CMake version 4.0 or higher is required for modules support in the GUI tools")
+  endif()
+
   if(CMAKE_VERSION VERSION_LESS "3.28")
     message(FATAL_ERROR "CMake version 3.28 or higher is required for modules support")
   endif()
