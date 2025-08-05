@@ -11,10 +11,14 @@
 
 #include "mcrl2/symbolic/ldd_stream.h"
 
-#include "mcrl2/utilities/exception.h"
-
 #include <stack>
 #include <optional>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 using namespace sylvan::ldds;
 using namespace mcrl2::symbolic;

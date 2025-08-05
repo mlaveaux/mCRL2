@@ -12,9 +12,9 @@
 #ifndef MCRL2_UTILITIES_FILE_UTILITY_H
 #define MCRL2_UTILITIES_FILE_UTILITY_H
 
-#include "mcrl2/utilities/exception.h"
-#include "mcrl2/utilities/logger.h"
-#include <fstream>
+#include <cassert>
+#include <string>
+#include <vector>
 
 namespace mcrl2::utilities
 {
