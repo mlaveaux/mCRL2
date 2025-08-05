@@ -12,6 +12,7 @@
 
 #include <locale>
 #include <regex>
+#include <iostream>
 
 namespace mcrl2::utilities
 {

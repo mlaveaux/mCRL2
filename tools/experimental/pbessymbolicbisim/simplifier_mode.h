@@ -11,7 +11,12 @@
 #define MCRL2_PBESSYMBOLICBISIM_SIMPLIFIER_MODE_H
 
 #include <string>
-#include "mcrl2/utilities/exception.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 enum simplifier_mode
 {

@@ -25,12 +25,17 @@
 #include "mcrl2/pbes/srf_pbes.h"
 #include "mcrl2/pbes/symbolic_pbessolve.h"
 #include "mcrl2/pbes/unify_parameters.h"
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/utilities/file_utility.h"
 #include "mcrl2/utilities/input_output_tool.h"
 #include "mcrl2/utilities/logger.h"
 #include "mcrl2/utilities/parallel_tool.h"
 #include "mcrl2/utilities/power_of_two.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/exception.cxx"
+#else
+  import utilities;
+#endif
 
 using namespace mcrl2;
 using namespace mcrl2::pbes_system;

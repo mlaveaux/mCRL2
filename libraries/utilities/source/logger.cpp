@@ -9,8 +9,9 @@
 /// \file logger.cpp
 
 #include "mcrl2/utilities/logger.h"
-#include <cassert>
 
+#include <cassert>
+#include <string>
 
 namespace mcrl2::log {
 
