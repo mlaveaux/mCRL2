@@ -69,12 +69,19 @@ endif()
 
 if(MCRL2_SKIP_LONG_TESTS)
   add_compile_definitions(MCRL2_SKIP_LONG_TESTS)
-endif(MCRL2_SKIP_LONG_TESTS)
+endif()
 
 if(APPLE)
   # Silence useless OpenGL deprecration warnings on macOS. Some GUI tools use outdated OpenGL and this will 
   # only be replaced when it is removed.
   add_compile_definitions(GL_SILENCE_DEPRECATION)
+endif()
+
+if(MCRL2_ENABLE_MODULES)
+  add_compile_definitions(MCRL2_ENABLE_MODULES)
+  
+  # Only add the export keyword when modules are enabled, otherwise leave blank.
+  add_compile_definitions(MCRL2_EXPORT export)
 endif()
 
 # Enable the new JFG branching bisimulation algorithm.

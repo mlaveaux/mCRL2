@@ -77,14 +77,16 @@ option(MCRL2_ENABLE_JITTYC           "Enable the compiling rewriter (jittyc) fun
 option(MCRL2_ENABLE_MACHINENUMBERS   "Enable the usage of 64bit machine number digits to represent numeric sorts" ON)
 option(MCRL2_ENABLE_MULTITHREADING   "Enable the usage of multiple threads. Disabling removes usage of synchronisation primitives" ON)
 option(MCRL2_ENABLE_LINKER_LLD       "Enable LLVM lld as linker, which offers significantly linking speedup" OFF)
+option(MCRL2_ENABLE_MODULES          "Enables experimental modules support" OFF)
 
 mark_as_advanced(
   MCRL2_ENABLE_ADDRESSSANITIZER
-  MCRL2_ENABLE_MEMORYSANITIZER
   MCRL2_ENABLE_CODE_COVERAGE
   MCRL2_ENABLE_JITTYC
   MCRL2_ENABLE_LINKER_LLD
   MCRL2_ENABLE_MACHINENUMBERS
+  MCRL2_ENABLE_MEMORYSANITIZER
+  MCRL2_ENABLE_MODULES
   MCRL2_ENABLE_MSVC_CCACHE
   MCRL2_ENABLE_MULTITHREADING
   MCRL2_ENABLE_SOUNDNESS_CHECKS 
@@ -92,6 +94,15 @@ mark_as_advanced(
   MCRL2_ENABLE_STD_CHECKS_BACKTRACE
   MCRL2_ENABLE_THREADSANITIZER
 )
+
+if(MCRL2_ENABLE_MODULES)
+  # Enable module scanning by default.
+  cmake_policy(SET CMP0155 NEW)
+
+  if(CMAKE_VERSION VERSION_LESS "3.28")
+    message(FATAL_ERROR "CMake version 3.28 or higher is required for modules support")
+  endif()
+endif()
 
 # A list of tools that is being built by the current configuration (populated by build/cmake/MCRL2AddTarget.cmake)
 set_property(GLOBAL PROPERTY MCRL2_TOOLS)
