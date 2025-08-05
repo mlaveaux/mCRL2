@@ -15,7 +15,6 @@
 #ifndef MCRL2_DATA_SET64_H
 #define MCRL2_DATA_SET64_H
 
-#include "mcrl2/utilities/exception.h"
 #include "mcrl2/data/basic_sort.h"
 #include "mcrl2/data/function_sort.h"
 #include "mcrl2/data/function_symbol.h"
