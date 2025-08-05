@@ -10,19 +10,12 @@
 #define MCRL2_UTILITIES_UNORDERED_MAP_H
 MCRL2_MODULE;
 
+#include <algorithm>
 #include <utility>
 #include <functional>
 #include <cmath>
 
-#ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/unordered_set.cxx"
-#else
-  export module utilities:unordered_map;
-
-  import :unordered_set;
-  import :block_allocator;
-  import utilities_detail;
-#endif
+export module utilities:unordered_map;
 
 MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
@@ -168,7 +161,23 @@ public:
   iterator emplace_hint(const_iterator /*hint*/, Args&&... args) { return emplace(std::forward<Args>(args)...); }
 
   template<typename ...Args>
-  std::pair<iterator, bool> try_emplace(const key_type& key, Args&&... args);
+  std::pair<iterator, bool> try_emplace(const key_type& key, Args&&... args)
+  {
+    m_set.rehash_if_needed();
+
+    std::size_t bucket = m_set.find_bucket_index(key);
+    // If the key can be found, then return it and otherwise add it in the same bucket.
+    iterator it = m_set.find_impl(bucket, key);
+    if (it != end())
+    {
+      return std::make_pair(it, false);
+    }
+    else
+    {
+      auto [x, y] = m_set.emplace_impl(bucket, key, std::forward<Args>(args)...);
+      return std::make_pair(iterator(x), y);
+    }
+  }
 
   template< class... Args >
   iterator try_emplace(const_iterator /*hint*/, const Key& k, Args&&... args) { return try_emplace(k, std::forward<Args>(args)...); }
@@ -209,7 +218,15 @@ public:
 
   /// \brief Provides access to the value associated with the given key, constructs a default
   ///        value whenever the key was undefined.
-  mapped_type& operator[](const key_type& key);
+  mapped_type& operator[](const key_type& key)
+  {
+    // Insert a new object and return a reference to it;
+    // auto pair = m_set.emplace(std::make_pair<const Key, T>(key, mapped_type()));
+    auto pair = m_set.emplace(std::make_pair(key, mapped_type()));
+
+    // The second element of the pair is mutable.
+    return const_cast<mapped_type&>((*pair.first).second);
+  }
 
   /// \returns The number of elements matching the specified key.
   size_type count(const key_type& key) const { return m_set.count(key); }
@@ -270,9 +287,5 @@ template<typename Key,
 using unordered_map_large = unordered_map<Key, T, Hash, Equals, Allocator, ThreadSafe, Resize>;
 
 } // namespace mcrl2::utilities
-
-#ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/detail/unordered_map_implementation.cxx"
-#endif
 
 #endif // MCRL2_UTILITIES_UNORDERED_MAP_H

@@ -11,7 +11,11 @@
 
 #include <vector>
 
-#include "mcrl2/utilities/unordered_map.h"
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/unordered_map.h"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::utilities
 {

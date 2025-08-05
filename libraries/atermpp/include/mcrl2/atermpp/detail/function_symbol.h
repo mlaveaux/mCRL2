@@ -15,11 +15,14 @@
 #include <string>
 #include <cstddef>
 
-#include "mcrl2/utilities/noncopyable.h"
 #include "mcrl2/utilities/shared_reference.h"
 #include "mcrl2/atermpp/detail/aterm_configuration.h"
 
-
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/noncopyable.h"
+#else
+  import utilities;
+#endif
 
 namespace atermpp::detail
 {

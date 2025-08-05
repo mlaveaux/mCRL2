@@ -10,7 +10,6 @@
 #ifndef MCRL2_UTILITIES_SHARED_REFERENCE_H_
 #define MCRL2_UTILITIES_SHARED_REFERENCE_H_
 
-#include "tagged_pointer.h"
 
 #include <cassert>
 #include <atomic>
@@ -18,7 +17,6 @@
 #include <type_traits>
 
 #include "mcrl2/utilities/tagged_pointer.h"
-
 
 namespace mcrl2::utilities
 {

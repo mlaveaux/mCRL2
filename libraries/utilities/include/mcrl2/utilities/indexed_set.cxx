@@ -10,23 +10,14 @@
 #define MCRL2_UTILITIES_INDEXED_SET_H
 MCRL2_MODULE;
 
+#include <cassert>
 #include <deque>
 #include <mutex>
 #include <vector>
 #include <utility>
 #include <memory>
 
-#ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/unordered_map.h"
-  #include "mcrl2/utilities/detail/atomic_wrapper.h"
-  #include "mcrl2/utilities/shared_mutex.h"  
-#else
-  export module utilities:indexed_set;
-
-  import :unordered_map;
-  import :shared_mutex;
-  import utilities_detail;
-#endif
+export module utilities:indexed_set;
 
 MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
@@ -247,9 +238,5 @@ public:
 
 } // end namespace utilities
 // end namespace mcrl2
-
-#ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/detail/indexed_set_implementation.cxx"
-#endif
 
 #endif // MCRL2_UTILITIES_INDEXED_SET_H

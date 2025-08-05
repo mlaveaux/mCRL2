@@ -10,6 +10,7 @@
 #define MCRL2_UTILITIES_UNORDERED_SET_H
 MCRL2_MODULE;
 
+#include <algorithm>
 #include <atomic>
 #include <cmath>
 #include <mutex>
@@ -23,6 +24,8 @@ MCRL2_MODULE;
 #else
   export module utilities:unordered_set;
 
+  import :power_of_two;
+  import :logger;
   import :block_allocator;
   import utilities_detail;
 #endif
@@ -404,8 +407,6 @@ using unordered_set_large = unordered_set<Key, Hash, Equals, Allocator, ThreadSa
 
 } // namespace mcrl2::utilities
 
-#ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/detail/unordered_set_implementation.cxx"
-#endif
+#include "mcrl2/utilities/detail/unordered_set_implementation.cxx"
 
 #endif // MCRL2_UTILITIES_UNORDERED_SET_H

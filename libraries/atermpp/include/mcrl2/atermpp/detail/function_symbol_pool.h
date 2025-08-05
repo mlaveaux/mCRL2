@@ -12,10 +12,16 @@
 
 #include "mcrl2/atermpp/detail/function_symbol_hash.h"
 #include "mcrl2/utilities/cache_metric.h"
-#include "mcrl2/utilities/unordered_set.h"
-#include "mcrl2/utilities/mutex.h"
 
+#include <memory>
 #include <map>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/unordered_set.h"
+  #include "mcrl2/utilities/mutex.h"
+#else
+  import utilities;
+#endif
 
 namespace atermpp::detail
 {

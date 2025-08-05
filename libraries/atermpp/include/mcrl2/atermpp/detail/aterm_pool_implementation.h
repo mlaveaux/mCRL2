@@ -12,8 +12,11 @@
 #pragma once
 
 #include <chrono>
+
 #include "aterm_pool.h"
 #include "aterm_pool_storage_implementation.h"   // For store_in_argument_array. 
+
+#include "mcrl2/utilities/logger.h"
 
 namespace atermpp::detail
 {

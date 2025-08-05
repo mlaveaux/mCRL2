@@ -10,8 +10,6 @@
 #ifndef MCRL2_ATERMPP_ATERM_CONFIGURATION_H
 #define MCRL2_ATERMPP_ATERM_CONFIGURATION_H
 
-#include "mcrl2/utilities/configuration.h"
-
 namespace atermpp::detail
 {
 

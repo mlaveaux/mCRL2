@@ -12,10 +12,15 @@
 
 #include "mcrl2/atermpp/detail/aterm_hash.h"
 #include "mcrl2/utilities/cache_metric.h"
-#include "mcrl2/utilities/unordered_set.h"
 
 #include <stack>
 #include <utility>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/unordered_set.h"
+#else
+  import utilities;
+#endif
 
 namespace atermpp
 {

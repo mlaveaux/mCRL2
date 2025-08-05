@@ -12,8 +12,13 @@
 #include "mcrl2/atermpp/detail/thread_aterm_pool.h"
 #include "mcrl2/atermpp/standard_containers/deque.h"
 #include "mcrl2/utilities/detail/container_utility.h"
-#include "mcrl2/utilities/indexed_set.h"
-#include "mcrl2/utilities/shared_mutex.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/indexed_set.h"
+  #include "mcrl2/utilities/shared_mutex.h"
+#else
+  import utilities;
+#endif
 
 
 namespace atermpp

@@ -16,7 +16,12 @@
 
 #include "mcrl2/atermpp/standard_containers/unordered_map.h"
 #include "mcrl2/atermpp/detail/thread_aterm_pool.h"
-#include "mcrl2/utilities/shared_mutex.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/shared_mutex.h"
+#else
+  import utilities;
+#endif
 
 namespace atermpp
 {

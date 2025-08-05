@@ -12,9 +12,7 @@
 #define MCRL2_UTILITIES_LOGGER_H
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/logger.cxx"  
-#else
-  import utilities;
+  #include "mcrl2/utilities/logger.cxx"
 #endif
 
 /// \brief mCRL2log(LEVEL) provides the stream used to log.

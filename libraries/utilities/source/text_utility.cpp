@@ -21,11 +21,10 @@ MCRL2_MODULE;
   #include "mcrl2/utilities/logger.cxx"
   #include "mcrl2/utilities/exception.cxx"
 #else
-  module utilities:text_utility_impl;
+  module utilities;
 
   import :exception;
   import :logger;
-  import :text_utility;
 #endif
 
 namespace mcrl2::utilities

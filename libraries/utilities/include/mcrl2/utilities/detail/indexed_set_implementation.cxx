@@ -12,13 +12,9 @@
 
 #ifndef MCRL2_UTILITIES_DETAIL_INDEXED_SET_H
 #define MCRL2_UTILITIES_DETAIL_INDEXED_SET_H
-#pragma once
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/indexed_set.cxx"    // necessary for header test. 
-#else
-  // Implementation unit
-  module utilities:indexed_set;
+  #include "mcrl2/utilities/indexed_set.cxx"    // necessary for header test.
 #endif
 
 namespace mcrl2::utilities

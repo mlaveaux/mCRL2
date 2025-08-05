@@ -13,10 +13,14 @@
 #include "mcrl2/atermpp/detail/aterm_pool.h"
 #include "mcrl2/atermpp/detail/aterm_container.h"
 #include "mcrl2/utilities/hashtable.h"
-#include "mcrl2/utilities/shared_mutex.h"
 
 #include <atomic>
 
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/shared_mutex.h"
+#else
+  import utilities;
+#endif
 
 namespace atermpp::detail
 {

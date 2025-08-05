@@ -10,12 +10,16 @@
 #ifndef MCRL2_UTILITIES_TAGGED_POINTER_H_
 #define MCRL2_UTILITIES_TAGGED_POINTER_H_
 
-#include "mcrl2/utilities/configuration.h"
-#include "mcrl2/utilities/detail/atomic_wrapper.h"
-
 #include <compare>
 #include <functional>
 #include <type_traits>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/configuration.h"
+  #include "mcrl2/utilities/detail/atomic_wrapper.h"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::utilities
 {

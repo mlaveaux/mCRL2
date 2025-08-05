@@ -9,7 +9,12 @@
 
 #include "mcrl2/atermpp/aterm_io.h"
 #include "mcrl2/atermpp/detail/global_aterm_pool.h"
-#include "mcrl2/utilities/shared_mutex.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/shared_mutex.h"
+#else
+  import utilities;
+#endif
 
 using namespace atermpp;
 using namespace atermpp::detail;

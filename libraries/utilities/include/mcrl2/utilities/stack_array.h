@@ -11,10 +11,15 @@
 #define MCRL2_UTILITIES_STACK_VECTOR_H
 
 #include "mcrl2/utilities/detail/memory_utility.h"
-#include "mcrl2/utilities/noncopyable.h"
 
 #include <cstddef>
 #include <iterator>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/noncopyable.h"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::utilities
 {

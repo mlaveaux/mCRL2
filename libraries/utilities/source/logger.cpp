@@ -16,9 +16,7 @@ MCRL2_MODULE;
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/utilities/logger.cxx"
 #else
-  module utilities:logger_impl;
-
-  import :logger;
+  module utilities;
 #endif
 
 

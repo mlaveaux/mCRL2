@@ -9,11 +9,15 @@
 
 #ifndef MCRL2_UTILITIES_DETAIL_HASHTABLE_H
 #define MCRL2_UTILITIES_DETAIL_HASHTABLE_H
-#pragma once
 
-#include "mcrl2/utilities/power_of_two.h" 
 #include "mcrl2/utilities/hashtable.h"    // necessary for header test.
-#include "mcrl2/utilities/indexed_set.h"    // necessary for header test.
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/power_of_two.h" 
+  #include "mcrl2/utilities/indexed_set.h"    // necessary for header test.
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::utilities
 {

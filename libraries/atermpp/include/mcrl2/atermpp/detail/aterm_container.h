@@ -12,10 +12,16 @@
 
 #include <stack>
 #include <type_traits>
+
 #include "mcrl2/atermpp/aterm_core.h"
 #include "mcrl2/atermpp/detail/aterm_core.h"
 #include "mcrl2/atermpp/detail/aterm_pool_storage_implementation.h"
-#include "mcrl2/utilities/noncopyable.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/noncopyable.h"
+#else
+  import utilities;
+#endif
 
 namespace atermpp
 {
