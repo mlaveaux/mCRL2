@@ -12,6 +12,8 @@
 #ifndef MCRL2_DATA_SORT_EXPRESSION_H
 #define MCRL2_DATA_SORT_EXPRESSION_H
 
+#include <set>
+
 #include "mcrl2/core/detail/default_values.h"
 #include "mcrl2/core/detail/soundness_checks.h"
 

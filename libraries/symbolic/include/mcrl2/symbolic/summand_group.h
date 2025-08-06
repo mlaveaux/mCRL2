@@ -12,7 +12,6 @@
 
 #ifdef MCRL2_ENABLE_SYLVAN
 
-#include "mcrl2/atermpp/aterm_list.h"
 #include "mcrl2/core/detail/print_utility.h"
 #include "mcrl2/data/data_expression.h"
 #include "mcrl2/symbolic/ordering.h"
@@ -23,6 +22,12 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm_list.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::symbolic
 {

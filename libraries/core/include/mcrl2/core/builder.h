@@ -12,10 +12,15 @@
 #ifndef MCRL2_CORE_BUILDER_H
 #define MCRL2_CORE_BUILDER_H
 
-#include "mcrl2/atermpp/aterm_list.h"
-#include "mcrl2/atermpp/concepts.h"
+#include <set>
+#include <string>
 
-
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm_list.cxx"
+  #include "mcrl2/atermpp/concepts.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::core
 {

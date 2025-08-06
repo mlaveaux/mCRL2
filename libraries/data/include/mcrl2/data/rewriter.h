@@ -12,9 +12,15 @@
 #ifndef MCRL2_DATA_REWRITER_H
 #define MCRL2_DATA_REWRITER_H
 
-#include "mcrl2/atermpp/detail/aterm_configuration.h"
 #include "mcrl2/data/detail/rewrite.h"
 #include "mcrl2/data/expression_traits.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/detail/aterm_configuration.cxx"
+#else
+  import atermpp;
+#endif
+
 
 namespace mcrl2::data
 {

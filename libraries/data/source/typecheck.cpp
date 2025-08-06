@@ -6,12 +6,17 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-#include "mcrl2/atermpp/aterm_list.h"
 #include "mcrl2/data/assignment.h"
 #include "mcrl2/data/data_expression.h"
 #include "mcrl2/data/print.h"
 #include "mcrl2/data/sort_expression.h"
 #include "mcrl2/data/typecheck.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/detail/aterm_list_implementation.cxx"
+#else
+  import atermpp;
+#endif
 
 using namespace mcrl2::log;
 using namespace mcrl2::core::detail;

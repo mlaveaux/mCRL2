@@ -18,8 +18,13 @@
 #ifndef MCRL2_DATA_DETAIL_ENUMERATOR_IDENTIFIER_GENERATOR_H
 #define MCRL2_DATA_DETAIL_ENUMERATOR_IDENTIFIER_GENERATOR_H
 
-#include "mcrl2/atermpp/function_symbol_generator.h"
 #include "mcrl2/core/identifier_string.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/function_symbol_generator.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::data
 {

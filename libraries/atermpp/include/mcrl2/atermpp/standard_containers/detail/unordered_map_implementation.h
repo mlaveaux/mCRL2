@@ -14,12 +14,12 @@
 #ifndef MCRL2_ATERMPP_STANDARD_CONTAINER_DETAIL_UNORDERED_MAP_IMPLEMENTATION_H
 #define MCRL2_ATERMPP_STANDARD_CONTAINER_DETAIL_UNORDERED_MAP_IMPLEMENTATION_H
 
-#include "mcrl2/atermpp/standard_containers/unordered_map.h"
-#include "mcrl2/atermpp/detail/thread_aterm_pool.h"
-
 #ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/detail/thread_aterm_pool.cxx"
+  #include "mcrl2/atermpp/standard_containers/unordered_map.cxx"
   #include "mcrl2/utilities/shared_mutex.cxx"
 #else
+  import atermpp;
   import utilities;
 #endif
 

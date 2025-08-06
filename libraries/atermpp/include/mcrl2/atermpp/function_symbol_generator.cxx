@@ -8,28 +8,40 @@
 //
 /// \file mcrl2/atermpp/function_symbol_generator.h
 /// \brief add your file description here.
+MCRL2_MODULE;
 
 #ifndef MCRL2_ATERMPP_FUNCTION_SYMBOL_GENERATOR_H
 #define MCRL2_ATERMPP_FUNCTION_SYMBOL_GENERATOR_H
 
-#include "mcrl2/atermpp/detail/global_aterm_pool.h"
-
+#include <cassert>
 #include <cctype>
+#include <memory>
+#include <string>
 
-namespace atermpp {
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/detail/global_aterm_pool.cxx"
+#else
+  export module atermpp:function_symbol_generator;
 
-static inline std::mutex& function_symbol_generator_mutex()
+  import :function_symbol;
+  import :detail.global_aterm_pool;
+
+  import utilities;
+#endif
+
+MCRL2_MODULE_EXPORT namespace atermpp {
+
+inline std::mutex& function_symbol_generator_mutex()
 {
   static std::mutex m_function_symbol_generator_mutex;
   return m_function_symbol_generator_mutex;
 }
 
-static inline std::size_t& generator_sequence_number()
+inline std::size_t& generator_sequence_number()
 {
   static size_t n=0;
   return n;
 }
-
 
 /// \brief Generates unique function symbols with a given prefix.
 class function_symbol_generator // : private mcrl2::utilities::noncopyable

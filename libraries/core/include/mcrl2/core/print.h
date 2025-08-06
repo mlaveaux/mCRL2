@@ -13,6 +13,9 @@
 #define MCRL2_CORE_PRINT_H
 
 #include <cctype>
+#include <list>
+#include <set>
+
 #include "mcrl2/core/print_format.h"
 #include "mcrl2/core/traverser.h"
 

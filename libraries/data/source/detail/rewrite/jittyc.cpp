@@ -18,7 +18,6 @@
 
 
 #include "mcrl2/atermpp/algorithm.h"
-#include "mcrl2/atermpp/detail/aterm_list_implementation.h"
 #include "mcrl2/data/detail/rewrite/jitty_jittyc.h"
 #include "mcrl2/data/detail/rewrite/jittyc.h"
 #include "mcrl2/data/replace.h"
@@ -32,6 +31,12 @@
 
 #ifdef MCRL2_DISPLAY_REWRITE_STATISTICS
 #include "mcrl2/data/detail/rewrite_statistics.h"
+#endif
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/detail/aterm_list_implementation.cxx"
+#else
+  import atermpp;
 #endif
 
 using namespace mcrl2::core;

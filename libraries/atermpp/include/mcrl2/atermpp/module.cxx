@@ -20,6 +20,7 @@
   export import :aterm_list;
   export import :concepts;
   export import :function_symbol;
+  export import :function_symbol_generator;
   export import :type_traits;
   export import :detail.aterm_appl_iterator;  
   export import :detail.aterm_configuration;

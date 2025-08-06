@@ -12,8 +12,9 @@
 #ifndef MCRL2_DATA_FUNCTION_SYMBOL_H
 #define MCRL2_DATA_FUNCTION_SYMBOL_H
 
-#include "mcrl2/data/application.h"
+#include <set>
 
+#include "mcrl2/data/application.h"
 
 
 namespace mcrl2::data

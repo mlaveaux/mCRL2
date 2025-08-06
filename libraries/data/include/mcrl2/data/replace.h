@@ -12,9 +12,14 @@
 #ifndef MCRL2_DATA_REPLACE_H
 #define MCRL2_DATA_REPLACE_H
 
-#include "mcrl2/atermpp/concepts.h"
 #include "mcrl2/data/is_simple_substitution.h"
 #include "mcrl2/data/replace_capture_avoiding.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/concepts.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::data
 {

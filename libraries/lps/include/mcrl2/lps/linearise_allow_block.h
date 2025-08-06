@@ -12,12 +12,17 @@
 #ifndef MCRL2_LPS_LINEARISE_ALLLOW_BLOCK_H
 #define MCRL2_LPS_LINEARISE_ALLLOW_BLOCK_H
 
-#include "mcrl2/atermpp/aterm_list.h"
 #include "mcrl2/lps/deadlock_summand.h"
 #include "mcrl2/lps/detail/configuration.h"
 #include "mcrl2/lps/linearise_utility.h"
 #include "mcrl2/lps/stochastic_action_summand.h"
 #include "mcrl2/process/process_expression.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm_list.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::lps
 {

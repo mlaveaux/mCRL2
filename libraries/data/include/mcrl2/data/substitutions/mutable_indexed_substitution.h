@@ -21,9 +21,14 @@
 #ifndef MCRL2_DATA_SUBSTITUTIONS_MUTABLE_INDEXED_SUBSTITUTION_H
 #define MCRL2_DATA_SUBSTITUTIONS_MUTABLE_INDEXED_SUBSTITUTION_H
 
-#include "mcrl2/atermpp/standard_containers/unordered_map.h"
-#include "mcrl2/atermpp/standard_containers/detail/unordered_map_implementation.h"
 #include "mcrl2/data/data_expression.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/standard_containers/unordered_map.cxx"
+  #include "mcrl2/atermpp/standard_containers/detail/unordered_map_implementation.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::data {
 

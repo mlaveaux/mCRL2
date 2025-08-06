@@ -12,6 +12,8 @@
 #ifndef MCRL2_DATA_DATA_EXPRESSION_H
 #define MCRL2_DATA_DATA_EXPRESSION_H
 
+#include <set>
+
 #include "mcrl2/data/container_sort.h"
 #include "mcrl2/data/function_sort.h"
 #include "mcrl2/data/untyped_sort.h"

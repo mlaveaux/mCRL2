@@ -12,8 +12,17 @@
 #ifndef MCRL2_CORE_DETAIL_FUNCTION_SYMBOLS_H
 #define MCRL2_CORE_DETAIL_FUNCTION_SYMBOLS_H
 
+#include <cstdint>
+#include <memory>
+#include <vector>
+
 #include "mcrl2/atermpp/aterm_int.h"
-#include "mcrl2/atermpp/aterm_list.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm_list.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::core::detail
 {

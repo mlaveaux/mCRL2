@@ -21,12 +21,13 @@
 
 #include <cassert>
 #include <iostream>
-#include "mcrl2/utilities/hash_utility.h"
 
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/atermpp/aterm.cxx"
+  #include "mcrl2/utilities/hash_utility.cxx"
 #else
   import atermpp;
+  import utilities;
 #endif
 
 namespace mcrl2::lps

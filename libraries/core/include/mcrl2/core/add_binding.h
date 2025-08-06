@@ -12,7 +12,11 @@
 #ifndef MCRL2_CORE_ADD_BINDING_H
 #define MCRL2_CORE_ADD_BINDING_H
 
-#include "mcrl2/atermpp/type_traits.h"
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/type_traits.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::core
 {

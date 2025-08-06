@@ -12,7 +12,11 @@
 #ifndef MCRL2_ATERMPP_DETAIL_ALGORITHM_IMPL_H
 #define MCRL2_ATERMPP_DETAIL_ALGORITHM_IMPL_H
 
-#include "mcrl2/atermpp/aterm_list.h"
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm_list.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace atermpp::detail
 {

@@ -10,6 +10,9 @@
 #ifndef MCRL2_ATERMPP_ATERM_STRING_H
 #define MCRL2_ATERMPP_ATERM_STRING_H
 
+#include <cassert>
+#include <string>
+
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/atermpp/aterm.cxx"
 #else

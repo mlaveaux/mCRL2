@@ -20,6 +20,7 @@ if (MCRL2_ENABLE_MODULES)
         include/mcrl2/atermpp/concepts.cxx
         include/mcrl2/atermpp/type_traits.cxx
         include/mcrl2/atermpp/function_symbol.cxx
+        include/mcrl2/atermpp/function_symbol_generator.cxx
         include/mcrl2/atermpp/module.cxx
         include/mcrl2/atermpp/detail/aterm_configuration.cxx
         include/mcrl2/atermpp/detail/aterm_container.cxx

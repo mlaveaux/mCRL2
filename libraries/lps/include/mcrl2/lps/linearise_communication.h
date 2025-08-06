@@ -12,7 +12,6 @@
 #ifndef MCRL2_LPS_LINEARISE_COMMUNICATION_H
 #define MCRL2_LPS_LINEARISE_COMMUNICATION_H
 
-#include "mcrl2/atermpp/aterm_list.h"
 #include "mcrl2/core/detail/print_utility.h"
 #include "mcrl2/lps/linearise_allow_block.h"
 #include "mcrl2/lps/linearise_utility.h"
@@ -22,6 +21,12 @@
 #include "mcrl2/process/process_expression.h"
 
 #include <optional>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm_list.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::lps
 {

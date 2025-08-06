@@ -12,8 +12,13 @@
 #ifndef MCRL2_DATA_MACHINE_NUMBER_H
 #define MCRL2_DATA_MACHINE_NUMBER_H
 
-#include "mcrl2/atermpp/aterm_list.h"
 #include "mcrl2/data/data_expression.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm_list.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::data
 {

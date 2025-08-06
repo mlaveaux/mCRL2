@@ -18,7 +18,12 @@
 #define MCRL2_LTS_TRANSITION_H
 
 #include <functional>
-#include "mcrl2/utilities/hash_utility.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/hash_utility.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::lts
 {
