@@ -17,7 +17,17 @@ MCRL2_MODULE;
 #include <utility>
 #include <memory>
 
-export module utilities:indexed_set;
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/unordered_map.cxx"
+  #include "mcrl2/utilities/detail/atomic_wrapper.cxx"
+  #include "mcrl2/utilities/shared_mutex.cxx"  
+#else
+  export module utilities:indexed_set;
+
+  import :unordered_map;
+  import :shared_mutex;
+  import utilities_detail;
+#endif
 
 MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
@@ -236,7 +246,8 @@ public:
   }
 };
 
-} // end namespace utilities
-// end namespace mcrl2
+} // end namespacee mcrl2::utilities
+
+#include "mcrl2/utilities/detail/indexed_set_implementation.cxx"
 
 #endif // MCRL2_UTILITIES_INDEXED_SET_H

@@ -14,7 +14,6 @@
 #include "mcrl2/utilities/detail/container_utility.h"
 #include "mcrl2/utilities/logger.h"
 #include "mcrl2/utilities/parse_numbers.h"
-#include "mcrl2/utilities/text_utility.h"
 
 #include <boost/dynamic_bitset.hpp>
 
@@ -27,6 +26,12 @@
 #include <limits>
 #include <random>
 #include <regex>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/text_utility.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::symbolic
 {

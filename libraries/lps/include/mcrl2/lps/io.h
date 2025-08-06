@@ -12,11 +12,13 @@
 #ifndef MCRL2_LPS_IO_H
 #define MCRL2_LPS_IO_H
 
+#include <iostream>
+#include <fstream>
+
 #include "mcrl2/atermpp/aterm_io_binary.h"
 #include "mcrl2/lps/specification.h"
 #include "mcrl2/lps/stochastic_specification.h"
 
-#include <fstream>
 
 namespace mcrl2::lps
 {

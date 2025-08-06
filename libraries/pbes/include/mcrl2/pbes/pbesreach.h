@@ -29,7 +29,12 @@
 #include "mcrl2/symbolic/symbolic_reachability.h"
 #include "mcrl2/utilities/detail/container_utility.h"
 #include "mcrl2/utilities/stopwatch.h"
-#include "mcrl2/utilities/text_utility.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/text_utility.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::pbes_system {
 

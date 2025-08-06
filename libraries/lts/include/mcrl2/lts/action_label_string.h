@@ -19,12 +19,12 @@
 #ifndef MCRL2_LTS_ACTION_LABEL_STRING_H
 #define MCRL2_LTS_ACTION_LABEL_STRING_H
 
-#include "mcrl2/utilities/text_utility.h"
-
+#include <cassert>
 #include <set>
 
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/utilities/exception.cxx"
+  #include "mcrl2/utilities/text_utility.cxx"
 #else
   import utilities;
 #endif

@@ -7,7 +7,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#pragma once
+#ifndef MCRL2_UTILITIES_CONCEPTS_H
+#define MCRL2_UTILITIES_CONCEPTS_H
 
 #include <ranges>
 
@@ -27,3 +28,5 @@ concept IsContainer = requires(C c)
 };
 
 } // namespace mcrl2::utilities
+
+#endif // MCRL2_UTILITIES_CONCEPTS_H

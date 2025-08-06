@@ -17,8 +17,8 @@
 #include <map>
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/unordered_set.h"
-  #include "mcrl2/utilities/mutex.h"
+  #include "mcrl2/utilities/unordered_set.cxx"
+  #include "mcrl2/utilities/mutex.cxx"
 #else
   import utilities;
 #endif

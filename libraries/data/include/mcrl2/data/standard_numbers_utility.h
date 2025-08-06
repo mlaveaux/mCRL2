@@ -12,6 +12,8 @@
 #ifndef MCRL2_DATA_STANDARD_NUMBERS_UTILITY_H
 #define MCRL2_DATA_STANDARD_NUMBERS_UTILITY_H
 
+#include <cmath>
+
 #include "mcrl2/data/standard_utility.h"
 
 namespace mcrl2::data

@@ -14,7 +14,7 @@ MCRL2_MODULE;
 #include <mutex>
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/configuration.h"
+  #include "mcrl2/utilities/configuration.cxx"
 #else
   export module utilities:mutex;
 

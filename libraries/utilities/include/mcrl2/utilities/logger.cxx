@@ -8,8 +8,8 @@
 //
 /// \file logger.h
 
-#ifndef MCRL2_UTILITIES_LOGGER_H
-#define MCRL2_UTILITIES_LOGGER_H
+#ifndef MCRL2_UTILITIES_LOGGER_IMPL_H
+#define MCRL2_UTILITIES_LOGGER_IMPL_H
 MCRL2_MODULE;
 
 #include <array>
@@ -21,8 +21,8 @@ MCRL2_MODULE;
 #include <stdexcept>
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/noncopyable.h"
-  #include "mcrl2/utilities/text_utility.h"
+  #include "mcrl2/utilities/noncopyable.cxx"
+  #include "mcrl2/utilities/text_utility.cxx"
 #else
   export module utilities:logger;
 
@@ -396,4 +396,4 @@ inline bool mCRL2logEnabled(const log_level_t level)
 
 } // namespace mcrl2::log
 
-#endif // MCRL2_UTILITIES_LOGGER_H
+#endif // MCRL2_UTILITIES_LOGGER_IMPL_H

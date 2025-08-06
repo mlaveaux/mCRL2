@@ -13,8 +13,8 @@
 #include "mcrl2/utilities/hashtable.h"    // necessary for header test.
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/power_of_two.h" 
-  #include "mcrl2/utilities/indexed_set.h"    // necessary for header test.
+  #include "mcrl2/utilities/power_of_two.cxx" 
+  #include "mcrl2/utilities/indexed_set.cxx"    // necessary for header test.
 #else
   import utilities;
 #endif

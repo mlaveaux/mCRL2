@@ -10,9 +10,14 @@
 #ifndef MCRL2_SYMBOLIC_DATA_INDEX_H
 #define MCRL2_SYMBOLIC_DATA_INDEX_H
 
-#include "mcrl2/utilities/indexed_set.h"
 #include "mcrl2/core/detail/print_utility.h"
 #include "mcrl2/data/data_expression.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/indexed_set.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::symbolic
 {

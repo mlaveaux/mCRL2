@@ -15,9 +15,14 @@
 #include "mcrl2/lps/lps_summand_group.h"
 #include "mcrl2/lps/multi_action.h"
 #include "mcrl2/symbolic/data_index.h"
-#include "mcrl2/utilities/indexed_set.h"
 
 #include <sylvan_ldd.hpp>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/indexed_set.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::lps
 {

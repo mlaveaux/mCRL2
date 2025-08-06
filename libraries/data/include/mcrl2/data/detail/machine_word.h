@@ -12,8 +12,10 @@
 #ifndef MCRL2_DATA_DETAIL_MACHINE_WORD_H
 #define MCRL2_DATA_DETAIL_MACHINE_WORD_H
 
-#include <assert.h>
+#include <cassert>
+#include <cmath>
 #include <limits>
+
 #include "mcrl2/data/bool.h"
 #include "mcrl2/data/machine_number.h"
 #include "mcrl2/data/machine_word.h"

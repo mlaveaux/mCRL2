@@ -12,6 +12,8 @@
 #ifndef MCRL2_LPS_DETAIL_LINEAR_PROCESS_CONVERSION_TRAVERSER_H
 #define MCRL2_LPS_DETAIL_LINEAR_PROCESS_CONVERSION_TRAVERSER_H
 
+#include <iostream>
+
 #include "mcrl2/lps/stochastic_specification.h"
 #include "mcrl2/process/is_linear.h"
 

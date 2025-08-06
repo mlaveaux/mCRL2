@@ -20,6 +20,8 @@
 #ifndef MCRL2_UTILITIES_PROBABILISTIC_ARBITRARY_PRECISION_FRACTION_H
 #define MCRL2_UTILITIES_PROBABILISTIC_ARBITRARY_PRECISION_FRACTION_H
 
+#include <cassert>
+
 #include "mcrl2/utilities/big_numbers.h"
 
 namespace mcrl2::utilities

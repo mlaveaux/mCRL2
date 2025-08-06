@@ -17,7 +17,7 @@
 #include <utility>
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/unordered_set.h"
+  #include "mcrl2/utilities/unordered_set.cxx"
 #else
   import utilities;
 #endif

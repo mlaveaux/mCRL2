@@ -12,6 +12,8 @@
 #ifndef MCRL2_PROCESS_IS_LINEAR_H
 #define MCRL2_PROCESS_IS_LINEAR_H
 
+#include <iostream>
+
 #include "mcrl2/process/traverser.h"
 
 namespace mcrl2::process

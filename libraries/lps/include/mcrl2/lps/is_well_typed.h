@@ -12,6 +12,8 @@
 #ifndef MCRL2_LPS_IS_WELL_TYPED_H
 #define MCRL2_LPS_IS_WELL_TYPED_H
 
+#include <iostream>
+
 #include "mcrl2/data/detail/sequence_algorithm.h"
 #include "mcrl2/lps/detail/action_utility.h"
 #include "mcrl2/lps/stochastic_specification.h"

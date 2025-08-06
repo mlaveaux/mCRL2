@@ -19,6 +19,8 @@
 #ifndef MCRL2_LTS_LTS_IO_H
 #define MCRL2_LTS_LTS_IO_H
 
+#include <iostream>
+
 #include "mcrl2/lps/io.h"
 #include "mcrl2/lts/detail/lts_convert.h"
 

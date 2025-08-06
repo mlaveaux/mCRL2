@@ -7,6 +7,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <iostream>
+
 #include "mcrl2/core/load_aterm.h"
 #include "mcrl2/data/data_specification.h"
 #include "mcrl2/data/detail/data_utility.h"

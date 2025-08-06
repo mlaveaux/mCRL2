@@ -19,8 +19,8 @@ MCRL2_MODULE;
 #include <vector>
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/noncopyable.h"
-  #include "mcrl2/utilities/configuration.h"
+  #include "mcrl2/utilities/noncopyable.cxx"
+  #include "mcrl2/utilities/configuration.cxx"
 #else
   export module utilities:shared_mutex;
 

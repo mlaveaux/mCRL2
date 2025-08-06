@@ -14,12 +14,11 @@
 #include "mcrl2/utilities/detail/container_utility.h"
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/indexed_set.h"
-  #include "mcrl2/utilities/shared_mutex.h"
+  #include "mcrl2/utilities/indexed_set.cxx"
+  #include "mcrl2/utilities/shared_mutex.cxx"
 #else
   import utilities;
 #endif
-
 
 namespace atermpp
 {

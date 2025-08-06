@@ -20,9 +20,9 @@ MCRL2_MODULE;
 #include <type_traits>
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/detail/free_list.h"
-  #include "mcrl2/utilities/noncopyable.h"
-  #include "mcrl2/utilities/mutex.h"
+  #include "mcrl2/utilities/detail/free_list.cxx"
+  #include "mcrl2/utilities/noncopyable.cxx"
+  #include "mcrl2/utilities/mutex.cxx"
 #else
   export module utilities:memory_pool;
 

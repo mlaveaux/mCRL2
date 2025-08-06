@@ -13,6 +13,8 @@
 
 #include <stack>
 #include <optional>
+#include <memory>
+#include <cmath>
 
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/utilities/exception.cxx"

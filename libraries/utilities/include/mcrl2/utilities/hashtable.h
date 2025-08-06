@@ -12,7 +12,7 @@
 #include <vector>
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/unordered_map.h"
+  #include "mcrl2/utilities/unordered_map.cxx"
 #else
   import utilities;
 #endif

@@ -15,8 +15,8 @@
 #include <type_traits>
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/configuration.h"
-  #include "mcrl2/utilities/detail/atomic_wrapper.h"
+  #include "mcrl2/utilities/configuration.cxx"
+  #include "mcrl2/utilities/detail/atomic_wrapper.cxx"
 #else
   import utilities;
 #endif

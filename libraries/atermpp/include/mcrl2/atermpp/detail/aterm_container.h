@@ -18,7 +18,7 @@
 #include "mcrl2/atermpp/detail/aterm_pool_storage_implementation.h"
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/noncopyable.h"
+  #include "mcrl2/utilities/noncopyable.cxx"
 #else
   import utilities;
 #endif

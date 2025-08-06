@@ -15,7 +15,12 @@
 #include <utility>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/trim.hpp>
-#include "mcrl2/utilities/text_utility.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/text_utility.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::utilities::detail
 {

@@ -29,10 +29,10 @@
 #include "mcrl2/utilities/input_output_tool.h"
 #include "mcrl2/utilities/logger.h"
 #include "mcrl2/utilities/parallel_tool.h"
-#include "mcrl2/utilities/power_of_two.h"
 
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/utilities/exception.cxx"
+  #include "mcrl2/utilities/power_of_two.cxx"
 #else
   import utilities;
 #endif

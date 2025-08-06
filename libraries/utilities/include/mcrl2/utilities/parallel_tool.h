@@ -12,8 +12,13 @@
 #ifndef MCRL2_UTILITIES_PARALLEL_TOOL_H
 #define MCRL2_UTILITIES_PARALLEL_TOOL_H
 
-#include "mcrl2/utilities/configuration.h"
 #include "mcrl2/utilities/command_line_interface.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/configuration.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::utilities::tools
 {

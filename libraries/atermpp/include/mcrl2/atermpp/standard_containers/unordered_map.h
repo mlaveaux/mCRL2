@@ -24,7 +24,7 @@
 #include "mcrl2/atermpp/detail/aterm_container.h"
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/shared_mutex.h"
+  #include "mcrl2/utilities/shared_mutex.cxx"
 #else
   import utilities;
 #endif

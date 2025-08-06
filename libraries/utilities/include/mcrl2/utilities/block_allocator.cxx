@@ -15,7 +15,7 @@ MCRL2_MODULE;
 #include <stddef.h>
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "memory_pool.h"
+  #include "memory_pool.cxx"
 #else
   export module utilities:block_allocator;
 

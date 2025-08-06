@@ -12,6 +12,8 @@
 #ifndef MCRL2_LTS_STATE_SPACE_GENERATOR_H
 #define MCRL2_LTS_STATE_SPACE_GENERATOR_H
 
+#include <forward_list>
+
 #include "mcrl2/lps/explorer.h"
 #include "mcrl2/lts/trace.h"
 

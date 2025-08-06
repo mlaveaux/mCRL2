@@ -18,8 +18,8 @@ MCRL2_MODULE;
 #include "mcrl2/utilities/logger.h"
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/logger.cxx"
   #include "mcrl2/utilities/exception.cxx"
+  #include "mcrl2/utilities/text_utility.cxx"
 #else
   module utilities;
 

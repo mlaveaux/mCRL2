@@ -7,9 +7,12 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <mutex>
+#include <chrono>
+
 #include "mcrl2/atermpp/detail/function_symbol_pool.h"
 
-#include <chrono>
+#include "mcrl2/utilities/logger.h"
 
 using namespace atermpp;
 using namespace atermpp::detail;

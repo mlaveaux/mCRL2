@@ -24,7 +24,7 @@
 
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/utilities/exception.cxx"
-  #include "mcrl2/utilities/text_utility.h"
+  #include "mcrl2/utilities/text_utility.cxx"
 #else  
   import utilities;
 #endif

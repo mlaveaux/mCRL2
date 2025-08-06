@@ -10,6 +10,7 @@
 #include "mcrl2/atermpp/aterm_io_binary.h"
 #include "mcrl2/atermpp/standard_containers/stack.h"
 
+#include <cmath>
 
 namespace atermpp
 {

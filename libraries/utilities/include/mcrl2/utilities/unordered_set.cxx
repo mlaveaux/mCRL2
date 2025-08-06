@@ -12,6 +12,7 @@ MCRL2_MODULE;
 
 #include <algorithm>
 #include <atomic>
+#include <cassert>
 #include <cmath>
 #include <mutex>
 #include <vector>
@@ -19,8 +20,9 @@ MCRL2_MODULE;
 #include "mcrl2/utilities/logger.h"
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/block_allocator.h"
-  #include "mcrl2/utilities/detail/bucket_list.h"
+  #include "mcrl2/utilities/block_allocator.cxx"
+  #include "mcrl2/utilities/detail/bucket_list.cxx"
+  #include "mcrl2/utilities/power_of_two.cxx"
 #else
   export module utilities:unordered_set;
 

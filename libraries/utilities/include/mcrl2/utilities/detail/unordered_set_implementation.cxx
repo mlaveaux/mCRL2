@@ -9,6 +9,11 @@
 #ifndef MCRL2_UTILITIES_UNORDERED_SET_IMPLEMENTATION_H
 #define MCRL2_UTILITIES_UNORDERED_SET_IMPLEMENTATION_H
 
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/unordered_set.cxx"
+  #include "mcrl2/utilities/logger.cxx"
+#endif
+
 #define MCRL2_UNORDERED_SET_TEMPLATES template<typename Key, typename Hash, typename Equals, typename Allocator, bool ThreadSafe, bool Resize>
 #define MCRL2_UNORDERED_SET_CLASS unordered_set<Key, Hash, Equals, Allocator, ThreadSafe, Resize>
 

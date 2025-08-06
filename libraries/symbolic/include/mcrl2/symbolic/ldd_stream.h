@@ -12,13 +12,19 @@
 
 #ifdef MCRL2_ENABLE_SYLVAN
 
-#include "mcrl2/utilities/indexed_set.h"
 #include "mcrl2/utilities/bitstream.h"
 
 #include <sylvan_ldd.hpp>
 
 #include <deque>
 #include <iostream>
+#include <memory>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/indexed_set.cxx"
+#else
+  import utilities;
+#endif
 
 namespace std
 {

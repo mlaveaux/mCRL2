@@ -16,7 +16,7 @@
 #include <iterator>
 
 #ifndef MCRL2_ENABLE_MODULES
-  #include "mcrl2/utilities/noncopyable.h"
+  #include "mcrl2/utilities/noncopyable.cxx"
 #else
   import utilities;
 #endif

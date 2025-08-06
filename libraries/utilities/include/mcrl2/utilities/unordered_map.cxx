@@ -11,11 +11,20 @@
 MCRL2_MODULE;
 
 #include <algorithm>
-#include <utility>
-#include <functional>
+#include <cassert>
 #include <cmath>
+#include <functional>
+#include <utility>
 
-export module utilities:unordered_map;
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/unordered_set.cxx"
+#else
+  export module utilities:unordered_map;
+
+  import :unordered_set;
+  import :block_allocator;
+  import utilities_detail;
+#endif
 
 MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
@@ -214,7 +223,12 @@ public:
   iterator erase(const_iterator it) { return m_set.erase(it); }
 
   /// \brief Provides access to the value associated with the given key.
-  const T& at(const key_type& key) const;
+  const T& at(const key_type& key) const
+  {
+    auto it = m_set.find(key);
+    assert(it != m_set.end());
+    return (*it).second;
+  }
 
   /// \brief Provides access to the value associated with the given key, constructs a default
   ///        value whenever the key was undefined.

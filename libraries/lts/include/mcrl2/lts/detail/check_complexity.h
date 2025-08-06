@@ -95,6 +95,10 @@
 
 #include "mcrl2/utilities/logger.h"
 
+#ifdef MCRL2_ENABLE_MODULES
+    import utilities;
+#endif
+
 namespace mcrl2::lts::detail
 {
 

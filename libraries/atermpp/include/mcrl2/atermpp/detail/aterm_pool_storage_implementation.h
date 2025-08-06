@@ -14,9 +14,10 @@
 #include "mcrl2/utilities/stack_array.h"
 #include "mcrl2/atermpp/detail/aterm_pool.h"
 
+#include "mcrl2/utilities/logger.h"
+
 #include <type_traits>
 #include <cstring>
-
 
 namespace atermpp::detail
 {

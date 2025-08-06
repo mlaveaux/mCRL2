@@ -9,10 +9,15 @@
 /// \file liblts_aut.cpp
 
 #include <fstream>
-#include "mcrl2/utilities/unordered_map.h"
+
 #include "mcrl2/lts/lts_aut.h"
 #include "mcrl2/lts/detail/liblts_swap_to_from_probabilistic_lts.h"
 
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/unordered_map.cxx"
+#else
+  import utilities;
+#endif
 
 using namespace mcrl2::lts;
 

@@ -17,28 +17,28 @@
   #include "mcrl2/utilities/indexed_set.cxx"    // necessary for header test.
 #endif
 
-namespace mcrl2::utilities
+MCRL2_MODULE_EXPORT namespace mcrl2::utilities
 {
 namespace detail
 {
 
-static const std::size_t STEP = 1; ///< The position on which the next hash entry is searched.
+const std::size_t STEP = 1; ///< The position on which the next hash entry is searched.
 
 /// in the hashtable we use the following constant to indicate free positions.
-static constexpr std::size_t EMPTY(std::numeric_limits<std::size_t>::max());
+constexpr std::size_t EMPTY(std::numeric_limits<std::size_t>::max());
 
-static constexpr std::size_t RESERVED(std::numeric_limits<std::size_t>::max()-1);
+constexpr std::size_t RESERVED(std::numeric_limits<std::size_t>::max()-1);
 
-static constexpr float max_load_factor = 0.6f; ///< The load factor before the hash table is resized.
+constexpr float max_load_factor = 0.6f; ///< The load factor before the hash table is resized.
 
-static constexpr std::size_t PRIME_NUMBER = 999953;
+constexpr std::size_t PRIME_NUMBER = 999953;
 
 #ifndef NDEBUG  // Numbers are small in debug mode for more intensive checks. 
-  static constexpr std::size_t minimal_hashtable_size = 16; 
+  constexpr std::size_t minimal_hashtable_size = 16; 
 #else
-  static constexpr std::size_t minimal_hashtable_size = 2048;
+  constexpr std::size_t minimal_hashtable_size = 2048;
 #endif
-  static constexpr std::size_t RESERVATION_FRACTION = 8;        // If the reserved keys entries are exploited, 1/RESERVATION_FRACTION new
+  constexpr std::size_t RESERVATION_FRACTION = 8;        // If the reserved keys entries are exploited, 1/RESERVATION_FRACTION new
                                                                 // keys are reserved. This is an expensive operation, as it is executed
                                                                 // using a lock_exclusive. 
 

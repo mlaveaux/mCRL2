@@ -12,10 +12,15 @@
 #ifndef MCRL2_UTILITIES_NUMBER_POSTFIX_GENERATOR_H
 #define MCRL2_UTILITIES_NUMBER_POSTFIX_GENERATOR_H
 
-#include "mcrl2/utilities/text_utility.h"
 #include <cassert>
 #include <cctype>
 #include <map>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/text_utility.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::utilities {
 

@@ -13,6 +13,8 @@
 #ifndef MCRL2_CORE_PARSE_H
 #define MCRL2_CORE_PARSE_H
 
+#include <iostream>
+
 #include "mcrl2/atermpp/aterm_io.h"
 #include "mcrl2/core/detail/dparser_functions.h"
 #include "mcrl2/core/identifier_string.h"

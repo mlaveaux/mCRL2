@@ -18,12 +18,15 @@
 #include "mcrl2/symbolic/data_index.h"
 #include "mcrl2/symbolic/print.h"
 #include "mcrl2/utilities/logger.h"
-#include "mcrl2/utilities/text_utility.h"
 #include "mcrl2/utilities/stopwatch.h"
 
 #include "sylvan_ldd.hpp"
 
-
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/text_utility.cxx"
+#else
+  import utilities;
+#endif
 
 namespace mcrl2::pbes_system {
 

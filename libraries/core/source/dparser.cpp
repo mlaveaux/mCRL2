@@ -15,6 +15,7 @@
 
 #include <d.h>
 
+#include <iostream>
 #include <iomanip>
 #include <locale>
 
