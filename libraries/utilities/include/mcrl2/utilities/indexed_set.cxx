@@ -26,7 +26,7 @@ MCRL2_MODULE;
 
   import :unordered_map;
   import :shared_mutex;
-  import utilities_detail;
+  import :detail.atomic_wrapper;
 #endif
 
 MCRL2_MODULE_EXPORT namespace mcrl2::utilities

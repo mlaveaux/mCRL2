@@ -17,7 +17,7 @@ MCRL2_MODULE;
 #include <memory>
 
 #ifdef MCRL2_ENABLE_MODULES
-  export module utilities_detail:bucket_list;
+  export module utilities:detail.bucket_list;
 #endif
 
 MCRL2_MODULE_EXPORT namespace mcrl2::utilities::detail

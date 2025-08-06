@@ -6,13 +6,17 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+MCRL2_MODULE;
 
 #include "mcrl2/atermpp/aterm_io.h"
-#include "mcrl2/atermpp/detail/global_aterm_pool.h"
+#include "mcrl2/atermpp/aterm_io_text.h"
 
 #ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/detail/global_aterm_pool.h"
   #include "mcrl2/utilities/shared_mutex.cxx"
 #else
+  module atermpp;
+
   import utilities;
 #endif
 
@@ -47,11 +51,12 @@ thread_aterm_pool& g_thread_term_pool()
 
 } // end namespace atermpp::detail
 
-aterm_stream::~aterm_stream() = default;
 
-aterm_istream::~aterm_istream() = default;
-
-aterm_ostream::~aterm_ostream() = default;
+std::ostream& operator<<(std::ostream& os, const aterm& term)
+{
+  text_aterm_ostream(os) << term;
+  return os;
+}
 
 /// Definition of the extern global term pool.
 alignas(aterm_pool)

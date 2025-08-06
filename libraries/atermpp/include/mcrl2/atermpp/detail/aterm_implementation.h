@@ -9,10 +9,14 @@
 
 #ifndef MCRL2_ATERMPP_ATERM_IMPLEMENTATION_H
 #define MCRL2_ATERMPP_ATERM_IMPLEMENTATION_H
-#pragma once
 
-#include "mcrl2/atermpp/detail/global_aterm_pool.h"
 #include "mcrl2/atermpp/detail/aterm_container.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/detail/global_aterm_pool.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace atermpp
 {

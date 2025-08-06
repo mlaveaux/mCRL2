@@ -6,8 +6,20 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+MCRL2_MODULE;
 
-#include "mcrl2/atermpp/detail/global_aterm_pool.h"
+#include <cstdint>
+#include <string>
+#include <utility>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/detail/global_aterm_pool.h"
+#else
+  module atermpp;
+
+  import :detail.global_aterm_pool;
+#endif
+
 
 using namespace atermpp;
 using namespace atermpp::detail;

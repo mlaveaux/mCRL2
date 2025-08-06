@@ -10,9 +10,17 @@
 #ifndef MCRL2_ATERMPP_ATERM_IO_H
 #define MCRL2_ATERMPP_ATERM_IO_H
 
+#include <cassert>
+#include <string>
+
 #include "mcrl2/atermpp/aterm_int.h"
-#include "mcrl2/atermpp/aterm_list.h"
-#include "mcrl2/atermpp/concepts.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/concepts.cxx"
+  #include "mcrl2/atermpp/aterm_list.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace atermpp
 {

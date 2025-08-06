@@ -22,7 +22,12 @@
 #include <cassert>
 #include <iostream>
 #include "mcrl2/utilities/hash_utility.h"
-#include "mcrl2/atermpp/aterm.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::lps
 {

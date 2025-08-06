@@ -6,9 +6,17 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+MCRL2_MODULE;
 
-#include "mcrl2/utilities/cache_metric.h"
 #include <sstream>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/utilities/cache_metric.cxx"
+#else
+  module utilities;
+
+  import :cache_metric;
+#endif
 
 using namespace mcrl2::utilities;
 

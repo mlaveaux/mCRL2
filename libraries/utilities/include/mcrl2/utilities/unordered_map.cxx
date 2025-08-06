@@ -23,7 +23,6 @@ MCRL2_MODULE;
 
   import :unordered_set;
   import :block_allocator;
-  import utilities_detail;
 #endif
 
 MCRL2_MODULE_EXPORT namespace mcrl2::utilities

@@ -26,9 +26,9 @@ MCRL2_MODULE;
 #else
   export module utilities:memory_pool;
 
-  import utilities_detail;
   import :noncopyable;
   import :mutex;
+  import :detail.free_list;
 #endif
 
 MCRL2_MODULE_EXPORT namespace mcrl2::utilities

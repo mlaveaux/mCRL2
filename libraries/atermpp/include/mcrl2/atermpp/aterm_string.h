@@ -10,7 +10,11 @@
 #ifndef MCRL2_ATERMPP_ATERM_STRING_H
 #define MCRL2_ATERMPP_ATERM_STRING_H
 
-#include "mcrl2/atermpp/aterm.h"
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace atermpp
 {

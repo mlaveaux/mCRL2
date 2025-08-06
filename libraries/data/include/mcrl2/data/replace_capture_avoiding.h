@@ -12,13 +12,18 @@
 #ifndef MCRL2_DATA_REPLACE_CAPTURE_AVOIDING_H
 #define MCRL2_DATA_REPLACE_CAPTURE_AVOIDING_H
 
-#include "mcrl2/atermpp/aterm.h"
 #include "mcrl2/core/detail/print_utility.h"
 #include "mcrl2/data/assignment.h"
 #include "mcrl2/data/builder.h"
 #include "mcrl2/data/find.h"
 
 #include <ranges>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::data
 {

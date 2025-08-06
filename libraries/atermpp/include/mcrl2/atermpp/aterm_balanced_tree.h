@@ -10,9 +10,13 @@
 #ifndef MCRL2_ATERMPP_ATERM_BALANCED_TREE_H
 #define MCRL2_ATERMPP_ATERM_BALANCED_TREE_H
 
-#include "mcrl2/atermpp/aterm.h"
-
 #include <boost/iterator/iterator_facade.hpp>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace atermpp
 {

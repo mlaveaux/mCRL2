@@ -10,10 +10,20 @@
 #include "mcrl2/atermpp/aterm_io_binary.h"
 #include "mcrl2/atermpp/standard_containers/stack.h"
 
+#include <cassert>
 #include <cmath>
+#include <stack>
+#include <memory>
 
 namespace atermpp
 {
+
+aterm_stream::~aterm_stream() = default;
+
+aterm_istream::~aterm_istream() = default;
+
+aterm_ostream::~aterm_ostream() = default;
+
 using namespace mcrl2::utilities;
 
 /// \brief The magic value for a binary aterm format stream.

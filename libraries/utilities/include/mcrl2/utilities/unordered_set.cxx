@@ -29,7 +29,7 @@ MCRL2_MODULE;
   import :power_of_two;
   import :logger;
   import :block_allocator;
-  import utilities_detail;
+  import :detail.bucket_list;
 #endif
 
 MCRL2_MODULE_EXPORT namespace mcrl2::utilities

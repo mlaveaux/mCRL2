@@ -10,6 +10,8 @@
 #ifndef MCRL2_ATERMPP_ATERM_IO_BINARY_H
 #define MCRL2_ATERMPP_ATERM_IO_BINARY_H
 
+#include <memory>
+
 #include "mcrl2/atermpp/aterm_io.h"
 
 #include "mcrl2/utilities/bitstream.h"

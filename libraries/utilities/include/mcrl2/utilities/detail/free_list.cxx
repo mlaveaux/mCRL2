@@ -18,7 +18,7 @@ MCRL2_MODULE;
 #include <iterator>
 
 #ifdef MCRL2_ENABLE_MODULES
-  export module utilities_detail:free_list;
+  export module utilities:detail.free_list;
 #endif
 
 MCRL2_MODULE_EXPORT namespace mcrl2::utilities::detail

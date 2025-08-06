@@ -6,13 +6,22 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+MCRL2_MODULE;
 
 #include <mutex>
 #include <chrono>
 
-#include "mcrl2/atermpp/detail/function_symbol_pool.h"
-
 #include "mcrl2/utilities/logger.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/detail/function_symbol_pool.cxx"
+#else
+  module atermpp;
+
+  import :detail.function_symbol_pool;
+
+  import utilities;
+#endif
 
 using namespace atermpp;
 using namespace atermpp::detail;

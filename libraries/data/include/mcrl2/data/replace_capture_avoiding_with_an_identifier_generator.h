@@ -12,11 +12,16 @@
 #ifndef MCRL2_DATA_REPLACE_CAPTURE_AVOIDING_WITH_AN_IDENTIFIER_GENERATOR_H
 #define MCRL2_DATA_REPLACE_CAPTURE_AVOIDING_WITH_AN_IDENTIFIER_GENERATOR_H
 
-#include "mcrl2/atermpp/aterm.h"
 #include "mcrl2/data/add_binding.h"
 #include "mcrl2/data/builder.h"
 
 #include <ranges>
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::data
 {

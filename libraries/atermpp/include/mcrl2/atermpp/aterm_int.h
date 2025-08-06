@@ -12,8 +12,13 @@
 #ifndef MCRL2_ATERMPP_ATERM_INT_H
 #define MCRL2_ATERMPP_ATERM_INT_H
 
-#include "mcrl2/atermpp/aterm.h"
-#include "mcrl2/atermpp/detail/global_aterm_pool.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm.cxx"
+  #include "mcrl2/atermpp/detail/global_aterm_pool.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace atermpp
 {

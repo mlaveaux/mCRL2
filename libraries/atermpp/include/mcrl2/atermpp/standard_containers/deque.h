@@ -19,13 +19,14 @@
 #define MCRL2_ATERMPP_STANDARD_CONTAINER_DEQUE_H
 
 #include <deque>
-#include "mcrl2/atermpp/detail/aterm_container.h"
-#include "mcrl2/atermpp/detail/global_aterm_pool.h"
-#include "mcrl2/atermpp/detail/thread_aterm_pool.h"
 
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/utilities/shared_mutex.cxx"
+  #include "mcrl2/atermpp/detail/aterm_container.cxx"
+  #include "mcrl2/atermpp/detail/global_aterm_pool.cxx"
+  #include "mcrl2/atermpp/detail/thread_aterm_pool.cxx"
 #else
+  import atermpp;
   import utilities;
 #endif
 

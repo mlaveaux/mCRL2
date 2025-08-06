@@ -13,7 +13,7 @@ MCRL2_MODULE;
 #include <atomic>
 
 #ifdef MCRL2_ENABLE_MODULES
-  export module utilities_detail:atomic_wrapper;
+  export module utilities:detail.atomic_wrapper;
 #endif
 
 MCRL2_MODULE_EXPORT namespace mcrl2::utilities::detail

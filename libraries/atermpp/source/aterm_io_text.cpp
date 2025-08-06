@@ -390,11 +390,4 @@ void read_term_from_text_stream(std::istream& is, aterm& t)
   text_aterm_istream(is).get(t);
 }
 
-
-std::ostream& operator<<(std::ostream& os, const aterm& term)
-{
-  text_aterm_ostream(os) << term;
-  return os;
-}
-
 } // namespace atermpp

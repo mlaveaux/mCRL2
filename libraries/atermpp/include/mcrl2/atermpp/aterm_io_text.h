@@ -10,6 +10,8 @@
 #ifndef MCRL2_ATERMPP_ATERM_IO_TEXT_H
 #define MCRL2_ATERMPP_ATERM_IO_TEXT_H
 
+#include <deque>
+
 #include "mcrl2/atermpp/aterm_io.h"
 
 namespace atermpp

@@ -1,4 +1,4 @@
-// Author(s): Jeroen Keiren
+// Author(s): Maurice Laveaux
 // Copyright: see the accompanying file COPYING or copy at
 // https://github.com/mCRL2org/mCRL2/blob/master/COPYING
 //
@@ -14,11 +14,14 @@
 
 #ifdef MCRL2_ENABLE_MODULES
   export module utilities;
-
+  
   export import :block_allocator;
+  export import :cache_metric;
   export import :configuration;
   export import :exception;
   export import :execution_timer;
+  export import :hash_utility;
+  export import :hashtable;
   export import :indexed_set;
   export import :logger;
   export import :memory_pool;
@@ -26,11 +29,17 @@
   export import :noncopyable;
   export import :power_of_two;
   export import :shared_mutex;
+  export import :shared_reference;
+  export import :stack_array;
+  export import :tagged_pointer;
   export import :text_utility;
+  export import :type_traits;
   export import :unordered_map;
   export import :unordered_set;
-  
-  export import utilities_detail;
+
+  export import :detail.free_list;
+  export import :detail.bucket_list;
+  export import :detail.atomic_wrapper;
 #endif
 
 #endif // MCRL2_UTILITIES_UTILTIES_H

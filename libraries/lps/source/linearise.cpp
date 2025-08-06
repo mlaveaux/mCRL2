@@ -33,7 +33,6 @@
 //#define MCRL2_LOG_LPS_LINEARISE_STATISTICS 1
 
 //mCRL2 data
-#include "mcrl2/atermpp/aterm.h"
 #include "mcrl2/data/substitutions/maintain_variables_in_rhs.h"
 #include "mcrl2/data/fourier_motzkin.h"
 #include "mcrl2/data/enumerator.h"
@@ -55,6 +54,12 @@
 #include "mcrl2/process/alphabet_reduce.h"
 #include "mcrl2/process/balance_nesting_depth.h"
 #include "mcrl2/process/process_expression.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/aterm.cxx"
+#else
+  import atermpp;
+#endif
 
 
 // For Aterm library extension functions
