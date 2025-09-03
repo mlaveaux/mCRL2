@@ -23,6 +23,7 @@
 
 namespace mcrl2::pbes_system::detail {
 
+// This is the ith predicate variable
 class predicate_variable
 {
   friend class stategraph_equation;
