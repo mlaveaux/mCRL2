@@ -14,11 +14,15 @@
 #include "mcrl2/pbes/srf_pbes.h"
 #include "mcrl2/pbes/stategraph.h"
 #include "mcrl2/pbes/tools/pbesstategraph_options.h"
+#include "mcrl2/pbes/unify_parameters.h"
 #include "mcrl2/utilities/logger.h"
+#include <cstddef>
 
 namespace mcrl2::pbes_system
 {
 
+
+    
 /// Uses the stategraph algorithm to extract control flow graphs from a given
 /// PBES.
 class cliques_algorithm: private detail::stategraph_local_algorithm
@@ -45,11 +49,62 @@ public:
         std::vector<std::vector<std::size_t>> cal_I = cliques();
     }
 
+    /// Given a clique return all relevant data parameters.
+    std::set<std::size_t> data_parameters(const std::vector<size_t>& clique)
+    {
+        std::set<std::size_t> data_parameters;
+        for (const auto& i : clique)
+        {        
+            const detail::local_control_flow_graph& c = m_local_control_flow_graphs[i];
+            for(const auto& s : c.vertices)
+            {
+                // Compute the data parameters
+                // Get the changed by, used for and used in
+                auto it = s.outgoing_edges().find(&s);
+
+                if (it != s.outgoing_edges().end())
+                {
+                    for (const std::size_t& label : it->second)
+                    {
+                        for (const auto& variable : m_pbes.equations().at(label).predicate_variables())
+                        {
+                            if (variable.name() == s.name())
+                            {
+                                data_parameters.insert(variable.changed().begin(), variable.changed().end());
+                                data_parameters.insert(variable.used().begin(), variable.used().end());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return data_parameters;
+    }
+
+    /// Computes the set of candidates we can derive from a single clique
+    void clique_candidates(const std::vector<size_t>& clique)
+    {
+        auto D = data_parameters(clique);
+
+        auto clique_permutations = permutation_group(clique);
+    }
+
+    /// Determine the cliques of the control flow graphs.
     std::vector<std::vector<std::size_t>> cliques()
     {
         std::vector<std::vector<std::size_t>> cal_I;
         for (int i = 0; i < m_local_control_flow_graphs.size(); i++)
         {
+            if (std::any_of(cal_I.begin(), cal_I.end(), 
+                [i](const auto& clique) {
+                    return std::find(clique.begin(), clique.end(), i) != clique.end();
+                }))
+            {
+                // Skip every graph that already belongs to a clique.
+                continue;
+            }
+
             // For every other control flow graph check if it is compatible.
             std::vector<std::size_t> I = {static_cast<unsigned long>(i)};
             for (int j = 0; j < m_local_control_flow_graphs.size(); j++)
@@ -76,6 +131,31 @@ public:
         return cal_I;
     }
 
+    /// Computes the sizes(c, s, s')
+    std::size_t sizes(const detail::local_control_flow_graph&, const detail::local_control_flow_graph_vertex& s, const detail::local_control_flow_graph_vertex& s_prime)
+    {
+        // Get the changed by, used for and used in
+        auto it = s.outgoing_edges().find(&s_prime);
+
+        std::size_t result = 0;
+        if (it != s.outgoing_edges().end())
+        {
+            for (const std::size_t& label : it->second)
+            {
+                for (const auto& variable : m_pbes.equations().at(label).predicate_variables())
+                {
+                    if (variable.name() == s.name())
+                    {
+                        result += variable.changed().size();
+                        result += variable.used().size();                        
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
     /// Checks whether two control flow graphs are compatible according to Algorithm 4.
     bool compatible(int i, int j)
     {
@@ -83,52 +163,78 @@ public:
         const detail::local_control_flow_graph& c_prime = m_local_control_flow_graphs[j];
         mCRL2log(log::debug) << "Checking compatible(" << i << ", " << j << ")" << std::endl;
 
-
-        if (c.vertices != c_prime.vertices)
+        if (!vertex_sets_compatible(c, c_prime))
         {
             // If V_c != V_C' return false
             mCRL2log(log::debug) << "Vertex sets don't match" << std::endl;
             return false;
-        }      
+        }
 
+        // Note that this algorithm is slightly different than the pseudocode, because the graphs in the implementation are over different (compatible) vertex sets.
         for(const auto& s : c.vertices)
         {
             // There exist t such that s and t match according to the definitions in the paper.
-            for (const auto& s_prime: c_prime.vertices)
+            for (const auto& s_c_prime: c_prime.vertices)
             {
                 // X(v) in c and X(v) in c_prime.
-                if (s.value() == s_prime.value() && s.variable() == s_prime.variable())
+                if (s.value() == s_c_prime.value() && s.variable() == s_c_prime.variable())
                 {
-                    mCRL2log(log::debug) << "Comparing vertices s = " << s << " and s'=  " << s_prime << std::endl;
-                    for (const auto& [t, e] : s.outgoing_edges())
-                    {
-                        for (const auto& [t_prime, f] : s_prime.outgoing_edges())
+                    for (const auto& s_prime: c_prime.vertices)
+                    {   
+                        // There exist t such that s and t match according to the definitions in the paper.
+                        for (const auto& s_prime_c_prime: c_prime.vertices)
                         {
-                            // sizes
-                            if (e.size() == f.size())
+                            // Y(v) in c and Y(v) in c_prime.
+                            if (s_prime.value() == s_prime_c_prime.value() && s_prime.variable() == s_prime_c_prime.variable())
                             {
-                                mCRL2log(log::debug) << "Found different number of edges " << e.size() << " and " << f.size() << std::endl;
-                                return false;
-                            }
+                                mCRL2log(log::debug) << "Comparing vertices s = " << s << " and s'=  " << s_prime << std::endl;
+                                auto it = s.outgoing_edges().find(&s_prime);
+                                auto it_c_prime = s_c_prime.outgoing_edges().find(&s_prime_c_prime);
 
-                            // #
-                            for (const auto& eqn_X:  m_pbes.equations())
-                            {
-                                for (const auto& Y : eqn_X.predicate_variables())
+                                // TODO: If one is undefined, but the other is defined they do not match.
+                                if (it != s.outgoing_edges().end() && 
+                                    it_c_prime != s.outgoing_edges().end() && 
+                                    it->second.size() != it_c_prime->second.size())
                                 {
+                                    mCRL2log(log::debug) << "Found different sizes " << s << " and " << s_prime << std::endl;
+                                    return false;
+                                }
 
+                                if (sizes(c, s, s_prime) != sizes(c_prime, s_c_prime, s_prime_c_prime))
+                                {
+                                    mCRL2log(log::debug) << "Found different sizes " << sizes(c, s, s_prime) << " and " << sizes(c_prime, s_c_prime, s_prime_c_prime) << std::endl;
+                                    return false;
                                 }
                             }
-
                         }
                     }
                 }
-
             }
-
         }
 
         return true;        
+    }
+
+    /// Checks whether two control flow graphs have compatible vertex sets, meaning that the PVI and values of the vertices match.
+    bool vertex_sets_compatible(const detail::local_control_flow_graph& c, const detail::local_control_flow_graph& c_prime)
+    {
+        if (c.vertices.size() != c_prime.vertices.size())
+        {
+            return false;
+        }
+        
+        for (const auto& vertex : c.vertices)
+        {
+            if (!std::any_of(c_prime.vertices.begin(), c_prime.vertices.end(), 
+                [&vertex](const auto& vertex_prime) {
+                    return vertex.name() == vertex_prime.name() && vertex.value() == vertex_prime.value();
+                }))
+            {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
 };
@@ -137,9 +243,12 @@ public:
 class pbes_symmetry
 {
 public:
-    pbes_symmetry(const pbes& input, const data::rewriter& rewr)
+    pbes_symmetry(const pbes& input, const data::rewriter&)
     {
         srf_pbes srf = pbes2srf(input);
+
+        unify_parameters(srf, false, false);
+
         cliques(srf.to_pbes());
     }
 
