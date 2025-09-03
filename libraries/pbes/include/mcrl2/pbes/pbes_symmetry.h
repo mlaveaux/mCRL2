@@ -87,7 +87,7 @@ public:
     {
         auto D = data_parameters(clique);
 
-        auto clique_permutations = permutation_group(clique);
+        // auto clique_permutations = permutation_group(clique);
     }
 
     /// Determine the cliques of the control flow graphs.
