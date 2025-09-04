@@ -10,6 +10,7 @@
 #pragma once
 
 #include <ranges>
+#include <iostream>
 
 namespace mcrl2::utilities 
 {
@@ -24,6 +25,11 @@ concept IsContainer = requires(C c)
 
     /// Container must have a value type.
     typename std::remove_reference_t<C>::value_type;
+};
+
+template<typename T>
+concept IsPrintable = requires(T t) {
+    { std::cout << t } -> std::same_as<std::ostream&>;
 };
 
 } // namespace mcrl2::utilities
