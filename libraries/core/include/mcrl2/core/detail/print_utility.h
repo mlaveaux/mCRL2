@@ -13,10 +13,7 @@
 #define MCRL2_CORE_DETAIL_PRINT_UTILITY_H
 
 #include "mcrl2/core/print.h"
-
-
-
-
+#include "mcrl2/utilities/concepts.h"
 
 namespace mcrl2::core::detail
 {
@@ -25,7 +22,7 @@ namespace mcrl2::core::detail
 /// \param v A container
 /// \param message A string
 /// \param print_index If true, an index is written in front of each term
-template <typename Container>
+template <utilities::IsContainer Container>
 std::string print_container(const Container& v, const std::string& begin_marker = "(", const std::string& end_marker = ")", const std::string& message = "", bool print_index = false, bool boundary_spaces = true)
 {
   std::ostringstream out;
@@ -68,7 +65,7 @@ std::string print_container(const Container& v, const std::string& begin_marker 
 /// \param v A container
 /// \param message A string
 /// \param print_index If true, an index is written in front of each term
-template <typename Container>
+template <utilities::IsContainer Container>
 std::string print_list(const Container& v, const std::string& message = "", bool print_index = false, bool boundary_spaces = true)
 {
   return print_container(v, "[", "]", message, print_index, boundary_spaces);
@@ -78,7 +75,7 @@ std::string print_list(const Container& v, const std::string& message = "", bool
 /// \param v A container
 /// \param message A string
 /// \param print_index If true, an index is written in front of each term
-template <typename Container>
+template <utilities::IsContainer Container>
 std::string print_set(const Container& v, const std::string& message = "", bool print_index = false, bool boundary_spaces = true)
 {
   return print_container(v, "{", "}", message, print_index, boundary_spaces);
@@ -88,7 +85,7 @@ std::string print_set(const Container& v, const std::string& message = "", bool 
 /// \param v A map container
 /// \param message A string
 /// \param print_index If true, an index is written in front of each term
-template <typename MapContainer>
+template <utilities::IsContainer MapContainer>
 std::string print_map(const MapContainer& v, const std::string& message = "")
 {
   std::ostringstream out;
@@ -111,7 +108,7 @@ std::string print_map(const MapContainer& v, const std::string& message = "")
 
 /// \brief Prints a comma separated list of the elements of v. If v is empty, the empty string is returned.
 /// \param v A container
-template <typename Container>
+template <utilities::IsContainer Container>
 std::string print_arguments(const Container& v)
 {
   if (v.empty())
@@ -121,10 +118,13 @@ std::string print_arguments(const Container& v)
   return print_container(v, "(", ")", "", false, false);
 }
 
+
+template <utilities::IsPrintable T, utilities::IsPrintable U>
+std::ostream& operator<<(std::ostream& out, const std::pair<T, U>& p)
+{
+  return out << "(" << p.first << ", " << p.second << ")";
+}
+
 } // namespace mcrl2::core::detail
-
-
-
-
 
 #endif // MCRL2_CORE_DETAIL_PRINT_UTILITY_H
