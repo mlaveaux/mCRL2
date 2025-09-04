@@ -10,6 +10,7 @@
 #ifndef MCRL_PBES_PBES_SYMMETRY_H
 #define MCRL_PBES_PBES_SYMMETRY_H
 
+#include "mcrl2/core/detail/print_utility.h"
 #include "mcrl2/pbes/pbes.h"
 #include "mcrl2/pbes/srf_pbes.h"
 #include "mcrl2/pbes/stategraph.h"
@@ -132,22 +133,24 @@ public:
     }
 
     /// Computes the sizes(c, s, s')
-    std::size_t sizes(const detail::local_control_flow_graph&, const detail::local_control_flow_graph_vertex& s, const detail::local_control_flow_graph_vertex& s_prime)
+    std::set<std::pair<size_t, size_t>> sizes(const detail::local_control_flow_graph&, const detail::local_control_flow_graph_vertex& s, const detail::local_control_flow_graph_vertex& s_prime)
     {
         // Get the changed by, used for and used in
         auto it = s.outgoing_edges().find(&s_prime);
 
-        std::size_t result = 0;
+        std::set<std::pair<size_t, size_t>> result;
         if (it != s.outgoing_edges().end())
         {
-            for (const std::size_t& label : it->second)
+            // Find the corresponding equation
+            for (const auto& equation: m_pbes.equations())
             {
-                for (const auto& variable : m_pbes.equations().at(label).predicate_variables())
+                if (equation.variable().name() == s.name())
                 {
-                    if (variable.name() == s.name())
+                    for (const std::size_t& label : it->second)
                     {
-                        result += variable.changed().size();
-                        result += variable.used().size();                        
+                        // Compute the sizes.
+                        const auto& variable = equation.predicate_variables().at(label);
+                        result.insert(std::make_pair(variable.changed().size(), variable.used().size()));
                     }
                 }
             }
@@ -177,32 +180,38 @@ public:
             for (const auto& s_c_prime: c_prime.vertices)
             {
                 // X(v) in c and X(v) in c_prime.
-                if (s.value() == s_c_prime.value() && s.variable() == s_c_prime.variable())
+                if (s.value() == s_c_prime.value() && s.name() == s_c_prime.name())
                 {
-                    for (const auto& s_prime: c_prime.vertices)
+                    for (const auto& s_prime: c.vertices)
                     {   
                         // There exist t such that s and t match according to the definitions in the paper.
                         for (const auto& s_prime_c_prime: c_prime.vertices)
                         {
                             // Y(v) in c and Y(v) in c_prime.
-                            if (s_prime.value() == s_prime_c_prime.value() && s_prime.variable() == s_prime_c_prime.variable())
+                            if (s_prime.value() == s_prime_c_prime.value() && s_prime.name() == s_prime_c_prime.name())
                             {
-                                mCRL2log(log::debug) << "Comparing vertices s = " << s << " and s'=  " << s_prime << std::endl;
+                                mCRL2log(log::trace) << "Comparing vertices s = " << s << " and s'= " << s_prime << std::endl;
                                 auto it = s.outgoing_edges().find(&s_prime);
                                 auto it_c_prime = s_c_prime.outgoing_edges().find(&s_prime_c_prime);
+                                
+                                if ((it == s.outgoing_edges().end()) != (it_c_prime == s_c_prime.outgoing_edges().end()))
+                                {
+                                    mCRL2log(log::trace) << "Found different number of edges " << s << " and " << s_prime << std::endl;
+                                    return false;
+                                }
 
-                                // TODO: If one is undefined, but the other is defined they do not match.
                                 if (it != s.outgoing_edges().end() && 
                                     it_c_prime != s.outgoing_edges().end() && 
                                     it->second.size() != it_c_prime->second.size())
                                 {
-                                    mCRL2log(log::debug) << "Found different sizes " << s << " and " << s_prime << std::endl;
+                                    mCRL2log(log::trace) << "Found different number of edges " << it->second.size() << " and " << it_c_prime->second.size() << std::endl;
                                     return false;
                                 }
 
                                 if (sizes(c, s, s_prime) != sizes(c_prime, s_c_prime, s_prime_c_prime))
                                 {
-                                    mCRL2log(log::debug) << "Found different sizes " << sizes(c, s, s_prime) << " and " << sizes(c_prime, s_c_prime, s_prime_c_prime) << std::endl;
+                                    mCRL2log(log::debug) << "Found different sizes " << core::detail::print_container(sizes(c, s, s_prime))
+                                         << " and " << core::detail::print_container(sizes(c_prime, s_c_prime, s_prime_c_prime)) << std::endl;
                                     return false;
                                 }
                             }
@@ -246,6 +255,8 @@ public:
     pbes_symmetry(const pbes& input, const data::rewriter&)
     {
         srf_pbes srf = pbes2srf(input);
+
+        mCRL2log(mcrl2::log::debug) << srf.to_pbes() << std::endl;
 
         unify_parameters(srf, false, false);
 
