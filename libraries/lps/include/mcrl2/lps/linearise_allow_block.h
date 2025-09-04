@@ -196,7 +196,7 @@ inline void allowblockcomposition(
                               << ((is_allow) ? " allowed multiactions" : " blocked actions") << std::endl;
   mCRL2log(mcrl2::log::trace) << ((is_allow) ? "Allowed multiactions: " : "Blocked actions: ") << std::endl
                               << ((is_allow) ? core::detail::print_set(allowlist1)
-                                             : core::detail::print_set(allowlist1.front()))
+                                             : core::detail::print_set(allowlist1.front().names()))
                               << std::endl;
   /* This function calculates the allow or the block operator,
    depending on whether is_allow is true */
