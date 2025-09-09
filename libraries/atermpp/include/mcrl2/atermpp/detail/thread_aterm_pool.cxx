@@ -32,6 +32,8 @@ MCRL2_MODULE;
   import :detail.aterm_container;
   import :detail.aterm_pool;
   import :detail.aterm_pool_storage;
+  import :detail.index_traits;
+  import :detail.utility;
 
   import utilities;
 #endif

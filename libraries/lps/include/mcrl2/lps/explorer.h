@@ -15,13 +15,13 @@
 #include <random>
 #include <thread>
 #include <type_traits>
+
 #include "mcrl2/data/find_quantifier_variables.h"
 #include "mcrl2/utilities/detail/io.h"
 #include "mcrl2/utilities/skip.h"
 #include "mcrl2/atermpp/standard_containers/deque.h"
 #include "mcrl2/atermpp/standard_containers/vector.h"
 #include "mcrl2/atermpp/standard_containers/indexed_set.h"
-#include "mcrl2/atermpp/standard_containers/detail/unordered_map_implementation.h"
 #include "mcrl2/data/consistency.h"
 #include "mcrl2/data/enumerator.h"
 #include "mcrl2/data/detail/enumerator_iteration_limit.h"
@@ -34,6 +34,12 @@
 #include "mcrl2/lps/replace_constants_by_variables.h"
 #include "mcrl2/lps/resolve_name_clashes.h"
 #include "mcrl2/lps/stochastic_state.h"
+
+#ifndef MCRL2_ENABLE_MODULES
+  #include "mcrl2/atermpp/standard_containers/detail/unordered_map_implementation.cxx"
+#else
+  import atermpp;
+#endif
 
 namespace mcrl2::lps {
 

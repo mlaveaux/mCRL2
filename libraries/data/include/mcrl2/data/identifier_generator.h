@@ -12,10 +12,10 @@
 #ifndef MCRL2_DATA_IDENTIFIER_GENERATOR_H
 #define MCRL2_DATA_IDENTIFIER_GENERATOR_H
 
+#include <set>
+
 #include "mcrl2/core/identifier_string.h"
 #include "mcrl2/utilities/number_postfix_generator.h"
-
-
 
 namespace mcrl2::data
 {

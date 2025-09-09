@@ -28,7 +28,6 @@ MCRL2_MODULE;
 #else
   export module atermpp:standard_containers.unordered_map;
 
-  import :detail.global_aterm_pool;
   import :detail.aterm_configuration;
   import :detail.aterm_container;
 
@@ -38,6 +37,10 @@ MCRL2_MODULE;
 /// \brief The main namespace for the aterm++ library.
 MCRL2_MODULE_EXPORT namespace atermpp
 {
+
+// Forward declaration to avoid circular dependency.
+mcrl2::utilities::shared_guard thread_lock_shared();
+mcrl2::utilities::lock_guard thread_lock();
 
 /// \brief A unordered_map class in which aterms can be stored. 
 template < class Key, 

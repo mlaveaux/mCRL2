@@ -12,7 +12,7 @@
 MCRL2_MODULE;
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <compare>
 #include <sstream>
 #include <type_traits>

@@ -17,6 +17,8 @@ MCRL2_MODULE;
 #else
   module atermpp;
 
+  import :detail.thread_aterm_pool;
+
   import utilities;
 #endif
 
@@ -28,6 +30,16 @@ using namespace atermpp::detail;
 ///        that have char == 2 bytes, and sizeof(header_type) == 2
 static_assert(sizeof(std::size_t) == sizeof(_aterm*), "The size of an aterm pointer is not equal to the size of type std::size_t. Cannot compile the MCRL2 toolset for this platform.");
 static_assert(sizeof(std::size_t) >= 4,"The size of std::size_t should at least be four bytes. Cannot compile the toolset for this platform.");
+
+mcrl2::utilities::shared_guard thread_lock_shared()
+{
+  return detail::g_thread_term_pool().lock_shared();
+}
+
+mcrl2::utilities::lock_guard thread_lock()
+{
+  return detail::g_thread_term_pool().lock();
+}
 
 void atermpp::add_deletion_hook(const function_symbol& function, term_callback callback)
 {  
