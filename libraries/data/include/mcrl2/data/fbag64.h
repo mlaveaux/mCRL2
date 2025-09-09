@@ -28,6 +28,7 @@
 #include "mcrl2/data/fset64.h"
 
 #include <functional>
+#include <map>
 
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/utilities/exception.cxx"

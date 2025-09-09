@@ -2313,7 +2313,9 @@ class specification():
       code += self.includes.code()
 
     code += "\n";
-    code += "#include <functional>\n\n"
+    code += "#include <functional>\n"
+    code += "#include <map>\n"
+    code += "\n";
     code += "#ifndef MCRL2_ENABLE_MODULES\n"
     code += "  #include \"mcrl2/utilities/exception.cxx\"\n"
     code += "#else\n"

@@ -39,6 +39,7 @@ if (MCRL2_ENABLE_MODULES)
         include/mcrl2/atermpp/detail/function_symbol_hash.cxx
         include/mcrl2/atermpp/detail/function_symbol_pool.cxx
         include/mcrl2/atermpp/detail/aterm_appl_iterator.cxx
+        include/mcrl2/atermpp/detail/utility.cxx
         include/mcrl2/atermpp/standard_containers/unordered_map.cxx
   )
 endif()

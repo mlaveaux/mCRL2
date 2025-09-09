@@ -27,6 +27,7 @@
 #include "mcrl2/data/nat1.h"
 
 #include <functional>
+#include <map>
 
 #ifndef MCRL2_ENABLE_MODULES
   #include "mcrl2/utilities/exception.cxx"

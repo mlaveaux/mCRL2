@@ -28,6 +28,7 @@ MCRL2_MODULE;
 #else
   export module atermpp:standard_containers.unordered_map;
 
+  import :detail.global_aterm_pool;
   import :detail.aterm_configuration;
   import :detail.aterm_container;
 
@@ -458,6 +459,9 @@ class unordered_map : public mcrl2::utilities::unordered_map< detail::reference_
 }
 
 } // namespace atermpp
+
+#include "mcrl2/atermpp/standard_containers/detail/unordered_map_implementation.cxx"
+
 #endif // MCRL2_ATERMPP_STANDARD_CONTAINER_UNORDERED_MAP_H
 
 

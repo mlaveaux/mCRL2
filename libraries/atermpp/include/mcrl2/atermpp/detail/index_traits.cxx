@@ -11,6 +11,7 @@
 #define MCRL2_ATERMPP_INDEX_TRAITS_H
 MCRL2_MODULE;
 
+#include <cassert>
 #include <cstdint>
 #include <mutex>
 #include <stack>
@@ -22,6 +23,7 @@ MCRL2_MODULE;
   export module atermpp:detail.index_traits;
 
   import :standard_containers.unordered_map;
+  import :detail.aterm_core_data;
   import :detail.aterm_configuration;
   import :detail.aterm_int_data;
 
@@ -29,7 +31,6 @@ MCRL2_MODULE;
 #endif
 
 MCRL2_MODULE_EXPORT namespace atermpp::detail {
-
 template <typename Variable, typename KeyType>
 atermpp::unordered_map<KeyType, std::size_t>& variable_index_map()
 {

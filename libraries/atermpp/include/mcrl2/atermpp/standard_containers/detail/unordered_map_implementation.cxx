@@ -18,9 +18,6 @@
   #include "mcrl2/atermpp/detail/thread_aterm_pool.cxx"
   #include "mcrl2/atermpp/standard_containers/unordered_map.cxx"
   #include "mcrl2/utilities/shared_mutex.cxx"
-#else
-  import atermpp;
-  import utilities;
 #endif
 
 namespace atermpp

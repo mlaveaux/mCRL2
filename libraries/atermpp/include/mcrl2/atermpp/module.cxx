@@ -39,6 +39,7 @@
   export import :detail.global_aterm_pool;  
   export import :detail.thread_aterm_pool;  
   export import :detail.index_traits; 
+  export import :standard_containers.unordered_map; 
 #endif
 
 #endif // MCRL2_UTILITIES_UTILTIES_H
