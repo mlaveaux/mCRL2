@@ -99,7 +99,7 @@ class pbesinst_structure_graph_algorithm: public pbesinst_lazy_algorithm
       return vertex_psi;
     }
 
-    std::string status_message(std::size_t equation_count) override
+    std::optional<std::string> status_message(std::size_t equation_count) override
     {
       if (equation_count > 0 && equation_count % 1000 == 0)
       {
@@ -108,7 +108,8 @@ class pbesinst_structure_graph_algorithm: public pbesinst_lazy_algorithm
           ((100.0 * equation_count) / m_graph_builder.extent()) << "% explored)" << std::endl;
         return out.str();
       }
-      return "";
+      
+      return std::nullopt;
     }
 
   public:

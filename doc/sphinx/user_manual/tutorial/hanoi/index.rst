@@ -290,9 +290,9 @@ These properties are captured by the following µ-calculus formulae:
 We check the formula on the specification by generating and solving PBESes as
 follows::
 
-  $ mcrl22lps hanoi2.mcrl2 | lps2pbes -f hanoi1.mcf | pbes2bool
+  $ mcrl22lps hanoi2.mcrl2 | lps2pbes -f hanoi1.mcf | pbessolve
   true
-  $ mcrl22lps hanoi2.mcrl2 | lps2pbes -f hanoi2.mcf | pbes2bool
+  $ mcrl22lps hanoi2.mcrl2 | lps2pbes -f hanoi2.mcf | pbessolve
   true
 
 This yields *true* for both formulae, so both properties hold. Check these

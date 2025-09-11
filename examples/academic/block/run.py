@@ -10,7 +10,7 @@ subprocess.run(['mcrl22lps', 'block.mcrl2', 'block.lps'], check=True)
 
 print('Checking for no deadlock in block.lps')
 subprocess.run(['lps2pbes', '-f', 'nodeadlock.mcf', 'block.lps', 'block.nodeadlock.pbes'], check=True)
-subprocess.run(['pbes2bool', 'block.nodeadlock.pbes'], check=True)
+subprocess.run(['pbessolve', 'block.nodeadlock.pbes'], check=True)
 # The above shows that there is a deadlock in the specification, let's investigate.
 
 # The following command creates the state space, and stores trace to the deadlock

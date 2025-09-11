@@ -230,14 +230,14 @@ A suitable property for our specification is the following:
    :class: collapse
 
    You need to use the tools :ref:`tool-mcrl22lps`, :ref:`tool-lps2pbes` and
-   :ref:`tool-pbes2bool`.
+   :ref:`tool-pbessolve`.
 
 .. admonition:: Solution
    :class: collapse
 
    We try checking this property using the following command::
 
-     $ mcrl22lps phonebook2b.mcrl2 | lps2pbes -f phonebook1.mcf | pbes2bool
+     $ mcrl22lps phonebook2b.mcrl2 | lps2pbes -f phonebook1.mcf | pbessolve
      [20:54:11.222 error]   Cannot find a term of sort Name
 
    Observe that the tools fail to verify this requirement because of an error.
@@ -264,7 +264,7 @@ A suitable property for our specification is the following:
    The specification is now easily checked using the following sequence of
    commands::
 
-     $ mcrl22lps phonebook5.mcrl2 | lps2pbes -f phonebook1.mcf | pbes2bool
+     $ mcrl22lps phonebook5.mcrl2 | lps2pbes -f phonebook1.mcf | pbessolve
      true
 
 .. admonition:: Exercise
@@ -291,7 +291,7 @@ A suitable property for our specification is the following:
 
    It can be verified using the commands::
 
-     $ mcrl22lps phonebook5.mcrl2 | lps2pbes -f phonebook2.mcf | pbes2bool
+     $ mcrl22lps phonebook5.mcrl2 | lps2pbes -f phonebook2.mcf | pbessolve
      false
 
    Observe that this verification fails because ``addPhone`` allows you to add
@@ -332,7 +332,7 @@ A suitable property for our specification is the following:
    For our version of the property, the verification delivers the following
    result::
 
-     $ mcrl22lps phonebook6.mcrl2 | lps2pbes -f phonebook2.mcf | pbes2bool
+     $ mcrl22lps phonebook6.mcrl2 | lps2pbes -f phonebook2.mcf | pbessolve
      false
 
 .. admonition:: Exercise
@@ -351,7 +351,7 @@ A suitable property for our specification is the following:
 
    Now the following verification succeeds::
 
-     $ mcrl22lps phonebook6.mcrl2 | lps2pbes -f phonebook3.mcf | pbes2bool
+     $ mcrl22lps phonebook6.mcrl2 | lps2pbes -f phonebook3.mcf | pbessolve
      true
 
 As an alternative approach to the verification, you can make the phonebook that
@@ -371,5 +371,5 @@ using the internally stored phonebook.
 
 The verification result is still the same::
 
-  $ mcrl22lps phonebook7.mcrl2 | lps2pbes -f phonebook4.mcf | pbes2bool
+  $ mcrl22lps phonebook7.mcrl2 | lps2pbes -f phonebook4.mcf | pbessolve
   true

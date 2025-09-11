@@ -15,6 +15,6 @@ subprocess.run(['pbesconstelm', '-e', '-', 'sustained_delivery.pbesconstelm.pbes
 
 if '-rjittyc' in argv:
     # Note that the generated bes is huge.
-    subprocess.run(['pbes2bool', '-v', '-rjittyc', '-zdepth-first', '-s3', 'sustained_delivery.pbesconstelm.pbes'], check=True)
+    subprocess.run(['pbessolve', '-v', '-rjittyc', '-zdepth-first', '-s3', 'sustained_delivery.pbesconstelm.pbes'], check=True)
 else:
     print('Example requires -rjittyc to run all steps')

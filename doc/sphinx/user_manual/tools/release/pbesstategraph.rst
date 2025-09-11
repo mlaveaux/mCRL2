@@ -20,7 +20,7 @@ Example:
    \mathbf{init}\ X(1,1,1,1)
    \end{array}
 
-Instantiation of this PBES using tools such as :ref:`tool-pbes2bool` or :ref:`tool-pbessolve` does not terminate.
+Instantiation of this PBES using tools such as :ref:`tool-pbessolve` or :ref:`tool-pbessolve` does not terminate.
 Also, :ref:`tool-pbesparelm` is only able to remove parameter :math:`l` from equations :math:`X` and :math:`Y`, and parameter :math:`i` from :math:`Z`. The presence of the predicate variable instantiations :math:`X(2,j,k,l+1)` and :math:`Z(i,2,m+k,k)` in :math:`X`'s equation means the solution to :math:`X(1,1,1,1)` depends on the solutions to :math:`X(2,1,1,2)` and :math:`X(1,2,v+1,1)` for all values :math:`v`, so instantiation will not terminate (not even after applying :ref:`tool-pbesparelm`, since parameter :math:`k` in the equation for :math:`Z` was not removed).
 
 The dead variable analysis will (among others) observe that the third parameter of :math:`Z` does not affect the solution when :math:`j = 2`. The method will observe this, and replace :math:`Z(i,2,m+k,k)` by, for example, :math:`Z(i,2,1,k)`.

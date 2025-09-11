@@ -13,5 +13,5 @@ subprocess.run(['lps2pbes', '-v', '-f', 'nodeadlock.mcf', 'wolf_goat_cabbage.lps
 
 if '-rjittyc' in argv:
     subprocess.run(['lps2lts', '-vrjittyc', 'wolf_goat_cabbage.lps', 'wolf_goat_cabbage.lts'], check=True)
-    subprocess.run(['pbes2bool', '-vrjittyc', '-s1', 'wolf_goat_cabbage.nodeadlock.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', '-s1', 'wolf_goat_cabbage.nodeadlock.pbes'], check=True)
 

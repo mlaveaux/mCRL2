@@ -27,6 +27,7 @@
 #include "mcrl2/pbes/rewriters/data2pbes_rewriter.h"
 #include "mcrl2/pbes/rewriters/pbes2data_rewriter.h"
 #include <cstddef>
+#include <chrono>
 
 namespace mcrl2::pbes_system
 {
@@ -37,9 +38,10 @@ struct pbeschain_options
   bool use_bdd_simplifier = false;
   double bdd_timeout = 0.25;
   bool back_substitution = true;
-  int max_depth = 15;
+  int max_depth = 12;
   bool count_unique_pvi = false;
   bool fill_pvi = false;
+  double timeout = 0.0; // timeout in seconds, 0 = no timeout
 };
 
 // Substitutor to target specific path, replace our specific pvi with true/false
@@ -320,8 +322,6 @@ inline pbes_expression simplify_expr(pbes_expression& phi,
     mcrl2::data::detail::BDD_Prover& f_bdd_prover)
 {
   std::vector<propositional_variable_instantiation> phi_vector = get_propositional_variable_instantiations(phi);
-  if (phi_vector.size() < 50)
-  {
     if (options.use_bdd_simplifier)
     {
       data::data_expression expr = pbestodata(phi, replace_substituter);
@@ -335,7 +335,6 @@ inline pbes_expression simplify_expr(pbes_expression& phi,
       if_substituter.apply(res, res);
       return res;
     }
-  }
   return phi;
 }
 
@@ -350,13 +349,33 @@ inline void self_substitute(pbes_equation& equation,
     pbeschain_options options)
 {
   bool stable = false;
+  auto start_time = std::chrono::high_resolution_clock::now();
+  
+  if (options.timeout > 0.0)
+  {
+    mCRL2log(log::verbose) << "Starting substitution for equation " << equation.variable().name() 
+                           << " with timeout " << options.timeout << "s" << std::endl;
+  }
 
   while (!stable)
   {
+    // Check timeout
+    if (options.timeout > 0.0)
+    {
+      auto current_time = std::chrono::high_resolution_clock::now();
+      auto elapsed = std::chrono::duration<double>(current_time - start_time).count();
+      if (elapsed >= options.timeout)
+      {
+        mCRL2log(log::verbose) << "Timeout reached (" << options.timeout << "s) for equation " 
+                               << equation.variable().name() << " after " << elapsed << "s, stopping substitution" << std::endl;
+        break;
+      }
+    }
     stable = true;
     std::set<propositional_variable_instantiation> stable_set = {}; // To record pvi that have reach a max depth
     std::vector<propositional_variable_instantiation> set
         = get_propositional_variable_instantiations(equation.formula());
+    std::size_t previous_size = set.size();
     for (const propositional_variable_instantiation& x: set)
     {
       if (equation.variable().name() != x.name())
@@ -420,6 +439,7 @@ inline void self_substitute(pbes_equation& equation,
 
         // Simplify
 
+        
         phi = simplify_expr(phi, options, if_substituter, replace_substituter, pbes_rewriter, f_bdd_prover);
         phi_vector = get_propositional_variable_instantiations(phi);
         int size = phi_vector.size();
@@ -499,9 +519,9 @@ inline void self_substitute(pbes_equation& equation,
           stable_set.insert(x);
           stable_set.insert(cur_x);
           pvi_done = true;
-          pvi_substituter.set_pvi(cur_x);
-          pvi_substituter.set_replacement(x);
-          pvi_substituter.apply(equation.formula(), equation.formula());
+          // pvi_substituter.set_pvi(cur_x);
+          // pvi_substituter.set_replacement(x);
+          // pvi_substituter.apply(equation.formula(), equation.formula());
           break;
         }
       }
@@ -509,11 +529,13 @@ inline void self_substitute(pbes_equation& equation,
       std::vector<propositional_variable_instantiation> set
           = get_propositional_variable_instantiations(equation.formula());
 
-      mCRL2log(log::verbose) << "New number of pvi: " << set.size() << "\n";
+      std::size_t current_size = set.size();
+      mCRL2log(log::verbose) << "\rNew number of pvi: " << current_size << "";
 
       // Simplify
-      if (!options.use_bdd_simplifier)
+      if (!options.use_bdd_simplifier && (current_size == 0 || (previous_size >= current_size + 10)))
       {
+        previous_size = current_size;
         equation.formula() = simplify_expr(equation.formula(),
             options,
             if_substituter,
@@ -598,6 +620,7 @@ struct pbeschain_pbes_backward_substituter
         options.bdd_timeout);
     detail::replace_other_propositional_variables_with_functions_builder<pbes_system::pbes_expression_builder>
         replace_substituter(pbes_rewriter2);
+    
     for (std::vector<pbes_equation>::reverse_iterator i = p.equations().rbegin(); i != p.equations().rend(); i++)
     {
       mCRL2log(log::verbose) << "Investigating the equation for " << i->variable().name() << "\n";

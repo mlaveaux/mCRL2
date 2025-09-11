@@ -16,7 +16,7 @@ subprocess.run(['lps2pbes', '-v', '-f', 'eventually_player1_or_player2_wins.mcf'
 
 if "-rjittyc" in argv:
     subprocess.run(['lps2lts', '-vrjittyc', 'domineering.lps', 'domineering.lts'], check=True)
-    subprocess.run(['pbes2bool', '-vrjittyc', '-s1', 'domineering.nodeadlock.pbes'], check=True)
-    subprocess.run(['pbes2bool', '-vrjittyc', '-s1', 'domineering.player1_can_win.pbes'], check=True)
-    subprocess.run(['pbes2bool', '-vrjittyc', '-s1', 'domineering.player2_can_win.pbes'], check=True)
-    subprocess.run(['pbes2bool', '-vrjittyc', '-s1', 'domineering.eventually_player1_or_player2_wins.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', '-s1', 'domineering.nodeadlock.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', '-s1', 'domineering.player1_can_win.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', '-s1', 'domineering.player2_can_win.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', '-s1', 'domineering.eventually_player1_or_player2_wins.pbes'], check=True)

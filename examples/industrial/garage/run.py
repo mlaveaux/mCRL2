@@ -16,4 +16,4 @@ subprocess.run(['lps2pbes', '-v', '-f', 'nodeadlock.mcf', 'garage-ver1.lps', 'ga
 
 if '-rjittyc' in argv:
     subprocess.run(['lps2lts', '-v', '-rjittyc', 'garage-ver1.lps'], check=True)
-    subprocess.run(['pbes2bool', '-v', '-rjittyc', 'garage-ver.nodeadlock.pbes'], check=True)
+    subprocess.run(['pbessolve', '-v', '-rjittyc', 'garage-ver.nodeadlock.pbes'], check=True)

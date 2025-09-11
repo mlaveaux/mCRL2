@@ -28,5 +28,5 @@ subprocess.run(['pbesrewr', '-pquantifier-all', '-', 'temp_red.pbes'], input=run
 
 if "-rjittyc" in argv:
     subprocess.run(['lps2lts', '-v', '-rjittyc', 'temp.lps', 'tictactoe.aut'], check=True)
-    subprocess.run(['pbes2bool', '-v', '-s2', '-rjittyc', '-esome', 'temp_yellow.pbes'], check=True)
-    subprocess.run(['pbes2bool', '-v', '-s2', '-rjittyc', '-esome', 'temp_red.pbes'], check=True)
+    subprocess.run(['pbessolve', '-v', '-s2', '-rjittyc', '-esome', 'temp_yellow.pbes'], check=True)
+    subprocess.run(['pbessolve', '-v', '-s2', '-rjittyc', '-esome', 'temp_red.pbes'], check=True)

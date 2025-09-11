@@ -199,7 +199,7 @@ struct bqnf2ppg_rewriter: public bqnf_visitor
     /// \param qvars the quantifier variables of the quantifier in the parent expression.
     /// \param qexpr the PBES expression within the quantifier expression.
     /// \return true if the expression qexpr conforms to BQNF.
-    virtual bool visit_inner_and(const fixpoint_symbol& sigma, const propositional_variable& var, const term_type& e, const data::variable_list& qvars, const term_type& qexpr)
+    virtual bool visit_inner_and_quantified(const fixpoint_symbol& sigma, const propositional_variable& var, const term_type& e, const data::variable_list& qvars, const term_type& qexpr)
     {
       bool result = true;
       inc_indent();
@@ -284,7 +284,7 @@ struct bqnf2ppg_rewriter: public bqnf_visitor
         qvars = qvars + atermpp::down_cast<exists>(qexpr).variables();
         qexpr = pbes_system::accessors::arg(qexpr);
       }
-      bool result = visit_inner_and(sigma, var, e, qvars, qexpr);
+      bool result = visit_inner_and_quantified(sigma, var, e, qvars, qexpr);
       if (!result) {
         std::clog << "Unexpected result: expression not in form phi /\\ psi: " << pp(e) << std::endl;
         throw(std::runtime_error("Unexpected result: expression not in form phi /\\ psi."));
@@ -532,7 +532,7 @@ struct bqnf2ppg_rewriter: public bqnf_visitor
         visit_inner_implies(sigma, var, e, empty_seq, e) || visit_or(sigma, var, e);
       } else if (is_and(e)) {
         data::variable_list empty_seq;
-        visit_inner_and(sigma, var, e, empty_seq, e) || visit_and(sigma, var, e);
+        visit_inner_and_quantified(sigma, var, e, empty_seq, e) || visit_and(sigma, var, e);
       }
       dec_indent();
       return true;

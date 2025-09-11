@@ -205,7 +205,7 @@ Given an LPS and a formula, the tool lps2pbes produces a PBES in which the model
 checking question of "does the formula hold for this LPS?" is encoded. The PBES
 is stored in a binary file format. By solving the PBES, an answer to this
 question can be found. The main tool for trying to solve a PBES is
-:ref:`tool-pbes2bool`. It attempts to solve a given PBES and (if successful) returns
+:ref:`tool-pbessolve` (formerly :ref:`tool-pbes2bool`). It attempts to solve a given PBES and (if successful) returns
 either true or false.
 
 Note that solving PBESs is generally undecidable, so the attempt may fail. In

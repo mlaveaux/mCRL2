@@ -9,7 +9,7 @@ The tool ``lts2pbes`` reads a modal formula as well as a labelled transitions sy
 .fsm format and generates a parameterised boolean equation system (PBES) of which the solution
 of the initial variable indicates whether the
 formula is valid in the initial state of the transition system. The generated PBES can be solved
-using tools such as :ref:`tool-pbes2bool`, :ref:`tool-pbessolve` or :ref:`tool-pbespgsolve`.
+using tools such as :ref:`tool-pbessolve`, :ref:`tool-pbessolve` or :ref:`tool-pbespgsolve`.
 
 When the labelled transition file is of type .aut or .fsm, the information about data types and
 actions is not available and must be provided explicitly using the ``--data``, ``--lps``, or
@@ -37,7 +37,7 @@ provided the PBES is generated
 using lts2pbes (or :ref:`tool-lps2pbes`) using the ``--counter-example`` flag. The generated PBES is more complicated
 and may be harder to solve. Yet, these counter examples are very helpful in determining whether formulas do
 not hold. If formulas are valid, this flag can also be used to determine witnesses, i.e., evidence when formulas
-are valid. The tool :ref:`tool-pbes2bool` can generate counter examples without the use of this flag. These
+are valid. The tool :ref:`tool-pbessolve` can generate counter examples without the use of this flag. These
 counter-examples are solely based on the provided PBES and they must be manually be related to the original
 transition system.
 

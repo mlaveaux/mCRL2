@@ -40,6 +40,8 @@ class pbes_rewriter_tool: public Tool
       result.insert(pbes_system::pbes_rewriter_type::quantifier_one_point);
       result.insert(pbes_system::pbes_rewriter_type::pfnf);
       result.insert(pbes_system::pbes_rewriter_type::ppg);
+      result.insert(pbes_system::pbes_rewriter_type::srf);
+      result.insert(pbes_system::pbes_rewriter_type::pre_srf);
       result.insert(pbes_system::pbes_rewriter_type::bqnf_quantifier);
       return result;
     }

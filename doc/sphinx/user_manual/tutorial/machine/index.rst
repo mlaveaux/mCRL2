@@ -12,7 +12,7 @@ A Vending Machine
 
 **New tools**:
 :ref:`tool-mcrl22lps`, :ref:`tool-lps2lts`, :ref:`tool-ltsgraph`, :ref:`tool-ltscompare`,
-:ref:`tool-ltsconvert`, :ref:`tool-lps2pbes`, :ref:`tool-pbes2bool`.
+:ref:`tool-ltsconvert`, :ref:`tool-lps2pbes`, :ref:`tool-pbessolve`.
 
 Our first little step consists of number of variations on the good old
 vending machine, a user ``User`` interacting with a machine ``Mach``. By
@@ -167,7 +167,7 @@ creates from the system in linear format and the formula in the file
 in the file :file:`vm01a.pbes`. On calling the PBES solver on
 :file:`vm01a.pbes`::
 
-   $ pbes2bool vm01a.pbes
+   $ pbessolve vm01a.pbes
 
 the mCRL2 tool answers::
 
@@ -177,17 +177,17 @@ So, for vending machine 1 it holds that action ``ready`` is always
 possible in the future. Instead of making separate steps explicity,
 the verification can also be captured by a single, pipe-line command::
 
-   $ mcrl22lps vm01.mcrl2 | lps2pbes -f vm01a.mcf | pbes2bool
+   $ mcrl22lps vm01.mcrl2 | lps2pbes -f vm01a.mcf | pbessolve
 
 Running the other properties yields the expected
 results. Properties (c) and (d) do hold, property (b) does not hold, as
 indicated by the following snippet::
 
-   $ mcrl22lps vm01.mcrl2 | lps2pbes -f vm01b.mcf | pbes2bool
+   $ mcrl22lps vm01.mcrl2 | lps2pbes -f vm01b.mcf | pbessolve
    false
-   $ mcrl22lps vm01.mcrl2 | lps2pbes -f vm01c.mcf | pbes2bool
+   $ mcrl22lps vm01.mcrl2 | lps2pbes -f vm01c.mcf | pbessolve
    true
-   $ mcrl22lps vm01.mcrl2 | lps2pbes -f vm01d.mcf | pbes2bool
+   $ mcrl22lps vm01.mcrl2 | lps2pbes -f vm01d.mcf | pbessolve
    true
 
 Second variation
@@ -263,15 +263,15 @@ the natural transition length may provide better results.
    :download:`vm02c.mcf <files/vm02c.mcf>`.
 
    Each of the properties can be checked using a combination of :ref:`tool-mcrl22lps`,
-   :ref:`tool-lps2pbes` and :ref:`tool-pbes2bool`. The following is a sample script that
+   :ref:`tool-lps2pbes` and :ref:`tool-pbessolve`. The following is a sample script that
    performs the verification::
 
      $ mcrl22lps vm02.mcrl2 vm02.lps
-     $ lps2pbes vm02.lps -f vm02a.mcf | pbes2bool
+     $ lps2pbes vm02.lps -f vm02a.mcf | pbessolve
      true
-     $ lps2pbes vm02.lps -f vm02b.mcf | pbes2bool
+     $ lps2pbes vm02.lps -f vm02b.mcf | pbessolve
      true
-     $ lps2pbes vm02.lps -f vm02c.mcf | pbes2bool
+     $ lps2pbes vm02.lps -f vm02c.mcf | pbessolve
      true
 
    So the conclusion of the verification is that all three properties hold.

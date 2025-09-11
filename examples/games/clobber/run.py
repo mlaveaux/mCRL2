@@ -16,4 +16,4 @@ if "-rjittyc" in argv:
 subprocess.run(['lps2pbes', '-v', '-f', 'nodeadlock.mcf', 'clobber.lps', 'clobber.nodeadlock.pbes'], check=True)
 
 if "-rjittyc" in argv:
-    subprocess.run(['pbes2bool', '-vrjittyc', '-s1', 'clobber.nodeadlock.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', '-s1', 'clobber.nodeadlock.pbes'], check=True)

@@ -1,7 +1,7 @@
 % No transit between two terminating states (Failed to Done)
 % The property fails, as exemplified by the trace jobFailedToDone.trc
 %
-% Currently (December 2011), verifying the property using pbes2bool or pbes2bes requires
+% Currently (December 2011), verifying the property using pbessolve requires
 % too much time (> 50 hours) and is very memory-hungry. The violation can be detected
 % much faster by specifying a monitor process and searching for the presence of an action 
 % using lps2lts.

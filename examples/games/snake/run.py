@@ -16,7 +16,7 @@ subprocess.run(['lps2pbes', '-v', '-f', 'eventually_white_or_black_wins.mcf', 's
 
 if '-rjittyc' in argv:
     subprocess.run(['lps2lts', '-vrjittyc', 'snake.lps', 'snake.aut'], check=True)
-    subprocess.run(['pbes2bool', '-vrjittyc', '-s1', 'snake.nodeadlock.pbes'], check=True)
-    subprocess.run(['pbes2bool', '-vrjittyc', '-s1', 'snake.white_can_win.pbes'], check=True)
-    subprocess.run(['pbes2bool', '-vrjittyc', '-s1', 'snake.black_can_win.pbes'], check=True)
-    subprocess.run(['pbes2bool', '-vrjittyc', '-s1', 'snake.eventually_white_or_black_wins.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', '-s1', 'snake.nodeadlock.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', '-s1', 'snake.white_can_win.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', '-s1', 'snake.black_can_win.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', '-s1', 'snake.eventually_white_or_black_wins.pbes'], check=True)

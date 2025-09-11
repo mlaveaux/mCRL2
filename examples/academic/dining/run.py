@@ -19,12 +19,12 @@ for name in [
 
     print(f'Checking property nodeadlock.mcf for specification {name}.mcrl2')
     subprocess.run(['lps2pbes', '-f', 'nodeadlock.mcf', f'{name}.lps', f'{name}.nodeadlock.pbes'], check=True)
-    subprocess.run(['pbes2bool', f'{name}.nodeadlock.pbes'], check=True)
+    subprocess.run(['pbessolve', f'{name}.nodeadlock.pbes'], check=True)
   
     print(f'Checking property nostuffing.mcf for specification {name}.mcrl2')
     subprocess.run(['lps2pbes', '-f', 'nostuffing.mcf', f'{name}.lps', f'{name}.nostuffing.pbes'], check=True)
-    subprocess.run(['pbes2bool', f'{name}.nostuffing.pbes'], check=True)
+    subprocess.run(['pbessolve', f'{name}.nostuffing.pbes'], check=True)
 
     print(f'Checking property nostarvation.mcf for specification {name}.mcrl2')
     subprocess.run(['lps2pbes', '-f', 'nostarvation.mcf', f'{name}.lps', f'{name}.nostarvation.pbes'], check=True)
-    subprocess.run(['pbes2bool', f'{name}.nostarvation.pbes'], check=True)
+    subprocess.run(['pbessolve', f'{name}.nostarvation.pbes'], check=True)

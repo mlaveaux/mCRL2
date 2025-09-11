@@ -27,7 +27,7 @@ for prop in [
 
     print('verifying property {base} for swp_lists.lps')
     subprocess.run(['lps2pbes', '-v', '-f', prop, 'swp_lists.lps', f'swp_lists.{name}.pbes'], check=True)
-    subprocess.run(['pbes2bool', '-v', f'swp_lists.{name}.pbes'], check=True)
+    subprocess.run(['pbessolve', '-v', f'swp_lists.{name}.pbes'], check=True)
 
 # SWP with Tanenbaum's bug
 subprocess.run(['mcrl22lps', '-v', 'swp_with_tanenbaums_bug.mcrl2', 'swp_with_tanenbaums_bug.lps'], check=True)

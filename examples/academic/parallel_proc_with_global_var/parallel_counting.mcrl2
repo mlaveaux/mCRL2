@@ -16,7 +16,7 @@
 %
 % it can be checked that an particular value can
 % be reached. This property can easily be checked 
-% using pbes2bool (still requiring >500.000) bes
+% using pbessolve (still requiring >500.000) bes
 % variables.
 %
 % The formula 

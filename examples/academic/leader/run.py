@@ -9,7 +9,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 subprocess.run(['mcrl22lps', '-n', 'leader.mcrl2', 'leader.lps'], check=True)
 
 subprocess.run(['lps2pbes', '-v', '-f', 'nodeadlock.mcf', 'leader.lps', 'leader.nodeadlock.pbes'], check=True)
-subprocess.run(['pbes2bool', '-v', 'leader.nodeadlock.pbes'], check=True)
+subprocess.run(['pbessolve', '-v', 'leader.nodeadlock.pbes'], check=True)
 
 # This indicates the size of the non-reduces state space
 subprocess.run(['lps2lts', '-v', 'leader.lps'], check=True)

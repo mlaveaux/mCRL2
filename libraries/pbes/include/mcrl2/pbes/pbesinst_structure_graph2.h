@@ -656,6 +656,8 @@ class pbesinst_structure_graph_algorithm2: public pbesinst_structure_graph_algor
         }
       }
       m_graph_builder.erase_vertices(to_be_removed);
+
+      mCRL2log(log::debug) << "\nFinal structure graph " << std::endl;
       mCRL2log(log::debug) << G << std::endl;
     }
 };

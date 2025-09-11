@@ -13,8 +13,8 @@ subprocess.run(['lps2lts', '-v', 'SMS.lps'], check=True)
 
 subprocess.run(['lps2pbes', '-f', 'properties_SMS/eventuallyDeleted.mcf', 'SMS.lps', 'eventuallyDeleted.pbes'], check=True)
 subprocess.run(['lps2pbes', '-f', 'properties_SMS/noTransitFromDeleted.mcf', 'SMS.lps', 'noTransitFromDeleted.pbes'], check=True)
-subprocess.run(['pbes2bool', 'eventuallyDeleted.pbes'], check=True)
-subprocess.run(['pbes2bool', 'noTransitFromDeleted.pbes'], check=True)
+subprocess.run(['pbessolve', 'eventuallyDeleted.pbes'], check=True)
+subprocess.run(['pbessolve', 'noTransitFromDeleted.pbes'], check=True)
 
 subprocess.run(['mcrl22lps', '-n', 'WMS.mcrl2', 'WMS.lps'], check=True)
 

@@ -13,6 +13,7 @@
 #define MCRL2_PBES_PBESINST_LAZY_H
 
 #include <optional>
+#include <string>
 #include <thread>
 #include <mutex>
 #include <functional>
@@ -212,7 +213,7 @@ class pbesinst_lazy_algorithm
     volatile bool m_must_abort = false;
 
     // \brief Returns a status message about the progress
-    virtual std::string status_message(std::size_t equation_count)
+    virtual std::optional<std::string> status_message(std::size_t equation_count)
     {
       if (equation_count > 0 && equation_count % 1000 == 0)
       {
@@ -220,7 +221,8 @@ class pbesinst_lazy_algorithm
         out << "Generated " << equation_count << " BES equations" << std::endl;
         return out.str();
       }
-      return "";
+
+      return std::nullopt;
     }
 
     // instantiates global variables
@@ -387,7 +389,12 @@ class pbesinst_lazy_algorithm
         while (!todo.elements().empty() && !m_must_abort)
         {
           ++m_iteration_count;
-          mCRL2log(log::status) << status_message(m_iteration_count);
+
+          if (std::optional<std::string> message = status_message(m_iteration_count))
+          {
+            mCRL2log(log::status) << *message;
+          }
+
           detail::check_bes_equation_limit(m_iteration_count);
 
           next_todo(X_e);
@@ -415,9 +422,9 @@ class pbesinst_lazy_algorithm
                                << " with rank " << k << std::endl;
           on_report_equation(thread_index, X_e, psi_e, k);
           todo.insert(occ.begin(), occ.end(), discovered, thread_index);
-          for (auto i = occ.begin(); i != occ.end(); ++i)
+          for (const auto& i : occ)
           {
-            discovered.insert(*i, thread_index);
+            discovered.insert(i, thread_index);
           }
           on_discovered_elements(occ);
 

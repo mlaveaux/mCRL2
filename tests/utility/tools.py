@@ -319,7 +319,7 @@ class ToolFactory(object):
             return Lts2LpsTool(label, name, toolpath, input_nodes, output_nodes, args)
         elif name in ['pbespgsolve', 'bessolve']:
             return SolveTool(label, name, toolpath, input_nodes, output_nodes, args)
-        elif name in ['pbes2bool', 'pbessolve', 'pbessolvesymbolic', 'pbessymbolicbisim']:
+        elif name in ['pbessolve', 'pbessolve', 'pbessolvesymbolic', 'pbessymbolicbisim']:
             return PbesSolveTool(label, name, toolpath, input_nodes, output_nodes, args)
         elif name in ['pressolve']:
             return PresSolveTool(label, name, toolpath, input_nodes, output_nodes, args)

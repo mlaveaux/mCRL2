@@ -21,4 +21,4 @@ for property in [
     name, _ = os.path.splitext(property)
 
     subprocess.run(['lps2pbes', '-f', property, 'mpsu.lps', f'mpsu.{name}.pbes'], check=True)
-    subprocess.run(['pbes2bool', f'mpsu.{name}.pbes'], check=True)
+    subprocess.run(['pbessolve', f'mpsu.{name}.pbes'], check=True)

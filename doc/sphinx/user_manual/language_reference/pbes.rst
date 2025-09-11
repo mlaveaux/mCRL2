@@ -127,7 +127,7 @@ PBESs:
 
 Currently, the following strategies have been implemented for solving PBESs:
 
-* Enumerative, by translation to BES, implemented in :ref:`tool-pbes2bool`.
+* Enumerative, by translation to BES, implemented in :ref:`tool-pbessolve`.
 * Enumerative, by translation to parity games, implemented in :ref:`tool-pbespgsolve`.
 * Symbolic approximation, implemented in :ref:`tool-pbesfixpointsolve`.
 

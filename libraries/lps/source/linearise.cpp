@@ -8306,8 +8306,9 @@ class specification_basic_type
 
           // Remove constants from the specification, where global variables are
           // also instantiated if they exist.
-          data::mutable_map_substitution<> sigma = alg.compute_constant_parameters(true);
+          data::mutable_map_substitution<> sigma = alg.compute_constant_parameters(true); // Instantiate global variables; Take conditions into account.
           alg.remove_parameters(sigma);
+          alg.remove_trivial_summands();
 
           if (!options.ignore_time)
           {

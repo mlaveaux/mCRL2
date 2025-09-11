@@ -14,7 +14,7 @@ tools:
     input: [l2]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
   t3:
     input: [l2]
     output: []

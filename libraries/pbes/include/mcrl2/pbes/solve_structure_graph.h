@@ -132,24 +132,9 @@ class solve_structure_graph_algorithm
           if (v != undefined_vertex())
           {
             global_strategy<structure_graph>(G).set_strategy(ui, v);
-//            mCRL2log(log::debug) << "set initial strategy for node " << ui << " to " << v << std::endl;
           }
         }
       }
-
-      // // optimization
-      // std::size_t h = std::get<1>(q);
-      // if (h == m)
-      // {
-      //   if (m % 2 == 0)
-      //   {
-      //     return { make_vertex_set(G), vertex_set(N) };
-      //   }
-      //   else
-      //   {
-      //     return { vertex_set(N), make_vertex_set(G) };
-      //   }
-      // }
 
       vertex_set W[2]   = { vertex_set(N), vertex_set(N) };
       vertex_set W_1[2];
@@ -391,6 +376,8 @@ class solve_structure_graph_algorithm
         check_solve_recursive_solution(G, is_disjunctive, W.first, W.second);
       }
 
+      mCRL2log(log::debug) << "\nSolved structure graph " << std::endl;
+      mCRL2log(log::debug) << G << std::endl;
       return W;
     }
 };

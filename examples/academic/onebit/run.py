@@ -8,9 +8,9 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 subprocess.run(['mcrl22lps', '-v', 'onebit.mcrl2', 'onebit.lps'], check=True)
 subprocess.run(['lps2pbes', '-v', '-f', 'nodeadlock.mcf', 'onebit.lps', 'onebit.nodeadlock.pbes'], check=True)
-subprocess.run(['pbes2bool', '-v', 'onebit.nodeadlock.pbes'], check=True)
+subprocess.run(['pbessolve', '-v', 'onebit.nodeadlock.pbes'], check=True)
 
-# Solving the following using pbes2bool is slow as the formulas have nested fixed points!
+# Solving the following using pbessolve is slow as the formulas have nested fixed points!
 subprocess.run(['lps2pbes', '-v', '-f', 'infinitely_often_enabled_then_infinitely_often_taken.mcf', 'onebit.lps', 'onebit.infinitely_often_enabled_then_infinitely_often_taken.pbes'], check=True)
 subprocess.run(['pbespgsolve', '-srecursive', '-v', 'onebit.infinitely_often_enabled_then_infinitely_often_taken.pbes'], check=True)
 

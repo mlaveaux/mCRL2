@@ -41,6 +41,6 @@ tools:
     input: [l3]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
 result: |
   result = t3.value['solution'] == t4.value['solution'] == t5.value['solution'] == t6.value['solution'] == t7.value['solution']

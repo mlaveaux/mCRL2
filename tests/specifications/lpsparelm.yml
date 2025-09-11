@@ -28,7 +28,7 @@ tools:
     input: [l4]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
 
 result: |
   result = t4.value['solution']

@@ -10,7 +10,7 @@ def run(mcffile, lpsfile):
     print(f'verifying property {os.path.basename(mcffile)}')
 
     run = subprocess.run(['lps2pbes', '-f', mcffile, lpsfile], stdout=subprocess.PIPE, check=True)
-    subprocess.run(['pbes2bool'], input=run.stdout, check=True)
+    subprocess.run(['pbessolve'], input=run.stdout, check=True)
 
 lpsfile = '11073.lps'
 subprocess.run(['mcrl22lps', '11073.mcrl2', lpsfile], check=True)

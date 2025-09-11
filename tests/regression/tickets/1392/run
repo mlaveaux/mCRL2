@@ -1,3 +1,3 @@
 mcrl22lps -lstack 1.mcrl2 1.lps
 lps2pbes -vf 1.mcf 1.lps 1.pbes
-pbes2bool -esome -s3 1.pbes 
+pbessolve -esome -s3 1.pbes 

@@ -1,4 +1,4 @@
-#!/usr/bin/env', 'python3
+#!/usr/bin/env python3
 
 import subprocess
 import os
@@ -9,7 +9,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 subprocess.run(['mcrl22lps', '-v', 'allow.mcrl2', 'allow.lps'], check=True)
 
 subprocess.run(['lps2pbes', '-v', '-f', 'nodeadlock.mcf', 'allow.lps', 'allow.nodeadlock.pbes'], check=True)
-subprocess.run(['pbes2bool', '-v', 'allow.nodeadlock.pbes'], check=True)
+subprocess.run(['pbessolve', '-v', 'allow.nodeadlock.pbes'], check=True)
 # The above shows that there is a deadlock in the specification, let's investigate.
 
 # The following command creates the state space, and stores trace to the deadlock

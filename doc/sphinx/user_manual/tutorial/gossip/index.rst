@@ -174,10 +174,10 @@ Next we are going to investigate some properties of the gossiping girls.
          :language: mcrl2
          
       We can now verify this using :ref:`tool-lps2pbes` and
-      :ref:`tool-pbes2bool`::
+      :ref:`tool-pbessolve`::
       
         $ lps2pbes -f gossip1.mcf gossip.lps gossip1.pbes
-        $ pbes2bool -rjittyc gossip1.pbes
+        $ pbessolve -rjittyc gossip1.pbes
         true        
       
 .. admonition:: Exercse
@@ -210,7 +210,7 @@ Next we are going to investigate some properties of the gossiping girls.
       
       However, if we try to verify this property using::
       
-        $ lps2pbes -f gossip3.mcf gossip.lps | pbes2bool -rjittyc
+        $ lps2pbes -f gossip3.mcf gossip.lps | pbessolve -rjittyc
         
       It seems that :ref:`tool-lps2pbes` is getting stuck. This is caused by the
       translation of µ-calculus formula with an LPS to a PBES, that has to look
@@ -227,7 +227,7 @@ Next we are going to investigate some properties of the gossiping girls.
       PBES, hence generating the PBES has become more efficient, but the solving
       process may be slower, but does succeed::
       
-        $ lps2pbes -f gossip3a.mcf gossip.lps | pbes2bool -rjittyc
+        $ lps2pbes -f gossip3a.mcf gossip.lps | pbessolve -rjittyc
         true
    
    #. The µ-calculus formulae in the previous approach must be modified if the
@@ -244,7 +244,7 @@ Next we are going to investigate some properties of the gossiping girls.
       
       We verify the property using::
       
-        $ lps2pbes -f gossip2.mcf gossip.lps | pbes2bool -rjittyc
+        $ lps2pbes -f gossip2.mcf gossip.lps | pbessolve -rjittyc
         true
         
       Verification of the property using this formula is quick.
@@ -305,7 +305,7 @@ Next we are going to investigate some properties of the gossiping girls.
          
       We verify this using the following commands::
       
-        $ lps2pbes -f gossip4.mcf | pbes2bool -rjittyc        
+        $ lps2pbes -f gossip4.mcf | pbessolve -rjittyc        
         false
         
       Indeed the property does not hold, as we also observed from the
@@ -313,7 +313,7 @@ Next we are going to investigate some properties of the gossiping girls.
         
 .. note::
 
-   In all the verification above, the command :ref:`tool-pbes2bool` can be
+   In all the verification above, the command :ref:`tool-pbessolve` can be
    replaced by :ref:`tool-pbespgsolve`. The latter uses a different algorithm
    for doing the actual verification; it first translates the pbes into a
    parity game, and then solves the parity game.

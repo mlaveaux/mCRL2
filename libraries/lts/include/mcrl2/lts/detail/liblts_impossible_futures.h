@@ -181,6 +181,12 @@ write_counter_example(std::ostream& stream, const trace& initial_trace, const st
       stream << action; 
     }
 
+    // Deal with the empty case.
+    if (first_action)
+    {
+      stream << "tau*";
+    }
+
     stream << "]false";
     first_trace = false;
   }

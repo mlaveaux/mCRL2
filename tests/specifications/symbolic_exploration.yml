@@ -42,27 +42,27 @@ tools:
     input: [l2]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
   t7:
     input: [l3]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
   t8:
     input: [l4]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
   t9:
     input: [l5]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
   t10:
     input: [l6]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
 result: |
   answers = [t6.value['solution'], t7.value['solution'], t8.value['solution'], t9.value['solution'], t10.value['solution']]
   result = not (True in answers and False in answers)

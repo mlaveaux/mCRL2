@@ -113,7 +113,7 @@ the following µ-calculus formula (available as
    
 The commands for this verification can be summarised as::
 
-   $ mcrl22lps -lregular2 watercan2.mcrl2 | lps2pbes -f watercan2.mcf | pbes2bool
+   $ mcrl22lps -lregular2 watercan2.mcrl2 | lps2pbes -f watercan2.mcf | pbessolve
    true
 
 We can get some more feedback on what is going on by using the
@@ -273,5 +273,5 @@ action, you need to modify the modal formula to include a parameter.
 
    It can be verified to hold for the specification using::
    
-     $ mcrl22lps -lregular2 watercan3.mcrl2 | lps2pbes -f watercan3.mcf | pbes2bool
+     $ mcrl22lps -lregular2 watercan3.mcrl2 | lps2pbes -f watercan3.mcf | pbessolve
      true

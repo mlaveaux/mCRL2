@@ -31,7 +31,7 @@ tools:
     input: [l4, l3]
     output: [l5]
     args: []
-    name: pbes2bool
+    name: pbessolve
   t4:
     input: [l5, l2]
     output: [l6]
@@ -41,7 +41,7 @@ tools:
     input: [l6]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
   t6:
     input: [l3]
     output: [l7]

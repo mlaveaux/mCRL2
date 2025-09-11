@@ -70,7 +70,7 @@ Technical details
   important conclusions and recommendations to Vitatron.
 
   One of the requirements to the model of the first approach was validated by
-  symbolic model checking using :ref:`tool-pbes2bool`.
+  symbolic model checking using :ref:`tool-pbessolve`.
 
 *Data size*
   The state space size depends on the configuration of the formal heart model.

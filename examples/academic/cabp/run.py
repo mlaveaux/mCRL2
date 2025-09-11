@@ -24,4 +24,4 @@ for prop in [
 
     print(f'verifying property {name}.mcf for cabp.lps')
     subprocess.run(['lps2pbes', '-f', prop, 'cabp.lps', f'cabp.{name}.pbes'], check=True)
-    subprocess.run(['pbes2bool', f'cabp.{name}.pbes'], check=True)
+    subprocess.run(['pbessolve', f'cabp.{name}.pbes'], check=True)

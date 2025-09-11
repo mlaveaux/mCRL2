@@ -10,4 +10,4 @@ subprocess.run(['mcrl22lps', 'goback.mcrl2', 'goback.lps'], check=True)
 
 print('Checking property nodeadlock.mcf for goback.mcrl2')
 subprocess.run(['lps2pbes', '-f', 'nodeadlock.mcf', 'goback.lps', 'goback.nodeadlock.pbes'], check=True)
-subprocess.run(['pbes2bool', 'goback.nodeadlock.pbes'], check=True)
+subprocess.run(['pbessolve', 'goback.nodeadlock.pbes'], check=True)

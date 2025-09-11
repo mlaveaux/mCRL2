@@ -21,6 +21,6 @@ if '-rjittyc' in argv:
     subprocess.run(['ltscompare', '-v', '-ebisim', 'lift3-init.aut', 'lift3-final.aut'], check=True)
     subprocess.run(['lpsbisim2pbes', '-v', '-bstrong-bisim', 'lift3-init.lps', 'lift3-final.lps', 'lift3-bisim.pbes'], check=True)
 
-    subprocess.run(['pbes2bool', '-vrjittyc', 'lift3-final.nodeadlock.pbes'], check=True)
-    subprocess.run(['pbes2bool', '-vrjittyc', 'lift3-init.nodeadlock.pbes'], check=True)
-    subprocess.run(['pbes2bool', '-vrjittyc', 'lift3-bisim.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', 'lift3-final.nodeadlock.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', 'lift3-init.nodeadlock.pbes'], check=True)
+    subprocess.run(['pbessolve', '-vrjittyc', 'lift3-bisim.pbes'], check=True)

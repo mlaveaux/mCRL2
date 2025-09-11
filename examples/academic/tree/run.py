@@ -9,7 +9,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 subprocess.run(['mcrl22lps', '-v', 'tree.mcrl2', 'tree.lps'], check=True)
 
 subprocess.run(['lps2pbes', '-v', '-f', 'nodeadlock.mcf', 'tree.lps', 'tree.nodeadlock.pbes'], check=True)
-subprocess.run(['pbes2bool', '-v', 'tree.nodeadlock.pbes'], check=True)
+subprocess.run(['pbessolve', '-v', 'tree.nodeadlock.pbes'], check=True)
 # The above shows that there is a deadlock in the specification.
 # Let's investigate
 

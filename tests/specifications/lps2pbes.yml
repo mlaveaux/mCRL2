@@ -34,7 +34,7 @@ tools:
     input: [l6]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
   t5:
     input: [l2, l5]
     output: [l8]
@@ -44,7 +44,7 @@ tools:
     input: [l8]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
   t7:
     input: [l2, l5]
     output: [l4]
@@ -54,7 +54,7 @@ tools:
     input: [l4]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
 
 result: |
   result = t4.value['solution'] == t6.value['solution'] == t8.value['solution'] == (not t2.value['has-deadlock'])

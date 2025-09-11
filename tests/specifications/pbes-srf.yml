@@ -23,7 +23,7 @@ tools:
     input: [l2]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
   t4:
     input: [l3]
     output: [l4]
@@ -38,7 +38,7 @@ tools:
     input: [l4]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
 result: |
   result = 'true' in (t5.stdout + t5.stderr) and t3.value['solution'] == t6.value['solution']
 

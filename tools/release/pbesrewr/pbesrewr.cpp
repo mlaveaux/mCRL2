@@ -9,6 +9,7 @@
 /// \file pbesrewr.cpp
 
 #include "mcrl2/data/rewriter_tool.h"
+#include "mcrl2/pbes/detail/instantiate_global_variables.h"
 #include "mcrl2/pbes/detail/ppg_rewriter.h"
 #include "mcrl2/pbes/detail/ppg_traverser.h"
 #include "mcrl2/pbes/normalize.h"
@@ -151,14 +152,20 @@ class pbes_rewriter : public pbes_input_tool<pbes_output_tool<pbes_rewriter_tool
         }
         case pbes_rewriter_type::srf:
         {
-          auto result = pbes2srf(p);    
+          pbes_system::detail::instantiate_global_variables(p);
+          pbes_system::algorithms::normalize(p);
+          auto result = pbes2srf(p,true);
           save_pbes(result.to_pbes(), output_filename(), m_pbes_output_format);  
+          return true;
           break;
         }
         case pbes_rewriter_type::pre_srf:
         {
+          pbes_system::detail::instantiate_global_variables(p);
+          pbes_system::algorithms::normalize(p);
           auto result = pbes2pre_srf(p);
           save_pbes(result.to_pbes(), output_filename(), m_pbes_output_format);  
+          return true;
           break;    
         }
         case pbes_rewriter_type::bqnf_quantifier:

@@ -22,13 +22,13 @@ static void read_newline(std::istream& is, const std::size_t line_no)
   is.get(ch);
 
   // Skip over spaces
-  while (ch == ' ')
+  while (ch == ' ' && is.good())
   {
     is.get(ch);
   }
 
   // Windows systems typically have a carriage return before a newline.
-  if (ch == '\r')
+  if (ch == '\r' && is.good())
   {
     is.get(ch);
   }

@@ -15,7 +15,6 @@ The run time of the following tools are currently being measured:
   ========= ============= ============
   mcrl22lps ``[default]`` N/A
   lps2lts   ``[default]`` ``-rjittyc``
-  pbes2bool ``[default]`` ``-rjittyc``
   pbessolve ``[default]`` ``-rjittyc``
   ========= ============= ============
 

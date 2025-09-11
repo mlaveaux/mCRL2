@@ -28,17 +28,17 @@ tools:
     input: [l2]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
   t5:
     input: [l3]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
   t6:
     input: [l4]
     output: []
     args: []
-    name: pbes2bool
+    name: pbessolve
 result: |
   s = t4.value['solution']
   s1 = t5.value['solution']

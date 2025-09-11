@@ -207,7 +207,7 @@ available_tests: List[ToolTest] = [
     ),
     ToolTest("lps2pbes", "[lpsfile]", ["-f[mcffile]", "-t -f[mcffile]"]),
     ToolTest("lts2pbes", "[ltsfile]", ["-f[mcffile]"]),
-    ToolTest("pbes2bool", "[pbesfile]", ["-v"]),
+    ToolTest("pbessolve", "[pbesfile]", ["-v"]),
     ToolTest("pbespp", "[pbesfile]", ["-finternal", "-fdefault"]),
     ToolTest(
         "pbesconstelm",

@@ -296,7 +296,7 @@ B. It is not possible for all adventurers to reach the `finish` side in less
 
       forall x:Nat . [true* . report(x)] val(x >= 17)
 
-   However, executing :ref:`tool-pbes2bool` does not terminate if this
+   However, executing :ref:`tool-pbessolve` does not terminate if this
    phrasing is used.
 
 .. admonition:: Exercise
@@ -309,11 +309,11 @@ B. It is not possible for all adventurers to reach the `finish` side in less
 
   * Solve the PBES::
 
-    $ pbes2bool bridge_X.pbes
+    $ pbessolve bridge_X.pbes
 
   Alternatively, this can be done with a single command::
 
-    $ lps2pbes --formula=formula_X.mcf bridge.lps | pbes2bool
+    $ lps2pbes --formula=formula_X.mcf bridge.lps | pbessolve
 
 .. admonition:: Solution
    :class: collapse
@@ -323,9 +323,9 @@ B. It is not possible for all adventurers to reach the `finish` side in less
    process::
 
      $ mcrl22lps bridge.mcrl2 bridge.lps
-     $ lps2pbes --formula=formula_A.mcf bridge.lps | pbes2bool
+     $ lps2pbes --formula=formula_A.mcf bridge.lps | pbessolve
      true
-     $ lps2pbes --formula=formula_B-final.mcf bridge-referee.lps | pbes2bool
+     $ lps2pbes --formula=formula_B-final.mcf bridge-referee.lps | pbessolve
      true
 
 A disadvantage of using PBESs for model checking is that insightful diagnostic

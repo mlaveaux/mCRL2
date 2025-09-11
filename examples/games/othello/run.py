@@ -27,40 +27,40 @@ print(' Red can always win, i.e. red has a winning strategy.')
 print('---------------------------------------------- ')
 subprocess.run(['lps2pbes', '-v', '-fred_wins_always.mcf', 'temp.lps', 'othello.pbes'], check=True)
 if '-rjittyc' in argv:
-    subprocess.run(['pbes2bool', '-v', '-rjittyc', 'othello.pbes'], check=True)
+    subprocess.run(['pbessolve', '-v', '-rjittyc', 'othello.pbes'], check=True)
 
 print('----------------------------------------------')
 print(' White can always win, i.e. white has a winning strategy.')
 print('----------------------------------------------')
 subprocess.run(['lps2pbes', '-v', '-fwhite_wins_always.mcf', 'temp.lps', 'othello.pbes'], check=True)
 if '-rjittyc' in argv:
-    subprocess.run(['pbes2bool', '-v', '-rjittyc', 'othello.pbes'], check=True)
+    subprocess.run(['pbessolve', '-v', '-rjittyc', 'othello.pbes'], check=True)
 
 print('----------------------------------------------')
 print(' Nodeadlock.')
 print('----------------------------------------------')
 subprocess.run(['lps2pbes', '-v', '-fnodeadlock.mcf', 'temp.lps', 'othello.pbes'], check=True)
 if '-rjittyc' in argv:
-    subprocess.run(['pbes2bool', '-v', '-rjittyc', 'othello.pbes'], check=True)
+    subprocess.run(['pbessolve', '-v', '-rjittyc', 'othello.pbes'], check=True)
 
 print('----------------------------------------------')
 print(' There exists a draw.')
 print('----------------------------------------------')
 subprocess.run(['lps2pbes', '-v', '-fexists_draw.mcf', 'temp.lps', 'othello.pbes'], check=True)
 if '-rjittyc' in argv:
-    subprocess.run(['pbes2bool', '-v', '-rjittyc', 'othello.pbes'], check=True)
+    subprocess.run(['pbessolve', '-v', '-rjittyc', 'othello.pbes'], check=True)
 
 print('----------------------------------------------')
 print(' White can win.')
 print('----------------------------------------------')
 subprocess.run(['lps2pbes', '-v', '-fwhite_can_win.mcf', 'temp.lps', 'othello.pbes'], check=True)
 if '-rjittyc' in argv:
-    subprocess.run(['pbes2bool', '-v', '-rjittyc', 'othello.pbes'], check=True)
+    subprocess.run(['pbessolve', '-v', '-rjittyc', 'othello.pbes'], check=True)
 
 print('----------------------------------------------')
 print(' Red can win.')
 print('----------------------------------------------')
 subprocess.run(['lps2pbes', '-v', '-fred_can_win.mcf', 'temp.lps', 'othello.pbes'], check=True)
 if '-rjittyc' in argv:
-    subprocess.run(['pbes2bool', '-v', '-rjittyc', 'othello.pbes'], check=True)
+    subprocess.run(['pbessolve', '-v', '-rjittyc', 'othello.pbes'], check=True)
 

@@ -16,7 +16,15 @@
 
 .. |bin_osx_post| raw:: html
 
-    _x86_64.dmg">macOS DMG (64-bit)</a>
+    _x86_64.dmg">macOS DMG (x86_64)</a>
+
+
+.. |bin_osx_arm| replace:: |download_release_pre|\ |release|\ |bin_osx_arm_post|
+
+.. |bin_osx_arm_post| raw:: html
+
+    _arm64.dmg">macOS DMG (ARM64)</a>
+    
 
 
 .. |bin_ppa| replace:: Ubuntu PPA release
