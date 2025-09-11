@@ -229,6 +229,7 @@ public:
     {
         if (c.vertices.size() != c_prime.vertices.size())
         {
+            mCRL2log(log::debug) << "Different number of vertices: " << c.vertices.size() << " and " << c_prime.vertices.size() << std::endl;
             return false;
         }
         
@@ -239,9 +240,23 @@ public:
                     return vertex.name() == vertex_prime.name() && vertex.value() == vertex_prime.value();
                 }))
             {
+                mCRL2log(log::debug) << "Vertex " << vertex << " does not occur in the right hand side control flow graph"  << std::endl;
                 return false;
             }
         }
+
+        for (const auto& vertex_prime : c_prime.vertices)
+        {
+            if (!std::any_of(c.vertices.begin(), c.vertices.end(), 
+                [&vertex_prime](const auto& vertex) {
+                    return vertex.name() == vertex_prime.name() && vertex.value() == vertex_prime.value();
+                }))
+            {
+                mCRL2log(log::debug) << "Vertex " << vertex_prime << " does not occur in the left hand side control flow graph"  << std::endl;
+                return false;
+            }
+        }
+        
         
         return true;
     }
