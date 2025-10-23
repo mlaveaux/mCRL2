@@ -11,6 +11,7 @@
 #define MCRL_PBES_PBES_SYMMETRY_H
 
 #include "mcrl2/core/detail/print_utility.h"
+#include "mcrl2/pbes/detail/stategraph_algorithm.h"
 #include "mcrl2/pbes/pbes.h"
 #include "mcrl2/pbes/srf_pbes.h"
 #include "mcrl2/pbes/stategraph.h"
@@ -22,7 +23,94 @@
 namespace mcrl2::pbes_system
 {
 
+/// A representation of a permutation.
+class permutation
+{
+public:
+    permutation() = default;
 
+    explicit permutation(std::vector<std::size_t> mapping)
+        : m_mapping(std::move(mapping))
+    {}
+
+    std::size_t operator[](std::size_t i) const
+    {
+        return m_mapping[i];
+    }
+
+    /// Returns the mapping of the permutation.
+    const std::vector<std::size_t>& mapping() const
+    {
+        return m_mapping;
+    }
+
+    // Applies the permutation to a set of indices.
+    std::set<std::size_t> permute(const std::set<std::size_t>& s) const
+    {
+        std::set<std::size_t> result;
+        for (const auto& i : s)
+        {
+            result.insert((*this)[i]);
+        }
+        return result;
+    }
+
+    /// Returns the concatenation of this permutation with another permutation.
+    permutation concat(const permutation& other) const
+    {
+        std::vector<std::size_t> new_mapping(m_mapping.size());
+        for (std::size_t i = 0; i < m_mapping.size(); i++)
+        {
+            new_mapping[i] = other[m_mapping[i]];
+        }
+        return permutation(new_mapping);
+    }
+
+private:
+    std::vector<std::size_t> m_mapping;
+};
+
+inline
+std::vector<permutation> permutation_group(const std::vector<std::size_t>& indices)
+{
+    std::vector<permutation> result;
+
+    std::vector<std::size_t> new_indices = indices;
+    std::function<void(std::vector<std::size_t>&, std::size_t)> generate_permutations = 
+        [&](std::vector<std::size_t>& current, std::size_t start) {
+            if (start == current.size()) {
+                result.emplace_back(current);
+                return;
+            }
+            
+            for (std::size_t i = start; i < current.size(); ++i) {
+                std::swap(current[start], current[i]);
+                generate_permutations(current, start + 1);
+                std::swap(current[start], current[i]); // backtrack
+            }
+        };
+
+    generate_permutations(new_indices, 0);
+
+    return result;
+}
+
+/// Prints the permutation in cycle notation.
+inline
+std::ostream& operator<<(std::ostream& out, const permutation& p)
+{
+    for (std::size_t i = 0; i < p.mapping().size(); i++)
+    {
+        if (i != 0)
+        {
+            out << ", ";
+        }
+
+        out << i << " -> " << p[i];
+    }
+
+    return out;
+}
     
 /// Uses the stategraph algorithm to extract control flow graphs from a given
 /// PBES.
@@ -39,8 +127,10 @@ public:
 
     void run() override
     {        
-        // Does too much, but okay.
-        super::run();
+        // We explicitly ignore the virtual call to run in the base class        
+        detail::stategraph_algorithm::stategraph_algorithm::run(); // NOLINT(bugprone-parent-virtual-call)
+
+        compute_local_control_flow_graphs();
 
         for (auto i = m_local_control_flow_graphs.begin(); i != m_local_control_flow_graphs.end(); ++i)
         {
@@ -48,9 +138,16 @@ public:
         }
 
         std::vector<std::vector<std::size_t>> cal_I = cliques();
+
+        for (const auto& clique : cal_I)
+        {
+            clique_candidates(clique);
+        }
     }
 
-    /// Given a clique return all relevant data parameters.
+    /// Takes as input a clique of compatible control flow parameters and return
+    /// the set of all data parameters that somehow play a role for any of these
+    /// parameters.
     std::set<std::size_t> data_parameters(const std::vector<size_t>& clique)
     {
         std::set<std::size_t> data_parameters;
@@ -84,11 +181,26 @@ public:
     }
 
     /// Computes the set of candidates we can derive from a single clique
-    void clique_candidates(const std::vector<size_t>& clique)
+    std::vector<permutation> clique_candidates(const std::vector<size_t>& I)
     {
-        auto D = data_parameters(clique);
+        auto D = data_parameters(I);
 
-        // auto clique_permutations = permutation_group(clique);
+        std::vector<permutation> result;
+        for (const auto& alpha: permutation_group(I))
+        {          
+            for (const auto& beta: permutation_group(std::vector<std::size_t>(D.begin(), D.end())))
+            {
+                mCRL2log(log::verbose) << "Trying candidate: " << alpha << " and " << beta << std::endl;
+
+                permutation pi = alpha.concat(beta);
+                if (complies(pi, I))
+                {
+                    result.emplace_back(std::move(pi));
+                }
+            }
+        }
+
+        return result;
     }
 
     /// Determine the cliques of the control flow graphs.
@@ -126,14 +238,94 @@ public:
                 mCRL2log(log::verbose) << graph << std::endl;
             }
 
-            cal_I.emplace_back(I);
+            if (I.size() > 1)
+            {
+                cal_I.emplace_back(I);
+            }
         }
     
         return cal_I;
     }
 
+    /// Returns true iff all vertices in I comply with the permutation pi.
+    bool complies(const permutation& pi, const std::vector<std::size_t>& I)
+    {
+        return std::all_of(I.begin(), I.end(), 
+            [&](std::size_t c) {                
+                return complies(pi, c);
+            });
+    }
+
+    /// Takes a permutation and a control flow parameter and returns true or
+    /// false depending on whether the permutation complies with the control
+    /// flow parameter according to Definition
+    bool complies(const permutation& pi, std::size_t c) const
+    {
+        const detail::local_control_flow_graph& graph = m_local_control_flow_graphs[c];
+        const detail::local_control_flow_graph& other_graph = m_local_control_flow_graphs[pi[c]];
+
+        // TODO: Is this equivalent to the bijection check in the paper.
+        for (const auto& s: graph.vertices)
+        {
+            for (const auto& s_prime: other_graph.vertices)
+            {
+                if (s.value() == s_prime.value() && s.name() == s_prime.name())
+                {
+                    // s == s'
+                    for (const auto& [to, labels]: s.outgoing_edges())
+                    {
+                        for (const auto& [to_prime, labels_prime]: s_prime.outgoing_edges())
+                        {
+                            if (to->value() == to_prime->value() && to->name() == to_prime->name())
+                            {        
+                                // t == t'                        
+                                // Find the corresponding equation
+                                for (const auto& equation: m_pbes.equations())
+                                {
+                                    if (equation.variable().name() == s.name())
+                                    {
+                                        // For each i find a corresponding j.
+                                        std::set<std::size_t> remaining_j = labels_prime;
+                                        for (const std::size_t& i: labels)
+                                        {
+                                            const auto& variable = equation.predicate_variables().at(i);
+                                            std::optional<std::size_t> matching_j;
+                                            for (const std::size_t& j: remaining_j)
+                                            {
+                                                const auto& variable_prime = equation.predicate_variables().at(j);
+                                                if (pi.permute(variable.changed()) == variable_prime.changed() && pi.permute(variable.used()) == variable_prime.used())
+                                                {
+                                                    matching_j = j;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (matching_j)
+                                            {
+                                                // Found a matching j for i.
+                                                remaining_j.erase(*matching_j);
+                                            }
+                                        }
+
+                                        if (!remaining_j.empty())
+                                        {
+                                            mCRL2log(log::debug) << "No matching found for edge from " << s << " to " << *to << " under permutation " << pi << std::endl;
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
     /// Computes the sizes(c, s, s')
-    std::set<std::pair<size_t, size_t>> sizes(const detail::local_control_flow_graph&, const detail::local_control_flow_graph_vertex& s, const detail::local_control_flow_graph_vertex& s_prime)
+    std::set<std::pair<size_t, size_t>> sizes(const detail::local_control_flow_graph&, const detail::local_control_flow_graph_vertex& s, const detail::local_control_flow_graph_vertex& s_prime) const
     {
         // Get the changed by, used for and used in
         auto it = s.outgoing_edges().find(&s_prime);
@@ -160,16 +352,16 @@ public:
     }
 
     /// Checks whether two control flow graphs are compatible according to Algorithm 4.
-    bool compatible(int i, int j)
+    bool compatible(int i, int j) const
     {
         const detail::local_control_flow_graph& c = m_local_control_flow_graphs[i];
         const detail::local_control_flow_graph& c_prime = m_local_control_flow_graphs[j];
-        mCRL2log(log::debug) << "Checking compatible(" << i << ", " << j << ")" << std::endl;
+        mCRL2log(log::trace) << "Checking compatible(" << i << ", " << j << ")" << std::endl;
 
         if (!vertex_sets_compatible(c, c_prime))
         {
             // If V_c != V_C' return false
-            mCRL2log(log::debug) << "Vertex sets don't match" << std::endl;
+            mCRL2log(log::trace) << "Vertex sets don't match" << std::endl;
             return false;
         }
 
@@ -210,7 +402,7 @@ public:
 
                                 if (sizes(c, s, s_prime) != sizes(c_prime, s_c_prime, s_prime_c_prime))
                                 {
-                                    mCRL2log(log::debug) << "Found different sizes " << core::detail::print_container(sizes(c, s, s_prime))
+                                    mCRL2log(log::trace) << "Found different sizes " << core::detail::print_container(sizes(c, s, s_prime))
                                          << " and " << core::detail::print_container(sizes(c_prime, s_c_prime, s_prime_c_prime)) << std::endl;
                                     return false;
                                 }
@@ -225,11 +417,11 @@ public:
     }
 
     /// Checks whether two control flow graphs have compatible vertex sets, meaning that the PVI and values of the vertices match.
-    bool vertex_sets_compatible(const detail::local_control_flow_graph& c, const detail::local_control_flow_graph& c_prime)
+    bool vertex_sets_compatible(const detail::local_control_flow_graph& c, const detail::local_control_flow_graph& c_prime) const
     {
         if (c.vertices.size() != c_prime.vertices.size())
         {
-            mCRL2log(log::debug) << "Different number of vertices: " << c.vertices.size() << " and " << c_prime.vertices.size() << std::endl;
+            mCRL2log(log::trace) << "Different number of vertices: " << c.vertices.size() << " and " << c_prime.vertices.size() << std::endl;
             return false;
         }
         
@@ -240,7 +432,7 @@ public:
                     return vertex.name() == vertex_prime.name() && vertex.value() == vertex_prime.value();
                 }))
             {
-                mCRL2log(log::debug) << "Vertex " << vertex << " does not occur in the right hand side control flow graph"  << std::endl;
+                mCRL2log(log::trace) << "Vertex " << vertex << " does not occur in the right hand side control flow graph"  << std::endl;
                 return false;
             }
         }
@@ -252,7 +444,7 @@ public:
                     return vertex.name() == vertex_prime.name() && vertex.value() == vertex_prime.value();
                 }))
             {
-                mCRL2log(log::debug) << "Vertex " << vertex_prime << " does not occur in the left hand side control flow graph"  << std::endl;
+                mCRL2log(log::trace) << "Vertex " << vertex_prime << " does not occur in the left hand side control flow graph"  << std::endl;
                 return false;
             }
         }

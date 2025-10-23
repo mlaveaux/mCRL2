@@ -48,7 +48,6 @@ public:
 
   bool run() override
   {   
-    // TODO: where does the input format go?
     pbes input;
     mcrl2::pbes_system::load_pbes(input, input_filename(), pbes_input_format());
     
