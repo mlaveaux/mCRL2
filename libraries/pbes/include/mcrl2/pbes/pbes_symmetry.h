@@ -19,6 +19,8 @@
 #include "mcrl2/pbes/unify_parameters.h"
 #include "mcrl2/utilities/logger.h"
 #include <cstddef>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace mcrl2::pbes_system
 {
@@ -29,14 +31,23 @@ class permutation
 public:
   permutation() = default;
 
-  explicit permutation(std::vector<std::size_t> mapping)
-    : m_mapping(std::move(mapping))
+  permutation(const std::unordered_map<std::size_t, std::size_t>& mapping)
+    : m_mapping(mapping)
   {}
 
-  std::size_t operator[](std::size_t i) const { return m_mapping[i]; }
+  std::unordered_map<std::size_t, std::size_t> mapping() const
+  {
+    return m_mapping;
+  }
 
-  /// Returns the mapping of the permutation.
-  const std::vector<std::size_t>& mapping() const { return m_mapping; }
+  std::size_t operator[](std::size_t i) const {
+    auto it = m_mapping.find(i);
+    if (it != m_mapping.end())
+    {
+      return it->second;
+    }
+    return i;
+  }
 
   // Applies the permutation to a set of indices.
   std::set<std::size_t> permute(const std::set<std::size_t>& s) const
@@ -52,41 +63,57 @@ public:
   /// Returns the concatenation of this permutation with another permutation.
   permutation concat(const permutation& other) const
   {
-    std::vector<std::size_t> new_mapping(m_mapping.size());
-    for (std::size_t i = 0; i < m_mapping.size(); i++)
+    std::unordered_map<std::size_t, std::size_t> new_mapping(m_mapping.size());
+
+    for (const auto& [key, value]: m_mapping)
     {
-      new_mapping[i] = other[m_mapping[i]];
+      new_mapping[key] = other[value];
     }
+
+    for (const auto& [key, value]: other.m_mapping)
+    {
+      assert (m_mapping.find(key) == m_mapping.end());
+      new_mapping[key] = value;
+    }
+
     return permutation(new_mapping);
   }
 
 private:
-  std::vector<std::size_t> m_mapping;
+  std::unordered_map<std::size_t, std::size_t> m_mapping;
 };
 
+/// Returns all the permutations for the given indices.
 inline std::vector<permutation> permutation_group(const std::vector<std::size_t>& indices)
 {
   std::vector<permutation> result;
 
-  std::vector<std::size_t> new_indices = indices;
-  std::function<void(std::vector<std::size_t>&, std::size_t)> generate_permutations
-    = [&](std::vector<std::size_t>& current, std::size_t start)
+  // Recursive function to generate permutations using backtracking.
+  std::function<void(std::unordered_map<std::size_t, std::size_t>&, std::vector<std::size_t>&, std::size_t)> generate_permutations
+    = [&](std::unordered_map<std::size_t, std::size_t>& mapping, std::vector<std::size_t>& available, std::size_t pos)
   {
-    if (start == current.size())
+    if (pos == indices.size())
     {
-      result.emplace_back(current);
+      result.emplace_back(mapping);
       return;
     }
 
-    for (std::size_t i = start; i < current.size(); ++i)
+    for (std::size_t i = 0; i < available.size(); ++i)
     {
-      std::swap(current[start], current[i]);
-      generate_permutations(current, start + 1);
-      std::swap(current[start], current[i]); // backtrack
+      std::size_t target = available[i];
+      mapping[indices[pos]] = target;
+      
+      available.erase(available.begin() + i);
+      generate_permutations(mapping, available, pos + 1);
+      available.insert(available.begin() + i, target); // backtrack
+      
+      mapping.erase(indices[pos]);
     }
   };
 
-  generate_permutations(new_indices, 0);
+  std::unordered_map<std::size_t, std::size_t> mapping;
+  std::vector<std::size_t> available_indices = indices;
+  generate_permutations(mapping, available_indices, 0);
 
   return result;
 }
@@ -94,15 +121,19 @@ inline std::vector<permutation> permutation_group(const std::vector<std::size_t>
 /// Prints the permutation in cycle notation.
 inline std::ostream& operator<<(std::ostream& out, const permutation& p)
 {
-  for (std::size_t i = 0; i < p.mapping().size(); i++)
+  out << "[";
+  bool first = true;
+  for (const auto& [key, value]: p.mapping())
   {
-    if (i != 0)
+    if (!first)
     {
       out << ", ";
     }
 
-    out << i << " -> " << p[i];
+    out << key << " -> " << value;
+    first = false;
   }
+  out << "]";
 
   return out;
 }
@@ -128,15 +159,15 @@ public:
     for (auto i = m_local_control_flow_graphs.begin(); i != m_local_control_flow_graphs.end(); ++i)
     {
       mCRL2log(log::verbose) << "--- computed local control flow graph " << (i - m_local_control_flow_graphs.begin())
-                             << "\n"
-                             << *i << std::endl;
+        << "\n"
+        << *i << std::endl;
     }
 
     std::vector<std::vector<std::size_t>> cal_I = cliques();
 
     for (const auto& clique: cal_I)
     {
-      clique_candidates(clique);
+      auto candidates = clique_candidates(clique);
     }
   }
 
@@ -193,6 +224,13 @@ public:
           result.emplace_back(std::move(pi));
         }
       }
+    }
+
+    
+    mCRL2log(log::verbose) << "--- compliant permutations \n";
+    for (const auto& p: result)
+    {
+       mCRL2log(log::verbose) << p << std::endl;
     }
 
     return result;
