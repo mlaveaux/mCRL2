@@ -226,14 +226,13 @@ public:
         }
       }
 
-      mCRL2log(log::verbose) << "--- control flow graph in clique \n";
-      for (const auto& graph: I)
-      {
-        mCRL2log(log::verbose) << graph << std::endl;
-      }
-
       if (I.size() > 1)
       {
+        mCRL2log(log::verbose) << "--- control flow graph in clique \n";
+        for (const auto& graph: I)
+        {
+            mCRL2log(log::verbose) << graph << std::endl;
+        }
         cal_I.emplace_back(I);
       }
     }
