@@ -203,6 +203,18 @@ public:
       }
     }
 
+    // Remove the control flow parameters from the data parameters.
+    for (const auto& i: clique)
+    {
+      data_parameters.erase(i);
+    }
+
+     mCRL2log(log::verbose) << "--- data parameters for clique \n";
+     for (const auto& dp: data_parameters)
+     {
+        mCRL2log(log::verbose) << dp << std::endl;
+     }
+
     return data_parameters;
   }
 
