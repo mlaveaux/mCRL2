@@ -10,11 +10,18 @@
 #ifndef MCRL_PBES_PBES_SYMMETRY_H
 #define MCRL_PBES_PBES_SYMMETRY_H
 
+#include "mcrl2/atermpp/aterm.h"
 #include "mcrl2/core/detail/print_utility.h"
+#include "mcrl2/data/data_expression.h"
+#include "mcrl2/data/replace.h"
+#include "mcrl2/data/substitutions/mutable_map_substitution.h"
 #include "mcrl2/pbes/detail/stategraph_algorithm.h"
 #include "mcrl2/pbes/pbes.h"
+#include "mcrl2/pbes/pbes_expression.h"
+#include "mcrl2/pbes/replace.h"
 #include "mcrl2/pbes/srf_pbes.h"
 #include "mcrl2/pbes/stategraph.h"
+#include "mcrl2/pbes/tools/pbeschain.h"
 #include "mcrl2/pbes/tools/pbesstategraph_options.h"
 #include "mcrl2/pbes/unify_parameters.h"
 #include "mcrl2/utilities/logger.h"
@@ -35,12 +42,10 @@ public:
     : m_mapping(mapping)
   {}
 
-  std::unordered_map<std::size_t, std::size_t> mapping() const
-  {
-    return m_mapping;
-  }
+  std::unordered_map<std::size_t, std::size_t> mapping() const { return m_mapping; }
 
-  std::size_t operator[](std::size_t i) const {
+  std::size_t operator[](std::size_t i) const
+  {
     auto it = m_mapping.find(i);
     if (it != m_mapping.end())
     {
@@ -72,12 +77,14 @@ public:
 
     for (const auto& [key, value]: other.m_mapping)
     {
-      assert (m_mapping.find(key) == m_mapping.end());
+      assert(m_mapping.find(key) == m_mapping.end());
       new_mapping[key] = value;
     }
 
     return permutation(new_mapping);
   }
+
+  bool operator==(const permutation& other) const { return m_mapping == other.m_mapping; }
 
 private:
   std::unordered_map<std::size_t, std::size_t> m_mapping;
@@ -89,7 +96,8 @@ inline std::vector<permutation> permutation_group(const std::vector<std::size_t>
   std::vector<permutation> result;
 
   // Recursive function to generate permutations using backtracking.
-  std::function<void(std::unordered_map<std::size_t, std::size_t>&, std::vector<std::size_t>&, std::size_t)> generate_permutations
+  std::function<void(std::unordered_map<std::size_t, std::size_t>&, std::vector<std::size_t>&, std::size_t)>
+    generate_permutations
     = [&](std::unordered_map<std::size_t, std::size_t>& mapping, std::vector<std::size_t>& available, std::size_t pos)
   {
     if (pos == indices.size())
@@ -102,11 +110,11 @@ inline std::vector<permutation> permutation_group(const std::vector<std::size_t>
     {
       std::size_t target = available[i];
       mapping[indices[pos]] = target;
-      
+
       available.erase(available.begin() + i);
       generate_permutations(mapping, available, pos + 1);
       available.insert(available.begin() + i, target); // backtrack
-      
+
       mapping.erase(indices[pos]);
     }
   };
@@ -138,6 +146,70 @@ inline std::ostream& operator<<(std::ostream& out, const permutation& p)
   return out;
 }
 
+/// Combines the candidates derived from two different cliques.
+inline std::vector<std::pair<permutation, permutation>> combine(
+  const std::vector<std::pair<permutation, permutation>>& I_1,
+  const std::vector<std::pair<permutation, permutation>>& I_2)
+{
+  std::vector<std::pair<permutation, permutation>> result;
+  for (const auto& [alpha_1, beta_1]: I_1)
+  {
+    for (const auto& [alpha_2, beta_2]: I_2)
+    {
+      if (beta_1 == beta_2)
+      {
+        result.emplace_back(alpha_1.concat(alpha_2), beta_1);
+      }
+    }
+  }
+
+  return result;
+}
+
+/// Apply the given permutation to an expression
+inline pbes_expression
+apply_permutation(const pbes_expression& expr, const std::vector<data::variable>& parameters, const permutation& pi)
+{
+  data::mutable_map_substitution<> sigma;
+  for (std::size_t i = 0; i < parameters.size(); ++i)
+  {
+    sigma[parameters[i]] = parameters[pi[i]];
+  }
+
+
+  auto result = pbes_system::replace_variables(expr, sigma);
+
+  result = replace_propositional_variables(result, [pi, parameters](const
+  pbes_system::propositional_variable_instantiation& x) -> pbes_system::pbes_expression
+  {
+    std::vector<data::data_expression> new_parameters(x.parameters().size());
+    for (std::size_t i = 0; i < x.parameters().size(); ++i)
+    {
+      new_parameters[i] = data::data_expression(x.parameters()[pi[i]]);
+    }
+    return propositional_variable_instantiation(x.name(), data::data_expression_list(new_parameters));
+  });
+
+  mCRL2log(log::debug) << "Before: \n" << expr << "\n after: \n" << result << std::endl;
+  return result;
+}
+
+/// Fold is only available in C++23 so we provide a simple implementation here.
+template<typename T, typename BinaryOperation>
+inline T fold_left(const std::vector<T>& vec, BinaryOperation op)
+{
+  if (vec.empty())
+  {
+    throw std::invalid_argument("fold_left: input vector is empty");
+  }
+  T result = vec[0];
+  for (std::size_t i = 1; i < vec.size(); ++i)
+  {
+    result = op(result, vec[i]);
+  }
+  return result;
+}
+
 /// Uses the stategraph algorithm to extract control flow graphs from a given
 /// PBES.
 class cliques_algorithm : private detail::stategraph_local_algorithm
@@ -147,7 +219,15 @@ class cliques_algorithm : private detail::stategraph_local_algorithm
 public:
   cliques_algorithm(const pbes& input)
     : super(input, pbesstategraph_options{.print_influence_graph = true})
-  {}
+  {
+    if (!input.equations().empty())
+    {
+      // After unification, all equations have the same parameters.
+      auto parameters = input.equations()[0].variable().parameters();
+      m_parameters = std::vector<data::variable>(parameters.begin(),
+        parameters.end());
+    }
+  }
 
   void run() override
   {
@@ -159,16 +239,63 @@ public:
     for (auto i = m_local_control_flow_graphs.begin(); i != m_local_control_flow_graphs.end(); ++i)
     {
       mCRL2log(log::verbose) << "--- computed local control flow graph " << (i - m_local_control_flow_graphs.begin())
-        << "\n"
-        << *i << std::endl;
+                             << "\n"
+                             << *i << std::endl;
     }
 
     std::vector<std::vector<std::size_t>> cal_I = cliques();
+    std::vector<std::vector<std::pair<permutation, permutation>>> candidates;
 
     for (const auto& clique: cal_I)
     {
-      auto candidates = clique_candidates(clique);
+      candidates.emplace_back(clique_candidates(clique));
     }
+
+    if (candidates.empty())
+    {
+      mCRL2log(log::info) << "No symmetry candidates found!" << std::endl;
+      return;
+    }
+
+    std::vector<std::pair<permutation, permutation>> options = fold_left(candidates, combine);
+
+    for (const auto& option: options)
+    {
+      permutation permutation = option.first.concat(option.second);
+      if (symcheck(permutation))
+      {
+        mCRL2log(log::info) << "Found valid symmetry: " << permutation << std::endl;
+      }
+    }
+  }
+
+  /// Performs the syntactic check defined as symcheck in the paper.
+  bool symcheck(const permutation& pi)
+  {
+    // From the permutation as indices, construct a permutation of the
+
+    bool matched = false;
+    for (const auto& equation: m_pbes.equations())
+    {
+      for (const auto& other_equation: m_pbes.equations())
+      {
+        if (equation.variable().name() == other_equation.variable().name()
+            && apply_permutation(equation.simple_guard(), m_parameters, pi)
+                 == other_equation.simple_guard()
+            && apply_permutation(equation.formula(), m_parameters, pi)
+                 == other_equation.formula())
+        {
+          matched = true;
+        }
+      }
+
+      if (!matched)
+      {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /// Takes as input a clique of compatible control flow parameters and return
@@ -209,21 +336,21 @@ public:
       data_parameters.erase(i);
     }
 
-     mCRL2log(log::verbose) << "--- data parameters for clique \n";
-     for (const auto& dp: data_parameters)
-     {
-        mCRL2log(log::verbose) << dp << std::endl;
-     }
+    mCRL2log(log::verbose) << "--- data parameters for clique \n";
+    for (const auto& dp: data_parameters)
+    {
+      mCRL2log(log::verbose) << dp << std::endl;
+    }
 
     return data_parameters;
   }
 
   /// Computes the set of candidates we can derive from a single clique
-  std::vector<permutation> clique_candidates(const std::vector<size_t>& I)
+  std::vector<std::pair<permutation, permutation>> clique_candidates(const std::vector<size_t>& I)
   {
     auto D = data_parameters(I);
 
-    std::vector<permutation> result;
+    std::vector<std::pair<permutation, permutation>> result;
     for (const auto& alpha: permutation_group(I))
     {
       for (const auto& beta: permutation_group(std::vector<std::size_t>(D.begin(), D.end())))
@@ -233,16 +360,15 @@ public:
         permutation pi = alpha.concat(beta);
         if (complies(pi, I))
         {
-          result.emplace_back(std::move(pi));
+          result.emplace_back(std::make_pair(std::move(alpha), std::move(beta)));
         }
       }
     }
 
-    
     mCRL2log(log::verbose) << "--- compliant permutations \n";
     for (const auto& p: result)
     {
-       mCRL2log(log::verbose) << p << std::endl;
+      mCRL2log(log::verbose) << p.first << ", " << p.second << std::endl;
     }
 
     return result;
@@ -281,7 +407,7 @@ public:
         mCRL2log(log::verbose) << "--- control flow graph in clique \n";
         for (const auto& graph: I)
         {
-            mCRL2log(log::verbose) << graph << std::endl;
+          mCRL2log(log::verbose) << graph << std::endl;
         }
         cal_I.emplace_back(I);
       }
@@ -503,6 +629,9 @@ public:
 
     return true;
   }
+
+private:
+  std::vector<data::variable> m_parameters;
 };
 
 /// Contains all the implementation of the PBES symmetry algorithm, based on the article by Bartels et al.
