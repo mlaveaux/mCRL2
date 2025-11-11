@@ -26,6 +26,7 @@
 #include "mcrl2/pbes/unify_parameters.h"
 #include "mcrl2/utilities/logger.h"
 #include <cstddef>
+#include <iterator>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -179,18 +180,18 @@ apply_permutation(const pbes_expression& expr, const std::vector<data::variable>
 
   auto result = pbes_system::replace_variables(expr, sigma);
 
-  result = replace_propositional_variables(result, [pi, parameters](const
-  pbes_system::propositional_variable_instantiation& x) -> pbes_system::pbes_expression
-  {
-    std::vector<data::data_expression> new_parameters(x.parameters().size());
-    for (std::size_t i = 0; i < x.parameters().size(); ++i)
+  result = replace_propositional_variables(result, [sigma, pi, parameters](const
+    pbes_system::propositional_variable_instantiation& x) -> pbes_system::pbes_expression
     {
-      new_parameters[i] = data::data_expression(x.parameters()[pi[i]]);
-    }
-    return propositional_variable_instantiation(x.name(), data::data_expression_list(new_parameters));
-  });
+      std::vector<data::data_expression> new_parameters(x.parameters().size());
+      for (std::size_t i = 0; i < x.parameters().size(); ++i)
+      {
+        new_parameters[i] = data::data_expression(data::replace_variables(*std::next(x.parameters().begin(), pi[i]), sigma));
+      }
+      return propositional_variable_instantiation(x.name(), data::data_expression_list(new_parameters));
+    });
 
-  mCRL2log(log::debug) << "Before: \n" << expr << "\n after: \n" << result << std::endl;
+  mCRL2log(log::debug) << "pi(phi): \n" << expr << "\n" << result << std::endl;
   return result;
 }
 
