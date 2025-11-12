@@ -25,8 +25,11 @@
 #include "mcrl2/pbes/tools/pbesstategraph_options.h"
 #include "mcrl2/pbes/unify_parameters.h"
 #include "mcrl2/utilities/logger.h"
+#include <algorithm>
 #include <cstddef>
 #include <iterator>
+#include <numeric>
+#include <ranges>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -177,16 +180,16 @@ apply_permutation(const pbes_expression& expr, const std::vector<data::variable>
     sigma[parameters[i]] = parameters[pi[i]];
   }
 
-
   auto result = pbes_system::replace_variables(expr, sigma);
 
-  result = replace_propositional_variables(result, [sigma, pi, parameters](const
-    pbes_system::propositional_variable_instantiation& x) -> pbes_system::pbes_expression
+  result = replace_propositional_variables(result,
+    [sigma, pi, parameters](const pbes_system::propositional_variable_instantiation& x) -> pbes_system::pbes_expression
     {
       std::vector<data::data_expression> new_parameters(x.parameters().size());
       for (std::size_t i = 0; i < x.parameters().size(); ++i)
       {
-        new_parameters[i] = data::data_expression(data::replace_variables(*std::next(x.parameters().begin(), pi[i]), sigma));
+        new_parameters[i]
+          = data::data_expression(data::replace_variables(*std::next(x.parameters().begin(), pi[i]), sigma));
       }
       return propositional_variable_instantiation(x.name(), data::data_expression_list(new_parameters));
     });
@@ -211,6 +214,16 @@ inline T fold_left(const std::vector<T>& vec, BinaryOperation op)
   return result;
 }
 
+inline std::size_t variable_index(const detail::local_control_flow_graph& c)
+{
+  for (const auto& vertex: c.vertices)
+  {
+    return vertex.index();
+  }
+
+  throw std::runtime_error("No vertices in control flow graph");
+}
+
 /// Uses the stategraph algorithm to extract control flow graphs from a given
 /// PBES.
 class cliques_algorithm : private detail::stategraph_local_algorithm
@@ -225,8 +238,7 @@ public:
     {
       // After unification, all equations have the same parameters.
       auto parameters = input.equations()[0].variable().parameters();
-      m_parameters = std::vector<data::variable>(parameters.begin(),
-        parameters.end());
+      m_parameters = std::vector<data::variable>(parameters.begin(), parameters.end());
     }
   }
 
@@ -273,18 +285,14 @@ public:
   /// Performs the syntactic check defined as symcheck in the paper.
   bool symcheck(const permutation& pi)
   {
-    // From the permutation as indices, construct a permutation of the
-
     bool matched = false;
     for (const auto& equation: m_pbes.equations())
     {
       for (const auto& other_equation: m_pbes.equations())
       {
         if (equation.variable().name() == other_equation.variable().name()
-            && apply_permutation(equation.simple_guard(), m_parameters, pi)
-                 == other_equation.simple_guard()
-            && apply_permutation(equation.formula(), m_parameters, pi)
-                 == other_equation.formula())
+            && apply_permutation(equation.simple_guard(), m_parameters, pi) == other_equation.simple_guard()
+            && apply_permutation(equation.formula(), m_parameters, pi) == other_equation.formula())
         {
           matched = true;
         }
@@ -312,16 +320,15 @@ public:
       {
         // Compute the data parameters
         // Get the changed by, used for and used in
-        auto it = s.outgoing_edges().find(&s);
-
-        if (it != s.outgoing_edges().end())
+        for (const auto& [to, labels]: s.outgoing_edges())
         {
-          for (const std::size_t& label: it->second)
+          for (const auto& equation: m_pbes.equations())
           {
-            for (const auto& variable: m_pbes.equations().at(label).predicate_variables())
+            if (equation.variable().name() == s.name())
             {
-              if (variable.name() == s.name())
+              for (const auto& label: labels)
               {
+                const auto& variable = equation.predicate_variables().at(label);
                 data_parameters.insert(variable.changed().begin(), variable.changed().end());
                 data_parameters.insert(variable.used().begin(), variable.used().end());
               }
@@ -334,7 +341,9 @@ public:
     // Remove the control flow parameters from the data parameters.
     for (const auto& i: clique)
     {
-      data_parameters.erase(i);
+      // Every vertex should have the same index.
+      const detail::local_control_flow_graph& c = m_local_control_flow_graphs[i];
+      data_parameters.erase(variable_index(c));
     }
 
     mCRL2log(log::verbose) << "--- data parameters for clique \n";
@@ -351,8 +360,14 @@ public:
   {
     auto D = data_parameters(I);
 
+    std::vector<std::size_t> parameter_indices;
+    for (const auto& i: I)
+    {
+      parameter_indices.emplace_back(variable_index(m_local_control_flow_graphs[i]));
+    }
+
     std::vector<std::pair<permutation, permutation>> result;
-    for (const auto& alpha: permutation_group(I))
+    for (const auto& alpha: permutation_group(parameter_indices))
     {
       for (const auto& beta: permutation_group(std::vector<std::size_t>(D.begin(), D.end())))
       {
@@ -361,7 +376,7 @@ public:
         permutation pi = alpha.concat(beta);
         if (complies(pi, I))
         {
-          result.emplace_back(std::make_pair(std::move(alpha), std::move(beta)));
+          result.emplace_back(std::move(alpha), std::move(beta));
         }
       }
     }
@@ -405,10 +420,10 @@ public:
 
       if (I.size() > 1)
       {
-        mCRL2log(log::verbose) << "--- control flow graph in clique \n";
+        mCRL2log(log::verbose) << "--- control flow graphs in clique \n";
         for (const auto& graph: I)
         {
-          mCRL2log(log::verbose) << graph << std::endl;
+          mCRL2log(log::verbose) << graph << " variable index: " << variable_index(m_local_control_flow_graphs[graph]) << std::endl;
         }
         cal_I.emplace_back(I);
       }
@@ -428,8 +443,20 @@ public:
   /// flow parameter according to Definition
   bool complies(const permutation& pi, std::size_t c) const
   {
-    const detail::local_control_flow_graph& graph = m_local_control_flow_graphs[c];
-    const detail::local_control_flow_graph& other_graph = m_local_control_flow_graphs[pi[c]];
+    const detail::local_control_flow_graph& graph = m_local_control_flow_graphs.at(c);
+    
+    std::size_t other_c = 0;
+    for (std::size_t i = 0; i < m_local_control_flow_graphs.size(); ++i)
+    {
+      if (variable_index(m_local_control_flow_graphs.at(i)) == pi[c])
+      {
+        other_c = i;
+        break;
+      }
+    }
+
+    const detail::local_control_flow_graph& other_graph = m_local_control_flow_graphs.at(other_c);
+    
 
     // TODO: Is this equivalent to the bijection check in the paper.
     for (const auto& s: graph.vertices)
