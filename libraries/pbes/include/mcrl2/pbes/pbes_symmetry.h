@@ -189,7 +189,7 @@ apply_permutation(const pbes_expression& expr, const std::vector<data::variable>
       for (std::size_t i = 0; i < x.parameters().size(); ++i)
       {
         new_parameters[i]
-          = data::data_expression(data::replace_variables(*std::next(x.parameters().begin(), pi[i]), sigma));
+          = data::data_expression(*std::next(x.parameters().begin(), pi[i]));
       }
       return propositional_variable_instantiation(x.name(), data::data_expression_list(new_parameters));
     });
@@ -233,14 +233,7 @@ class cliques_algorithm : private detail::stategraph_local_algorithm
 public:
   cliques_algorithm(const pbes& input)
     : super(input, pbesstategraph_options{.print_influence_graph = true})
-  {
-    if (!input.equations().empty())
-    {
-      // After unification, all equations have the same parameters.
-      auto parameters = input.equations()[0].variable().parameters();
-      m_parameters = std::vector<data::variable>(parameters.begin(), parameters.end());
-    }
-  }
+  {}
 
   void run() override
   {
@@ -270,41 +263,12 @@ public:
       return;
     }
 
-    std::vector<std::pair<permutation, permutation>> options = fold_left(candidates, combine);
-
-    for (const auto& option: options)
-    {
-      permutation permutation = option.first.concat(option.second);
-      if (symcheck(permutation))
-      {
-        mCRL2log(log::info) << "Found valid symmetry: " << permutation << std::endl;
-      }
-    }
+    m_result = fold_left(candidates, combine);
   }
 
-  /// Performs the syntactic check defined as symcheck in the paper.
-  bool symcheck(const permutation& pi)
+  const std::vector<std::pair<permutation, permutation>>& result() const 
   {
-    bool matched = false;
-    for (const auto& equation: m_pbes.equations())
-    {
-      for (const auto& other_equation: m_pbes.equations())
-      {
-        if (equation.variable().name() == other_equation.variable().name()
-            && apply_permutation(equation.simple_guard(), m_parameters, pi) == other_equation.simple_guard()
-            && apply_permutation(equation.formula(), m_parameters, pi) == other_equation.formula())
-        {
-          matched = true;
-        }
-      }
-
-      if (!matched)
-      {
-        return false;
-      }
-    }
-
-    return true;
+    return m_result;
   }
 
   /// Takes as input a clique of compatible control flow parameters and return
@@ -448,7 +412,7 @@ public:
     std::size_t other_c = 0;
     for (std::size_t i = 0; i < m_local_control_flow_graphs.size(); ++i)
     {
-      if (variable_index(m_local_control_flow_graphs.at(i)) == pi[c])
+      if (variable_index(m_local_control_flow_graphs.at(i)) == pi[variable_index(m_local_control_flow_graphs[c])])
       {
         other_c = i;
         break;
@@ -472,17 +436,23 @@ public:
             {
               if (to->value() == to_prime->value() && to->name() == to_prime->name())
               {
+                mCRL2log(log::trace) << "Matching edges from " << s << " to " << *to << " and " << s_prime << " to " << *to_prime << std::endl;
+
                 // t == t'
                 // Find the corresponding equation
+                bool found_match = false;
                 for (const auto& equation: m_pbes.equations())
                 {
                   if (equation.variable().name() == s.name())
                   {
+                    mCRL2log(log::trace) << "Checking equation " << equation.variable().name() << std::endl;
+
                     // For each i find a corresponding j.
                     std::set<std::size_t> remaining_j = labels_prime;
                     for (const std::size_t& i: labels)
                     {
                       const auto& variable = equation.predicate_variables().at(i);
+
                       std::optional<std::size_t> matching_j;
                       for (const std::size_t& j: remaining_j)
                       {
@@ -498,17 +468,23 @@ public:
                       if (matching_j)
                       {
                         // Found a matching j for i.
+                        mCRL2log(log::trace) << "Removing match " << *matching_j << std::endl;
                         remaining_j.erase(*matching_j);
                       }
                     }
 
-                    if (!remaining_j.empty())
+                    if (remaining_j.empty())
                     {
-                      mCRL2log(log::debug) << "No matching found for edge from " << s << " to " << *to
-                                           << " under permutation " << pi << std::endl;
-                      return false;
+                      found_match = true;
+                      break;
                     }
                   }
+                }
+
+                if (!found_match)
+                {
+                  mCRL2log(log::verbose) << "No matching found for edge from " << s << " to " << *to << std::endl;
+                  return false;
                 }
               }
             }
@@ -659,7 +635,7 @@ public:
   }
 
 private:
-  std::vector<data::variable> m_parameters;
+  std::vector<std::pair<permutation, permutation>> m_result; 
 };
 
 /// Contains all the implementation of the PBES symmetry algorithm, based on the article by Bartels et al.
@@ -668,21 +644,81 @@ class pbes_symmetry
 public:
   pbes_symmetry(const pbes& input, const data::rewriter&)
   {
-    srf_pbes srf = pbes2srf(input);
+    srf = pbes2srf(input);
 
     mCRL2log(mcrl2::log::debug) << srf.to_pbes() << std::endl;
 
     unify_parameters(srf, false, false);
 
-    cliques(srf.to_pbes());
+    // cliques()
+    pbes srf_input = srf.to_pbes();
+    cliques_algorithm algorithm(srf_input);
+    algorithm.run();
+    
+    if (!input.equations().empty())
+    {
+      // After unification, all equations have the same parameters.
+      auto parameters = input.equations()[0].variable().parameters();
+      m_parameters = std::vector<data::variable>(parameters.begin(), parameters.end());
+    }
+
+    for (const auto& option: algorithm.result())
+    {
+      permutation permutation = option.first.concat(option.second);
+      if (symcheck(permutation))
+      {
+        mCRL2log(log::info) << "Found valid symmetry: " << permutation << std::endl;
+      }
+    }
   }
 
 private:
   static void cliques(const pbes& input)
   {
-    cliques_algorithm algorithm(input);
-    algorithm.run();
+  }  
+
+  /// Performs the syntactic check defined as symcheck in the paper.
+  bool symcheck(const permutation& pi)
+  {
+    for (const auto& equation: srf.equations())
+    {
+      for (const auto& summand : equation.summands())
+      {        
+        mCRL2log(log::trace) << "Checking summand " << summand << " of equation " << equation << std::endl;
+        bool matched = false;
+        for (const auto& other_equation: srf.equations())
+        {
+          for (const auto& other_summand : other_equation.summands())
+          {     
+            mCRL2log(log::trace) << "Against summand " << other_summand << " of equation " << other_equation << std::endl;
+            if (equation.variable().name() == other_equation.variable().name()
+                && apply_permutation(summand.condition(), m_parameters, pi) == other_summand.condition()
+                && apply_permutation(summand.variable(), m_parameters, pi) == other_summand.variable())
+            {
+              matched = true;
+              break;
+            }
+          }
+
+          if (matched)
+          {
+            break;
+          }
+        }
+
+        if (!matched)
+        {
+          mCRL2log(log::debug) << "No match for equation " << equation << std::endl;
+          return false;
+        }
+      }        
+    }
+
+    return true;
   }
+
+  srf_pbes srf;
+  std::vector<data::variable> m_parameters;
 };
 
 } // namespace mcrl2::pbes_system
