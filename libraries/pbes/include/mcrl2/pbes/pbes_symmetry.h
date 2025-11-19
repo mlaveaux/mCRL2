@@ -50,6 +50,39 @@ public:
     : m_mapping(mapping)
   {}
 
+  /// Parse a permutation from a string of the shape x->y, y->z etc.
+  permutation(const std::string& input, const pbes_system::pbes& pbesspec)
+  {
+    boost::container::flat_map<std::size_t, std::size_t> mapping;
+
+    // Parse all the commas.
+    std::istringstream iss(input);
+    std::string token;
+    while (std::getline(iss, token, ','))
+    {
+      auto arrow_pos = token.find("->");
+      if (arrow_pos == std::string::npos)
+      {
+        throw mcrl2::runtime_error("Invalid permutation format: " + token);
+      }
+
+      std::string from_str = boost::trim_copy(token.substr(0, arrow_pos));
+      std::string to_str = boost::trim_copy(token.substr(arrow_pos + 2));
+
+      std::size_t from = std::stoul(from_str);
+      std::size_t to = std::stoul(to_str);
+
+      if (mapping.contains(from))
+      {
+        throw mcrl2::runtime_error("Invalid permutation: multiple mappings for " + from_str);
+      }
+
+      mapping[from] = to;
+    }
+
+    m_mapping = mapping;
+  }
+
   boost::container::flat_map<std::size_t, std::size_t> mapping() const { return m_mapping; }
 
   std::size_t operator[](std::size_t i) const
