@@ -107,6 +107,7 @@ public:
   {
     std::sort(m_indices.begin(), m_indices.end());
     m_current_permutation = m_indices;
+    next_permutation(); // Skip the identity permutation
   }
 
   permutation_range begin() const { return *this; }
