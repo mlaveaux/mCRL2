@@ -94,40 +94,91 @@ private:
   std::unordered_map<std::size_t, std::size_t> m_mapping;
 };
 
-/// Returns all the permutations for the given indices.
-inline std::vector<permutation> permutation_group(const std::vector<std::size_t>& indices)
+/// Iterator that generates all permutations of a given set of indices
+class permutation_range
 {
-  std::vector<permutation> result;
-
-  // Recursive function to generate permutations using backtracking.
-  std::function<void(std::unordered_map<std::size_t, std::size_t>&, std::vector<std::size_t>&, std::size_t)>
-    generate_permutations
-    = [&](std::unordered_map<std::size_t, std::size_t>& mapping, std::vector<std::size_t>& available, std::size_t pos)
+public:
+  permutation_range(const std::vector<std::size_t>& indices)
+    : m_indices(indices)
   {
-    if (pos == indices.size())
+    std::sort(m_indices.begin(), m_indices.end());
+    m_current_permutation = m_indices;
+  }
+
+  permutation_range begin() const { return *this; }
+
+  permutation_range end() const
+  {
+    permutation_range iter(*this);
+    iter.m_finished = true;
+    return iter;
+  }
+
+  permutation operator*() const
+  {
+    boost::container::flat_map<std::size_t, std::size_t> mapping;
+    for (std::size_t i = 0; i < m_indices.size(); ++i)
     {
-      result.emplace_back(mapping);
-      return;
+      mapping[m_indices[i]] = m_current_permutation[i];
+    }
+    return permutation(mapping);
+  }
+
+  permutation_range& operator++()
+  {
+    if (!next_permutation())
+    {
+      m_finished = true;
+    }
+    return *this;
+  }
+
+  bool operator!=(const permutation_range& other) const { return m_finished != other.m_finished; }
+
+private:
+  bool next_permutation()
+  {
+    // Find the largest index k such that a[k] < a[k + 1]
+    int k = -1;
+    for (int i = m_current_permutation.size() - 2; i >= 0; --i)
+    {
+      if (m_current_permutation[i] < m_current_permutation[i + 1])
+      {
+        k = i;
+        break;
+      }
     }
 
-    for (std::size_t i = 0; i < available.size(); ++i)
+    if (k == -1)
     {
-      std::size_t target = available[i];
-      mapping[indices[pos]] = target;
-
-      available.erase(available.begin() + i);
-      generate_permutations(mapping, available, pos + 1);
-      available.insert(available.begin() + i, target); // backtrack
-
-      mapping.erase(indices[pos]);
+      return false; // No next permutation
     }
-  };
 
-  std::unordered_map<std::size_t, std::size_t> mapping;
-  std::vector<std::size_t> available_indices = indices;
-  generate_permutations(mapping, available_indices, 0);
+    // Find the largest index l greater than k such that a[k] < a[l]
+    int l = -1;
+    for (int i = m_current_permutation.size() - 1; i > k; --i)
+    {
+      if (m_current_permutation[k] < m_current_permutation[i])
+      {
+        l = i;
+        break;
+      }
+    }
 
-  return result;
+    // Swap a[k] and a[l]
+    std::swap(m_current_permutation[k], m_current_permutation[l]);
+
+    // Reverse the suffix starting at a[k + 1]
+    std::reverse(m_current_permutation.begin() + k + 1, m_current_permutation.end());
+
+    return true;
+  }
+
+  std::vector<std::size_t> m_indices;
+  std::vector<std::size_t> m_current_permutation;
+  bool m_finished = false;
+};
+
 }
 
 /// Prints the permutation in cycle notation.
