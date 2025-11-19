@@ -132,25 +132,26 @@ private:
 };
 
 /// Iterator that generates all permutations of a given set of indices
-class permutation_range
+class permutation_iterator
 {
 public:
-  permutation_range(const std::vector<std::size_t>& indices)
+  using value_type = permutation;
+  using difference_type = std::ptrdiff_t;
+  using pointer = const permutation*;
+  using reference = const permutation&;
+  using iterator_category = std::forward_iterator_tag;
+  using iterator_concept = std::forward_iterator_tag;
+
+  permutation_iterator(const std::vector<std::size_t>& indices)
     : m_indices(indices)
   {
-    std::sort(m_indices.begin(), m_indices.end());
     m_current_permutation = m_indices;
     next_permutation(); // Skip the identity permutation
   }
 
-  permutation_range begin() const { return *this; }
-
-  permutation_range end() const
-  {
-    permutation_range iter(*this);
-    iter.m_finished = true;
-    return iter;
-  }
+  permutation_iterator()
+    : m_finished(true)
+  {}
 
   permutation operator*() const
   {
@@ -162,7 +163,7 @@ public:
     return permutation(mapping);
   }
 
-  permutation_range& operator++()
+  permutation_iterator& operator++()
   {
     if (!next_permutation())
     {
@@ -171,7 +172,19 @@ public:
     return *this;
   }
 
-  bool operator!=(const permutation_range& other) const { return m_finished != other.m_finished; }
+  permutation_iterator operator++(int)
+  {
+    permutation_iterator tmp = *this;
+    ++(*this);
+    return tmp;
+  }
+
+  bool operator==(const permutation_iterator& other) const 
+  { 
+    if (m_finished && other.m_finished) return true;
+    if (m_finished != other.m_finished) return false;
+    return m_current_permutation == other.m_current_permutation;
+  }
 
 private:
   bool next_permutation()
@@ -216,6 +229,36 @@ private:
   std::vector<std::size_t> m_current_permutation;
   bool m_finished = false;
 };
+
+/// Range abstraction over the iterator.
+class permutation_range
+{
+public:
+  permutation_range(const std::vector<std::size_t>& indices)
+    : m_indices(indices)
+  {
+    std::sort(m_indices.begin(), m_indices.end());
+  }
+
+  permutation_iterator begin() const { return permutation_iterator(m_indices); }
+
+  permutation_iterator end() const
+  {
+    return permutation_iterator();
+  }
+
+private:
+  std::vector<std::size_t> m_indices;
+};
+
+static_assert(std::forward_iterator<permutation_iterator>);
+static_assert(std::ranges::range<permutation_range>);
+
+/// Returns all the permutations for the given indices.
+inline permutation_range permutation_group(const std::vector<std::size_t>& indices)
+{
+  return permutation_range(indices);
+}
 
 /// Cartesian product of two ranges
 template<typename Range1, typename Range2>
@@ -270,8 +313,8 @@ public:
     }
 
   private:
-    decltype(std::ranges::begin(std::declval<Range1>())) m_it1, m_it1_end;
-    decltype(std::ranges::begin(std::declval<Range2>())) m_it2, m_it2_begin, m_it2_end;
+    decltype(std::begin(std::declval<Range1&>())) m_it1, m_it1_end;
+    decltype(std::begin(std::declval<Range2&>())) m_it2, m_it2_begin, m_it2_end;
   };
 
   iterator begin() const
@@ -300,12 +343,6 @@ template<typename Range1, typename Range2>
 auto cartesian_product(Range1&& r1, Range2&& r2)
 {
   return cartesian_product_view<Range1, Range2>(std::forward<Range1>(r1), std::forward<Range2>(r2));
-}
-
-/// Returns all the permutations for the given indices.
-inline permutation_range permutation_group(const std::vector<std::size_t>& indices)
-{
-  return permutation_range(indices);
 }
 
 /// Prints the permutation as a mapping
@@ -509,17 +546,14 @@ public:
     }
 
     std::vector<std::pair<permutation, permutation>> result;
-    for (const auto& alpha: permutation_group(parameter_indices))
+    for (const auto& [alpha, beta]: cartesian_product(permutation_group(parameter_indices),  permutation_group(std::vector<std::size_t>(D.begin(), D.end()))))
     {
-      for (const auto& beta: permutation_group(std::vector<std::size_t>(D.begin(), D.end())))
-      {
-        mCRL2log(log::verbose) << "Trying candidate: " << alpha << " and " << beta << std::endl;
+      mCRL2log(log::verbose) << "Trying candidate: " << alpha << " and " << beta << std::endl;
 
-        permutation pi = alpha.concat(beta);
-        if (complies(pi, I))
-        {
-          result.emplace_back(std::move(alpha), std::move(beta));
-        }
+      permutation pi = alpha.concat(beta);
+      if (complies(pi, I))
+      {
+        result.emplace_back(std::move(alpha), std::move(beta));
       }
     }
 
