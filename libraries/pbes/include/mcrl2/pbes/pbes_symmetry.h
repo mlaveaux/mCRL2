@@ -25,6 +25,10 @@
 #include "mcrl2/pbes/tools/pbesstategraph_options.h"
 #include "mcrl2/pbes/unify_parameters.h"
 #include "mcrl2/utilities/logger.h"
+
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/container/flat_map.hpp>
+
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
@@ -42,11 +46,11 @@ class permutation
 public:
   permutation() = default;
 
-  permutation(const std::unordered_map<std::size_t, std::size_t>& mapping)
+  permutation(const boost::container::flat_map<std::size_t, std::size_t>& mapping)
     : m_mapping(mapping)
   {}
 
-  std::unordered_map<std::size_t, std::size_t> mapping() const { return m_mapping; }
+  boost::container::flat_map<std::size_t, std::size_t> mapping() const { return m_mapping; }
 
   std::size_t operator[](std::size_t i) const
   {
@@ -72,7 +76,7 @@ public:
   /// Returns the concatenation of this permutation with another permutation.
   permutation concat(const permutation& other) const
   {
-    std::unordered_map<std::size_t, std::size_t> new_mapping(m_mapping.size());
+    boost::container::flat_map<std::size_t, std::size_t> new_mapping;
 
     for (const auto& [key, value]: m_mapping)
     {
@@ -91,7 +95,7 @@ public:
   bool operator==(const permutation& other) const { return m_mapping == other.m_mapping; }
 
 private:
-  std::unordered_map<std::size_t, std::size_t> m_mapping;
+  boost::container::flat_map<std::size_t, std::size_t> m_mapping;
 };
 
 /// Iterator that generates all permutations of a given set of indices
@@ -179,9 +183,13 @@ private:
   bool m_finished = false;
 };
 
+/// Returns all the permutations for the given indices.
+inline permutation_range permutation_group(const std::vector<std::size_t>& indices)
+{
+  return permutation_range(indices);
 }
 
-/// Prints the permutation in cycle notation.
+/// Prints the permutation as a mapping
 inline std::ostream& operator<<(std::ostream& out, const permutation& p)
 {
   out << "[";
