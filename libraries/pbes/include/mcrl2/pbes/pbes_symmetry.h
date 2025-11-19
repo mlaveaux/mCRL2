@@ -217,6 +217,91 @@ private:
   bool m_finished = false;
 };
 
+/// Cartesian product of two ranges
+template<typename Range1, typename Range2>
+class cartesian_product_view
+{
+public:
+  using value_type
+    = std::pair<typename std::ranges::range_value_t<Range1>, typename std::ranges::range_value_t<Range2>>;
+
+  cartesian_product_view(Range1&& r1, Range2&& r2)
+    : m_range1(std::forward<Range1>(r1)),
+      m_range2(std::forward<Range2>(r2))
+  {}
+
+  class iterator
+  {
+  public:
+    using value_type = cartesian_product_view::value_type;
+
+    iterator(auto it1, auto it1_end, auto it2, auto it2_begin, auto it2_end)
+      : m_it1(it1),
+        m_it1_end(it1_end),
+        m_it2(it2),
+        m_it2_begin(it2_begin),
+        m_it2_end(it2_end)
+    {
+      if (m_it1 != m_it1_end && m_it2 == m_it2_end)
+      {
+        m_it1 = m_it1_end; // End iterator
+      }
+    }
+
+    value_type operator*() const { return std::make_pair(*m_it1, *m_it2); }
+
+    iterator& operator++()
+    {
+      ++m_it2;
+      if (m_it2 == m_it2_end)
+      {
+        ++m_it1;
+        if (m_it1 != m_it1_end)
+        {
+          m_it2 = m_it2_begin;
+        }
+      }
+      return *this;
+    }
+
+    bool operator!=(const iterator& other) const
+    {
+      return m_it1 != other.m_it1 || (m_it1 != m_it1_end && m_it2 != other.m_it2);
+    }
+
+  private:
+    decltype(std::ranges::begin(std::declval<Range1>())) m_it1, m_it1_end;
+    decltype(std::ranges::begin(std::declval<Range2>())) m_it2, m_it2_begin, m_it2_end;
+  };
+
+  iterator begin() const
+  {
+    auto it1 = std::ranges::begin(m_range1);
+    auto it1_end = std::ranges::end(m_range1);
+    auto it2_begin = std::ranges::begin(m_range2);
+    auto it2_end = std::ranges::end(m_range2);
+    return iterator(it1, it1_end, it2_begin, it2_begin, it2_end);
+  }
+
+  iterator end() const
+  {
+    auto it1_end = std::ranges::end(m_range1);
+    auto it2_begin = std::ranges::begin(m_range2);
+    auto it2_end = std::ranges::end(m_range2);
+    return iterator(it1_end, it1_end, it2_end, it2_begin, it2_end);
+  }
+
+private:
+  Range1 m_range1;
+  Range2 m_range2;
+};
+
+template<typename Range1, typename Range2>
+auto cartesian_product(Range1&& r1, Range2&& r2)
+{
+  return cartesian_product_view<Range1, Range2>(std::forward<Range1>(r1), std::forward<Range2>(r2));
+}
+
 /// Returns all the permutations for the given indices.
 inline permutation_range permutation_group(const std::vector<std::size_t>& indices)
 {
