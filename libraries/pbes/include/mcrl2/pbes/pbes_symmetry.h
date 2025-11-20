@@ -179,10 +179,12 @@ public:
     return tmp;
   }
 
-  bool operator==(const permutation_iterator& other) const 
-  { 
-    if (m_finished && other.m_finished) return true;
-    if (m_finished != other.m_finished) return false;
+  bool operator==(const permutation_iterator& other) const
+  {
+    if (m_finished && other.m_finished)
+      return true;
+    if (m_finished != other.m_finished)
+      return false;
     return m_current_permutation == other.m_current_permutation;
   }
 
@@ -242,10 +244,7 @@ public:
 
   permutation_iterator begin() const { return permutation_iterator(m_indices); }
 
-  permutation_iterator end() const
-  {
-    return permutation_iterator();
-  }
+  permutation_iterator end() const { return permutation_iterator(); }
 
 private:
   std::vector<std::size_t> m_indices;
@@ -403,8 +402,7 @@ apply_permutation(const pbes_expression& expr, const std::vector<data::variable>
       std::vector<data::data_expression> new_parameters(x.parameters().size());
       for (std::size_t i = 0; i < x.parameters().size(); ++i)
       {
-        new_parameters[i]
-          = data::data_expression(*std::next(x.parameters().begin(), pi[i]));
+        new_parameters[i] = data::data_expression(*std::next(x.parameters().begin(), pi[i]));
       }
       return propositional_variable_instantiation(x.name(), data::data_expression_list(new_parameters));
     });
@@ -481,10 +479,7 @@ public:
     m_result = fold_left(candidates, combine);
   }
 
-  const std::vector<std::pair<permutation, permutation>>& result() const 
-  {
-    return m_result;
-  }
+  const std::vector<std::pair<permutation, permutation>>& result() const { return m_result; }
 
   /// Takes as input a clique of compatible control flow parameters and return
   /// the set of all data parameters that somehow play a role for any of these
@@ -546,7 +541,8 @@ public:
     }
 
     std::vector<std::pair<permutation, permutation>> result;
-    for (const auto& [alpha, beta]: cartesian_product(permutation_group(parameter_indices),  permutation_group(std::vector<std::size_t>(D.begin(), D.end()))))
+    for (const auto& [alpha, beta]: cartesian_product(permutation_group(parameter_indices),
+           permutation_group(std::vector<std::size_t>(D.begin(), D.end()))))
     {
       mCRL2log(log::verbose) << "Trying candidate: " << alpha << " and " << beta << std::endl;
 
@@ -599,7 +595,8 @@ public:
         mCRL2log(log::verbose) << "--- control flow graphs in clique \n";
         for (const auto& graph: I)
         {
-          mCRL2log(log::verbose) << graph << " variable index: " << variable_index(m_local_control_flow_graphs[graph]) << std::endl;
+          mCRL2log(log::verbose) << graph << " variable index: " << variable_index(m_local_control_flow_graphs[graph])
+                                 << std::endl;
         }
         cal_I.emplace_back(I);
       }
@@ -620,7 +617,7 @@ public:
   bool complies(const permutation& pi, std::size_t c) const
   {
     const detail::local_control_flow_graph& graph = m_local_control_flow_graphs.at(c);
-    
+
     std::size_t other_c = 0;
     for (std::size_t i = 0; i < m_local_control_flow_graphs.size(); ++i)
     {
@@ -632,7 +629,6 @@ public:
     }
 
     const detail::local_control_flow_graph& other_graph = m_local_control_flow_graphs.at(other_c);
-    
 
     // TODO: Is this equivalent to the bijection check in the paper.
     for (const auto& s: graph.vertices)
@@ -648,7 +644,8 @@ public:
             {
               if (to->value() == to_prime->value() && to->name() == to_prime->name())
               {
-                mCRL2log(log::trace) << "Matching edges from " << s << " to " << *to << " and " << s_prime << " to " << *to_prime << std::endl;
+                mCRL2log(log::trace) << "Matching edges from " << s << " to " << *to << " and " << s_prime << " to "
+                                     << *to_prime << std::endl;
 
                 // t == t'
                 // Find the corresponding equation
@@ -847,7 +844,7 @@ public:
   }
 
 private:
-  std::vector<std::pair<permutation, permutation>> m_result; 
+  std::vector<std::pair<permutation, permutation>> m_result;
 };
 
 /// Contains all the implementation of the PBES symmetry algorithm, based on the article by Bartels et al.
@@ -866,7 +863,7 @@ public:
     pbes srf_input = srf.to_pbes();
     cliques_algorithm algorithm(srf_input);
     algorithm.run();
-    
+
     if (!input.equations().empty())
     {
       // After unification, all equations have the same parameters.
@@ -885,24 +882,23 @@ public:
   }
 
 private:
-  static void cliques(const pbes& input)
-  {
-  }  
+  static void cliques(const pbes& input) {}
 
   /// Performs the syntactic check defined as symcheck in the paper.
   bool symcheck(const permutation& pi)
   {
     for (const auto& equation: srf.equations())
     {
-      for (const auto& summand : equation.summands())
-      {        
+      for (const auto& summand: equation.summands())
+      {
         mCRL2log(log::trace) << "Checking summand " << summand << " of equation " << equation << std::endl;
         bool matched = false;
         for (const auto& other_equation: srf.equations())
         {
-          for (const auto& other_summand : other_equation.summands())
-          {     
-            mCRL2log(log::trace) << "Against summand " << other_summand << " of equation " << other_equation << std::endl;
+          for (const auto& other_summand: other_equation.summands())
+          {
+            mCRL2log(log::trace) << "Against summand " << other_summand << " of equation " << other_equation
+                                 << std::endl;
             if (equation.variable().name() == other_equation.variable().name()
                 && apply_permutation(summand.condition(), m_parameters, pi) == other_summand.condition()
                 && apply_permutation(summand.variable(), m_parameters, pi) == other_summand.variable())
@@ -923,7 +919,7 @@ private:
           mCRL2log(log::debug) << "No match for equation " << equation << std::endl;
           return false;
         }
-      }        
+      }
     }
 
     return true;
