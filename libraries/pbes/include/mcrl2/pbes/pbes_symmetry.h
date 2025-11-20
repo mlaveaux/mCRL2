@@ -10,19 +10,14 @@
 #ifndef MCRL_PBES_PBES_SYMMETRY_H
 #define MCRL_PBES_PBES_SYMMETRY_H
 
-#include "mcrl2/atermpp/aterm.h"
-#include "mcrl2/core/detail/print_utility.h"
 #include "mcrl2/data/data_expression.h"
-#include "mcrl2/data/replace.h"
-#include "mcrl2/data/substitutions/mutable_map_substitution.h"
+#include "mcrl2/pbes/detail/cartesian_product.h"
+#include "mcrl2/pbes/detail/fold_left.h"
+#include "mcrl2/pbes/detail/permutation.h"
 #include "mcrl2/pbes/detail/stategraph_algorithm.h"
+#include "mcrl2/pbes/detail/stategraph_local_algorithm.h"
 #include "mcrl2/pbes/pbes.h"
-#include "mcrl2/pbes/pbes_expression.h"
-#include "mcrl2/pbes/replace.h"
 #include "mcrl2/pbes/srf_pbes.h"
-#include "mcrl2/pbes/stategraph.h"
-#include "mcrl2/pbes/tools/pbeschain.h"
-#include "mcrl2/pbes/tools/pbesstategraph_options.h"
 #include "mcrl2/pbes/unify_parameters.h"
 #include "mcrl2/utilities/logger.h"
 
@@ -31,402 +26,41 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <iterator>
-#include <numeric>
 #include <ranges>
-#include <unordered_map>
-#include <unordered_set>
+#include <type_traits>
 
 namespace mcrl2::pbes_system
 {
 
-/// A representation of a permutation.
-class permutation
-{
-public:
-  permutation() = default;
-
-  permutation(const boost::container::flat_map<std::size_t, std::size_t>& mapping)
-    : m_mapping(mapping)
-  {}
-
-  /// Parse a permutation from a string of the shape x->y, y->z etc.
-  permutation(const std::string& input, const pbes_system::pbes& pbesspec)
-  {
-    boost::container::flat_map<std::size_t, std::size_t> mapping;
-
-    // Parse all the commas.
-    std::istringstream iss(input);
-    std::string token;
-    while (std::getline(iss, token, ','))
-    {
-      auto arrow_pos = token.find("->");
-      if (arrow_pos == std::string::npos)
-      {
-        throw mcrl2::runtime_error("Invalid permutation format: " + token);
-      }
-
-      std::string from_str = boost::trim_copy(token.substr(0, arrow_pos));
-      std::string to_str = boost::trim_copy(token.substr(arrow_pos + 2));
-
-      std::size_t from = std::stoul(from_str);
-      std::size_t to = std::stoul(to_str);
-
-      if (mapping.contains(from))
-      {
-        throw mcrl2::runtime_error("Invalid permutation: multiple mappings for " + from_str);
-      }
-
-      mapping[from] = to;
-    }
-
-    m_mapping = mapping;
-  }
-
-  boost::container::flat_map<std::size_t, std::size_t> mapping() const { return m_mapping; }
-
-  std::size_t operator[](std::size_t i) const
-  {
-    auto it = m_mapping.find(i);
-    if (it != m_mapping.end())
-    {
-      return it->second;
-    }
-    return i;
-  }
-
-  // Applies the permutation to a set of indices.
-  std::set<std::size_t> permute(const std::set<std::size_t>& s) const
-  {
-    std::set<std::size_t> result;
-    for (const auto& i: s)
-    {
-      result.insert((*this)[i]);
-    }
-    return result;
-  }
-
-  /// Returns the concatenation of this permutation with another permutation.
-  permutation concat(const permutation& other) const
-  {
-    boost::container::flat_map<std::size_t, std::size_t> new_mapping;
-
-    for (const auto& [key, value]: m_mapping)
-    {
-      new_mapping[key] = other[value];
-    }
-
-    for (const auto& [key, value]: other.m_mapping)
-    {
-      assert(m_mapping.find(key) == m_mapping.end());
-      new_mapping[key] = value;
-    }
-
-    return permutation(new_mapping);
-  }
-
-  bool operator==(const permutation& other) const { return m_mapping == other.m_mapping; }
-
-private:
-  boost::container::flat_map<std::size_t, std::size_t> m_mapping;
-};
-
-/// Iterator that generates all permutations of a given set of indices
-class permutation_iterator
-{
-public:
-  using value_type = permutation;
-  using difference_type = std::ptrdiff_t;
-  using pointer = const permutation*;
-  using reference = const permutation&;
-  using iterator_category = std::forward_iterator_tag;
-  using iterator_concept = std::forward_iterator_tag;
-
-  permutation_iterator(const std::vector<std::size_t>& indices)
-    : m_indices(indices)
-  {
-    m_current_permutation = m_indices;
-    next_permutation(); // Skip the identity permutation
-  }
-
-  permutation_iterator()
-    : m_finished(true)
-  {}
-
-  permutation operator*() const
-  {
-    boost::container::flat_map<std::size_t, std::size_t> mapping;
-    for (std::size_t i = 0; i < m_indices.size(); ++i)
-    {
-      mapping[m_indices[i]] = m_current_permutation[i];
-    }
-    return permutation(mapping);
-  }
-
-  permutation_iterator& operator++()
-  {
-    if (!next_permutation())
-    {
-      m_finished = true;
-    }
-    return *this;
-  }
-
-  permutation_iterator operator++(int)
-  {
-    permutation_iterator tmp = *this;
-    ++(*this);
-    return tmp;
-  }
-
-  bool operator==(const permutation_iterator& other) const
-  {
-    if (m_finished && other.m_finished)
-      return true;
-    if (m_finished != other.m_finished)
-      return false;
-    return m_current_permutation == other.m_current_permutation;
-  }
-
-private:
-  bool next_permutation()
-  {
-    // Find the largest index k such that a[k] < a[k + 1]
-    int k = -1;
-    for (int i = m_current_permutation.size() - 2; i >= 0; --i)
-    {
-      if (m_current_permutation[i] < m_current_permutation[i + 1])
-      {
-        k = i;
-        break;
-      }
-    }
-
-    if (k == -1)
-    {
-      return false; // No next permutation
-    }
-
-    // Find the largest index l greater than k such that a[k] < a[l]
-    int l = -1;
-    for (int i = m_current_permutation.size() - 1; i > k; --i)
-    {
-      if (m_current_permutation[k] < m_current_permutation[i])
-      {
-        l = i;
-        break;
-      }
-    }
-
-    // Swap a[k] and a[l]
-    std::swap(m_current_permutation[k], m_current_permutation[l]);
-
-    // Reverse the suffix starting at a[k + 1]
-    std::reverse(m_current_permutation.begin() + k + 1, m_current_permutation.end());
-
-    return true;
-  }
-
-  std::vector<std::size_t> m_indices;
-  std::vector<std::size_t> m_current_permutation;
-  bool m_finished = false;
-};
-
-/// Range abstraction over the iterator.
-class permutation_range
-{
-public:
-  permutation_range(const std::vector<std::size_t>& indices)
-    : m_indices(indices)
-  {
-    std::sort(m_indices.begin(), m_indices.end());
-  }
-
-  permutation_iterator begin() const { return permutation_iterator(m_indices); }
-
-  permutation_iterator end() const { return permutation_iterator(); }
-
-private:
-  std::vector<std::size_t> m_indices;
-};
-
-static_assert(std::forward_iterator<permutation_iterator>);
-static_assert(std::ranges::range<permutation_range>);
-
-/// Returns all the permutations for the given indices.
-inline permutation_range permutation_group(const std::vector<std::size_t>& indices)
-{
-  return permutation_range(indices);
-}
-
-/// Cartesian product of two ranges
-template<typename Range1, typename Range2>
-class cartesian_product_view
-{
-public:
-  using value_type
-    = std::pair<typename std::ranges::range_value_t<Range1>, typename std::ranges::range_value_t<Range2>>;
-
-  cartesian_product_view(Range1&& r1, Range2&& r2)
-    : m_range1(std::forward<Range1>(r1)),
-      m_range2(std::forward<Range2>(r2))
-  {}
-
-  class iterator
-  {
-  public:
-    using value_type = cartesian_product_view::value_type;
-
-    iterator(auto it1, auto it1_end, auto it2, auto it2_begin, auto it2_end)
-      : m_it1(it1),
-        m_it1_end(it1_end),
-        m_it2(it2),
-        m_it2_begin(it2_begin),
-        m_it2_end(it2_end)
-    {
-      if (m_it1 != m_it1_end && m_it2 == m_it2_end)
-      {
-        m_it1 = m_it1_end; // End iterator
-      }
-    }
-
-    value_type operator*() const { return std::make_pair(*m_it1, *m_it2); }
-
-    iterator& operator++()
-    {
-      ++m_it2;
-      if (m_it2 == m_it2_end)
-      {
-        ++m_it1;
-        if (m_it1 != m_it1_end)
-        {
-          m_it2 = m_it2_begin;
-        }
-      }
-      return *this;
-    }
-
-    bool operator!=(const iterator& other) const
-    {
-      return m_it1 != other.m_it1 || (m_it1 != m_it1_end && m_it2 != other.m_it2);
-    }
-
-  private:
-    decltype(std::begin(std::declval<Range1&>())) m_it1, m_it1_end;
-    decltype(std::begin(std::declval<Range2&>())) m_it2, m_it2_begin, m_it2_end;
-  };
-
-  iterator begin() const
-  {
-    auto it1 = std::ranges::begin(m_range1);
-    auto it1_end = std::ranges::end(m_range1);
-    auto it2_begin = std::ranges::begin(m_range2);
-    auto it2_end = std::ranges::end(m_range2);
-    return iterator(it1, it1_end, it2_begin, it2_begin, it2_end);
-  }
-
-  iterator end() const
-  {
-    auto it1_end = std::ranges::end(m_range1);
-    auto it2_begin = std::ranges::begin(m_range2);
-    auto it2_end = std::ranges::end(m_range2);
-    return iterator(it1_end, it1_end, it2_end, it2_begin, it2_end);
-  }
-
-private:
-  Range1 m_range1;
-  Range2 m_range2;
-};
-
-template<typename Range1, typename Range2>
-auto cartesian_product(Range1&& r1, Range2&& r2)
-{
-  return cartesian_product_view<Range1, Range2>(std::forward<Range1>(r1), std::forward<Range2>(r2));
-}
-
-/// Prints the permutation as a mapping
-inline std::ostream& operator<<(std::ostream& out, const permutation& p)
-{
-  out << "[";
-  bool first = true;
-  for (const auto& [key, value]: p.mapping())
-  {
-    if (!first)
-    {
-      out << ", ";
-    }
-
-    out << key << " -> " << value;
-    first = false;
-  }
-  out << "]";
-
-  return out;
-}
-
 /// Combines the candidates derived from two different cliques.
-inline std::vector<std::pair<permutation, permutation>> combine(
-  const std::vector<std::pair<permutation, permutation>>& I_1,
-  const std::vector<std::pair<permutation, permutation>>& I_2)
+template<typename R>
+  requires(
+    std::ranges::range<R>
+    && std::is_same_v<typename std::ranges::range_value_t<R>, std::pair<detail::permutation, detail::permutation>>)
+inline std::ranges::range auto combine(R I_1, R I_2)
 {
-  std::vector<std::pair<permutation, permutation>> result;
-  for (const auto& [alpha_1, beta_1]: I_1)
-  {
-    for (const auto& [alpha_2, beta_2]: I_2)
-    {
-      if (beta_1 == beta_2)
-      {
-        result.emplace_back(alpha_1.concat(alpha_2), beta_1);
-      }
-    }
-  }
-
-  return result;
+  return detail::cartesian_product(I_1, I_2)
+         | std::ranges::views::filter(
+           [](const std::pair<std::pair<detail::permutation, detail::permutation>,
+             std::pair<detail::permutation, detail::permutation>>& pair)
+           {
+             if (pair.first.second != pair.second.first)
+             {
+               return false;
+             }
+             return true;
+           })
+         | std::ranges::views::transform(
+           [](const std::pair<std::pair<detail::permutation, detail::permutation>,
+             std::pair<detail::permutation, detail::permutation>>& pair)
+           {
+             const auto& [alpha_1, beta_1] = pair.first;
+             const auto& [alpha_2, beta_2] = pair.second;
+             return std::make_pair(alpha_1.concat(alpha_2), beta_1);
+           });
 }
 
-/// Apply the given permutation to an expression
-inline pbes_expression
-apply_permutation(const pbes_expression& expr, const std::vector<data::variable>& parameters, const permutation& pi)
-{
-  data::mutable_map_substitution<> sigma;
-  for (std::size_t i = 0; i < parameters.size(); ++i)
-  {
-    sigma[parameters[i]] = parameters[pi[i]];
-  }
-
-  auto result = pbes_system::replace_variables(expr, sigma);
-
-  result = replace_propositional_variables(result,
-    [sigma, pi, parameters](const pbes_system::propositional_variable_instantiation& x) -> pbes_system::pbes_expression
-    {
-      std::vector<data::data_expression> new_parameters(x.parameters().size());
-      for (std::size_t i = 0; i < x.parameters().size(); ++i)
-      {
-        new_parameters[i] = data::data_expression(*std::next(x.parameters().begin(), pi[i]));
-      }
-      return propositional_variable_instantiation(x.name(), data::data_expression_list(new_parameters));
-    });
-
-  mCRL2log(log::debug) << "pi(phi): \n" << expr << "\n" << result << std::endl;
-  return result;
-}
-
-/// Fold is only available in C++23 so we provide a simple implementation here.
-template<typename T, typename BinaryOperation>
-inline T fold_left(const std::vector<T>& vec, BinaryOperation op)
-{
-  if (vec.empty())
-  {
-    throw std::invalid_argument("fold_left: input vector is empty");
-  }
-  T result = vec[0];
-  for (std::size_t i = 1; i < vec.size(); ++i)
-  {
-    result = op(result, vec[i]);
-  }
-  return result;
-}
-
+/// Returns the index of the variable of this control flow graph.
 inline std::size_t variable_index(const detail::local_control_flow_graph& c)
 {
   for (const auto& vertex: c.vertices)
@@ -461,30 +95,46 @@ public:
                              << "\n"
                              << *i << std::endl;
     }
-
-    std::vector<std::vector<std::size_t>> cal_I = cliques();
-    std::vector<std::vector<std::pair<permutation, permutation>>> candidates;
-
-    for (const auto& clique: cal_I)
-    {
-      candidates.emplace_back(clique_candidates(clique));
-    }
-
-    if (candidates.empty())
-    {
-      mCRL2log(log::info) << "No symmetry candidates found!" << std::endl;
-      return;
-    }
-
-    m_result = fold_left(candidates, combine);
   }
 
-  const std::vector<std::pair<permutation, permutation>>& result() const { return m_result; }
+  /// Computes the set of candidates we can derive from a single clique
+  std::ranges::range auto clique_candidates(const std::vector<size_t>& I) const
+  {
+    auto D = data_parameters(I);
+
+    std::vector<std::size_t> parameter_indices;
+    for (const auto& i: I)
+    {
+      parameter_indices.emplace_back(variable_index(m_local_control_flow_graphs[i]));
+    }
+
+    return detail::cartesian_product(detail::permutation_group(parameter_indices),
+             detail::permutation_group(std::vector<std::size_t>(D.begin(), D.end())))
+           | std::ranges::views::transform(
+             [this, I](const auto& pair) -> std::optional<std::pair<detail::permutation, detail::permutation>>
+             {
+               const auto& [alpha, beta] = pair;
+
+               detail::permutation pi = alpha.concat(beta);
+               mCRL2log(log::verbose) << "Trying candidate: " << alpha << " and " << beta << std::endl;
+               if (complies(pi, I))
+               {
+                 mCRL2log(log::verbose) << "--- compliant detail::permutations \n";
+                 return std::make_pair(alpha, beta);
+               }
+
+               return std::nullopt;
+             })
+           | std::ranges::views::filter(
+             [](const std::optional<std::pair<detail::permutation, detail::permutation>>& b) { return b.has_value(); })
+           | std::ranges::views::transform(
+             [](const std::optional<std::pair<detail::permutation, detail::permutation>>& b) { return *b; });
+  }
 
   /// Takes as input a clique of compatible control flow parameters and return
   /// the set of all data parameters that somehow play a role for any of these
   /// parameters.
-  std::set<std::size_t> data_parameters(const std::vector<size_t>& clique)
+  std::set<std::size_t> data_parameters(const std::vector<size_t>& clique) const
   {
     std::set<std::size_t> data_parameters;
     for (const auto& i: clique)
@@ -527,39 +177,6 @@ public:
     }
 
     return data_parameters;
-  }
-
-  /// Computes the set of candidates we can derive from a single clique
-  std::vector<std::pair<permutation, permutation>> clique_candidates(const std::vector<size_t>& I)
-  {
-    auto D = data_parameters(I);
-
-    std::vector<std::size_t> parameter_indices;
-    for (const auto& i: I)
-    {
-      parameter_indices.emplace_back(variable_index(m_local_control_flow_graphs[i]));
-    }
-
-    std::vector<std::pair<permutation, permutation>> result;
-    for (const auto& [alpha, beta]: cartesian_product(permutation_group(parameter_indices),
-           permutation_group(std::vector<std::size_t>(D.begin(), D.end()))))
-    {
-      mCRL2log(log::verbose) << "Trying candidate: " << alpha << " and " << beta << std::endl;
-
-      permutation pi = alpha.concat(beta);
-      if (complies(pi, I))
-      {
-        result.emplace_back(std::move(alpha), std::move(beta));
-      }
-    }
-
-    mCRL2log(log::verbose) << "--- compliant permutations \n";
-    for (const auto& p: result)
-    {
-      mCRL2log(log::verbose) << p.first << ", " << p.second << std::endl;
-    }
-
-    return result;
   }
 
   /// Determine the cliques of the control flow graphs.
@@ -605,16 +222,16 @@ public:
     return cal_I;
   }
 
-  /// Returns true iff all vertices in I comply with the permutation pi.
-  bool complies(const permutation& pi, const std::vector<std::size_t>& I)
+  /// Returns true iff all vertices in I comply with the detail::permutation pi.
+  bool complies(const detail::permutation& pi, const std::vector<std::size_t>& I) const
   {
     return std::all_of(I.begin(), I.end(), [&](std::size_t c) { return complies(pi, c); });
   }
 
-  /// Takes a permutation and a control flow parameter and returns true or
-  /// false depending on whether the permutation complies with the control
+  /// Takes a detail::permutation and a control flow parameter and returns true or
+  /// false depending on whether the detail::permutation complies with the control
   /// flow parameter according to Definition
-  bool complies(const permutation& pi, std::size_t c) const
+  bool complies(const detail::permutation& pi, std::size_t c) const
   {
     const detail::local_control_flow_graph& graph = m_local_control_flow_graphs.at(c);
 
@@ -842,19 +459,16 @@ public:
 
     return true;
   }
-
-private:
-  std::vector<std::pair<permutation, permutation>> m_result;
 };
 
 /// Contains all the implementation of the PBES symmetry algorithm, based on the article by Bartels et al.
 class pbes_symmetry
 {
 public:
+
   pbes_symmetry(const pbes& input, const data::rewriter&)
   {
-    srf = pbes2srf(input);
-
+    srf_pbes srf = pbes2srf(input);
     mCRL2log(mcrl2::log::debug) << srf.to_pbes() << std::endl;
 
     unify_parameters(srf, false, false);
@@ -864,17 +478,22 @@ public:
     cliques_algorithm algorithm(srf_input);
     algorithm.run();
 
+    std::vector<data::variable> parameters;
     if (!input.equations().empty())
     {
       // After unification, all equations have the same parameters.
-      auto parameters = input.equations()[0].variable().parameters();
-      m_parameters = std::vector<data::variable>(parameters.begin(), parameters.end());
+      data::variable_list list = input.equations()[0].variable().parameters();
+      parameters = std::vector<data::variable>(list.begin(), list.end());
     }
 
-    for (const auto& option: algorithm.result())
+    for (const auto& result:
+      detail::fold_left(algorithm.cliques()
+                          | std::ranges::views::transform([algorithm](const auto& clique) -> std::ranges::range auto
+                            { return algorithm.clique_candidates(clique); }),
+        [](const auto& acc, const auto& x) { return combine(acc, x); }))
     {
-      permutation permutation = option.first.concat(option.second);
-      if (symcheck(permutation))
+      detail::permutation permutation = result.first.concat(result.second);
+      if (symcheck(permutation, srf, parameters))
       {
         mCRL2log(log::info) << "Found valid symmetry: " << permutation << std::endl;
       }
@@ -882,10 +501,8 @@ public:
   }
 
 private:
-  static void cliques(const pbes& input) {}
-
   /// Performs the syntactic check defined as symcheck in the paper.
-  bool symcheck(const permutation& pi)
+  bool symcheck(const detail::permutation& pi, const srf_pbes& srf, const std::vector<data::variable>& parameters)
   {
     for (const auto& equation: srf.equations())
     {
@@ -900,8 +517,8 @@ private:
             mCRL2log(log::trace) << "Against summand " << other_summand << " of equation " << other_equation
                                  << std::endl;
             if (equation.variable().name() == other_equation.variable().name()
-                && apply_permutation(summand.condition(), m_parameters, pi) == other_summand.condition()
-                && apply_permutation(summand.variable(), m_parameters, pi) == other_summand.variable())
+                && detail::apply_permutation(summand.condition(), parameters, pi) == other_summand.condition()
+                && detail::apply_permutation(summand.variable(), parameters, pi) == other_summand.variable())
             {
               matched = true;
               break;
@@ -924,9 +541,6 @@ private:
 
     return true;
   }
-
-  srf_pbes srf;
-  std::vector<data::variable> m_parameters;
 };
 
 } // namespace mcrl2::pbes_system
