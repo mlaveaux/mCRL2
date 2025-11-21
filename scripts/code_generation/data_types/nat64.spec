@@ -165,6 +165,7 @@ eqn  @c0 = @most_significant_digitNat(@zero_word);
      <(@concat_digit(n1,w1), @concat_digit(n2,w2)) = if(@less(w1,w2),<=(n1,n2),<(n1,n2));
      <(@succ_nat(n1),n2) = &&(<(@most_significant_digitNat(@one_word),n2),<(n1,@natpred(n2)));
      <(n1, @succ_nat(n2)) = <=(n1,n2);
+     less_total(n,m) = <(n,m);
      @equals_zero_word(w1) ->  <(n,@most_significant_digitNat(w1)) = false;
  
      <=(@most_significant_digitNat(w1), @most_significant_digitNat(w2)) = @less_equal(w1,w2);

@@ -73,6 +73,7 @@ eqn  @c1 = @most_significant_digit(@one_word);
      <(@concat_digit(p1,w1),@concat_digit(p2,w2)) = if(@less(w1,w2),<=(p1,p2),<(p1,p2));
      <(@succ_pos(p1),p2) = &&(<(@most_significant_digit(@two_word),p2),<(p1,@pospred(p2)));
      <(p1, @succ_pos(p2)) = <=(p1,p2);
+     less_total(p,p1) = <(p,p1);
      @equals_one_word(w1) ->  <(p,@most_significant_digit(w1)) = false;
  
      <=(@most_significant_digit(w1),@most_significant_digit(w2)) = @less_equal(w1,w2);

@@ -114,14 +114,14 @@ eqn @bagfbag(b)  =  @bag(@zero_, b);
     @fbag_inter(f, g, @fbag_cons(d, p, b), {:})  =  @fbag_cinsert(d, @swap_zero_min(f(d), g(d), @cNat(p), @c0), @fbag_inter(f, g, b, {:}));
     @fbag_inter(f, g, {:}, @fbag_cons(e, q, c))  =  @fbag_cinsert(e, @swap_zero_min(f(e), g(e), @c0, @cNat(q)), @fbag_inter(f, g, {:}, c));
     @fbag_inter(f, g, @fbag_cons(d, p, b), @fbag_cons(d, q, c))  =  @fbag_cinsert(d, @swap_zero_min(f(d), g(d), @cNat(p), @cNat(q)), @fbag_inter(f, g, b, c));
-    <(d, e)  ->  @fbag_inter(f, g, @fbag_cons(d, p, b), @fbag_cons(e, q, c))  =  @fbag_cinsert(d, @swap_zero_min(f(d), g(d), @cNat(p), @c0), @fbag_inter(f, g, b, @fbag_cons(e, q, c)));
-    <(e, d)  ->  @fbag_inter(f, g, @fbag_cons(d, p, b), @fbag_cons(e, q, c))  =  @fbag_cinsert(e, @swap_zero_min(f(e), g(e), @c0, @cNat(q)), @fbag_inter(f, g, @fbag_cons(d, p, b), c));
+    less_total(d, e)  ->  @fbag_inter(f, g, @fbag_cons(d, p, b), @fbag_cons(e, q, c))  =  @fbag_cinsert(d, @swap_zero_min(f(d), g(d), @cNat(p), @c0), @fbag_inter(f, g, b, @fbag_cons(e, q, c)));
+    less_total(e, d)  ->  @fbag_inter(f, g, @fbag_cons(d, p, b), @fbag_cons(e, q, c))  =  @fbag_cinsert(e, @swap_zero_min(f(e), g(e), @c0, @cNat(q)), @fbag_inter(f, g, @fbag_cons(d, p, b), c));
     @fbag_diff(f, g, {:}, {:})  =  {:};
     @fbag_diff(f, g, @fbag_cons(d, p, b), {:})  =  @fbag_cinsert(d, @swap_zero_monus(f(d), g(d), @cNat(p), @c0), @fbag_diff(f, g, b, {:}));
     @fbag_diff(f, g, {:}, @fbag_cons(e, q, c))  =  @fbag_cinsert(e, @swap_zero_monus(f(e), g(e), @c0, @cNat(q)), @fbag_diff(f, g, {:}, c));
     @fbag_diff(f, g, @fbag_cons(d, p, b), @fbag_cons(d, q, c))  =  @fbag_cinsert(d, @swap_zero_monus(f(d), g(d), @cNat(p), @cNat(q)), @fbag_diff(f, g, b, c));
-    <(d, e)  ->  @fbag_diff(f, g, @fbag_cons(d, p, b), @fbag_cons(e, q, c))  =  @fbag_cinsert(d, @swap_zero_monus(f(d), g(d), @cNat(p), @c0), @fbag_diff(f, g, b, @fbag_cons(e, q, c)));
-    <(e, d)  ->  @fbag_diff(f, g, @fbag_cons(d, p, b), @fbag_cons(e, q, c))  =  @fbag_cinsert(e, @swap_zero_monus(f(e), g(e), @c0, @cNat(q)), @fbag_diff(f, g, @fbag_cons(d, p, b), c));
+    less_total(d, e)  ->  @fbag_diff(f, g, @fbag_cons(d, p, b), @fbag_cons(e, q, c))  =  @fbag_cinsert(d, @swap_zero_monus(f(d), g(d), @cNat(p), @c0), @fbag_diff(f, g, b, @fbag_cons(e, q, c)));
+    less_total(e, d)  ->  @fbag_diff(f, g, @fbag_cons(d, p, b), @fbag_cons(e, q, c))  =  @fbag_cinsert(e, @swap_zero_monus(f(e), g(e), @c0, @cNat(q)), @fbag_diff(f, g, @fbag_cons(d, p, b), c));
     @fbag2fset(f, {:})  =  {};
     @fbag2fset(f, @fbag_cons(d, p, b))  =  @fset_cinsert(d, ==(==(f(d), @cNat(p)), >(f(d), @c0)), @fbag2fset(f, b));
 

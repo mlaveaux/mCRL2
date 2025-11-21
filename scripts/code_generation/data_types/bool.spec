@@ -13,12 +13,13 @@ sort Bool <"bool_">;
 cons true <"true_"> : Bool                                         external defined_by_rewrite_rules;
      false <"false_"> : Bool                                       external defined_by_rewrite_rules;
 
-map ! <"not_"> : Bool <"arg"> -> Bool                              external defined_by_rewrite_rules;
-    && <"and_"> : Bool <"left"> # Bool <"right"> -> Bool           external defined_by_rewrite_rules;
-    || <"or_"> : Bool <"left"> # Bool <"right"> -> Bool            external defined_by_rewrite_rules;
-    => <"implies"> : Bool <"left"> # Bool <"right"> -> Bool        external defined_by_rewrite_rules;
+map ! <"not_"> : Bool <"arg"> -> Bool                                   external defined_by_rewrite_rules;
+    && <"and_"> : Bool <"left"> # Bool <"right"> -> Bool                external defined_by_rewrite_rules;
+    || <"or_"> : Bool <"left"> # Bool <"right"> -> Bool                 external defined_by_rewrite_rules;
+    => <"implies"> : Bool <"left"> # Bool <"right"> -> Bool             external defined_by_rewrite_rules;
 
 var b:Bool;
+    c:Bool;
 eqn !(true) = false;
     !(false) = true;
     !(!(b)) = b;
@@ -46,5 +47,6 @@ eqn !(true) = false;
     <=(true,b) = b;
     <=(b,false) = !(b);
     <=(b,true) = true;
+    less_total(b,c) = <(b,c);
 
 

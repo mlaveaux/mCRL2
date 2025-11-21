@@ -61,6 +61,7 @@ eqn ==(@cInt(m),@cInt(n)) = ==(m,n);
     <(@cInt(n),@cNeg(p)) = false;
     <(@cNeg(p),@cInt(n)) = true;
     <(@cNeg(p),@cNeg(q)) = <(q,p);
+    less_total(n,m) = <(n,m);
     <=(@cInt(m),@cInt(n)) = <=(m,n);
     <=(@cInt(n),@cNeg(p)) = false;
     <=(@cNeg(p),@cInt(n)) = true;
