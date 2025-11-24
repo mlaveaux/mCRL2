@@ -89,7 +89,9 @@ public:
 
     compute_local_control_flow_graphs();
 
-    for (auto i = m_local_control_flow_graphs.begin(); i != m_local_control_flow_graphs.end(); ++i)
+    for (decltype(m_local_control_flow_graphs)::iterator i = m_local_control_flow_graphs.begin();
+      i != m_local_control_flow_graphs.end();
+      ++i)
     {
       mCRL2log(log::verbose) << "--- computed local control flow graph " << (i - m_local_control_flow_graphs.begin())
                              << "\n"
@@ -98,12 +100,13 @@ public:
   }
 
   /// Computes the set of candidates we can derive from a single clique
-  std::ranges::range auto clique_candidates(const std::vector<size_t>& I) const
+  /// TODO: How to specify requires on the return type?
+  std::ranges::range auto clique_candidates(const std::vector<size_t>& I) const  
   {
-    auto D = data_parameters(I);
+    std::set<std::size_t> D = data_parameters(I);
 
     std::vector<std::size_t> parameter_indices;
-    for (const auto& i: I)
+    for (const std::size_t& i: I)
     {
       parameter_indices.emplace_back(variable_index(m_local_control_flow_graphs[i]));
     }
@@ -111,7 +114,8 @@ public:
     return detail::cartesian_product(detail::permutation_group(parameter_indices),
              detail::permutation_group(std::vector<std::size_t>(D.begin(), D.end())))
            | std::ranges::views::transform(
-             [this, I](const auto& pair) -> std::optional<std::pair<detail::permutation, detail::permutation>>
+             [this, I](const std::pair<detail::permutation, detail::permutation>& pair)
+               -> std::optional<std::pair<detail::permutation, detail::permutation>>
              {
                const auto& [alpha, beta] = pair;
 
@@ -126,9 +130,11 @@ public:
                return std::nullopt;
              })
            | std::ranges::views::filter(
-             [](const std::optional<std::pair<detail::permutation, detail::permutation>>& b) { return b.has_value(); })
+             [](const std::optional<std::pair<detail::permutation, detail::permutation>>& b) -> bool
+             { return b.has_value(); })
            | std::ranges::views::transform(
-             [](const std::optional<std::pair<detail::permutation, detail::permutation>>& b) { return *b; });
+             [](const std::optional<std::pair<detail::permutation, detail::permutation>>& b)
+               -> const std::pair<detail::permutation, detail::permutation>& { return *b; });
   }
 
   /// Takes as input a clique of compatible control flow parameters and return
@@ -137,22 +143,22 @@ public:
   std::set<std::size_t> data_parameters(const std::vector<size_t>& clique) const
   {
     std::set<std::size_t> data_parameters;
-    for (const auto& i: clique)
+    for (const std::size_t& i: clique)
     {
       const detail::local_control_flow_graph& c = m_local_control_flow_graphs[i];
-      for (const auto& s: c.vertices)
+      for (const detail::local_control_flow_graph_vertex& s: c.vertices)
       {
         // Compute the data parameters
         // Get the changed by, used for and used in
         for (const auto& [to, labels]: s.outgoing_edges())
         {
-          for (const auto& equation: m_pbes.equations())
+          for (const detail::stategraph_equation& equation: m_pbes.equations())
           {
             if (equation.variable().name() == s.name())
             {
-              for (const auto& label: labels)
+              for (const unsigned long& label: labels)
               {
-                const auto& variable = equation.predicate_variables().at(label);
+                const detail::predicate_variable& variable = equation.predicate_variables().at(label);
                 data_parameters.insert(variable.changed().begin(), variable.changed().end());
                 data_parameters.insert(variable.used().begin(), variable.used().end());
               }
@@ -163,7 +169,7 @@ public:
     }
 
     // Remove the control flow parameters from the data parameters.
-    for (const auto& i: clique)
+    for (const unsigned long& i: clique)
     {
       // Every vertex should have the same index.
       const detail::local_control_flow_graph& c = m_local_control_flow_graphs[i];
@@ -171,9 +177,9 @@ public:
     }
 
     mCRL2log(log::verbose) << "--- data parameters for clique \n";
-    for (const auto& dp: data_parameters)
+    for (const unsigned long& parameter: data_parameters)
     {
-      mCRL2log(log::verbose) << dp << std::endl;
+      mCRL2log(log::verbose) << parameter << std::endl;
     }
 
     return data_parameters;
@@ -187,7 +193,8 @@ public:
     {
       if (std::any_of(cal_I.begin(),
             cal_I.end(),
-            [i](const auto& clique) { return std::find(clique.begin(), clique.end(), i) != clique.end(); }))
+            [i](const std::vector<unsigned long>& clique)
+            { return std::find(clique.begin(), clique.end(), i) != clique.end(); }))
       {
         // Skip every graph that already belongs to a clique.
         continue;
@@ -210,7 +217,7 @@ public:
       if (I.size() > 1)
       {
         mCRL2log(log::verbose) << "--- control flow graphs in clique \n";
-        for (const auto& graph: I)
+        for (const unsigned long& graph: I)
         {
           mCRL2log(log::verbose) << graph << " variable index: " << variable_index(m_local_control_flow_graphs[graph])
                                  << std::endl;
@@ -248,9 +255,9 @@ public:
     const detail::local_control_flow_graph& other_graph = m_local_control_flow_graphs.at(other_c);
 
     // TODO: Is this equivalent to the bijection check in the paper.
-    for (const auto& s: graph.vertices)
+    for (const detail::local_control_flow_graph_vertex& s: graph.vertices)
     {
-      for (const auto& s_prime: other_graph.vertices)
+      for (const detail::local_control_flow_graph_vertex& s_prime: other_graph.vertices)
       {
         if (s.value() == s_prime.value() && s.name() == s_prime.name())
         {
@@ -267,7 +274,7 @@ public:
                 // t == t'
                 // Find the corresponding equation
                 bool found_match = false;
-                for (const auto& equation: m_pbes.equations())
+                for (const detail::stategraph_equation& equation: m_pbes.equations())
                 {
                   if (equation.variable().name() == s.name())
                   {
@@ -277,12 +284,12 @@ public:
                     std::set<std::size_t> remaining_j = labels_prime;
                     for (const std::size_t& i: labels)
                     {
-                      const auto& variable = equation.predicate_variables().at(i);
+                      const detail::predicate_variable& variable = equation.predicate_variables().at(i);
 
                       std::optional<std::size_t> matching_j;
                       for (const std::size_t& j: remaining_j)
                       {
-                        const auto& variable_prime = equation.predicate_variables().at(j);
+                        const detail::predicate_variable& variable_prime = equation.predicate_variables().at(j);
                         if (pi.permute(variable.changed()) == variable_prime.changed()
                             && pi.permute(variable.used()) == variable_prime.used())
                         {
@@ -334,14 +341,14 @@ public:
     if (it != s.outgoing_edges().end())
     {
       // Find the corresponding equation
-      for (const auto& equation: m_pbes.equations())
+      for (const detail::stategraph_equation& equation: m_pbes.equations())
       {
         if (equation.variable().name() == s.name())
         {
           for (const std::size_t& label: it->second)
           {
             // Compute the sizes.
-            const auto& variable = equation.predicate_variables().at(label);
+            const detail::predicate_variable& variable = equation.predicate_variables().at(label);
             result.insert(std::make_pair(variable.changed().size(), variable.used().size()));
           }
         }
@@ -367,10 +374,10 @@ public:
 
     // Note that this algorithm is slightly different than the pseudocode, because the graphs in the implementation are
     // over different (compatible) vertex sets.
-    for (const auto& s: c.vertices)
+    for (const detail::local_control_flow_graph_vertex& s: c.vertices)
     {
       // There exist t such that s and t match according to the definitions in the paper.
-      for (const auto& s_c_prime: c_prime.vertices)
+      for (const detail::local_control_flow_graph_vertex& s_c_prime: c_prime.vertices)
       {
         // X(v) in c and X(v) in c_prime.
         if (s.value() == s_c_prime.value() && s.name() == s_c_prime.name())
@@ -431,7 +438,7 @@ public:
       return false;
     }
 
-    for (const auto& vertex: c.vertices)
+    for (const detail::local_control_flow_graph_vertex& vertex: c.vertices)
     {
       if (!std::any_of(c_prime.vertices.begin(),
             c_prime.vertices.end(),
@@ -444,7 +451,7 @@ public:
       }
     }
 
-    for (const auto& vertex_prime: c_prime.vertices)
+    for (const detail::local_control_flow_graph_vertex& vertex_prime: c_prime.vertices)
     {
       if (!std::any_of(c.vertices.begin(),
             c.vertices.end(),
