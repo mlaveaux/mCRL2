@@ -13,9 +13,12 @@ namespace mcrl2::pbes_system::detail
 {
 
 /// Fold is only available in C++23 so we provide a simple implementation here.
-template<std::ranges::input_range Range, typename BinaryOperation>
+template<std::ranges::range Range, typename BinaryOperation>
+  requires std::is_invocable_r_v<std::ranges::range_value_t<Range>, BinaryOperation, std::ranges::range_value_t<Range>, std::ranges::range_value_t<Range>>
 inline std::ranges::range auto fold_left(Range&& range, BinaryOperation op)
 {
+  using T = std::ranges::range_value_t<Range>;
+
   auto it = std::ranges::begin(range);
   auto end = std::ranges::end(range);
   
@@ -24,7 +27,7 @@ inline std::ranges::range auto fold_left(Range&& range, BinaryOperation op)
     throw std::invalid_argument("fold_left: input range is empty");
   }
   
-  auto result = *it;
+  T result = *it;
   ++it;
   
   for (; it != end; ++it)
