@@ -33,26 +33,21 @@ namespace mcrl2::pbes_system
 {
 
 /// Combines the candidates derived from two different cliques.
-template<typename R>
+template<typename Range>
   requires(
-    std::ranges::range<R>
-    && std::is_same_v<typename std::ranges::range_value_t<R>, std::pair<detail::permutation, detail::permutation>>)
-inline std::ranges::range auto combine(R I_1, R I_2)
+    std::ranges::range<Range>
+    && std::is_same_v<typename std::ranges::range_value_t<Range>, std::pair<detail::permutation, detail::permutation>>)
+inline 
+std::ranges::range auto candidate_combine(Range I_1, Range I_2)
 {
-  return detail::cartesian_product(I_1, I_2)
-         | std::ranges::views::filter(
-           [](const std::pair<std::pair<detail::permutation, detail::permutation>,
-             std::pair<detail::permutation, detail::permutation>>& pair)
-           {
-             if (pair.first.second != pair.second.first)
-             {
-               return false;
-             }
-             return true;
-           })
+  // It seems that structured bindings cannot be used here.
+  auto view = detail::cartesian_product(I_1, I_2);
+  return view
+         | std::views::filter([](const std::pair<std::pair<detail::permutation, detail::permutation>, std::pair<detail::permutation, detail::permutation>>&
+                                          pair) 
+           { return pair.first.second == pair.second.second; })
          | std::ranges::views::transform(
-           [](const std::pair<std::pair<detail::permutation, detail::permutation>,
-             std::pair<detail::permutation, detail::permutation>>& pair)
+           [](const std::pair<std::pair<detail::permutation, detail::permutation>, std::pair<detail::permutation, detail::permutation>>& pair)
            {
              const auto& [alpha_1, beta_1] = pair.first;
              const auto& [alpha_2, beta_2] = pair.second;
