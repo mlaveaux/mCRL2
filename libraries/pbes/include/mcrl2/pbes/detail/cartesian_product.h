@@ -22,9 +22,9 @@ public:
 
   cartesian_product_view() = default;
 
-  cartesian_product_view(Range1&& r1, Range2&& r2)
-    : m_range1(std::forward<Range1>(r1)),
-      m_range2(std::forward<Range2>(r2))
+  cartesian_product_view(Range1 r1, Range2 r2)
+    : m_range1(r1),
+      m_range2(r2)
   {}
 
   class iterator
@@ -86,8 +86,8 @@ public:
     }
 
   private:
-    decltype(std::begin(std::declval<Range1&>())) m_it1, m_it1_end;
-    decltype(std::begin(std::declval<Range2&>())) m_it2, m_it2_begin, m_it2_end;
+    decltype(std::ranges::begin(std::declval<const Range1&>())) m_it1, m_it1_end;
+    decltype(std::ranges::begin(std::declval<const Range2&>())) m_it2, m_it2_begin, m_it2_end;
   };
 
   iterator begin() const
@@ -113,9 +113,9 @@ private:
 };
 
 template<typename Range1, typename Range2>
-auto cartesian_product(Range1&& r1, Range2&& r2)
+auto cartesian_product(Range1 r1, Range2 r2)
 {
-  return cartesian_product_view<Range1, Range2>(std::forward<Range1>(r1), std::forward<Range2>(r2));
+  return cartesian_product_view<Range1, Range2>(r1, r2);
 }
 
 } // namespace mcrl2::pbes_system::detail
