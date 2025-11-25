@@ -37,17 +37,18 @@ template<typename Range>
   requires(
     std::ranges::range<Range>
     && std::is_same_v<typename std::ranges::range_value_t<Range>, std::pair<detail::permutation, detail::permutation>>)
-inline 
-std::ranges::range auto candidate_combine(Range I_1, Range I_2)
+inline std::ranges::range auto candidate_combine(Range I_1, Range I_2)
 {
   // It seems that structured bindings cannot be used here.
   auto view = detail::cartesian_product(I_1, I_2);
   return view
-         | std::views::filter([](const std::pair<std::pair<detail::permutation, detail::permutation>, std::pair<detail::permutation, detail::permutation>>&
-                                          pair) 
+         | std::views::filter([](const std::pair<std::pair<detail::permutation, detail::permutation>,
+                                std::pair<detail::permutation, detail::permutation>>& pair)
            { return pair.first.second == pair.second.second; })
          | std::ranges::views::transform(
-           [](const std::pair<std::pair<detail::permutation, detail::permutation>, std::pair<detail::permutation, detail::permutation>>& pair)
+           [](const std::pair<std::pair<detail::permutation, detail::permutation>,
+             std::pair<detail::permutation, detail::permutation>>& pair)
+             -> std::pair<detail::permutation, detail::permutation>
            {
              const auto& [alpha_1, beta_1] = pair.first;
              const auto& [alpha_2, beta_2] = pair.second;
@@ -96,7 +97,7 @@ public:
 
   /// Computes the set of candidates we can derive from a single clique
   /// TODO: How to specify requires on the return type?
-  std::ranges::range auto clique_candidates(const std::vector<size_t>& I) const  
+  std::ranges::range auto clique_candidates(const std::vector<size_t>& I) const
   {
     std::set<std::size_t> D = data_parameters(I);
 
@@ -127,9 +128,8 @@ public:
            | std::ranges::views::filter(
              [](const std::optional<std::pair<detail::permutation, detail::permutation>>& b) -> bool
              { return b.has_value(); })
-           | std::ranges::views::transform(
-             [](const std::optional<std::pair<detail::permutation, detail::permutation>>& b)
-               -> const std::pair<detail::permutation, detail::permutation>& { return *b; });
+           | std::ranges::views::transform([](std::optional<std::pair<detail::permutation, detail::permutation>> b)
+                                             -> std::pair<detail::permutation, detail::permutation> { return *b; });
   }
 
   /// Takes as input a clique of compatible control flow parameters and return
@@ -488,11 +488,32 @@ public:
       parameters = std::vector<data::variable>(list.begin(), list.end());
     }
 
+    std::vector<std::vector<std::pair<detail::permutation, detail::permutation>>> candidates;
+    for (const auto& clique: algorithm.cliques())
+    {
+      // std::ranges::to<std::vector>) is not a thing yet.
+      std::vector<std::pair<detail::permutation, detail::permutation>> clique_candidates;
+      for (const std::pair<detail::permutation, detail::permutation>& candidate: algorithm.clique_candidates(clique))
+      {
+        clique_candidates.emplace_back(candidate);
+      }
+
+      candidates.emplace_back(std::move(clique_candidates));
+    }
+
     for (const auto& result:
-      detail::fold_left(algorithm.cliques()
-                          | std::ranges::views::transform([algorithm](const auto& clique) -> std::ranges::range auto
-                            { return algorithm.clique_candidates(clique); }),
-        [](const auto& acc, const auto& x) { return combine(acc, x); }))
+      detail::fold_left<std::vector<std::pair<detail::permutation, detail::permutation>>>(candidates,
+        [](const auto& acc, const auto& x)
+        {
+          // std::ranges::to<std::vector>) is not a thing yet.
+          std::vector<std::pair<detail::permutation, detail::permutation>> clique_candidates;
+          for (const std::pair<detail::permutation, detail::permutation>& candidate: candidate_combine(acc, x))
+          {
+            clique_candidates.emplace_back(candidate);
+          }
+
+          return clique_candidates;
+        }))
     {
       detail::permutation permutation = result.first.concat(result.second);
       if (symcheck(permutation, srf, parameters))
