@@ -33,12 +33,20 @@ public:
   {}
 
   /// Parse a permutation from a string of the shape x->y, y->z etc.
-  permutation(const std::string& input, const pbes_system::pbes& pbesspec)
+  permutation(const std::string& input)
   {
     boost::container::flat_map<std::size_t, std::size_t> mapping;
 
+    // Remove the surrounding brackets if present.
+    std::string trimmed_input = boost::trim_copy(input);
+    std::string input_no_brackets = trimmed_input;
+    if (!trimmed_input.empty() && trimmed_input.front() == '[' && trimmed_input.back() == ']')
+    {
+      input_no_brackets = trimmed_input.substr(1, trimmed_input.size() - 2);
+    }
+
     // Parse all the commas.
-    std::istringstream iss(input);
+    std::istringstream iss(input_no_brackets);
     std::string token;
     while (std::getline(iss, token, ','))
     {
