@@ -124,7 +124,7 @@ public:
   using iterator_category = std::forward_iterator_tag;
   using iterator_concept = std::forward_iterator_tag;
 
-  permutation_iterator(const std::vector<std::size_t>& indices)
+  permutation_iterator(std::vector<std::size_t> indices)
     : m_indices(indices)
   {
     m_current_permutation = m_indices;
@@ -173,9 +173,15 @@ public:
 private:
   bool next_permutation()
   {
+    // Edge case: no next permutation
+    if (m_current_permutation.size() < 2)
+    {
+      return false;
+    }
+
     // Find the largest index k such that a[k] < a[k + 1]
     int k = -1;
-    for (std::size_t i = m_current_permutation.size() - 2; i >= 0; --i)
+    for (int i = m_current_permutation.size() - 2; i >= 0; --i)
     {
       if (m_current_permutation[i] < m_current_permutation[i + 1])
       {
