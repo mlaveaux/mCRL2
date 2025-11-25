@@ -16,6 +16,8 @@
 
 #include "mcrl2/pbes/algorithms.h"
 #include "mcrl2/pbes/join.h"
+#include "mcrl2/pbes/pbes.h"
+#include "mcrl2/pbes/pbes_quotient.h"
 #include "mcrl2/pbes/pbesinst_lazy.h"
 #include "mcrl2/pbes/structure_graph_builder.h"
 #include "mcrl2/utilities/logger.h"
@@ -117,6 +119,7 @@ class pbesinst_structure_graph_algorithm: public pbesinst_lazy_algorithm
       const pbessolve_options& options,
       const pbes& p,
       structure_graph& G,
+      pbes_quotient& quotient,
       std::optional<data::rewriter> rewriter = std::nullopt
     )
       : pbesinst_lazy_algorithm(options, p, rewriter),

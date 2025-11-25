@@ -10,7 +10,16 @@
 #ifndef MCRL_PBES_PBES_QUOTIENT_H
 #define MCRL_PBES_PBES_QUOTIENT_H
 
+#include "mcrl2/core/identifier_string.h"
+#include "mcrl2/data/data_expression.h"
+#include "mcrl2/pbes/pbes_expression.h"
 #include "mcrl2/pbes/pbes_symmetry.h"
+#include "mcrl2/pbes/propositional_variable.h"
+#include "mcrl2/utilities/indexed_set.h"
+
+#include <boost/asio.hpp>
+#include <boost/asio/read_until.hpp>
+#include <boost/container/flat_map.hpp>
 #include <boost/process.hpp>
 
 namespace mcrl2::pbes_system {
@@ -18,20 +27,33 @@ namespace mcrl2::pbes_system {
 class pbes_quotient
 {
 public:
-    pbes_quotient(const mcrl2::pbes_system::permutation& pi, std::size_t num_variables)
+    pbes_quotient(const detail::permutation& pi, const pbes& pbes)
+        : input_pipe(ctx), output_pipe(ctx), error_pipe(ctx)
     {
-        boost::asio::io_context ctx;
-        boost::process::async_pipe input_pipe(ctx);
-        boost::process::async_pipe output_pipe(ctx);
-        boost::process::child gap_process(ctx.get_executor(), "gap", 
+        boost::process::child gap_process("gap", 
                         boost::process::std_in < input_pipe,
-                        boost::process::std_out > output_pipe);
+                        boost::process::std_out > output_pipe,
+                        boost::process::std_err > error_pipe);
+
+        async_read(error_pipe, buffer,
+            [&](const boost::system::error_code& ec, std::size_t)
+            {
+                if (!ec)
+                {
+                    mCRL2log(log::debug) << "GAP output: " << ec.message() << std::endl;
+                }
+                else
+                {
+                    mCRL2log(log::error) << "Error reading from GAP process: " << ec.message() << std::endl;
+                }
+            });
 
         // Set the group in gap
         std::stringstream gap_input;
         gap_input << "grp := Group([";
 
         // Convert permutation to cycle notation
+        int num_variables = pbes.initial_state().parameters().size();
         std::vector<bool> visited(num_variables, false);
         bool first_cycle = true;
 
@@ -62,14 +84,82 @@ public:
         gap_input << "]);\n";
 
         // Write to GAP process
+        mCRL2log(log::debug) << "Setting symmetry group in GAP: " << gap_input.str() << std::endl;
+        boost::asio::write(input_pipe, boost::asio::buffer(gap_input.str()));
+    }
+
+    /// Apply the quotienting to a propositional variable instantiation
+    propositional_variable_instantiation apply(const propositional_variable_instantiation& pvi)
+    {
+        m_temp_values.clear();
+        for (const data::data_expression& param : pvi.parameters())
+        {
+            const auto& [index, inserted] = m_values.insert(param);
+            m_temp_values.emplace_back(index);
+        }
+
+        std::stringstream gap_input;
+        gap_input << "Minimum(List(Elements(grp, g -> Permuted([";
+        for (size_t i = 0; i < m_temp_values.size(); ++i)
+        {
+            if (i > 0)
+            {
+                gap_input << ",";
+            }
+            gap_input << (m_temp_values[i] + 1); // GAP uses 1-based indexing
+        }
+        gap_input << "]), g)));\n";
+
+        mCRL2log(log::debug) << "Computing minimum using GAP: " << gap_input.str() << std::endl;
+        std::cerr << "bruh";
         boost::asio::write(input_pipe, boost::asio::buffer(gap_input.str()));
 
+        // Read the result from GAP
+        std::cerr << "before";
+        boost::asio::read_until(output_pipe, response_buffer, '\n');
+        std::cerr << "test";
 
+        std::istream response_stream(&response_buffer);
+        std::cerr << "w";
+        std::string line;
+        std::cerr << "c";
+        std::getline(response_stream, line);
+        std::cerr << "b";
 
+        mCRL2log(log::debug) << "Received from GAP: " << line << std::endl;
 
+        // Parse the result
+        new_params.clear();
+        size_t pos = line.find('[');
+        size_t end_pos = line.find(']');
+        if (pos != std::string::npos && end_pos != std::string::npos && end_pos > pos)
+        {
+            std::string params_str = line.substr(pos + 1, end_pos - pos - 1);
+            std::stringstream params_stream(params_str);
+            std::string index_str;
+            while (std::getline(params_stream, index_str, ','))
+            {
+                int index = std::stoi(index_str) - 1; // Convert back to 0-based indexing
+                new_params.emplace_back(m_values.at(index));
+            }
+        }
+
+        return propositional_variable_instantiation(pvi.name(), data::data_expression_list(new_params.begin(), new_params.end()));
     }
 
 private:
+    utilities::indexed_set<data::data_expression> m_values;
+
+    std::vector<int> m_temp_values;
+    std::vector<data::data_expression> new_params;
+
+    boost::asio::io_context ctx;
+    boost::process::async_pipe input_pipe;
+    boost::process::async_pipe output_pipe;
+    boost::process::async_pipe error_pipe;
+
+    boost::asio::streambuf buffer;
+    boost::asio::streambuf response_buffer;
 };
 
 } // namespace mcrl2::pbes_system

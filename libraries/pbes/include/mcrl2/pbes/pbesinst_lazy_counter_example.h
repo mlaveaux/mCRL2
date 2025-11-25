@@ -12,6 +12,7 @@
 #ifndef MCRL2_PBES_PBESINST_LAZY_COUNTER_EXAMPLE_H
 #define MCRL2_PBES_PBESINST_LAZY_COUNTER_EXAMPLE_H
 
+#include "mcrl2/pbes/pbes_quotient.h"
 #include "mcrl2/pbes/pbesinst_structure_graph.h"
 #include "mcrl2/pbes/pbesinst_structure_graph2.h"
 #include "mcrl2/pbes/replace.h"
@@ -215,9 +216,10 @@ public:
       bool _alpha,
       const std::unordered_map<pbes_expression, structure_graph::index_type>& _mapping,
       structure_graph& G,
+      pbes_quotient& quotient,
       std::optional<data::rewriter> rewriter = std::nullopt,
       const std::unordered_map<std::string, std::set<int>> _R = {})
-      : pbesinst_structure_graph_algorithm(options, p, G, rewriter),
+      : pbesinst_structure_graph_algorithm(options, p, G, quotient, rewriter),
         G(SG),
         alpha(_alpha),
         mapping(_mapping),
@@ -252,9 +254,10 @@ public:
       bool _alpha,
       const std::unordered_map<pbes_expression, structure_graph::index_type>& _mapping,
       structure_graph& G,
+      pbes_quotient& quotient,
       std::optional<data::rewriter> rewriter = std::nullopt,
       const std::unordered_map<std::string, std::set<int>> _R = {})
-      : pbesinst_structure_graph_algorithm2(options, p, G, rewriter),
+      : pbesinst_structure_graph_algorithm2(options, p, G, quotient, rewriter),
         G(SG),
         alpha(_alpha),
         mapping(_mapping),
