@@ -90,16 +90,16 @@ public:
       ++i)
     {
       mCRL2log(log::verbose) << "--- computed local control flow graph " << (i - m_local_control_flow_graphs.begin())
-                             << "\n"
+                             << " --- \n"
                              << *i << std::endl;
     }
   }
 
   /// Computes the set of candidates we can derive from a single clique
   /// TODO: How to specify requires on the return type?
-  std::ranges::range auto clique_candidates(const std::vector<size_t>& I) const
+  std::ranges::range auto clique_candidates(const std::vector<size_t>& I, const std::vector<size_t>& all_control_parameters) const
   {
-    std::set<std::size_t> D = data_parameters(I);
+    std::set<std::size_t> D = data_parameters(I, all_control_parameters);
 
     std::vector<std::size_t> parameter_indices;
     for (const std::size_t& i: I)
@@ -116,10 +116,10 @@ public:
                const auto& [alpha, beta] = pair;
 
                detail::permutation pi = alpha.concat(beta);
-               mCRL2log(log::verbose) << "Trying candidate: " << alpha << " and " << beta << std::endl;
+               mCRL2log(log::debug) << "Trying candidate: " << alpha << " and " << beta << std::endl;
                if (complies(pi, I))
                {
-                 mCRL2log(log::verbose) << "--- compliant detail::permutations \n";
+                 mCRL2log(log::debug) << "Compliant permutation!\n";
                  return std::make_pair(alpha, beta);
                }
 
@@ -135,7 +135,7 @@ public:
   /// Takes as input a clique of compatible control flow parameters and return
   /// the set of all data parameters that somehow play a role for any of these
   /// parameters.
-  std::set<std::size_t> data_parameters(const std::vector<size_t>& clique) const
+  std::set<std::size_t> data_parameters(const std::vector<size_t>& clique, const std::vector<size_t>& all_control_parameters) const
   {
     std::set<std::size_t> data_parameters;
     for (const std::size_t& i: clique)
@@ -164,15 +164,15 @@ public:
     }
 
     // Remove the control flow parameters from the data parameters.
-    for (const unsigned long& i: clique)
+    for (const size_t& i: all_control_parameters)
     {
       // Every vertex should have the same index.
       const detail::local_control_flow_graph& c = m_local_control_flow_graphs[i];
       data_parameters.erase(variable_index(c));
     }
 
-    mCRL2log(log::verbose) << "--- data parameters for clique \n";
-    for (const unsigned long& parameter: data_parameters)
+    mCRL2log(log::verbose) << "--- data parameters for clique --- \n";
+    for (const size_t& parameter: data_parameters)
     {
       mCRL2log(log::verbose) << parameter << std::endl;
     }
@@ -280,11 +280,13 @@ public:
                     for (const std::size_t& i: labels)
                     {
                       const detail::predicate_variable& variable = equation.predicate_variables().at(i);
+                      mCRL2log(log::trace) << "Checking summand " << variable << std::endl;
 
                       std::optional<std::size_t> matching_j;
                       for (const std::size_t& j: remaining_j)
                       {
                         const detail::predicate_variable& variable_prime = equation.predicate_variables().at(j);
+                        mCRL2log(log::trace) << "Against summand " << variable_prime << std::endl;
                         if (pi.permute(variable.changed()) == variable_prime.changed()
                             && pi.permute(variable.used()) == variable_prime.used())
                         {
@@ -296,7 +298,7 @@ public:
                       if (matching_j)
                       {
                         // Found a matching j for i.
-                        mCRL2log(log::trace) << "Removing match " << *matching_j << std::endl;
+                        mCRL2log(log::trace) << "Matching " << i << " to " << *matching_j << std::endl;
                         remaining_j.erase(*matching_j);
                       }
                     }
@@ -311,7 +313,7 @@ public:
 
                 if (!found_match)
                 {
-                  mCRL2log(log::verbose) << "No matching found for edge from " << s << " to " << *to << std::endl;
+                  mCRL2log(log::debug) << "No matching found for edge from " << s << " to " << *to << std::endl;
                   return false;
                 }
               }
@@ -491,13 +493,21 @@ public:
     cliques_algorithm algorithm(srf_input);
     algorithm.run();
 
+    std::vector<size_t> all_control_parameters;
+    for (const auto& clique: algorithm.cliques())
+    {
+      for (const auto& c: clique)
+      {
+        all_control_parameters.emplace_back(c);
+      }
+    }
 
     std::vector<std::vector<std::pair<detail::permutation, detail::permutation>>> candidates;
     for (const auto& clique: algorithm.cliques())
     {
       // std::ranges::to<std::vector>) is not a thing yet.
       std::vector<std::pair<detail::permutation, detail::permutation>> clique_candidates;
-      for (const std::pair<detail::permutation, detail::permutation>& candidate: algorithm.clique_candidates(clique))
+      for (const std::pair<detail::permutation, detail::permutation>& candidate: algorithm.clique_candidates(clique, all_control_parameters))
       {
         clique_candidates.emplace_back(candidate);
       }
@@ -522,7 +532,10 @@ public:
       detail::permutation permutation = result.first.concat(result.second);
       if (symcheck(permutation))
       {
-        mCRL2log(log::info) << "Found valid symmetry: " << permutation << std::endl;
+        std::cout << "Found symmetry: " << permutation << std::endl;
+
+        // Stop after finding the first symmetry.
+        return;
       }
     }
   }
