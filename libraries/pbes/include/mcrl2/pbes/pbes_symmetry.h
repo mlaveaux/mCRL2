@@ -469,24 +469,28 @@ class pbes_symmetry
 public:
 
   pbes_symmetry(const pbes& input, const data::rewriter&)
+    : srf(pbes2srf(input)),
+      m_input(input)
   {
-    srf_pbes srf = pbes2srf(input);
     mCRL2log(mcrl2::log::debug) << srf.to_pbes() << std::endl;
 
     unify_parameters(srf, false, false);
+    
+    if (!m_input.equations().empty())
+    {
+      // After unification, all equations have the same parameters.
+      data::variable_list list = m_input.equations()[0].variable().parameters();
+      parameters = std::vector<data::variable>(list.begin(), list.end());
+    }
+  }
 
+  void run()
+  {
     // cliques()
     pbes srf_input = srf.to_pbes();
     cliques_algorithm algorithm(srf_input);
     algorithm.run();
 
-    std::vector<data::variable> parameters;
-    if (!input.equations().empty())
-    {
-      // After unification, all equations have the same parameters.
-      data::variable_list list = input.equations()[0].variable().parameters();
-      parameters = std::vector<data::variable>(list.begin(), list.end());
-    }
 
     std::vector<std::vector<std::pair<detail::permutation, detail::permutation>>> candidates;
     for (const auto& clique: algorithm.cliques())
@@ -516,16 +520,22 @@ public:
         }))
     {
       detail::permutation permutation = result.first.concat(result.second);
-      if (symcheck(permutation, srf, parameters))
+      if (symcheck(permutation))
       {
         mCRL2log(log::info) << "Found valid symmetry: " << permutation << std::endl;
       }
     }
   }
 
+  /// Checks whether a given permutation is a symmetry for the PBES.
+  bool check_permutation(const detail::permutation& pi)
+  {
+    return symcheck(pi);
+  }
+
 private:
   /// Performs the syntactic check defined as symcheck in the paper.
-  bool symcheck(const detail::permutation& pi, const srf_pbes& srf, const std::vector<data::variable>& parameters)
+  bool symcheck(const detail::permutation& pi)
   {
     for (const auto& equation: srf.equations())
     {
@@ -564,6 +574,10 @@ private:
 
     return true;
   }
+
+  std::vector<data::variable> parameters;
+  srf_pbes srf;
+  const pbes& m_input;
 };
 
 } // namespace mcrl2::pbes_system

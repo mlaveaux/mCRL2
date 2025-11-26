@@ -18,6 +18,7 @@
 #include "mcrl2/pbes/detail/pbes_io.h"
 #include "mcrl2/pbes/detail/stategraph_influence.h"
 
+using namespace mcrl2;
 using namespace mcrl2::utilities;
 using namespace mcrl2::utilities::tools;
 using namespace mcrl2::data::tools;
@@ -39,10 +40,18 @@ public:
   void parse_options(const command_line_parser& parser) override
   {
       super::parse_options(parser);
+      if (parser.has_option("permutation"))
+      {
+        m_permutation = pbes_system::detail::permutation(parser.option_argument("permutation"));
+      }
   }
 
   void add_options(interface_description& desc) override
   {
+      desc.add_option("permutation",
+        utilities::make_mandatory_argument("PERMUTATION"),
+        "Checks whether a permutation is a symmetry for the PBES.",
+        'y');
       super::add_options(desc);
   }
 
@@ -53,9 +62,28 @@ public:
     
     mcrl2::data::rewriter rewr = create_rewriter();
     pbes_symmetry algorithm(input, rewr);
-
+    if (m_permutation.mapping().size() > 0)
+    {
+      if (algorithm.check_permutation(m_permutation))
+      {
+        mCRL2log(log::info) << "The given permutation is a symmetry for the PBES." << std::endl;
+      }
+      else
+      {
+        mCRL2log(log::info) << "The given permutation is not a symmetry for the PBES." << std::endl;
+      }
+      return true;
+    }
+    else
+    {
+      algorithm.run();
+    }
+    
     return true;
   }
+
+private:
+  pbes_system::detail::permutation m_permutation;
 };
 
 int main(int argc, char* argv[])
