@@ -20,17 +20,36 @@
 #include <boost/asio/read_until.hpp>
 #include <boost/container/flat_map.hpp>
 #include <boost/process.hpp>
+#include <boost/process/search_path.hpp>
 
 namespace mcrl2::pbes_system {
 
 class pbes_quotient
 {
 public:
-    pbes_quotient(const detail::permutation& pi, const pbes& pbes)
+    pbes_quotient(const detail::permutation& pi, const pbes& pbes, const std::string& gap_path)
     {
-        gap_process = boost::process::child("gap -E -q", 
-            boost::process::std_in < input_stream,  
-            boost::process::std_out > output_stream);
+        if (pi.mapping().size() == 0)
+        {
+            // Empty permutation, return immediately.
+            return;
+        }
+
+        if (gap_path.empty())
+        {
+            // Find the tool in path
+            gap_process = boost::process::child("gap",
+                boost::process::args({"-E", "-q"}), 
+                boost::process::std_in < input_stream,  
+                boost::process::std_out > output_stream);
+        }
+        else
+        {
+            gap_process = boost::process::child(gap_path,
+                boost::process::args({"-E", "-q"}), 
+                boost::process::std_in < input_stream,  
+                boost::process::std_out > output_stream);
+        }
         
         // Set the group in gap
         std::stringstream gap_input;
@@ -81,6 +100,11 @@ public:
     /// Apply the quotienting to a propositional variable instantiation
     propositional_variable_instantiation apply(const propositional_variable_instantiation& pvi)
     {
+        if (gap_process.running() == false)
+        {
+            throw mcrl2::runtime_error("GAP process has terminated unexpectedly.");
+        }
+
         mCRL2log(log::debug) << "Applying quotient to PVI: " << pvi << std::endl;
 
         m_temp_values.clear();

@@ -172,7 +172,8 @@ protected:
   std::string ltsfile;
   std::string evidence_file;
   std::string original_pbes_file;
-  std::string symmetry;
+  std::string m_symmetry;
+  std::string m_gap_path;
 
   void add_options(utilities::interface_description& desc) override
   {
@@ -216,6 +217,10 @@ protected:
       utilities::make_mandatory_argument("PERMUTATION"),
       "Provide a permutation that is a symmetry for the PBES.",
       'y');
+    desc.add_option("gap-path",
+      utilities::make_mandatory_argument("PATH"),
+      "Path to the GAP executable.",
+      'g');
     desc.add_option("original-pbes",
       utilities::make_file_argument("NAME"),
       "In the second round of solving, use a different PBES than in the first round. "
@@ -266,7 +271,8 @@ protected:
     options.rewrite_strategy = rewrite_strategy();
     options.number_of_threads = number_of_threads();
     options.naive_counter_example_instantiation = parser.has_option("naive-counter-example-instantiation");
-    symmetry = parser.option_argument("symmetry");
+    m_symmetry = parser.option_argument("symmetry");
+    m_gap_path = parser.option_argument("gap-path");
 
     if (parser.has_option("file"))
     {
@@ -594,15 +600,15 @@ public:
 
     mCRL2log(log::log_level_t::verbose) << "Using optimisation " << options.optimization << "\n";
 
-    permutation pi(symmetry);
-    if (!symmetry.empty())
+    permutation pi(m_symmetry);
+    if (!m_symmetry.empty())
     {
-      pi = permutation(symmetry);
+      pi = permutation(m_symmetry);
     }
 
-    pbes_system::detail::pbes_quotient quotient(pi, pbesspec);
+    pbes_system::detail::pbes_quotient quotient(pi, pbesspec, m_gap_path);
 
-    if (!symmetry.empty())
+    if (!m_symmetry.empty())
     {
       if (options.optimization <= partial_solve_strategy::remove_self_loops)
       {
@@ -645,7 +651,7 @@ inline bool pbessolve(const pbes& p)
   pbes_system::algorithms::normalize(pbesspec);
   structure_graph G;
   permutation pi;
-  pbes_system::detail::pbes_quotient quotient(pi, pbesspec);
+  pbes_system::detail::pbes_quotient quotient(pi, pbesspec, std::string());
   pbesinst_structure_graph_algorithm algorithm(options, pbesspec, G, quotient);
   algorithm.run();
   return solve_structure_graph(G);

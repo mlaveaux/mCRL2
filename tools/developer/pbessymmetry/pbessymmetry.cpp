@@ -66,11 +66,11 @@ public:
     {
       if (algorithm.check_permutation(m_permutation))
       {
-        mCRL2log(log::info) << "The given permutation is a symmetry for the PBES." << std::endl;
+        std::cout << "true" << std::endl;
       }
       else
       {
-        mCRL2log(log::info) << "The given permutation is not a symmetry for the PBES." << std::endl;
+        std::cout << "false" << std::endl;
       }
       return true;
     }
