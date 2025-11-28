@@ -262,7 +262,7 @@ apply_permutation(const pbes_expression& expr, const std::vector<data::variable>
   data::mutable_map_substitution<> sigma;
   for (std::size_t i = 0; i < parameters.size(); ++i)
   {
-    sigma[parameters[i]] = parameters[pi[i]];
+    sigma[parameters.at(pi[i])] = parameters.at(i);
   }
 
   auto result = pbes_system::replace_variables(expr, sigma);
