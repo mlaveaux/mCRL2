@@ -493,7 +493,6 @@ class pbes_symmetry
 public:
 
   pbes_symmetry(const pbes& input, const data::rewriter&)
-    : m_input(input)
   {
     // This has to be done consistently with the LPS for the counter examples.
     pbes pbes = input;
@@ -501,14 +500,14 @@ public:
     pbes_system::detail::replace_global_variables(pbes, sigma);
     srf = pbes2srf(pbes);
 
-    mCRL2log(mcrl2::log::debug) << srf.to_pbes() << std::endl;
-
     unify_parameters(srf, false, false);
+
+    mCRL2log(mcrl2::log::debug) << srf.to_pbes() << std::endl;
     
-    if (!m_input.equations().empty())
+    if (!srf.equations().empty())
     {
       // After unification, all equations have the same parameters.
-      data::variable_list list = m_input.equations()[0].variable().parameters();
+      data::variable_list list = srf.equations()[0].variable().parameters();
       parameters = std::vector<data::variable>(list.begin(), list.end());
     }
   }
@@ -621,7 +620,6 @@ private:
 
   std::vector<data::variable> parameters;
   srf_pbes srf;
-  const pbes& m_input;
 };
 
 } // namespace mcrl2::pbes_system
