@@ -262,7 +262,7 @@ apply_permutation(const pbes_expression& expr, const std::vector<data::variable>
   data::mutable_map_substitution<> sigma;
   for (std::size_t i = 0; i < parameters.size(); ++i)
   {
-    sigma[parameters.at(pi[i])] = parameters.at(i);
+    sigma[parameters.at(i)] = parameters.at(pi[i]);
   }
 
   auto result = pbes_system::replace_variables(expr, sigma);
@@ -273,7 +273,7 @@ apply_permutation(const pbes_expression& expr, const std::vector<data::variable>
       std::vector<data::data_expression> new_parameters(x.parameters().size());
       for (std::size_t i = 0; i < x.parameters().size(); ++i)
       {
-        new_parameters[i] = data::data_expression(*std::next(x.parameters().begin(), pi[i]));
+        new_parameters[pi[i]] = data::data_expression(*std::next(x.parameters().begin(), i));
       }
       return propositional_variable_instantiation(x.name(), data::data_expression_list(new_parameters));
     });
