@@ -108,7 +108,7 @@ class simplify_rewrite_builder: public data_expression_builder<Derived>
     template <class T>
     void apply(T& result, const forall& x) // x = forall d. y
     {
-      variable_list d = forall(x).variables();
+      const variable_list& d = forall(x).variables();
       data_expression y;
       derived().apply(y, forall(x).body());
       data::optimized_forall(result, d, y, true);
@@ -117,7 +117,7 @@ class simplify_rewrite_builder: public data_expression_builder<Derived>
     template <class T>
     void apply(T& result, const exists& x) // x = exists d. y
     {
-      variable_list d = exists(x).variables();
+      const variable_list& d = exists(x).variables();
       data_expression y;
       derived().apply(y, exists(x).body());
       data::optimized_exists(result, d, y, true);
