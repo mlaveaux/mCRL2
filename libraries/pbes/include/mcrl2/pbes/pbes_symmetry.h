@@ -110,14 +110,14 @@ public:
     return detail::cartesian_product(detail::permutation_group(parameter_indices),
              detail::permutation_group(std::vector<std::size_t>(D.begin(), D.end())))
            | std::ranges::views::transform(
-             [this, I](const std::pair<detail::permutation, detail::permutation>& pair)
+             [this, I, all_control_parameters](const std::pair<detail::permutation, detail::permutation>& pair)
                -> std::optional<std::pair<detail::permutation, detail::permutation>>
              {
                const auto& [alpha, beta] = pair;
 
                detail::permutation pi = alpha.concat(beta);
                mCRL2log(log::debug) << "Trying candidate: " << alpha << " and " << beta << std::endl;
-               if (complies(pi, I))
+               if (complies(pi, I, all_control_parameters))
                {
                  mCRL2log(log::debug) << "Compliant permutation!\n";
                  return std::make_pair(alpha, beta);
@@ -130,6 +130,22 @@ public:
              { return b.has_value(); })
            | std::ranges::views::transform([](std::optional<std::pair<detail::permutation, detail::permutation>> b)
                                              -> std::pair<detail::permutation, detail::permutation> { return *b; });
+  }
+
+  /// Takes as input a set of parameters and removes the control flow parameters.
+  std::set<std::size_t> remove_cfgs(const std::set<size_t>& parameters, const std::vector<size_t>& all_control_parameters) const
+  {
+    std::set<size_t> data_parameters = parameters;
+
+    // Remove the control flow parameters from the data parameters.
+    for (const size_t& i: all_control_parameters)
+    {
+      // Every vertex should have the same index.
+      const detail::local_control_flow_graph& c = m_local_control_flow_graphs[i];
+      data_parameters.erase(variable_index(c));
+    }
+
+    return data_parameters;
   }
 
   /// Takes as input a clique of compatible control flow parameters and return
@@ -163,21 +179,13 @@ public:
       }
     }
 
-    // Remove the control flow parameters from the data parameters.
-    for (const size_t& i: all_control_parameters)
-    {
-      // Every vertex should have the same index.
-      const detail::local_control_flow_graph& c = m_local_control_flow_graphs[i];
-      data_parameters.erase(variable_index(c));
-    }
-
     mCRL2log(log::verbose) << "--- data parameters for clique --- \n";
     for (const size_t& parameter: data_parameters)
     {
       mCRL2log(log::verbose) << parameter << std::endl;
     }
 
-    return data_parameters;
+    return remove_cfgs(data_parameters, all_control_parameters);
   }
 
   /// Determine the cliques of the control flow graphs.
@@ -225,15 +233,15 @@ public:
   }
 
   /// Returns true iff all vertices in I comply with the detail::permutation pi.
-  bool complies(const detail::permutation& pi, const std::vector<std::size_t>& I) const
+  bool complies(const detail::permutation& pi, const std::vector<std::size_t>& I, const std::vector<size_t>& all_control_parameters) const
   {
-    return std::all_of(I.begin(), I.end(), [&](std::size_t c) { return complies(pi, c); });
+    return std::all_of(I.begin(), I.end(), [&](std::size_t c) { return complies(pi, c, all_control_parameters); });
   }
 
   /// Takes a detail::permutation and a control flow parameter and returns true or
   /// false depending on whether the detail::permutation complies with the control
   /// flow parameter according to Definition
-  bool complies(const detail::permutation& pi, std::size_t c) const
+  bool complies(const detail::permutation& pi, std::size_t c, const std::vector<size_t>& all_control_parameters) const
   {
     const detail::local_control_flow_graph& graph = m_local_control_flow_graphs.at(c);
 
@@ -287,8 +295,11 @@ public:
                       {
                         const detail::predicate_variable& variable_prime = equation.predicate_variables().at(j);
                         mCRL2log(log::trace) << "Against summand " << variable_prime << std::endl;
-                        if (pi.permute(variable.changed()) == variable_prime.changed()
-                            && pi.permute(variable.used()) == variable_prime.used())
+                        auto changed = remove_cfgs(variable.changed(), all_control_parameters);
+                        auto used = remove_cfgs(variable.used(), all_control_parameters);
+
+                        if (pi.permute(used) == used
+                            && pi.permute(changed) == changed)
                         {
                           matching_j = j;
                           break;
@@ -346,6 +357,7 @@ public:
           {
             // Compute the sizes.
             const detail::predicate_variable& variable = equation.predicate_variables().at(label);
+            // TODO: Remove cfgs?
             result.insert(std::make_pair(variable.changed().size(), variable.used().size()));
           }
         }
