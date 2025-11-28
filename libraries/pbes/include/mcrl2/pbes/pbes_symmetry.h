@@ -11,6 +11,7 @@
 #define MCRL_PBES_PBES_SYMMETRY_H
 
 #include "mcrl2/data/data_expression.h"
+#include "mcrl2/pbes/detail/instantiate_global_variables.h"
 #include "mcrl2/pbes/detail/cartesian_product.h"
 #include "mcrl2/pbes/detail/fold_left.h"
 #include "mcrl2/pbes/detail/permutation.h"
@@ -119,7 +120,7 @@ public:
                mCRL2log(log::debug) << "Trying candidate: " << alpha << " and " << beta << std::endl;
                if (complies(pi, I, all_control_parameters))
                {
-                 mCRL2log(log::debug) << "Compliant permutation!\n";
+                 mCRL2log(log::verbose) << "Compliant permutation: " << pi << std::endl;
                  return std::make_pair(alpha, beta);
                }
 
@@ -179,13 +180,14 @@ public:
       }
     }
 
+    data_parameters =  remove_cfgs(data_parameters, all_control_parameters);
     mCRL2log(log::verbose) << "--- data parameters for clique --- \n";
     for (const size_t& parameter: data_parameters)
     {
       mCRL2log(log::verbose) << parameter << std::endl;
     }
 
-    return remove_cfgs(data_parameters, all_control_parameters);
+    return data_parameters;
   }
 
   /// Determine the cliques of the control flow graphs.
@@ -295,11 +297,19 @@ public:
                       {
                         const detail::predicate_variable& variable_prime = equation.predicate_variables().at(j);
                         mCRL2log(log::trace) << "Against summand " << variable_prime << std::endl;
+
                         auto changed = remove_cfgs(variable.changed(), all_control_parameters);
                         auto used = remove_cfgs(variable.used(), all_control_parameters);
+                        auto changed_prime = remove_cfgs(variable_prime.changed(), all_control_parameters);
+                        auto used_prime = remove_cfgs(variable_prime.used(), all_control_parameters);
 
-                        if (pi.permute(used) == used
-                            && pi.permute(changed) == changed)
+                        mCRL2log(log::trace) << "Changed: " << core::detail::print_set(changed) << ", used: "
+                                             << core::detail::print_set(used) << std::endl;
+                        mCRL2log(log::trace) << "Permuted changed: " << core::detail::print_set(pi.permute(changed_prime)) << ", permuted used: "
+                                             << core::detail::print_set(pi.permute(used_prime)) << std::endl;
+
+                        if (pi.permute(used_prime) == used
+                            && pi.permute(changed_prime) == changed)
                         {
                           matching_j = j;
                           break;
@@ -483,9 +493,14 @@ class pbes_symmetry
 public:
 
   pbes_symmetry(const pbes& input, const data::rewriter&)
-    : srf(pbes2srf(input)),
-      m_input(input)
+    : m_input(input)
   {
+    // This has to be done consistently with the LPS for the counter examples.
+    pbes pbes = input;
+    data::mutable_map_substitution<> sigma = pbes_system::detail::instantiate_global_variables(pbes);
+    pbes_system::detail::replace_global_variables(pbes, sigma);
+    srf = pbes2srf(pbes);
+
     mCRL2log(mcrl2::log::debug) << srf.to_pbes() << std::endl;
 
     unify_parameters(srf, false, false);
@@ -506,7 +521,8 @@ public:
     algorithm.run();
 
     std::vector<size_t> all_control_parameters;
-    for (const auto& clique: algorithm.cliques())
+    auto cliques = algorithm.cliques();
+    for (const auto& clique: cliques)
     {
       for (const auto& c: clique)
       {
@@ -515,7 +531,7 @@ public:
     }
 
     std::vector<std::vector<std::pair<detail::permutation, detail::permutation>>> candidates;
-    for (const auto& clique: algorithm.cliques())
+    for (const auto& clique: cliques)
     {
       // std::ranges::to<std::vector>) is not a thing yet.
       std::vector<std::pair<detail::permutation, detail::permutation>> clique_candidates;
@@ -542,6 +558,7 @@ public:
         }))
     {
       detail::permutation permutation = result.first.concat(result.second);
+      std::cout << "Checking permutation: " << permutation << std::endl;
       if (symcheck(permutation))
       {
         std::cout << "Found symmetry: " << permutation << std::endl;
@@ -564,16 +581,18 @@ private:
   {
     for (const auto& equation: srf.equations())
     {
+      mCRL2log(log::trace) << "Checking equation " << equation << std::endl;
       for (const auto& summand: equation.summands())
       {
-        mCRL2log(log::trace) << "Checking summand " << summand << " of equation " << equation << std::endl;
+        mCRL2log(log::trace) << "Summand " << summand << std::endl;
+
         bool matched = false;
         for (const auto& other_equation: srf.equations())
         {
+          mCRL2log(log::trace) << "Against equation " << other_equation << std::endl;
           for (const auto& other_summand: other_equation.summands())
           {
-            mCRL2log(log::trace) << "Against summand " << other_summand << " of equation " << other_equation
-                                 << std::endl;
+            mCRL2log(log::trace) << "and summand " << other_summand << std::endl;
             if (equation.variable().name() == other_equation.variable().name()
                 && detail::apply_permutation(summand.condition(), parameters, pi) == other_summand.condition()
                 && detail::apply_permutation(summand.variable(), parameters, pi) == other_summand.variable())
