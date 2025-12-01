@@ -60,8 +60,7 @@ public:
     pbes input;
     mcrl2::pbes_system::load_pbes(input, input_filename(), pbes_input_format());
     
-    mcrl2::data::rewriter rewr = create_rewriter();
-    pbes_symmetry algorithm(input, rewr);
+    pbes_symmetry algorithm(input);
     if (m_permutation.mapping().size() > 0)
     {
       if (algorithm.check_permutation(m_permutation))
