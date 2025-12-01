@@ -142,7 +142,14 @@ public:
 
         // Read the result from GAP
         std::string line;
-        std::getline(output_stream, line);
+        std::string result_line;
+        while (std::getline(output_stream, line)) {
+            result_line += line;
+            if (line.find(']') != std::string::npos) {
+                break;
+            }
+        }
+        line = result_line;
 
         mCRL2log(log::debug) << "Received from GAP: " << line << std::endl;
 
