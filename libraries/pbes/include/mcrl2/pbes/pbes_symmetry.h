@@ -75,8 +75,9 @@ class cliques_algorithm : private detail::stategraph_local_algorithm
   using super = detail::stategraph_local_algorithm;
 
 public:
-  cliques_algorithm(const pbes& input)
-    : super(input, pbesstategraph_options{.print_influence_graph = true})
+  cliques_algorithm(const pbes& input, std::vector<data::variable> parameters)
+    : super(input, pbesstategraph_options{.print_influence_graph = true}),
+      parameters(std::move(parameters))
   {}
 
   void run() override
@@ -107,6 +108,41 @@ public:
     {
       parameter_indices.emplace_back(variable_index(m_local_control_flow_graphs[i]));
     }
+
+    // Determine parameters with the same sort
+    std::vector<std::vector<std::size_t>> same_sort_parameters;
+    std::size_t index = 0;
+    for (const data::variable& param : parameters) 
+    {
+      bool found = false;
+      for (std::vector<std::size_t>& group : same_sort_parameters) 
+      {
+        if (param.sort() == parameters[group[0]].sort()) 
+        {
+          group.emplace_back(index);
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) 
+      {
+        same_sort_parameters.push_back({index});
+      } 
+
+      index++;
+    }
+
+    for (const std::vector<std::size_t>& group : same_sort_parameters) 
+    {
+      mCRL2log(log::verbose) << "--- parameters with same sort --- \n";
+      for (const std::size_t& param_index : group) 
+      {
+        mCRL2log(log::verbose) << param_index << " : " << parameters[param_index].sort() << std::endl;
+      }
+    }
+
+
 
     return detail::cartesian_product(detail::permutation_group(parameter_indices),
              detail::permutation_group(std::vector<std::size_t>(D.begin(), D.end())))
@@ -485,6 +521,9 @@ public:
 
     return true;
   }
+
+private:
+  std::vector<data::variable> parameters;
 };
 
 /// Contains all the implementation of the PBES symmetry algorithm, based on the article by Bartels et al.
@@ -492,7 +531,7 @@ class pbes_symmetry
 {
 public:
 
-  pbes_symmetry(const pbes& input, const data::rewriter&)
+  pbes_symmetry(const pbes& input)
   {
     // This has to be done consistently with the LPS for the counter examples.
     pbes pbes = input;
@@ -516,7 +555,7 @@ public:
   {
     // cliques()
     pbes srf_input = srf.to_pbes();
-    cliques_algorithm algorithm(srf_input);
+    cliques_algorithm algorithm(srf_input, parameters);
     algorithm.run();
 
     std::vector<size_t> all_control_parameters;
