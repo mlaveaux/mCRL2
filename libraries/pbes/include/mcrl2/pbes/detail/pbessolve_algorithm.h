@@ -604,6 +604,14 @@ public:
     if (!m_symmetry.empty())
     {
       pi = permutation(m_symmetry);
+
+      pbes_symmetry symmetry(pbesspec);
+      if (!symmetry.check_permutation(pi))
+      {
+        throw mcrl2::runtime_error("The provided permutation is not a symmetry for the given PBES.");
+      }
+
+      pbesspec = symmetry.pbesspec();
     }
 
     pbes_system::detail::pbes_quotient quotient(pi, pbesspec, m_gap_path);

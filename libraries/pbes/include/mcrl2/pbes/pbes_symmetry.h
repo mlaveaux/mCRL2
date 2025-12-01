@@ -574,6 +574,12 @@ public:
     return symcheck(pi);
   }
 
+  /// Returns the PBES after preprocessing it for symmetry reduction.
+  pbes pbesspec() const
+  {
+    return srf.to_pbes();
+  }
+
 private:
   /// Performs the syntactic check defined as symcheck in the paper.
   bool symcheck(const detail::permutation& pi)
