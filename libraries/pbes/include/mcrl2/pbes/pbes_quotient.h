@@ -29,11 +29,6 @@ class pbes_quotient
 public:
     pbes_quotient(const detail::permutation& pi, const pbes& pbes, const std::string& gap_path)
     {
-        if (pi.mapping().size() == 0)
-        {
-            // Empty permutation, return immediately.
-            return;
-        }
 
         if (gap_path.empty())
         {
@@ -51,49 +46,64 @@ public:
                 boost::process::std_out > output_stream);
         }
         
-        // Set the group in gap
-        std::stringstream gap_input;
-        gap_input << "grp := Group([";
+        if (pi.mapping().size() == 0)
+        {
+            // Empty permutation, return immediately.
+            std::string gap_input = "grp := Group(());\n";
+            mCRL2log(log::debug) << "Setting symmetry group in GAP: " << gap_input;        
+            input_stream << gap_input;
+            input_stream.flush();
 
-        // Convert permutation to cycle notation
-        int num_variables = pbes.initial_state().parameters().size();
-        std::vector<bool> visited(num_variables, false);
-        bool first_cycle = true;
+            std::string line;
+            std::getline(output_stream, line);
+            mCRL2log(log::debug) << "Received from GAP: " << line << std::endl;
+        }
+        else
+        {        
+            // Set the group in gap
+            std::stringstream gap_input;
+            gap_input << "grp := Group([";
 
-        for (size_t i = 0; i < num_variables; ++i) {
-            if (!visited[i] && pi[i] != i) {
-                if (!first_cycle) {
-                    gap_input << ",";
-                }
-                gap_input << "(";
-                
-                size_t current = i;
-                bool first_element = true;
-                do {
-                    if (!first_element) {
+            // Convert permutation to cycle notation
+            int num_variables = pbes.initial_state().parameters().size();
+            std::vector<bool> visited(num_variables, false);
+            bool first_cycle = true;
+
+            for (size_t i = 0; i < num_variables; ++i) {
+                if (!visited[i] && pi[i] != i) {
+                    if (!first_cycle) {
                         gap_input << ",";
                     }
-                    gap_input << (current + 1); // GAP uses 1-based indexing
-                    visited[current] = true;
-                    current = pi[current];
-                    first_element = false;
-                } while (current != i);
-                
-                gap_input << ")";
-                first_cycle = false;
+                    gap_input << "(";
+                    
+                    size_t current = i;
+                    bool first_element = true;
+                    do {
+                        if (!first_element) {
+                            gap_input << ",";
+                        }
+                        gap_input << (current + 1); // GAP uses 1-based indexing
+                        visited[current] = true;
+                        current = pi[current];
+                        first_element = false;
+                    } while (current != i);
+                    
+                    gap_input << ")";
+                    first_cycle = false;
+                }
             }
+
+            gap_input << "]);\n";
+
+            // Write to GAP process
+            mCRL2log(log::debug) << "Setting symmetry group in GAP: " << gap_input.str();        
+            input_stream << gap_input.str();
+            input_stream.flush();
+
+            std::string line;
+            std::getline(output_stream, line);
+            mCRL2log(log::debug) << "Received from GAP: " << line << std::endl;
         }
-
-        gap_input << "]);\n";
-
-        // Write to GAP process
-        mCRL2log(log::debug) << "Setting symmetry group in GAP: " << gap_input.str();        
-        input_stream << gap_input.str();
-        input_stream.flush();
-
-        std::string line;
-        std::getline(output_stream, line);
-        mCRL2log(log::debug) << "Received from GAP: " << line << std::endl;
 
     }
 
@@ -102,7 +112,7 @@ public:
     {
         if (gap_process.running() == false)
         {
-            throw mcrl2::runtime_error("GAP process has terminated unexpectedly.");
+            return pvi;
         }
 
         mCRL2log(log::debug) << "Applying quotient to PVI: " << pvi << std::endl;
