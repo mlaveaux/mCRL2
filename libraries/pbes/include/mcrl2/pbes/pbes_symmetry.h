@@ -539,7 +539,7 @@ public:
     pbes_system::detail::replace_global_variables(pbes, sigma);
     srf = pbes2srf(pbes);
 
-    unify_parameters(srf, false, false);
+    unify_parameters(srf, false, true);
 
     mCRL2log(mcrl2::log::debug) << srf.to_pbes() << std::endl;
     
