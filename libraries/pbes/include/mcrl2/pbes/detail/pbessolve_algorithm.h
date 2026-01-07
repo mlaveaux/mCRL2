@@ -309,6 +309,10 @@ protected:
     {
       original_pbes_file = parser.option_argument("original-pbes");
     }
+    if (!m_symmetry.empty() && m_gap_path.empty())
+    {
+      throw mcrl2::runtime_error("When using --symmetry, the option --gap-path must also be provided.");
+    }
   }
 
   std::set<utilities::file_format> available_input_formats() const override
@@ -603,8 +607,6 @@ public:
     permutation pi(m_symmetry);
     if (!m_symmetry.empty())
     {
-      pi = permutation(m_symmetry);
-
       pbes_symmetry symmetry(pbesspec);
       if (!symmetry.check_permutation(pi))
       {
