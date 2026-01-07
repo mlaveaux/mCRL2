@@ -85,6 +85,19 @@ public:
     return i;
   }
 
+  // Returns true iff the permutation is the identity.
+  bool is_identity() const
+  {
+    for (const auto& [key, value]: m_mapping)
+    {
+      if (key != value)
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
   // Applies the permutation to a set of indices.
   std::set<std::size_t> permute(const std::set<std::size_t>& s) const
   {

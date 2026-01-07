@@ -46,7 +46,7 @@ public:
                 boost::process::std_out > output_stream);
         }
         
-        if (pi.mapping().size() == 0)
+        if (pi.is_identity())
         {
             // Empty permutation, return immediately.
             std::string gap_input = "grp := Group(());\n";
