@@ -29,80 +29,71 @@ class pbes_quotient
 public:
     pbes_quotient(const detail::permutation& pi, const pbes& pbes, const std::string& gap_path)
     {
-
-        if (gap_path.empty())
-        {
-            // Find the tool in path
-            gap_process = boost::process::child("gap",
-                boost::process::args({"-E", "-q"}), 
-                boost::process::std_in < input_stream,  
-                boost::process::std_out > output_stream);
-        }
-        else
+        if (!gap_path.empty())
         {
             gap_process = boost::process::child(gap_path,
                 boost::process::args({"-E", "-q"}), 
                 boost::process::std_in < input_stream,  
                 boost::process::std_out > output_stream);
-        }
         
-        if (pi.is_identity())
-        {
-            // Empty permutation, return immediately.
-            std::string gap_input = "grp := Group(());\n";
-            mCRL2log(log::debug) << "Setting symmetry group in GAP: " << gap_input;        
-            input_stream << gap_input;
-            input_stream.flush();
+            if (pi.is_identity())
+            {
+                // Empty permutation, return immediately.
+                std::string gap_input = "grp := Group(());\n";
+                mCRL2log(log::debug) << "Setting symmetry group in GAP: " << gap_input;        
+                input_stream << gap_input;
+                input_stream.flush();
 
-            std::string line;
-            std::getline(output_stream, line);
-            mCRL2log(log::debug) << "Received from GAP: " << line << std::endl;
-        }
-        else
-        {        
-            // Set the group in gap
-            std::stringstream gap_input;
-            gap_input << "grp := Group([";
+                std::string line;
+                std::getline(output_stream, line);
+                mCRL2log(log::debug) << "Received from GAP: " << line << std::endl;
+            }
+            else
+            {        
+                // Set the group in gap
+                std::stringstream gap_input;
+                gap_input << "grp := Group([";
 
-            // Convert permutation to cycle notation
-            int num_variables = pbes.initial_state().parameters().size();
-            std::vector<bool> visited(num_variables, false);
-            bool first_cycle = true;
+                // Convert permutation to cycle notation
+                int num_variables = pbes.initial_state().parameters().size();
+                std::vector<bool> visited(num_variables, false);
+                bool first_cycle = true;
 
-            for (size_t i = 0; i < num_variables; ++i) {
-                if (!visited[i] && pi[i] != i) {
-                    if (!first_cycle) {
-                        gap_input << ",";
-                    }
-                    gap_input << "(";
-                    
-                    size_t current = i;
-                    bool first_element = true;
-                    do {
-                        if (!first_element) {
+                for (size_t i = 0; i < num_variables; ++i) {
+                    if (!visited[i] && pi[i] != i) {
+                        if (!first_cycle) {
                             gap_input << ",";
                         }
-                        gap_input << (current + 1); // GAP uses 1-based indexing
-                        visited[current] = true;
-                        current = pi[current];
-                        first_element = false;
-                    } while (current != i);
-                    
-                    gap_input << ")";
-                    first_cycle = false;
+                        gap_input << "(";
+                        
+                        size_t current = i;
+                        bool first_element = true;
+                        do {
+                            if (!first_element) {
+                                gap_input << ",";
+                            }
+                            gap_input << (current + 1); // GAP uses 1-based indexing
+                            visited[current] = true;
+                            current = pi[current];
+                            first_element = false;
+                        } while (current != i);
+                        
+                        gap_input << ")";
+                        first_cycle = false;
+                    }
                 }
+
+                gap_input << "]);\n";
+
+                // Write to GAP process
+                mCRL2log(log::debug) << "Setting symmetry group in GAP: " << gap_input.str();        
+                input_stream << gap_input.str();
+                input_stream.flush();
+
+                std::string line;
+                std::getline(output_stream, line);
+                mCRL2log(log::debug) << "Received from GAP: " << line << std::endl;
             }
-
-            gap_input << "]);\n";
-
-            // Write to GAP process
-            mCRL2log(log::debug) << "Setting symmetry group in GAP: " << gap_input.str();        
-            input_stream << gap_input.str();
-            input_stream.flush();
-
-            std::string line;
-            std::getline(output_stream, line);
-            mCRL2log(log::debug) << "Received from GAP: " << line << std::endl;
         }
 
     }

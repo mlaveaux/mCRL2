@@ -313,7 +313,7 @@ protected:
     {
       throw mcrl2::runtime_error("When using --symmetry, the option --gap-path must also be provided.");
     }
-    if (!m_gap_path.empty() && m_symmetry.empty())
+    if (!m_gap_path.empty())
     {      
       // Checks whether the GAP executable is accessible (imagine there being a function that checks existence of a file)
       std::ifstream f(m_gap_path);
