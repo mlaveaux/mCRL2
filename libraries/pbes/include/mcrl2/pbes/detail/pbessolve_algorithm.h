@@ -313,6 +313,14 @@ protected:
     {
       throw mcrl2::runtime_error("When using --symmetry, the option --gap-path must also be provided.");
     }
+    if (!m_gap_path.empty() && m_symmetry.empty())
+    {      
+      // Checks whether the GAP executable is accessible (imagine there being a function that checks existence of a file)
+      std::ifstream f(m_gap_path);
+      if (!f.good()) {
+        throw mcrl2::runtime_error("The provided GAP path is invalid: " + m_gap_path);
+      }
+    }
   }
 
   std::set<utilities::file_format> available_input_formats() const override
