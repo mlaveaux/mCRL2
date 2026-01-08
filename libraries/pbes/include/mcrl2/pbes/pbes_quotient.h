@@ -57,13 +57,9 @@ public:
                 // Convert permutation to cycle notation
                 int num_variables = pbes.initial_state().parameters().size();
                 std::vector<bool> visited(num_variables, false);
-                bool first_cycle = true;
 
                 for (size_t i = 0; i < num_variables; ++i) {
                     if (!visited[i] && pi[i] != i) {
-                        if (!first_cycle) {
-                            gap_input << ",";
-                        }
                         gap_input << "(";
                         
                         size_t current = i;
