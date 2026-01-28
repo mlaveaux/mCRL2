@@ -75,7 +75,6 @@ public:
                         } while (current != i);
                         
                         gap_input << ")";
-                        first_cycle = false;
                     }
                 }
 
