@@ -86,7 +86,11 @@ public:
                 input_stream.flush();
 
                 std::string line;
-                std::getline(output_stream, line);
+                while (std::getline(output_stream, line)) {
+                    if (line.find(']') != std::string::npos) {
+                        break;
+                    }
+                }
                 mCRL2log(log::debug) << "Received from GAP: " << line << std::endl;
             }
         }
