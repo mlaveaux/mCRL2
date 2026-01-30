@@ -245,6 +245,17 @@ class structure_graph
     {
       return std::all_of(m_vertices.begin(), m_vertices.end(), [](const vertex& u) { return u.is_defined(); });
     }
+
+    /// Returns the number of edges in the structure graph.
+    std::size_t num_of_edges() {
+      std::size_t count = 0;
+      for (std::size_t i = 0; i < m_vertices.size(); i++) {
+        if (!m_exclude[i]) {
+          count += all_successors(i).size();
+        }
+      }
+      return count;
+    }
 };
 
 template <typename StructureGraph>

@@ -144,6 +144,7 @@ class pbesinst_structure_graph_algorithm: public pbesinst_lazy_algorithm
     {
       pbesinst_lazy_algorithm::run();
       m_graph_builder.finalize();
+      mCRL2log(log::verbose) << "Generated " << m_graph_builder.m_graph.num_of_edges() << " edges in structured graph." << std::endl;
     }
 };
 
