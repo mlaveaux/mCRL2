@@ -10,6 +10,8 @@
 #ifndef MCRL2_PBES_DETAIL_PBES_IO_H
 #define MCRL2_PBES_DETAIL_PBES_IO_H
 
+#include "mcrl2/pbes/io.h"
+#include "mcrl2/pbes/extended_pbes.h"
 #include "mcrl2/pbes/pbes.h"
 
 #include <fstream>
@@ -23,6 +25,12 @@ atermpp::aterm_ostream& operator<<(atermpp::aterm_ostream& stream, const pbes& p
 /// \brief Reads a pbes from a stream.
 atermpp::aterm_istream& operator>>(atermpp::aterm_istream& stream, pbes& pbes);
 
+/// \brief Writes the pbes to a stream.
+atermpp::aterm_ostream& operator<<(atermpp::aterm_ostream& stream, const extended_pbes& pbes);
+
+/// \brief Reads a pbes from a stream.
+atermpp::aterm_istream& operator>>(atermpp::aterm_istream& stream, extended_pbes& pbes);
+
 namespace detail
 {
 
@@ -31,39 +39,6 @@ pbes load_pbes(const std::string& filename);
 
 /// \brief Saves an PBES to filename, or to stdout if filename equals "".
 void save_pbes(const pbes& pbesspec, const std::string& filename);
-
-// inline
-// std::string file_extension(const std::string& filename)
-// {
-//   auto pos = filename.find_last_of('.');
-//   if (pos == std::string::npos)
-//   {
-// 	return "";
-//   }
-//   return filename.substr(pos + 1);
-// }
-//
-// inline
-// void my_save_pbes(const pbes& p, const std::string& filename)
-// {
-//   auto ext = file_extension(filename);
-//   if (ext == "pbes")
-//   {
-//     save_pbes(p, filename, pbes_format_internal());
-//   }
-//   else if (ext == "bes")
-//   {
-//     bes::save_pbes(p, filename, bes::bes_format_internal());
-//   }
-//   else if (ext == "pg")
-//   {
-//     bes::save_pbes(p, filename, bes::bes_format_pgsolver());
-//   }
-//   else
-//   {
-//     pbes_system::save_pbes(p, filename);
-//   }
-// }
 
 } // namespace detail
 

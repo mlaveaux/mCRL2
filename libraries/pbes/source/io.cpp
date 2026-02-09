@@ -45,7 +45,7 @@ const std::vector<utilities::file_format>& pbes_file_formats()
 /// \param stream The stream to which the output is saved.
 /// \param format Determines the format in which the result is written. If unspecified, or
 ///        pbes_file_unknown is specified, then a default format is chosen.
-void save_pbes(const pbes& pbes,
+void save_pbes(const extended_pbes& pbes,
                std::ostream& stream,
                utilities::file_format format)
 {
@@ -54,17 +54,17 @@ void save_pbes(const pbes& pbes,
     format = pbes_format_internal();
   }
   mCRL2log(log::verbose) << "Saving result in " << format.shortname() << " format..." << std::endl;
-  if (format == pbes_format_internal() || (format == pbes_format_internal_bes() && pbes_system::algorithms::is_bes(pbes)))
+  if (format == pbes_format_internal() || (format == pbes_format_internal_bes() && pbes_system::algorithms::is_bes(pbes.transformed_pbes)))
   {
     atermpp::binary_aterm_ostream(stream) << pbes;
   }
-  else if (format == pbes_format_pgsolver() && pbes_system::algorithms::is_bes(pbes))
+  else if (format == pbes_format_pgsolver() && pbes_system::algorithms::is_bes(pbes.transformed_pbes))
   {
-    save_bes_pgsolver(pbes, stream);
+    save_bes_pgsolver(pbes.transformed_pbes, stream);
   }
   else if (format == pbes_format_text())
   {
-    stream << pp(pbes);
+    stream << print(pbes, false);
   }
   else
   {
@@ -78,7 +78,7 @@ void save_pbes(const pbes& pbes,
 /// \param format The format that should be assumed for the file in infilename. If unspecified, or
 ///        pbes_file_unknown is specified, then a default format is chosen.
 /// \param source The source from which the stream originates. Used for error messages.
-void load_pbes(pbes& pbes, std::istream& stream, utilities::file_format format, const std::string& /*source*/)
+void load_pbes(extended_pbes& pbes, std::istream& stream, utilities::file_format format, const std::string& /*source*/)
 {
   if (format == utilities::file_format())
   {
@@ -92,7 +92,7 @@ void load_pbes(pbes& pbes, std::istream& stream, utilities::file_format format, 
   else
   if (format == pbes_format_text())
   {
-    stream >> pbes;
+    throw mcrl2::runtime_error("Reading extended PBES from text format is not supported.");
   }
   else
   {
@@ -109,7 +109,7 @@ void load_pbes(pbes& pbes, std::istream& stream, utilities::file_format format, 
 ///
 /// The format of the file in infilename is guessed if format is not given or if it is equal to
 /// utilities::file_format().
-void save_pbes(const pbes& pbes, const std::string& filename,
+void save_pbes(const extended_pbes& pbes, const std::string& filename,
                utilities::file_format format,
                bool welltypedness_check)
 {
@@ -144,7 +144,7 @@ void save_pbes(const pbes& pbes, const std::string& filename,
 ///
 /// The format of the file in infilename is guessed if format is not given or if it is equal to
 /// utilities::file_format().
-void load_pbes(pbes& pbes,
+void load_pbes(extended_pbes& pbes,
                const std::string& filename,
                utilities::file_format format)
 {
@@ -334,6 +334,37 @@ atermpp::aterm pbes_to_aterm(const pbes& p)
              initial_state);
 
   return result;
+}
+
+inline
+atermpp::aterm extended_pbes_marker()
+{
+  return atermpp::aterm(atermpp::function_symbol("extended_parameterised_boolean_equation_system", 0));
+}
+
+inline
+atermpp::aterm_ostream& operator<<(atermpp::aterm_ostream& stream, const extended_pbes& pbes)
+{
+  stream << extended_pbes_marker();
+  stream << pbes.core_pbes;
+  stream << pbes.transformed_pbes;
+  return stream;
+}
+
+inline
+atermpp::aterm_istream& operator>>(atermpp::aterm_istream& stream, extended_pbes& pbes)
+{  
+  atermpp::aterm marker;
+  stream >> marker;
+
+  if (marker != extended_pbes_marker())
+  {
+    throw mcrl2::runtime_error("Stream does not contain an extended parameterised boolean equation system (PBES).");
+  }
+  
+  stream >> pbes.core_pbes;
+  stream >> pbes.transformed_pbes;
+  return stream;
 }
 
 } // namespace mcrl2::pbes_system

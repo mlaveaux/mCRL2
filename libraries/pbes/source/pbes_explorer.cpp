@@ -14,6 +14,7 @@
 #include "mcrl2/data/detail/io.h"
 #include "mcrl2/data/representative_generator.h"
 #include "mcrl2/pbes/detail/ppg_visitor.h"
+#include "mcrl2/pbes/extended_pbes.h"
 #include "mcrl2/pbes/io.h"
 #include "mcrl2/pbes/pbes_explorer.h"
 
@@ -1319,11 +1320,11 @@ std::string ltsmin_state::state_to_string() const
 
 explorer::explorer(const std::string& filename, const std::string& rewrite_strategy = "jittyc", bool reset_flag = false, bool always_split_flag = false)
 {
-    load_pbes(p, filename);
-    for (auto & eqn : p.equations()) {
-        std::string variable_name = eqn.variable().name();
-        //std::clog << "varname = " << variable_name << std::endl;
-    }
+    // We explore the transformed PBES.
+    extended_pbes extended_p;
+    load_pbes(extended_p, filename);
+    p = extended_p.transformed_pbes;
+
     pbes_system::algorithms::normalize(p);
     if (!detail::is_ppg(p))
     {

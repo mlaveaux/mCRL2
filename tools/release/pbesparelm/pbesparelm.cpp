@@ -61,10 +61,10 @@ public:
     mCRL2log(verbose) << "  output file:        " << m_output_filename << std::endl;
 
     // load the pbes
-    pbes p;
+    extended_pbes p;
     load_pbes(p, input_filename(), pbes_input_format());
 
-    parelm(p, ignore_cex);
+    parelm(p.transformed_pbes, ignore_cex);
 
     // save the result
     save_pbes(p, output_filename(), pbes_output_format());
