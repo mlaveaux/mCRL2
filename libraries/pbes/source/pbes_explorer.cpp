@@ -1321,9 +1321,7 @@ std::string ltsmin_state::state_to_string() const
 explorer::explorer(const std::string& filename, const std::string& rewrite_strategy = "jittyc", bool reset_flag = false, bool always_split_flag = false)
 {
     // We explore the transformed PBES.
-    extended_pbes extended_p;
-    load_pbes(extended_p, filename);
-    p = extended_p.transformed_pbes;
+    load_pbes(p, filename);
 
     pbes_system::algorithms::normalize(p);
     if (!detail::is_ppg(p))

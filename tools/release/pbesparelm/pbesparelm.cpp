@@ -62,12 +62,12 @@ public:
 
     // load the pbes
     extended_pbes p;
-    load_pbes(p, input_filename(), pbes_input_format());
+    load_extended_pbes(p, input_filename(), pbes_input_format());
 
     parelm(p.transformed_pbes, ignore_cex);
 
     // save the result
-    save_pbes(p, output_filename(), pbes_output_format());
+    save_extended_pbes(p, output_filename(), pbes_output_format());
 
     return true;
     }

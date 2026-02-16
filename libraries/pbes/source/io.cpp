@@ -13,6 +13,7 @@
 #include "mcrl2/pbes/algorithms.h"
 #include "mcrl2/pbes/detail/pbes_io.h"
 #include "mcrl2/pbes/io.h"
+#include "mcrl2/pbes/extended_pbes.h"
 #include "mcrl2/pbes/join.h"
 #include "mcrl2/pbes/parse.h"
 #include "mcrl2/pbes/normal_forms.h"
@@ -40,12 +41,7 @@ const std::vector<utilities::file_format>& pbes_file_formats()
   return result;
 }
 
-/// \brief Save a PBES in the format specified.
-/// \param pbes The PBES to be stored
-/// \param stream The stream to which the output is saved.
-/// \param format Determines the format in which the result is written. If unspecified, or
-///        pbes_file_unknown is specified, then a default format is chosen.
-void save_pbes(const extended_pbes& pbes,
+void save_pbes(const pbes& pbes,
                std::ostream& stream,
                utilities::file_format format)
 {
@@ -54,17 +50,17 @@ void save_pbes(const extended_pbes& pbes,
     format = pbes_format_internal();
   }
   mCRL2log(log::verbose) << "Saving result in " << format.shortname() << " format..." << std::endl;
-  if (format == pbes_format_internal() || (format == pbes_format_internal_bes() && pbes_system::algorithms::is_bes(pbes.transformed_pbes)))
+  if (format == pbes_format_internal() || (format == pbes_format_internal_bes() && pbes_system::algorithms::is_bes(pbes)))
   {
     atermpp::binary_aterm_ostream(stream) << pbes;
   }
-  else if (format == pbes_format_pgsolver() && pbes_system::algorithms::is_bes(pbes.transformed_pbes))
+  else if (format == pbes_format_pgsolver() && pbes_system::algorithms::is_bes(pbes))
   {
-    save_bes_pgsolver(pbes.transformed_pbes, stream);
+    save_bes_pgsolver(pbes, stream);
   }
   else if (format == pbes_format_text())
   {
-    stream << print(pbes, false);
+    stream << pbes;
   }
   else
   {
@@ -72,13 +68,7 @@ void save_pbes(const extended_pbes& pbes,
   }
 }
 
-/// \brief Load a PBES from file.
-/// \param pbes The PBES to which the result is loaded.
-/// \param stream The stream from which to load the PBES.
-/// \param format The format that should be assumed for the file in infilename. If unspecified, or
-///        pbes_file_unknown is specified, then a default format is chosen.
-/// \param source The source from which the stream originates. Used for error messages.
-void load_pbes(extended_pbes& pbes, std::istream& stream, utilities::file_format format, const std::string& /*source*/)
+void load_pbes(pbes& pbes, std::istream& stream, utilities::file_format format, const std::string& /*source*/)
 {
   if (format == utilities::file_format())
   {
@@ -100,16 +90,7 @@ void load_pbes(extended_pbes& pbes, std::istream& stream, utilities::file_format
   }
 }
 
-/// \brief save_pbes Saves a PBES to a file.
-/// \param pbes The PBES to save.
-/// \param filename The file to save the PBES in.
-/// \param format The format in which to save the PBES.
-/// \param welltypedness_check If set to false, skips checking whether pbes is well typed before
-///                            saving it to file.
-///
-/// The format of the file in infilename is guessed if format is not given or if it is equal to
-/// utilities::file_format().
-void save_pbes(const extended_pbes& pbes, const std::string& filename,
+void save_pbes(const pbes& pbes, const std::string& filename,
                utilities::file_format format,
                bool welltypedness_check)
 {
@@ -137,14 +118,7 @@ void save_pbes(const extended_pbes& pbes, const std::string& filename,
   }
 }
 
-/// \brief Load pbes from file.
-/// \param pbes The pbes to which the result is loaded.
-/// \param filename The file from which to load the PBES.
-/// \param format The format in which the PBES is stored in the file.
-///
-/// The format of the file in infilename is guessed if format is not given or if it is equal to
-/// utilities::file_format().
-void load_pbes(extended_pbes& pbes,
+void load_pbes(pbes& pbes,
                const std::string& filename,
                utilities::file_format format)
 {
@@ -164,6 +138,106 @@ void load_pbes(extended_pbes& pbes,
       throw mcrl2::runtime_error("Could not open file " + filename);
     }
     load_pbes(pbes, filestream, format, core::detail::file_source(filename));
+  }
+}
+
+void save_extended_pbes(const extended_pbes& pbes,
+               std::ostream& stream,
+               utilities::file_format format)
+{
+  if (format == utilities::file_format())
+  {
+    format = pbes_format_internal();
+  }
+  mCRL2log(log::verbose) << "Saving result in " << format.shortname() << " format..." << std::endl;
+  if (format == pbes_format_internal() || (format == pbes_format_internal_bes() && pbes_system::algorithms::is_bes(pbes.transformed_pbes)))
+  {
+    atermpp::binary_aterm_ostream(stream) << pbes;
+  }
+  else if (format == pbes_format_pgsolver() && pbes_system::algorithms::is_bes(pbes.transformed_pbes))
+  {
+    save_bes_pgsolver(pbes.transformed_pbes, stream);
+  }
+  else if (format == pbes_format_text())
+  {
+    stream << print(pbes, true);
+  }
+  else
+  {
+    throw mcrl2::runtime_error("Trying to save PBES in non-PBES format (" + format.shortname() + ")");
+  }
+}
+
+void load_extended_pbes(extended_pbes& pbes,
+               const std::string& filename,
+               utilities::file_format format)
+{
+  if (format == utilities::file_format())
+  {
+    format = guess_format(filename);
+  }
+  if (filename.empty() || filename == "-")
+  {
+    load_extended_pbes(pbes, std::cin, format);
+  }
+  else
+  {
+    std::ifstream filestream(filename,(format.text_format()?std::ios_base::in: std::ios_base::binary));
+    if (!filestream.good())
+    {
+      throw mcrl2::runtime_error("Could not open file " + filename);
+    }
+    load_extended_pbes(pbes, filestream, format, core::detail::file_source(filename));
+  }
+}
+
+void load_extended_pbes(extended_pbes& pbes, std::istream& stream, utilities::file_format format, const std::string& /*source*/)
+{
+  if (format == utilities::file_format())
+  {
+    format = pbes_format_internal();
+  }
+  mCRL2log(log::verbose) << "Loading PBES in " << format.shortname() << " format..." << std::endl;
+  if (format == pbes_format_internal() || format == pbes_format_internal_bes())
+  {
+    atermpp::binary_aterm_istream(stream) >> pbes;
+  }
+  else
+  if (format == pbes_format_text())
+  {
+    throw mcrl2::runtime_error("Reading extended PBES from text format is not supported.");
+  }
+  else
+  {
+    throw mcrl2::runtime_error("Trying to load PBES from non-PBES format (" + format.shortname() + ")");
+  }
+}
+
+void save_extended_pbes(const extended_pbes& pbes, const std::string& filename,
+               utilities::file_format format,
+               bool welltypedness_check)
+{
+  if (welltypedness_check)
+  {
+    assert(pbes.is_well_typed());
+  }
+  if (format == utilities::file_format())
+  {
+    format = guess_format(filename);
+  }
+
+  if (filename.empty() || filename == "-")
+  {
+    save_extended_pbes(pbes, std::cout, format);
+  }
+  else
+  {
+    std::ofstream filestream(filename,(format.text_format()?std::ios_base::out: std::ios_base::binary));
+    if (!filestream.good())
+    {
+      throw mcrl2::runtime_error("Could not open file " + filename);
+    }
+    save_extended_pbes(pbes, filestream, format);
   }
 }
 
@@ -346,8 +420,9 @@ inline
 atermpp::aterm_ostream& operator<<(atermpp::aterm_ostream& stream, const extended_pbes& pbes)
 {
   stream << extended_pbes_marker();
-  stream << pbes.core_pbes;
   stream << pbes.transformed_pbes;
+  stream << pbes.original_pbes;
+  stream << pbes.original_lps;
   return stream;
 }
 
@@ -357,13 +432,21 @@ atermpp::aterm_istream& operator>>(atermpp::aterm_istream& stream, extended_pbes
   atermpp::aterm marker;
   stream >> marker;
 
+  if (marker == pbes_marker())
+  {
+    // Deal with legacy files
+    stream >> pbes.transformed_pbes;
+    return stream;
+  }
+
   if (marker != extended_pbes_marker())
   {
     throw mcrl2::runtime_error("Stream does not contain an extended parameterised boolean equation system (PBES).");
   }
   
-  stream >> pbes.core_pbes;
   stream >> pbes.transformed_pbes;
+  stream >> pbes.original_pbes;
+  stream >> pbes.original_lps;
   return stream;
 }
 

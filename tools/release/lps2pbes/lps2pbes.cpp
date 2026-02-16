@@ -10,11 +10,13 @@
 /// \brief Add your file description here.
 
 #include "mcrl2/lps/io.h"
+#include "mcrl2/modal_formula/parse.h"
+#include "mcrl2/pbes/detail/pbes_remove_counterexample_info.h"
+#include "mcrl2/pbes/extended_pbes.h"
 #include "mcrl2/pbes/io.h"
 #include "mcrl2/pbes/lps2pbes.h"
 #include "mcrl2/pbes/pbes_output_tool.h"
 #include "mcrl2/utilities/input_output_tool.h"
-#include "mcrl2/modal_formula/parse.h"
 
 
 
@@ -182,7 +184,13 @@ protected:
       {
         mCRL2log(log::verbose) << "Writing PBES to file '" <<  output_filename() << "'..." << std::endl;
       }
-      save_pbes(result, output_filename(), pbes_output_format());
+
+      pbes transformed_pbes = mcrl2::pbes_system::detail::remove_counterexample_info(result);
+
+      save_extended_pbes(extended_pbes {
+        .transformed_pbes=transformed_pbes,
+        .original_pbes=result,
+      }, output_filename(), pbes_output_format());
       return true;
     }
 

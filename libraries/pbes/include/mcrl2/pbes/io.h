@@ -63,7 +63,7 @@ utilities::file_format guess_format(const std::string& filename)
 /// \param stream The stream to which the output is saved.
 /// \param format Determines the format in which the result is written. If unspecified, or
 ///        pbes_file_unknown is specified, then a default format is chosen.
-void save_pbes(const extended_pbes& pbes,
+void save_pbes(const pbes& pbes,
                std::ostream& stream,
                utilities::file_format format = utilities::file_format());
 
@@ -73,7 +73,7 @@ void save_pbes(const extended_pbes& pbes,
 /// \param format The format that should be assumed for the file in infilename. If unspecified, or
 ///        pbes_file_unknown is specified, then a default format is chosen.
 /// \param source The source from which the stream originates. Used for error messages.
-void load_pbes(extended_pbes& pbes, std::istream& stream, utilities::file_format format, const std::string& source = "");
+void load_pbes(pbes& pbes, std::istream& stream, utilities::file_format format, const std::string& source = "");
 
 /// \brief save_pbes Saves a PBES to a file.
 /// \param pbes The PBES to save.
@@ -84,7 +84,7 @@ void load_pbes(extended_pbes& pbes, std::istream& stream, utilities::file_format
 ///
 /// The format of the file in infilename is guessed if format is not given or if it is equal to
 /// utilities::file_format().
-void save_pbes(const extended_pbes& pbes, const std::string& filename,
+void save_pbes(const pbes& pbes, const std::string& filename,
                utilities::file_format format = utilities::file_format(),
                bool welltypedness_check = true);
 
@@ -95,7 +95,21 @@ void save_pbes(const extended_pbes& pbes, const std::string& filename,
 ///
 /// The format of the file in infilename is guessed if format is not given or if it is equal to
 /// utilities::file_format().
-void load_pbes(extended_pbes& pbes,
+void load_pbes(pbes& pbes,
+               const std::string& filename,
+               utilities::file_format format = utilities::file_format());
+
+void save_extended_pbes(const pbes& pbes,
+               std::ostream& stream,
+               utilities::file_format format = utilities::file_format());
+
+void load_extended_pbes(extended_pbes& pbes, std::istream& stream, utilities::file_format format, const std::string& source = "");
+
+void save_extended_pbes(const extended_pbes& pbes, const std::string& filename,
+               utilities::file_format format = utilities::file_format(),
+               bool welltypedness_check = true);
+
+void load_extended_pbes(extended_pbes& pbes,
                const std::string& filename,
                utilities::file_format format = utilities::file_format());
 

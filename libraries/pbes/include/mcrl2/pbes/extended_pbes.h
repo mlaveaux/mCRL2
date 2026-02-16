@@ -13,18 +13,23 @@
 #define MCRL2_PBES_EXTENDED_PBES_H
 
 #include "mcrl2/pbes/pbes.h"
+#include "mcrl2/lps/io.h"
 
 namespace mcrl2::pbes_system {
 
 struct extended_pbes {
     pbes transformed_pbes;
-    pbes core_pbes;
+
+    /// The original PBES that contains counter example information.
+    pbes original_pbes;
+    /// The original LPS used to generate the PBES.
+    lps::stochastic_specification original_lps;
 };
 
 inline
 std::string print(const extended_pbes& x, bool precedence_aware)
 {
-    return "extended_pbes(" + pp(x.core_pbes, precedence_aware) + ", " + pp(x.transformed_pbes, precedence_aware) + ")";
+    return pp(x.transformed_pbes, precedence_aware);
 }
 
 } // namespace mcrl2::pbes_system
