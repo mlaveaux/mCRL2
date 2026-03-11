@@ -18,6 +18,7 @@
 namespace mcrl2::pbes_system {
 
 struct extended_pbes {
+    /// The core PBES.
     pbes transformed_pbes;
 
     /// The original PBES that contains counter example information.

@@ -315,7 +315,7 @@ atermpp::aterm_istream& operator>>(atermpp::aterm_istream& stream, pbes& pbes)
 
     if (marker != pbes_marker())
     {
-      throw mcrl2::runtime_error("Stream does not contain a parameterised boolean equation system (PBES).");
+      throw mcrl2::runtime_error("Stream does not contain a parameterised boolean equation system (PBES). Use '--legacy' to load a legacy PBES.");
     }
 
     data::data_specification data;
