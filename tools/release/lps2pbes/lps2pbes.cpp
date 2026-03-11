@@ -77,7 +77,7 @@ protected:
     desc.add_option("timed", "use the timed version of the algorithm, even for untimed LPS's", 't');
     desc.add_option("structured", "generate equations such that no mixed conjunctions and disjunctions occur", 's');
     desc.add_option("unoptimized", "do not simplify boolean expressions", 'u');
-    desc.add_option("counter-example", "add counter example equations to the generated PBES", 'c');
+    desc.add_option("counter-example", "after the resulting PBES, add the PBES with counter example equations, and the source LPS)", 'c');
     desc.add_option("check-only", "check syntax and semantics of state formula; do not generate PBES", 'e');
     desc.add_hidden_option("print-ast",
         "prints the abstract syntax tree of the state formula; do not generate PBES",
@@ -185,12 +185,17 @@ protected:
         mCRL2log(log::verbose) << "Writing PBES to file '" <<  output_filename() << "'..." << std::endl;
       }
 
-      pbes transformed_pbes = mcrl2::pbes_system::detail::remove_counterexample_info(result);
+      // If --counter-example is used we return an extended PBES, and otherwise a plain PBES.
+      if (generate_counter_example) {
+        pbes transformed_pbes = mcrl2::pbes_system::detail::remove_counterexample_info(result);
 
-      save_extended_pbes(extended_pbes {
-        .transformed_pbes=transformed_pbes,
-        .original_pbes=result,
-      }, output_filename(), pbes_output_format());
+        save_extended_pbes(extended_pbes {
+          .transformed_pbes=transformed_pbes,
+          .original_pbes=result,
+        }, output_filename(), pbes_output_format());
+      } else {
+        save_pbes(result, output_filename(), pbes_output_format());
+      }
       return true;
     }
 
