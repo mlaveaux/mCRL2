@@ -29,7 +29,6 @@ using pbes_system::tools::pbes_output_tool;
 class pbes_parelm_tool: public pbes_input_tool<pbes_output_tool<input_output_tool> >
 {
   using super = pbes_input_tool<pbes_output_tool<input_output_tool>>;
-  bool ignore_cex;
 
 public:
   pbes_parelm_tool()
@@ -43,14 +42,11 @@ public:
   void add_options(utilities::interface_description& desc) override
   {
     super::add_options(desc);
-    desc.add_option("ignore-cex", "Ignores the counter example equations if present.");
   }
 
   void parse_options(const utilities::command_line_parser& parser) override
   {
     super::parse_options(parser);
-
-    ignore_cex = parser.has_option("ignore-cex");
   }
 
   bool run() override /*< The virtual function `run` executes the tool.
@@ -63,6 +59,7 @@ public:
     // load the pbes
     extended_pbes p;
     load_extended_pbes(p, input_filename(), pbes_input_format());
+    parelm(p.transformed_pbes);
 
     parelm(p.transformed_pbes, ignore_cex);
 
@@ -70,7 +67,7 @@ public:
     save_extended_pbes(p, output_filename(), pbes_output_format());
 
     return true;
-    }
+  }
 };
 
 int main(int argc, char* argv[])
