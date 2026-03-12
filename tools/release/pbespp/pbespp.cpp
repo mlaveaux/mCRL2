@@ -40,15 +40,8 @@ class pbespp_tool: public pbes_input_tool<input_output_tool>
     {
       pbes_system::pbes p;
       pbes_system::extended_pbes extended_p;
-      if (legacy)
-      {
-        load_pbes(p, input_filename(), pbes_input_format());
-      }
-      else 
-      {
-        load_extended_pbes(extended_p, input_filename(), pbes_input_format());
-        p = extended_p.transformed_pbes;
-      }
+      load_extended_pbes(extended_p, input_filename(), pbes_input_format());
+      p = extended_p.transformed_pbes;
 
       mCRL2log(log::verbose) << "printing PBES from "
                             << (input_filename().empty()?"standard input":input_filename())
@@ -67,17 +60,11 @@ class pbespp_tool: public pbes_input_tool<input_output_tool>
         }
         else
         {
-          if (legacy)
-          {
-            std::cout << pp(p, m_precedence_aware);
-          }
-          else
-          {
-            std::cout << pp(extended_p.transformed_pbes, m_precedence_aware);
-            std::cout << pp(extended_p.original_pbes, m_precedence_aware);
-            // FIXME: the lps is not prettyprinted like in lpspp and I'm not sure why.
-            std::cout << pp(extended_p.original_lps, m_precedence_aware);
-          }
+          std::cout << pp(p, m_precedence_aware);
+          std::cout << pp(extended_p.original_pbes, m_precedence_aware);
+          // FIXME: the lps is not prettyprinted like in lpspp and I'm not sure why.
+          std::cout << pp(extended_p.original_lps, m_precedence_aware);
+          std::cout << pp(extended_p.pbesparelm);
         }
       }
       else
@@ -111,7 +98,6 @@ class pbespp_tool: public pbes_input_tool<input_output_tool>
     core::print_format_type format = core::print_default;
     bool use_pfnf_printer = false;
     bool m_precedence_aware = true;
-    bool legacy = false;
 
     void add_options(interface_description& desc) override
     {
@@ -124,7 +110,6 @@ class pbespp_tool: public pbes_input_tool<input_output_tool>
                       "format the output according to the structure of PFNF (only has an effect when printing a PBES in PFNF to text)", 
                       'p');
       desc.add_option("no-precedence-aware", "disable printing with precedence aware enabled", 'x');
-      desc.add_option("legacy", "print a legacy PBES (not in extended format)");
     }
 
     void parse_options(const command_line_parser& parser) override
@@ -135,10 +120,6 @@ class pbespp_tool: public pbes_input_tool<input_output_tool>
       if (parser.options.count("pfnf-printer")>0)
       {
         use_pfnf_printer = true;
-      }
-      if (parser.options.count("legacy")>0)
-      {
-        legacy = true;
       }
     }
 };
