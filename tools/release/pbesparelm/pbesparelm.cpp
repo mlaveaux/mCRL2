@@ -11,11 +11,18 @@
 // #define MCRL2_PBES_CONSTELM_DEBUG
 // #define MCRL2_PBES_EXPRESSION_BUILDER_DEBUG
 
+#include "mcrl2/atermpp/aterm_int.h"
+#include "mcrl2/atermpp/aterm_list.h"
+#include "mcrl2/atermpp/aterm_string.h"
+#include "mcrl2/atermpp/detail/aterm_list.h"
+#include "mcrl2/core/detail/function_symbols.h"
+#include "mcrl2/pbes/extended_pbes.h"
 #include "mcrl2/pbes/io.h"
 #include "mcrl2/pbes/parelm.h"
 #include "mcrl2/pbes/pbes_input_tool.h"
 #include "mcrl2/pbes/pbes_output_tool.h"
 #include "mcrl2/utilities/input_output_tool.h"
+#include <string>
 
 using namespace mcrl2;
 using namespace mcrl2::log;
@@ -60,8 +67,16 @@ public:
     extended_pbes p;
     load_extended_pbes(p, input_filename(), pbes_input_format());
     parelm(p.transformed_pbes);
-
-    parelm(p.transformed_pbes, ignore_cex);
+    atermpp::aterm_int x(10);
+    atermpp::aterm_string X("X");
+    atermpp::aterm_list l;
+    l.push_front(X);
+    l.push_front(x);
+    atermpp::aterm_list R;
+    R.push_front(l);
+    atermpp::aterm pbesparelm = atermpp::aterm(core::detail::function_symbol_PBESParelmRemoved(), R);
+    p.l.push_front(pbesparelm);
+    std::cout << pp(p.l) << std::endl;
 
     // save the result
     save_extended_pbes(p, output_filename(), pbes_output_format());

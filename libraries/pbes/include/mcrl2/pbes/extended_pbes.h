@@ -12,6 +12,7 @@
 #ifndef MCRL2_PBES_EXTENDED_PBES_H
 #define MCRL2_PBES_EXTENDED_PBES_H
 
+#include "mcrl2/atermpp/aterm_list.h"
 #include "mcrl2/pbes/pbes.h"
 #include "mcrl2/lps/io.h"
 
@@ -25,6 +26,9 @@ struct extended_pbes {
     pbes original_pbes;
     /// The original LPS used to generate the PBES.
     lps::stochastic_specification original_lps;
+
+    /// Additional information from transformations on the core PBES.
+    atermpp::aterm_list l;
 };
 
 inline

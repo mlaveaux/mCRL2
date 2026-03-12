@@ -1338,6 +1338,14 @@ const atermpp::function_symbol& function_symbol_Whr()
   static const atermpp::global_function_symbol function_symbol_Whr("Whr", 2);
   return function_symbol_Whr;
 }
+
+// PBESParelmRemoved
+inline
+const atermpp::function_symbol& function_symbol_PBESParelmRemoved()
+{
+  static const atermpp::global_function_symbol function_symbol_PBESParelmRemoved("PBESParelmRemoved", 1);
+  return function_symbol_PBESParelmRemoved;
+}
 //--- end generated constructors ---//
 
 //----------------------------------------------------------------------------------------------//
@@ -1502,6 +1510,7 @@ static const atermpp::function_symbol SortCons;
   static const atermpp::function_symbol PRESEqNInf;
   static const atermpp::function_symbol PRESCondSm;
   static const atermpp::function_symbol PRESCondEq;
+  static const atermpp::function_symbol PBESParelmRemoved;
 //--- end generated variables ---//
 };
 

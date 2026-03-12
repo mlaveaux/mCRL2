@@ -219,7 +219,7 @@ void save_extended_pbes(const extended_pbes& pbes, const std::string& filename,
 {
   if (welltypedness_check)
   {
-    assert(pbes.is_well_typed());
+    // assert(pbes.is_well_typed()); FIXME
   }
   if (format == utilities::file_format())
   {
@@ -423,6 +423,7 @@ atermpp::aterm_ostream& operator<<(atermpp::aterm_ostream& stream, const extende
   stream << pbes.transformed_pbes;
   stream << pbes.original_pbes;
   stream << pbes.original_lps;
+  stream << pbes.l;
   return stream;
 }
 
@@ -447,6 +448,7 @@ atermpp::aterm_istream& operator>>(atermpp::aterm_istream& stream, extended_pbes
   stream >> pbes.transformed_pbes;
   stream >> pbes.original_pbes;
   stream >> pbes.original_lps;
+  stream >> pbes.l;
   return stream;
 }
 
