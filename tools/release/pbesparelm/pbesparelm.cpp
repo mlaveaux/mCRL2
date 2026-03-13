@@ -66,17 +66,9 @@ public:
     // load the pbes
     extended_pbes p;
     load_extended_pbes(p, input_filename(), pbes_input_format());
-    parelm(p.transformed_pbes);
-    atermpp::aterm_int x(10);
-    atermpp::aterm_string X("X");
-    atermpp::aterm_list l;
-    l.push_front(X);
-    l.push_front(x);
-    atermpp::aterm_list R;
-    R.push_front(l);
-    atermpp::aterm pbesparelm = atermpp::aterm(core::detail::function_symbol_PBESParelmRemoved(), R);
-    p.l.push_front(pbesparelm);
-    std::cout << pp(p.l) << std::endl;
+    atermpp::aterm_list R = parelm(p.transformed_pbes); // list of lists of [eq var name, names of redundant params]
+    atermpp::aterm transformation = atermpp::aterm(core::detail::function_symbol_PBESParelmRemoved(), R);
+    p.transformations.push_front(transformation);
 
     // save the result
     save_extended_pbes(p, output_filename(), pbes_output_format());

@@ -64,7 +64,7 @@ class pbespp_tool: public pbes_input_tool<input_output_tool>
           std::cout << pp(extended_p.original_pbes, m_precedence_aware);
           // FIXME: the lps is not prettyprinted like in lpspp and I'm not sure why.
           std::cout << pp(extended_p.original_lps, m_precedence_aware);
-          std::cout << pp(extended_p.l);
+          std::cout << pp(extended_p.transformations) << std::endl;
         }
       }
       else

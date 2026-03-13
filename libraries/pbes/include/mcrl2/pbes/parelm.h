@@ -15,6 +15,7 @@
 #include "mcrl2/utilities/detail/iota.h"
 #include "mcrl2/utilities/reachable_nodes.h"
 #include "mcrl2/pbes/detail/pbes_remove_counterexample_info.h"
+#include <string>
 
 namespace mcrl2::pbes_system {
 
@@ -181,7 +182,8 @@ class pbes_parelm_algorithm
   public:
     /// \brief Runs the parelm algorithm. The pbes \p is modified by the algorithm
     /// \param p A pbes
-    void run(pbes& p)
+    /// \returns An aterm list of the redundant parameters
+    atermpp::aterm_list run(pbes& p)
     {
       data::variable_list global_variables(p.global_variables().begin(), p.global_variables().end());
       std::vector<data::variable> predicate_variables;
@@ -272,6 +274,26 @@ class pbes_parelm_algorithm
 
       // remove the parameters
       pbes_system::algorithms::remove_parameters(p, removals);
+
+      return get_removed_parameters(propvar_offsets, removals);
+    }
+
+    atermpp::aterm_list get_removed_parameters (const std::map<core::identifier_string, std::size_t>& propvar_offsets,
+                                  const std::map<core::identifier_string, std::vector<std::size_t>>& removals) const
+    {
+      atermpp::aterm_list R; // list of lists of [eq var name, names of redundant params]
+      for (auto& removal: removals)
+      {
+        atermpp::aterm_list l;
+        for (std::size_t j: removal.second)
+        {
+          std::size_t pos = j + propvar_offsets.at(removal.first); // position of redundant parameter
+          l.push_front(atermpp::aterm_int(pos));
+        }
+        l.push_front(atermpp::aterm_string(removal.first)); // name of equation variable
+        R.push_front(l);
+      }
+      return R;
     }
 
     void print_removed_parameters(const std::vector<data::variable>& predicate_variables,
@@ -322,8 +344,9 @@ class pbes_parelm_algorithm
 
 /// \brief Apply the parelm algorithm
 /// \param p A PBES to which the algorithm is applied
+/// \returns An aterm list of the redundant parameters
 inline
-void parelm(pbes& p)
+atermpp::aterm_list parelm(pbes& p)
 {
   const bool has_counter_example = pbes_system::detail::has_counter_example_information(p);
   if (has_counter_example)
@@ -331,7 +354,7 @@ void parelm(pbes& p)
     mCRL2log(log::warning) << "Warning: the PBES has counter example information, which may not be preserved by parameter elimination." << std::endl;
   }
   pbes_parelm_algorithm algorithm;
-  algorithm.run(p);
+  return algorithm.run(p);
 }
 
 } // namespace mcrl2::pbes_system

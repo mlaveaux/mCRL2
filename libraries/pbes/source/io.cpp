@@ -423,7 +423,7 @@ atermpp::aterm_ostream& operator<<(atermpp::aterm_ostream& stream, const extende
   stream << pbes.transformed_pbes;
   stream << pbes.original_pbes;
   stream << pbes.original_lps;
-  stream << pbes.l;
+  stream << pbes.transformations;
   return stream;
 }
 
@@ -448,7 +448,7 @@ atermpp::aterm_istream& operator>>(atermpp::aterm_istream& stream, extended_pbes
   stream >> pbes.transformed_pbes;
   stream >> pbes.original_pbes;
   stream >> pbes.original_lps;
-  stream >> pbes.l;
+  stream >> pbes.transformations;
   return stream;
 }
 
