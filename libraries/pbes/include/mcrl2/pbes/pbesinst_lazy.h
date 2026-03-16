@@ -24,6 +24,7 @@
 #include "mcrl2/data/substitution_utility.h"
 #include "mcrl2/pbes/detail/bes_equation_limit.h"
 #include "mcrl2/pbes/detail/instantiate_global_variables.h"
+#include "mcrl2/pbes/extended_pbes.h"
 #include "mcrl2/pbes/pbes_equation_index.h"
 #include "mcrl2/pbes/pbes_expression.h"
 #include "mcrl2/pbes/pbessolve_options.h"
@@ -291,15 +292,15 @@ class pbesinst_lazy_algorithm
     /// \param optimization An indication of the optimisation level.
     explicit pbesinst_lazy_algorithm(
       const pbessolve_options& options,
-      const pbes& p,
+      const extended_pbes& p,
       std::optional<data::rewriter> rewriter = std::nullopt
     )
      : m_options(options),
-       datar(rewriter.has_value() ? rewriter.value() : construct_rewriter(p)),
-       m_pbes(preprocess(p)),
-       m_equation_index(p),
+       datar(rewriter.has_value() ? rewriter.value() : construct_rewriter(p.transformed_pbes)),
+       m_pbes(preprocess(p.transformed_pbes)),
+       m_equation_index(p.transformed_pbes),
        discovered(m_options.number_of_threads),
-       m_global_R(datar, p.data())
+       m_global_R(datar, p.transformed_pbes.data())
     { }
 
     virtual ~pbesinst_lazy_algorithm() = default;

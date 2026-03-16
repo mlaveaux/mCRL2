@@ -380,6 +380,38 @@ void save_pbes(const pbes& pbesspec, const std::string& filename)
   }
 }
 
+extended_pbes load_extended_pbes(const std::string& filename)
+{
+  extended_pbes result;
+  if (filename.empty() || filename == "-")
+  {
+    atermpp::binary_aterm_istream(std::cin) >> result;
+  }
+  else
+  {
+    std::ifstream from(filename, std::ifstream::in | std::ifstream::binary);
+    atermpp::binary_aterm_istream(from) >> result;
+  }
+  return result;
+}
+
+void save_extended_pbes(const extended_pbes& pbesspec, const std::string& filename)
+{
+  if (filename.empty() || filename == "-")
+  {
+    atermpp::binary_aterm_ostream(std::cout) << pbesspec;
+  }
+  else
+  {
+    std::ofstream to(filename, std::ofstream::out | std::ofstream::binary);
+    if (!to.good())
+    {
+      throw mcrl2::runtime_error("Could not write to filename " + filename);
+    }
+    atermpp::binary_aterm_ostream(to) << pbesspec;
+  }
+}
+
 } // namespace detail
 
 /// \brief Conversion to atermappl.

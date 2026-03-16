@@ -223,7 +223,7 @@ class pbesinst_counter_example_structure_graph_algorithm : public pbesinst_struc
 {
 public:
   pbesinst_counter_example_structure_graph_algorithm(const pbessolve_options& options,
-      const pbes& p,
+      const extended_pbes& p,
       const structure_graph& SG,
       bool _alpha,
       const std::unordered_map<pbes_expression, structure_graph::index_type>& _mapping,

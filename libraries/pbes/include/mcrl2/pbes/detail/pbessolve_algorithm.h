@@ -10,6 +10,8 @@
 #ifndef MCRL2_PBES_DETAIL_PBESSOLVE_ALGORITHM_H
 #define MCRL2_PBES_DETAIL_PBESSOLVE_ALGORITHM_H
 
+#include "mcrl2/pbes/extended_pbes.h"
+#include "mcrl2/pbes/io.h"
 #include "mcrl2/pbes/pbessolve_options.h"
 #include "mcrl2/utilities/exception.h"
 #include "mcrl2/utilities/input_output_tool.h"
@@ -340,9 +342,10 @@ class pbessolve_tool
   }
 
   template <typename PbesInstAlgorithm, typename PbesInstAlgorithmCE>
-  void run_algorithm(pbes_system::pbes& pbesspec,
+  void run_algorithm(pbes_system::extended_pbes& p,
     const data::mutable_map_substitution<>& sigma)
   {
+    pbes_system::pbes pbesspec = p.transformed_pbes;
     bool has_counter_example = detail::has_counter_example_information(pbesspec);
     if (has_counter_example)
     {
@@ -434,8 +437,8 @@ class pbessolve_tool
 
   bool run() override
   {
-    pbes_system::pbes pbesspec =
-        pbes_system::detail::load_pbes(input_filename());
+    pbes_system::extended_pbes p = pbes_system::detail::load_extended_pbes(input_filename());
+    pbes_system::pbes pbesspec = p.transformed_pbes;
     pbes_system::algorithms::normalize(pbesspec);
     data::mutable_map_substitution<> sigma;
 
@@ -518,11 +521,11 @@ class pbessolve_tool
 };
 
 inline
-bool pbessolve(const pbes& p)
+bool pbessolve(const extended_pbes& p)
 {
   pbessolve_options options;
-  pbes pbesspec = p;
-  pbes_system::algorithms::normalize(pbesspec);
+  extended_pbes pbesspec = p;
+  pbes_system::algorithms::normalize(pbesspec.transformed_pbes);
   structure_graph G;
   pbesinst_structure_graph_algorithm algorithm(options, pbesspec, G);
   algorithm.run();
