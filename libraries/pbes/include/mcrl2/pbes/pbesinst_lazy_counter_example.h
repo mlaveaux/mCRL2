@@ -12,6 +12,7 @@
 #ifndef MCRL2_PBES_PBESINST_LAZY_COUNTER_EXAMPLE_H
 #define MCRL2_PBES_PBESINST_LAZY_COUNTER_EXAMPLE_H
 
+#include "mcrl2/pbes/extended_pbes.h"
 #include "mcrl2/pbes/pbesinst_structure_graph.h"
 #include "mcrl2/pbes/pbesinst_structure_graph2.h"
 #include "mcrl2/pbes/replace.h"
@@ -260,7 +261,7 @@ class pbesinst_counter_example_structure_graph_algorithm2 : public pbesinst_stru
 {
 public:
   pbesinst_counter_example_structure_graph_algorithm2(const pbessolve_options& options,
-      const pbes& p,
+      const extended_pbes& p,
       const structure_graph& SG,
       bool _alpha,
       const std::unordered_map<pbes_expression, structure_graph::index_type>& _mapping,

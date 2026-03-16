@@ -369,7 +369,7 @@ class pbessolve_tool
     {      
       mCRL2log(log::verbose) << "Generating parity game..." << std::endl;
       structure_graph G;
-      PbesInstAlgorithm instantiate(options, pbesspec, G);
+      PbesInstAlgorithm instantiate(options, p, G);
 
       timer().start("instantiation");
       instantiate.run();
@@ -381,12 +381,12 @@ class pbessolve_tool
     {
       // Remove the counter example information, but store it for the later step.
       mCRL2log(log::verbose) << "Removing counter example information for first pass." << std::endl;
-      pbes_system::pbes pbesspec_without_counterexample = detail::remove_counterexample_info(pbesspec);
-      mCRL2log(log::trace) << pbesspec_without_counterexample;
+      p.transformed_pbes = detail::remove_counterexample_info(p.transformed_pbes);
+      mCRL2log(log::trace) << p.transformed_pbes;
 
       mCRL2log(log::verbose) << "Generating parity game..." << std::endl;
       structure_graph initial_G;
-      PbesInstAlgorithm first_instantiate(options, pbesspec_without_counterexample, initial_G);
+      PbesInstAlgorithm first_instantiate(options, p, initial_G);
 
       timer().start("first-instantiation");
       first_instantiate.run();
@@ -414,11 +414,11 @@ class pbessolve_tool
       }
       // Based on the result remove the unnecessary equations related to counter example information. 
       mCRL2log(log::verbose) << "Removing unnecessary example information for other player." << std::endl;
-      pbesspec = detail::remove_counterexample_info(second_pbes, !result, result);
-      mCRL2log(log::trace) << pbesspec << std::endl;
+      p.transformed_pbes = detail::remove_counterexample_info(second_pbes, !result, result);
+      mCRL2log(log::trace) << p.transformed_pbes << std::endl;
 
       structure_graph G;
-      PbesInstAlgorithmCE second_instantiate(options, pbesspec, initial_G, !result, mapping, G, first_instantiate.data_rewriter(), R);
+      PbesInstAlgorithmCE second_instantiate(options, p, initial_G, !result, mapping, G, first_instantiate.data_rewriter(), R);
       
       // Perform the second instantiation given the proof graph.      
       timer().start("second-instantiation");
@@ -437,17 +437,17 @@ class pbessolve_tool
 
   bool run() override
   {
-    pbes_system::extended_pbes p = pbes_system::detail::load_extended_pbes(input_filename());
-    pbes_system::pbes pbesspec = p.transformed_pbes;
-    pbes_system::algorithms::normalize(pbesspec);
+    pbes_system::extended_pbes p;
+    pbes_system::detail::load_extended_pbes(p, input_filename());
+    pbes_system::algorithms::normalize(p.transformed_pbes);
     data::mutable_map_substitution<> sigma;
 
     if (!lpsfile.empty())
     {
       // Make sure that the global variables of the LPS and the PBES get the
       // same values
-      sigma = pbes_system::detail::instantiate_global_variables(pbesspec);
-      pbes_system::detail::replace_global_variables(pbesspec, sigma);
+      sigma = pbes_system::detail::instantiate_global_variables(p.transformed_pbes);
+      pbes_system::detail::replace_global_variables(p.transformed_pbes, sigma);
     }
 
     // Handle tool options here because now we know whether the PBES has counter example information.
@@ -479,7 +479,7 @@ class pbessolve_tool
       }
     }
     
-    bool has_counter_example = detail::has_counter_example_information(pbesspec);
+    bool has_counter_example = detail::has_counter_example_information(p.transformed_pbes);
     if (has_counter_example)
     {      
         mCRL2log(mcrl2::log::warning) << "Warning: Cannot use partial solving with PBES that has counter example information, using strategy 0 instead." << std::endl;
@@ -510,11 +510,11 @@ class pbessolve_tool
 
     if (options.optimization <= partial_solve_strategy::remove_self_loops)
     {
-      run_algorithm<pbesinst_structure_graph_algorithm, pbesinst_counter_example_structure_graph_algorithm>(pbesspec, sigma);
+      run_algorithm<pbesinst_structure_graph_algorithm, pbesinst_counter_example_structure_graph_algorithm>(p, sigma);
     }
     else
     {
-      run_algorithm<pbesinst_structure_graph_algorithm2, pbesinst_counter_example_structure_graph_algorithm2>(pbesspec, sigma);
+      run_algorithm<pbesinst_structure_graph_algorithm2, pbesinst_counter_example_structure_graph_algorithm2>(p, sigma);
     }
     return true;
   }

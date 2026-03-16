@@ -15,6 +15,7 @@
 #include "mcrl2/atermpp/standard_containers/deque.h"
 #include "mcrl2/atermpp/standard_containers/indexed_set.h"
 #include "mcrl2/atermpp/standard_containers/vector.h"
+#include "mcrl2/pbes/extended_pbes.h"
 #include "mcrl2/pbes/pbesinst_fatal_attractors.h"
 #include "mcrl2/pbes/pbesinst_find_loops.h"
 #include "mcrl2/pbes/pbesinst_partial_solve.h"
@@ -515,7 +516,7 @@ class pbesinst_structure_graph_algorithm2: public pbesinst_structure_graph_algor
 
     pbesinst_structure_graph_algorithm2(
       const pbessolve_options& options,
-      const pbes& p,
+      const extended_pbes& p,
       structure_graph& G,
       std::optional<data::rewriter> rewriter = std::nullopt
     )
