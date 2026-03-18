@@ -69,7 +69,6 @@ public:
   explicit term_list(const aterm& t) noexcept
     : aterm(t)
   {
-    // assert(!defined() || type_is_list());
     assert(type_is_list());  // A list should not be a default aterm. 
   }
 
