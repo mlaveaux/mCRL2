@@ -19,6 +19,7 @@
 #include "mcrl2/pbes/detail/pbes_io.h"
 #include "mcrl2/pbes/detail/pbes_remove_counterexample_info.h"
 #include "mcrl2/pbes/detail/pbessolve_algorithm.h"
+#include "mcrl2/pbes/io.h"
 #include "mcrl2/pbes/pbes.h"
 #include "mcrl2/pbes/pbes_expression.h"
 #include "mcrl2/pbes/pbesinst_structure_graph.h"
@@ -51,7 +52,7 @@ class pbesinst_symbolic_counter_example_structure_graph_algorithm: public pbesin
 public:
   pbesinst_symbolic_counter_example_structure_graph_algorithm(structure_graph& G,
     const pbessolve_options& options,
-    const pbes& p,
+    const extended_pbes& p,
     bool _alpha,
     const std::unordered_map<core::identifier_string, data::data_expression>& _propvar_map,
     const std::vector<symbolic::data_expression_index>& _data_index,
@@ -66,8 +67,8 @@ public:
       Vall(Vall_),
       data_index(_data_index),
       propvar_map(_propvar_map),
-      X_false(p.equations()[p.equations().size() - 2].variable().name()),
-      X_true(p.equations()[p.equations().size() - 1].variable().name())
+      X_false(p.original_pbes.equations()[p.original_pbes.equations().size() - 2].variable().name()),
+      X_true(p.original_pbes.equations()[p.original_pbes.equations().size() - 1].variable().name())
   {}
 
   std::function<pbes_expression(const propositional_variable_instantiation&)> phi_substitution(
@@ -461,11 +462,11 @@ class pbessolvesymbolic_tool: public parallel_tool<rewriter_tool<input_output_to
     {}
 
     template<typename PbesReachAlgorithm, typename PbesInstAlgorithm>
-    void solve(pbes_system::pbes pbesspec, symbolic_reachability_options& options_)
+    void solve(pbes_system::extended_pbes pbesspec, symbolic_reachability_options& options_)
     {
       using namespace sylvan::ldds;
 
-      bool has_counter_example = mcrl2::pbes_system::detail::has_counter_example_information(pbesspec);
+      bool has_counter_example = mcrl2::pbes_system::detail::has_counter_example_information(pbesspec.original_pbes);
       if (has_counter_example && (options_.solve_strategy == 5 || options_.solve_strategy == 6))
       {
         // TODO: Cannot use the partial solvers.
@@ -492,16 +493,16 @@ class pbessolvesymbolic_tool: public parallel_tool<rewriter_tool<input_output_to
       }
 
       // This has to be done consistently with the LPS for the counter examples.
-      data::mutable_map_substitution<> sigma = pbes_system::detail::instantiate_global_variables(pbesspec);
-      pbes_system::detail::replace_global_variables(pbesspec, sigma);
-      pbes_system::srf_pbes_with_ce pre_srf_pbes = preprocess(pbesspec, options_);
+      data::mutable_map_substitution<> sigma = pbes_system::detail::instantiate_global_variables(pbesspec.original_pbes);
+      pbes_system::detail::replace_global_variables(pbesspec.original_pbes, sigma);
+      pbes_system::srf_pbes_with_ce pre_srf_pbes = preprocess(pbesspec.original_pbes, options_);
 
       mCRL2log(log::trace) << "============== Pre-SRF PBES ==============" << std::endl;
       mCRL2log(log::trace) << pre_srf_pbes.to_pbes() << std::endl;
 
       pbes_system::srf_pbes srf_pbes = pre_srf2srfpbes(pre_srf_pbes);
 
-      pbesspec = pre_srf_pbes.to_pbes();
+      pbesspec.original_pbes = pre_srf_pbes.to_pbes();
       if (options_.info)
       {
         PbesReachAlgorithm reach(srf_pbes, options_);
@@ -626,8 +627,8 @@ class pbessolvesymbolic_tool: public parallel_tool<rewriter_tool<input_output_to
 
             // Based on the result remove the unnecessary equations related to counter example information.
             mCRL2log(log::verbose) << "Removing unnecessary counter example information for other player." << std::endl;
-            pbes_system::pbes pbesspec_simplified = mcrl2::pbes_system::detail::remove_counterexample_info(pbesspec, !result, result);
-            mCRL2log(log::trace) << pbesspec_simplified << std::endl;
+            pbesspec.original_pbes = mcrl2::pbes_system::detail::remove_counterexample_info(pbesspec.original_pbes, !result, result);
+            mCRL2log(log::trace) << pbesspec.original_pbes << std::endl;
 
             structure_graph SG;
 
@@ -639,8 +640,8 @@ class pbessolvesymbolic_tool: public parallel_tool<rewriter_tool<input_output_to
             pbessolve_options.remove_unused_rewrite_rules = options_.remove_unused_rewrite_rules;
             pbessolve_options.check_strategy = options_.check_strategy;
             pbessolve_options.number_of_threads = 1; // If we spawn multiple threads here, the threads of Sylvan and the explicit exploration will interfere
-
-            PbesInstAlgorithm second_instantiate(SG, pbessolve_options, pbesspec_simplified, !result, reach.propvar_map(), reach.data_index(), G.players(V)[result ? 0 : 1], V, result ? solution.strategy[0] : solution.strategy[1], reach.rewriter());
+            
+            PbesInstAlgorithm second_instantiate(SG, pbessolve_options, pbesspec, !result, reach.propvar_map(), reach.data_index(), G.players(V)[result ? 0 : 1], V, result ? solution.strategy[0] : solution.strategy[1], reach.rewriter());
 
             // Perform the second instantiation given the proof graph.
             timer().start("second-instantiation");
@@ -650,7 +651,7 @@ class pbessolvesymbolic_tool: public parallel_tool<rewriter_tool<input_output_to
             mCRL2log(log::verbose) << "Number of vertices in the structure graph: "
                                   << SG.all_vertices().size() << std::endl;
             [[maybe_unused]]
-            bool final_result = pbes_system::detail::run_solve(pbesspec, sigma, SG, second_instantiate.equation_index(), pbessolve_options, input_filename(), lpsfile, ltsfile, evidence_file, timer());
+            bool final_result = pbes_system::detail::run_solve(pbesspec.original_pbes, sigma, SG, second_instantiate.equation_index(), pbessolve_options, input_filename(), lpsfile, ltsfile, evidence_file, timer());
             if (result != final_result)
             {
               throw mcrl2::runtime_error("The result of the first and second instantiations do not match, this is a bug in the tool!");
@@ -671,9 +672,10 @@ class pbessolvesymbolic_tool: public parallel_tool<rewriter_tool<input_output_to
 
       mCRL2log(log::verbose) << options << std::endl;
 
-      pbes_system::pbes pbesspec = pbes_system::detail::load_pbes(input_filename());
+      pbes_system::extended_pbes pbesspec;
+      pbes_system::detail::load_extended_pbes(pbesspec, input_filename());
 
-      if (pbesspec.initial_state().empty())
+      if (pbesspec.original_pbes.initial_state().empty())
       {
         throw mcrl2::runtime_error("PBESses without parameters are not supported");
       }
