@@ -74,13 +74,13 @@ class pbesfixpointsolve_tool: public pbes_input_tool<pbes_output_tool<pbes_rewri
 
       m_options.rewrite_strategy = rewrite_strategy();
                  
-      pbes p;
-      load_pbes(p, input_filename(), pbes_input_format());
-      complete_data_specification(p);
-      algorithms::normalize(p);
+      extended_pbes p;
+      load_extended_pbes(p, input_filename(), pbes_input_format());
+      complete_data_specification(p.transformed_pbes);
+      algorithms::normalize(p.transformed_pbes);
       pbesfixpointsolve_pbes_fixpoint_iterator fixpoint_iterator;
-      fixpoint_iterator.run(p, m_options);
-      save_pbes(p, output_filename(), pbes_output_format());
+      fixpoint_iterator.run(p.transformed_pbes, m_options);
+      save_extended_pbes(p, output_filename(), pbes_output_format());
       
       log::logger::set_reporting_level(log::status);
       bool result = mcrl2::pbes_system::detail::pbessolve(p);
