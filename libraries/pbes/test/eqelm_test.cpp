@@ -13,6 +13,8 @@
 #include <boost/test/included/unit_test.hpp>
 #include "mcrl2/pbes/detail/pbessolve_algorithm.h"
 #include "mcrl2/pbes/detail/pbes_property_map.h"
+
+#include "mcrl2/pbes/extended_pbes.h"
 #include "mcrl2/pbes/eqelm.h"
 #include "mcrl2/pbes/rewriter.h"
 #include "mcrl2/pbes/txt2pbes.h"
@@ -116,8 +118,13 @@ void test_eqelm(const std::string& pbes_spec, const bool expected_outcome)
   pbes_eqelm_algorithm<pbes_expression, data::rewriter, my_pbes_rewriter> algorithm(datar, pbesr);
   algorithm.run(q);
 
-  bool solution_p = pbes_system::detail::pbessolve(p);
-  bool solution_q = pbes_system::detail::pbessolve(q);
+
+  bool solution_p = pbes_system::detail::pbessolve(extended_pbes {
+    .original_pbes = p,
+  });
+  bool solution_q = pbes_system::detail::pbessolve(extended_pbes {
+    .original_pbes = q,
+  });
   BOOST_CHECK(solution_p == expected_outcome);
   BOOST_CHECK(solution_q == expected_outcome);
 }
