@@ -10,6 +10,7 @@
 #ifndef MCRL2_PBES_DETAIL_PBESSOLVE_ALGORITHM_H
 #define MCRL2_PBES_DETAIL_PBESSOLVE_ALGORITHM_H
 
+#include "mcrl2/pbes/detail/instantiate_global_variables.h"
 #include "mcrl2/pbes/extended_pbes.h"
 #include "mcrl2/pbes/io.h"
 #include "mcrl2/pbes/pbessolve_options.h"
@@ -266,81 +267,6 @@ class pbessolve_tool
   {
   }
 
-  /// \brief Sanity checks for guessing the redundant parameters between two PBESs.
-  /// \param Xparams A list of parameters of a pbes equation X.
-  /// \param X_hatparams A list of parameters of a pbes equation X_hat.
-  void check_param_match(const mcrl2::data::variable_list Xparams,
-    const mcrl2::data::variable_list X_hatparams)
-  {
-    if (Xparams.size() < X_hatparams.size())
-    {
-      throw mcrl2::runtime_error("An equation from the original PBES has fewer parameters than the first PBES.");
-    }
-    for (mcrl2::data::variable p: X_hatparams)
-    {
-      auto it = std::find(Xparams.begin(), Xparams.end(), p);
-      if (it == Xparams.end())
-      {
-        throw mcrl2::runtime_error("An equation parameter from the first PBES was not found in the original PBES.");
-      }
-    }
-  }
-
-  /// \brief Returns the difference between two lists of pbes equation parameters.
-  /// \param Xparams A list of parameters of a pbes equation X.
-  /// \param X_hatparams A list of parameters of a pbes equation X_hat.
-  /// \return A set R of positions of parameters that occur in X, but not in X_hat. 
-  std::set<int> get_param_difference(const mcrl2::data::variable_list Xparams,
-    const mcrl2::data::variable_list X_hatparams)
-  {
-    std::set<int> R = {};
-    data::data_expression_vector params(Xparams.begin(), Xparams.end());
-    data::data_expression_vector params_hat(X_hatparams.begin(), X_hatparams.end());
-    check_param_match(Xparams, X_hatparams);
-
-    for (std::vector<mcrl2::data::data_expression>::size_type i = 0; i < params.size(); i++)
-    {
-      auto it = std::find(X_hatparams.begin(), X_hatparams.end(), params[i]);
-      if (it == X_hatparams.end())
-      {
-        mCRL2log(log::debug) << params[i] << " is redundant" << std::endl;
-        R.insert(i);
-      }
-    }
-    return R;
-  }
-
-  /// \brief Compares two PBESs to guess, for each equation `sigma X(d: D) = ...`, which parameters in `d: D` are redundant in X.
-  /// Records the position of a parameter `d` in R[X] when `d` is a param of X in the second pbes, but not in the first one.
-  /// \param first A pbes.
-  /// \param second The version of the first pbes before pbesparelm.
-  /// \return A mapping R of equation variables X from pbes `second` to positions of parameters that are redundant in X.
-  std::unordered_map<std::string, std::set<int>> construct_R(pbes_system::pbes first, pbes_system::pbes second)
-  {
-    std::unordered_map<std::string, std::set<int>> R = {};
-    for (pbes_equation e: second.equations())
-    {
-      bool found = false;
-      for (pbes_equation e_hat: first.equations())
-      {
-        if (e.variable().name() == e_hat.variable().name())
-        {
-          found = true;
-          pbes_system::propositional_variable X = e.variable();
-          pbes_system::propositional_variable X_hat = e_hat.variable();
-          mCRL2log(log::debug) << "found " << X.name() << " from " << original_pbes_file << " as " << X_hat.name()
-                               << std::endl;
-          R[X.name()] = get_param_difference(X.parameters(), X_hat.parameters());
-        }
-      }
-      if (!found)
-      {
-        throw mcrl2::runtime_error("An equation from the original PBES was not found in the first PBES.");
-      }
-    }
-    return R;
-  }
-
   template <typename PbesInstAlgorithm, typename PbesInstAlgorithmCE>
   void run_algorithm(pbes_system::extended_pbes& p,
     const data::mutable_map_substitution<>& sigma)
@@ -349,18 +275,8 @@ class pbessolve_tool
     bool has_counter_example = detail::has_counter_example_information(pbesspec);
     if (has_counter_example)
     {
-      if (lpsfile.empty() && ltsfile.empty())
-      {
-        mCRL2log(log::warning)
-            << "Warning: the PBES has counter example information, but no witness will be generated due to lack of --file"
-            << std::endl;
-      }
-    }
-    else if ((!lpsfile.empty() || !ltsfile.empty()))
-    {
-      mCRL2log(log::warning)
-          << "Warning: the PBES has no counter example information. Did you "
-            "use the --counter-example option when generating the PBES?"
+      mCRL2log(log::debug)
+          << "Warning: the transformed PBES has counter example information, this should not happen."
           << std::endl;
     }
 
@@ -401,17 +317,11 @@ class pbessolve_tool
       timer().finish("first-solving");
       mCRL2log(log::log_level_t::verbose) << (result ? "true" : "false") << std::endl;
 
-      // Use custom PBES for the second round of solving if provided.
-      pbes_system::pbes second_pbes = pbesspec;
-      std::unordered_map<std::string, std::set<int>> R = {};
-      if (!original_pbes_file.empty())
-      {
-        pbes_system::pbes original_pbes = pbes_system::detail::load_pbes(original_pbes_file);
-        R = construct_R(pbesspec, original_pbes);
-        mCRL2log(log::verbose) << "Using provided custom PBES for the second round of solving." << std::endl;
-        pbes_system::detail::replace_global_variables(original_pbes, sigma);
-        second_pbes = original_pbes;
-      }
+      // Use original PBES for the second round of solving.
+      pbes_system::pbes second_pbes = p.original_pbes;
+      std::unordered_map<std::string, std::set<int>> R = parelm_info(p.transformations);
+      mCRL2log(log::verbose) << "Using original PBES for the second round of solving." << std::endl;
+      pbes_system::detail::replace_global_variables(second_pbes, sigma);
       // Based on the result remove the unnecessary equations related to counter example information. 
       mCRL2log(log::verbose) << "Removing unnecessary example information for other player." << std::endl;
       p.transformed_pbes = detail::remove_counterexample_info(second_pbes, !result, result);

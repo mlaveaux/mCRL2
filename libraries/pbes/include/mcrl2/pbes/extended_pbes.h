@@ -31,7 +31,7 @@ struct extended_pbes {
     lps::stochastic_specification original_lps;
 
     /// Additional information from transformations on the core PBES.
-    atermpp::aterm_list transformations;
+    atermpp::aterm_list transformations; // TODO we should protect this such that only the right tool can edit its respective transformation info.
 };
 
 /// \brief Gets the transformation done by `pbesparelm` and converts it into a mapping that can be used by `pbessolve`.

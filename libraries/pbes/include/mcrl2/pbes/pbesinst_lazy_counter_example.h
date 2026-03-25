@@ -230,15 +230,13 @@ public:
       const std::unordered_map<pbes_expression, structure_graph::index_type>& _mapping,
       structure_graph& G,
       std::optional<data::rewriter> rewriter = std::nullopt,
-      const std::unordered_map<std::string, std::set<int>> _R = {})
+      const std::unordered_map<std::string, std::set<int>> R = {})
       : pbesinst_structure_graph_algorithm(options, p, G, rewriter),
         G(SG),
         alpha(_alpha),
         mapping(_mapping),
-        R(_R)
+        R(R)
   {}
-  // TODO ensure that the PVIs in mapping match the shape of the
-  // vertices in G after they are rewritten with R.
 
   std::function<pbes_expression(const propositional_variable_instantiation&)> phi_substitution(
     const std::size_t thread_index,
