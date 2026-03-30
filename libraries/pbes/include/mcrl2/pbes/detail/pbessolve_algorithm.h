@@ -10,6 +10,7 @@
 #ifndef MCRL2_PBES_DETAIL_PBESSOLVE_ALGORITHM_H
 #define MCRL2_PBES_DETAIL_PBESSOLVE_ALGORITHM_H
 
+#include "mcrl2/lps/stochastic_specification.h"
 #include "mcrl2/pbes/detail/instantiate_global_variables.h"
 #include "mcrl2/pbes/extended_pbes.h"
 #include "mcrl2/pbes/io.h"
@@ -39,28 +40,24 @@ using mcrl2::utilities::tools::input_tool;
 using utilities::tools::parallel_tool;
 
 inline
-bool run_solve(const pbes_system::pbes& pbesspec, 
+bool run_solve(pbes_system::extended_pbes& pbesspec, 
   const data::mutable_map_substitution<>& sigma,
   structure_graph& G,
   const pbes_equation_index& equation_index,  
   pbessolve_options options,
   const std::string& input_filename,
-  const std::string& lpsfile,
-  const std::string& ltsfile,
   std::string evidence_file,
   mcrl2::utilities::execution_timer& timer)
 {  
   bool result;
-  if (!lpsfile.empty())
+  if (pbesspec.original_lps != lps::specification())
   {
-    lps::specification lpsspec;
-    lps::load_lps(lpsspec, lpsfile);
-    lps::detail::replace_global_variables(lpsspec, sigma);
+    lps::detail::replace_global_variables(pbesspec.original_lps, sigma);
           
     lps::specification evidence;
     timer.start("solving");
     std::tie(result, evidence) = solve_structure_graph_with_counter_example(
-        G, lpsspec, pbesspec, equation_index);
+        G, pbesspec.original_lps, pbesspec.original_pbes, equation_index);
     timer.finish("solving");
 
     std::cout << (result ? "true" : "false") << std::endl;
@@ -73,21 +70,18 @@ bool run_solve(const pbes_system::pbes& pbesspec,
         << "Saved " << (result ? "witness" : "counter example") << " in "
         << evidence_file << std::endl;
   }
-  else if (!ltsfile.empty())
+  else if (pbesspec.original_lts != lts::lts_lts_t())
   {
-    lts::lts_lts_t ltsspec;
-    ltsspec.load(ltsfile);
-
     lts::lts_lts_t evidence;
     timer.start("solving");
-    result = solve_structure_graph_with_counter_example(G, ltsspec);
+    result = solve_structure_graph_with_counter_example(G, pbesspec.original_lts);
     timer.finish("solving");
     std::cout << (result ? "true" : "false") << std::endl;
     if (evidence_file.empty())
     {
       evidence_file = input_filename + ".evidence.lts";
     }
-    ltsspec.save(evidence_file);
+    pbesspec.original_lts.save(evidence_file);
     mCRL2log(log::verbose)
         << "Saved " << (result ? "witness" : "counter example") << " in "
         << evidence_file << std::endl;
@@ -112,8 +106,6 @@ class pbessolve_tool
     pbessolve_options options;
     int m_short_strategy = 0;
     partial_solve_strategy m_long_strategy = partial_solve_strategy::no_optimisation;
-    std::string lpsfile;
-    std::string ltsfile;
     std::string evidence_file;
     std::string original_pbes_file;
 
@@ -127,16 +119,6 @@ class pbessolve_tool
               .add_value_desc(depth_first, ""),
           "Use search strategy NAME:",
           'z');
-      desc.add_option("file",
-          utilities::make_file_argument("NAME"),
-          "The file containing the LPS or LTS that was used to "
-          "generate the PBES using lps2pbes -c. If this "
-          "option is set, a counter example or witness for the "
-          "encoded property will be generated. The "
-          "extension of the file should be .lps in case of an LPS "
-          "file, in all other cases it is assumed to "
-          "be an LTS.",
-          'f');
       desc.add_option("prune-todo-list", "Prune the todo list periodically.");
       desc.add_hidden_option("naive-counter-example-instantiation",
           "run the naive instantiation algorithm for pbes with counter example information");
@@ -210,20 +192,6 @@ class pbessolve_tool
     options.rewrite_strategy = rewrite_strategy();
     options.number_of_threads = number_of_threads();
     options.naive_counter_example_instantiation = parser.has_option("naive-counter-example-instantiation");
-
-    if (parser.has_option("file"))
-    {
-      std::string filename = parser.option_argument("file");
-      if (mcrl2::utilities::file_extension(filename) == "lps")
-      {
-        lpsfile = filename;
-      }
-      else
-      {
-        ltsfile = filename;
-      }
-    }
-
     if (parser.has_option("evidence-file"))
     {
       if (!parser.has_option("file"))
@@ -291,7 +259,7 @@ class pbessolve_tool
       instantiate.run();
       timer().finish("instantiation");
 
-      detail::run_solve(pbesspec, sigma, G, instantiate.equation_index(), options, input_filename(), lpsfile, ltsfile, evidence_file, timer());
+      detail::run_solve(p, sigma, G, instantiate.equation_index(), options, input_filename(), evidence_file, timer());
     }
     else
     {
@@ -338,7 +306,7 @@ class pbessolve_tool
       mCRL2log(log::verbose) << "Number of vertices in the structure graph: "
                              << G.all_vertices().size() << std::endl;
       
-      bool final_result = detail::run_solve(pbesspec, sigma, G, second_instantiate.equation_index(), options, input_filename(), lpsfile, ltsfile, evidence_file, timer());
+      bool final_result = detail::run_solve(p, sigma, G, second_instantiate.equation_index(), options, input_filename(), evidence_file, timer());
       if(result != final_result) {
         throw mcrl2::runtime_error("The result of the second instantiation does not match the first instantiation. This is a bug in the tool!");
       }
@@ -352,13 +320,10 @@ class pbessolve_tool
     pbes_system::algorithms::normalize(p.transformed_pbes);
     data::mutable_map_substitution<> sigma;
 
-    if (!lpsfile.empty())
-    {
-      // Make sure that the global variables of the LPS and the PBES get the
-      // same values
-      sigma = pbes_system::detail::instantiate_global_variables(p.transformed_pbes);
-      pbes_system::detail::replace_global_variables(p.transformed_pbes, sigma);
-    }
+    // Make sure that the global variables of the LPS and the PBES get the
+    // same values
+    sigma = pbes_system::detail::instantiate_global_variables(p.transformed_pbes);
+    lps::detail::replace_global_variables(p.original_lps, sigma);
 
     // Handle tool options here because now we know whether the PBES has counter example information.
     if (m_long_strategy > partial_solve_strategy::no_optimisation)

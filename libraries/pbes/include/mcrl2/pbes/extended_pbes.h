@@ -18,6 +18,7 @@
 #include "mcrl2/core/detail/function_symbols.h"
 #include "mcrl2/pbes/pbes.h"
 #include "mcrl2/lps/io.h"
+#include "mcrl2/lts/lts_lts.h"
 
 namespace mcrl2::pbes_system {
 
@@ -28,7 +29,9 @@ struct extended_pbes {
     /// The original PBES that contains counter example information.
     pbes original_pbes;
     /// The original LPS used to generate the PBES.
-    lps::stochastic_specification original_lps;
+    lps::specification original_lps;
+    /// The original LTS used to generate the PBES.
+    lts::lts_lts_t original_lts;
 
     /// Additional information from transformations on the core PBES.
     atermpp::aterm_list transformations; // TODO we should protect this such that only the right tool can edit its respective transformation info.
