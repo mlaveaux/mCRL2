@@ -185,16 +185,19 @@ protected:
         mCRL2log(log::verbose) << "Writing PBES to file '" <<  output_filename() << "'..." << std::endl;
       }
 
-      // If --counter-example is used we return an extended PBES, and otherwise a plain PBES.
+      // If --counter-example is used we return an extended PBES with source pbes and source lps, and otherwise a plain extended PBES.
       if (generate_counter_example) {
         pbes transformed_pbes = mcrl2::pbes_system::detail::remove_counterexample_info(result);
 
         save_extended_pbes(extended_pbes {
           .transformed_pbes=transformed_pbes,
           .source_pbes=result,
+          .source_lps=plain_lpsspec
         }, output_filename(), pbes_output_format());
       } else {
-        save_pbes(result, output_filename(), pbes_output_format());
+        save_extended_pbes(extended_pbes {
+          .transformed_pbes=result
+        }, output_filename(), pbes_output_format());
       }
       return true;
     }
