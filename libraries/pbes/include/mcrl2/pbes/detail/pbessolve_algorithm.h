@@ -107,7 +107,6 @@ class pbessolve_tool
     int m_short_strategy = 0;
     partial_solve_strategy m_long_strategy = partial_solve_strategy::no_optimisation;
     std::string evidence_file;
-    std::string original_pbes_file;
 
     void add_options(utilities::interface_description& desc) override
     {
@@ -163,14 +162,6 @@ class pbessolve_tool
       desc.add_hidden_option("no-replace-constants-by-variables", "Do not move constant expressions to a substitution.");
       desc.add_hidden_option("aggressive", "Apply optimizations 4 and 5 at every iteration.");
       desc.add_hidden_option("prune-todo-alternative", "Use a variation of todo list pruning.");
-      desc.add_option("original-pbes",
-        utilities::make_file_argument("NAME"),
-        "In the second round of solving, use a different PBES than in the first round. "
-        "Use case: First solve a PBES reduced by the pbesparelm tool, and then use "
-        "the original PBES (provided as --original-pbes) to obtain the final solution. "
-        "The original PBES MUST be provided in order to get the right result when "
-        "transformations have been applied."
-        "N.B. This has no effect when using --naive-counter-example-instantiation.");
   }
 
   void parse_options(const utilities::command_line_parser& parser) override
@@ -209,11 +200,6 @@ class pbessolve_tool
     else
     {
       m_short_strategy = parser.option_argument_as<int>("solve-strategy");
-    }
-
-    if (parser.has_option("original-pbes"))
-    {
-      original_pbes_file = parser.option_argument("original-pbes");
     }
   }
 
