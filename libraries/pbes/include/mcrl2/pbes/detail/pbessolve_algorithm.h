@@ -50,14 +50,14 @@ bool run_solve(pbes_system::extended_pbes& pbesspec,
   mcrl2::utilities::execution_timer& timer)
 {  
   bool result;
-  if (pbesspec.original_lps != lps::specification())
+  if (pbesspec.source_lps != lps::specification())
   {
-    lps::detail::replace_global_variables(pbesspec.original_lps, sigma);
+    lps::detail::replace_global_variables(pbesspec.source_lps, sigma);
           
     lps::specification evidence;
     timer.start("solving");
     std::tie(result, evidence) = solve_structure_graph_with_counter_example(
-        G, pbesspec.original_lps, pbesspec.original_pbes, equation_index);
+        G, pbesspec.source_lps, pbesspec.source_pbes, equation_index);
     timer.finish("solving");
 
     std::cout << (result ? "true" : "false") << std::endl;
@@ -70,18 +70,18 @@ bool run_solve(pbes_system::extended_pbes& pbesspec,
         << "Saved " << (result ? "witness" : "counter example") << " in "
         << evidence_file << std::endl;
   }
-  else if (pbesspec.original_lts != lts::lts_lts_t())
+  else if (pbesspec.source_lts != lts::lts_lts_t())
   {
     lts::lts_lts_t evidence;
     timer.start("solving");
-    result = solve_structure_graph_with_counter_example(G, pbesspec.original_lts);
+    result = solve_structure_graph_with_counter_example(G, pbesspec.source_lts);
     timer.finish("solving");
     std::cout << (result ? "true" : "false") << std::endl;
     if (evidence_file.empty())
     {
       evidence_file = input_filename + ".evidence.lts";
     }
-    pbesspec.original_lts.save(evidence_file);
+    pbesspec.source_lts.save(evidence_file);
     mCRL2log(log::verbose)
         << "Saved " << (result ? "witness" : "counter example") << " in "
         << evidence_file << std::endl;
@@ -271,10 +271,10 @@ class pbessolve_tool
       timer().finish("first-solving");
       mCRL2log(log::log_level_t::verbose) << (result ? "true" : "false") << std::endl;
 
-      // Use original PBES for the second round of solving.
-      pbes_system::pbes second_pbes = p.original_pbes;
+      // Use source PBES for the second round of solving.
+      pbes_system::pbes second_pbes = p.source_pbes;
       std::unordered_map<std::string, std::set<int>> R = parelm_info(p.transformations);
-      mCRL2log(log::verbose) << "Using original PBES for the second round of solving." << std::endl;
+      mCRL2log(log::verbose) << "Using source PBES for the second round of solving." << std::endl;
       pbes_system::detail::replace_global_variables(second_pbes, sigma);
       // Based on the result remove the unnecessary equations related to counter example information. 
       mCRL2log(log::verbose) << "Removing unnecessary example information for other player." << std::endl;
@@ -309,7 +309,7 @@ class pbessolve_tool
     // Make sure that the global variables of the LPS and the PBES get the
     // same values
     sigma = pbes_system::detail::instantiate_global_variables(p.transformed_pbes);
-    lps::detail::replace_global_variables(p.original_lps, sigma);
+    lps::detail::replace_global_variables(p.source_lps, sigma);
 
     // Handle tool options here because now we know whether the PBES has counter example information.
     if (m_long_strategy > partial_solve_strategy::no_optimisation)

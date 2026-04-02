@@ -120,10 +120,10 @@ void test_eqelm(const std::string& pbes_spec, const bool expected_outcome)
 
 
   bool solution_p = pbes_system::detail::pbessolve(extended_pbes {
-    .original_pbes = p,
+    .source_pbes = p,
   });
   bool solution_q = pbes_system::detail::pbessolve(extended_pbes {
-    .original_pbes = q,
+    .source_pbes = q,
   });
   BOOST_CHECK(solution_p == expected_outcome);
   BOOST_CHECK(solution_q == expected_outcome);

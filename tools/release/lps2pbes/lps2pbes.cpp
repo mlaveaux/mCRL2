@@ -191,7 +191,7 @@ protected:
 
         save_extended_pbes(extended_pbes {
           .transformed_pbes=transformed_pbes,
-          .original_pbes=result,
+          .source_pbes=result,
         }, output_filename(), pbes_output_format());
       } else {
         save_pbes(result, output_filename(), pbes_output_format());

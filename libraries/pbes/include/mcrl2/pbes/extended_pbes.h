@@ -23,17 +23,19 @@
 namespace mcrl2::pbes_system {
 
 struct extended_pbes {
-    /// The core PBES.
+    /// The core PBES (no cex-variables, no cex-equations)
     pbes transformed_pbes;
 
-    /// The original PBES that contains counter example information.
-    pbes original_pbes;
-    /// The original LPS used to generate the PBES.
-    lps::specification original_lps;
-    /// The original LTS used to generate the PBES.
-    lts::lts_lts_t original_lts;
+    /// The source PBES that contains counter example information.
+    pbes source_pbes;
 
-    /// Additional information from transformations on the core PBES.
+    /// The LPS used to generate the PBES.
+    lps::specification source_lps;
+    
+    /// The LTS used to generate the PBES.
+    lts::lts_lts_t source_lts;
+
+    /// Additional information from transformations on the transformed PBES.
     atermpp::aterm_list transformations; // TODO we should protect this such that only the right tool can edit its respective transformation info.
 };
 
