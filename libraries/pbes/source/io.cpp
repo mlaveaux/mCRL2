@@ -16,6 +16,7 @@
 #include "mcrl2/pbes/join.h"
 #include "mcrl2/pbes/parse.h"
 #include "mcrl2/pbes/normal_forms.h"
+#include "mcrl2/pbes/pg_parse.h"
 
 
 
@@ -89,8 +90,11 @@ void load_pbes(pbes& pbes, std::istream& stream, utilities::file_format format, 
   {
     atermpp::binary_aterm_istream(stream) >> pbes;
   }
-  else
-  if (format == pbes_format_text())
+  else if (format == pbes_format_pgsolver())
+  {
+    parse_pgsolver(stream, pbes);
+  }
+  else if (format == pbes_format_text())
   {
     stream >> pbes;
   }
