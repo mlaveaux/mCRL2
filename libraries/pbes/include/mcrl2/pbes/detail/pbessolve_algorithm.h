@@ -246,11 +246,6 @@ class pbessolve_tool
     }
   }
 
-  std::set<utilities::file_format> available_input_formats() const override
-  {
-    return {pbes_system::pbes_format_internal()};
-  }
-
   public:
   pbessolve_tool(const std::string& toolname)
       : super(toolname, "Wieger Wesselink",
@@ -403,7 +398,9 @@ class pbessolve_tool
       std::unordered_map<std::string, std::set<int>> R = {};
       if (!original_pbes_file.empty())
       {
-        pbes_system::pbes original_pbes = pbes_system::detail::load_pbes(original_pbes_file);
+        pbes_system::pbes original_pbes;
+        pbes_system::load_pbes(original_pbes, original_pbes_file, pbes_input_format());
+
         R = construct_R(pbesspec, original_pbes);
         mCRL2log(log::verbose) << "Using provided custom PBES for the second round of solving." << std::endl;
         pbes_system::detail::replace_global_variables(original_pbes, sigma);
