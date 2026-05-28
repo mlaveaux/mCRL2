@@ -34,9 +34,9 @@ inline void check_lps2pres_actions(const state_formulas::state_formula& formula,
   std::set<process::action_label> diff = utilities::detail::set_difference(used_state_formula_actions, used_lps_actions);
   if (!diff.empty())
   {
-    mCRL2log(log::warning) << "Warning: the modal formula contains an action "
-                           << *diff.begin()
-                           << " that does not appear in the LPS!" << std::endl;
+    mCRL2log(log::warning) << "Warning: the modal formula contains actions "
+                           << core::detail::print_list(diff)
+                           << " that are in the data specification, but does not appear in the LPS!" << std::endl;
   }
 }
 
