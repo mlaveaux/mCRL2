@@ -12,6 +12,8 @@
 #ifndef MCRL2_PBES_SRF_PBES_H
 #define MCRL2_PBES_SRF_PBES_H
 
+#include <cassert>
+
 #include "mcrl2/atermpp/aterm.h"
 #include "mcrl2/core/detail/print_utility.h"
 #include "mcrl2/data/data_expression.h"
@@ -448,22 +450,16 @@ struct srf_or_traverser : public pbes_expression_traverser<srf_or_traverser<allo
 
   void apply(const forall& x)
   {
-    if (is_simple_expression_cached(x.body(), allow_ce))
-    {
-      const pbes_expression& f = x.body();
-      const propositional_variable_instantiation& X = propositional_variable_instantiation(X_true, {});
-      summands.emplace_back(x.variables(), f, X);
-    }
-    else
-    {
-      const propositional_variable& X = eqn.variable();
-      propositional_variable X1(id_generator(X.name()), V);
-      const pbes_expression& f = true_();
-      equations.emplace_front(eqn.symbol(), X1, x);
-      summands.emplace_back(data::variable_list(),
-          f,
-          propositional_variable_instantiation(X1.name(), data::make_data_expression_list(V)));
-    }
+    // A forall with a simple body is itself simple, so the generic apply(pbes_expression)
+    // handler always intercepts it first. This handler is only reached for non-simple bodies.
+    assert(!is_simple_expression_cached(x.body(), allow_ce));
+    const propositional_variable& X = eqn.variable();
+    propositional_variable X1(id_generator(X.name()), V);
+    const pbes_expression& f = true_();
+    equations.emplace_front(eqn.symbol(), X1, x);
+    summands.emplace_back(data::variable_list(),
+        f,
+        propositional_variable_instantiation(X1.name(), data::make_data_expression_list(V)));
   }
 
   void apply(const propositional_variable_instantiation& x)
@@ -695,22 +691,16 @@ struct srf_and_traverser : public pbes_expression_traverser<srf_and_traverser<al
 
   void apply(const exists& x)
   {
-    if (is_simple_expression_cached(x.body(), allow_ce))
-    {
-      const pbes_expression& f = x.body();
-      const propositional_variable_instantiation& X = propositional_variable_instantiation(X_true, {});
-      summands.emplace_back(x.variables(), f, X);
-    }
-    else
-    {
-      const propositional_variable& X = eqn.variable();
-      propositional_variable X1(id_generator(X.name()), V);
-      const pbes_expression& f = true_();
-      equations.emplace_front(eqn.symbol(), X1, x);
-      summands.emplace_back(data::variable_list(),
-          f,
-          propositional_variable_instantiation(X1.name(), data::make_data_expression_list(V)));
-    }
+    // An exists with a simple body is itself simple, so the generic apply(pbes_expression)
+    // handler always intercepts it first. This handler is only reached for non-simple bodies.
+    assert(!is_simple_expression_cached(x.body(), allow_ce));
+    const propositional_variable& X = eqn.variable();
+    propositional_variable X1(id_generator(X.name()), V);
+    const pbes_expression& f = true_();
+    equations.emplace_front(eqn.symbol(), X1, x);
+    summands.emplace_back(data::variable_list(),
+        f,
+        propositional_variable_instantiation(X1.name(), data::make_data_expression_list(V)));
   }
 
   void apply(const propositional_variable_instantiation& x)
