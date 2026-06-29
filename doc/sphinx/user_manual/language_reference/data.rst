@@ -160,13 +160,13 @@ sort).
 To be more precise, mappings are aliases for an element of a specific sort, and
 can be specified by the following grammar:
 
-.. dparser:: IdsDecl MapSpec
+.. dparser:: MapSpec
 
 Equational specifications give further information about how the elements that
 these aliases represent behave. Equational specifications are given by the
 grammar below.
 
-.. dparser:: VarsDecl VarsDeclList VarSpec EqnDecl EqnSpec
+.. dparser:: VarSpec EqnDecl EqnSpec
 
 Equation systems are optionally preceded by a ``var`` block that defines
 variables that are used in the ``eqn`` block that follows. Variables are used to
@@ -597,8 +597,6 @@ Constructed sorts
 To enable users to quickly specify more complicated sorts without having to
 resort to manually specifying constructors and operations on those sorts, mCRL2
 provides some standard constructs to build new sorts out of existing ones.
-
-.. dparser:: SortExpr
 
 .. index:: ->, #, lambda, ();function application, function application
 

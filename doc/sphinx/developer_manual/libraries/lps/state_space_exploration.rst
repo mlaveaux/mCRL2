@@ -47,7 +47,7 @@ to by means of callback functions. For our purposes we select the following even
 
 .. _table-eventpoints:
 
-.. list-table::
+.. list-table:: Event points
    :widths: 30 70
 
    * - :math:`\textsf{discover\_state}`

@@ -45,10 +45,10 @@ the `University of Twente <http://fmt.cs.utwente.nl>`_.
    The Coursera lectures are now freely available on Youtube, divided in four parts. It is intended
    that the full course including exercises will soon be available on openlearnity.com.
 
-   - `Automata and behavioural equivalences <https://www.youtube.com/watch?v=1brp80vNSy4&list=PLTlBz41EgXBTRm4jcsRwKWoTazWxiieNi>`_.
-   - `Model process behaviour <https://www.youtube.com/watch?v=1yP9kMpkv38&list=PLTlBz41EgXBTmbFWpxMsZRT2vcnxxC6fF>`_.
-   - `Requirements by modal formulas <https://www.youtube.com/watch?v=-vmhNqO16MA&list=PLTlBz41EgXBQ_vIWcFcGJa8_-a8-o19_F>`_.
-   - `Modelling software, protocols, and other behaviour <https://www.youtube.com/watch?v=JV2djZV_dls&list=PLTlBz41EgXBSZPXTzP_MuvbO6MnmTOly6>`_.
+   - `Automata and behavioural equivalences <https://www.youtube.com/watch?v=1brp80vNSy4&list=PLTlBz41EgXBTRm4jcsRwKWoTazWxiieNi>`__.
+   - `Model process behaviour <https://www.youtube.com/watch?v=1yP9kMpkv38&list=PLTlBz41EgXBTmbFWpxMsZRT2vcnxxC6fF>`__.
+   - `Requirements by modal formulas <https://www.youtube.com/watch?v=-vmhNqO16MA&list=PLTlBz41EgXBQ_vIWcFcGJa8_-a8-o19_F>`__.
+   - `Modelling software, protocols, and other behaviour <https://www.youtube.com/watch?v=JV2djZV_dls&list=PLTlBz41EgXBSZPXTzP_MuvbO6MnmTOly6>`__.
 
 .. note::
 

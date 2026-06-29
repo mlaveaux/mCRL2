@@ -90,16 +90,19 @@ substitution function, and let ``v`` be an expression of type ``Rewriter::variab
 Let ``r`` be a ``Rewriter``, let ``d`` be an expression of type ``Rewriter::term_type``
 and let ``sigma`` be a ``SubstitutionFunction``.
 
-.. table:: Expression semantics for Rewriter
+.. list-table:: Expression semantics for Rewriter
+   :widths: 15 85
+   :header-rows: 1
 
-   +-------------+-----------------------------------------------------------------------------------------------------------+
-   | Expression  | Result                                                                                                    |
-   +=============+===========================================================================================================+
-   | r(d)        | Returns an expression of type Rewriter::term_type that is the result of applying the rewriter r to term d |
-   +-------------+-----------------------------------------------------------------------------------------------------------+
-   | r(d, sigma) | Returns an expression of type Rewriter::term_type that is the result of applying the rewriter r to term d, |
-   |             | while on the fly applying the substitution function sigma to all data variables in d.                     |
-   +-------------+-----------------------------------------------------------------------------------------------------------+
+   * - Expression
+     - Result
+   * - ``r(d)``
+     - Returns an expression of type ``Rewriter::term_type`` that is the result
+       of applying the rewriter ``r`` to term ``d``.
+   * - ``r(d, sigma)``
+     - Returns an expression of type ``Rewriter::term_type`` that is the result
+       of applying the rewriter ``r`` to term ``d``, while on the fly applying
+       the substitution function ``sigma`` to all data variables in ``d``.
 
 The mathematical foundations underlying these operations — formal definitions of
 substitutions, rewrite rules, and the abstract rewrite algorithm — are described in

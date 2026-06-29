@@ -202,7 +202,7 @@ A ``ProcessThread`` makes sure that queued processes are run in parallel with th
 It can be in two states: *waiting* or *running*. If it is in state waiting, there is no process
 running for this thread and there is no process in the queue. If it is in state running, there
 is a process currently executing. While in a state it is blocked until it receives a signal
-from outside. See :numref:`fig-procthread` for the behaviour of a ``ProcessThread``. Note that
+from outside. See :ref:`the ProcessThread state diagram <fig-procthread>` for the behaviour of a ``ProcessThread``. Note that
 a ``ProcessThread`` only regulates the running of processes; it does not execute them itself.
 
 .. _fig-procthread:

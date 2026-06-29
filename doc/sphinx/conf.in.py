@@ -51,6 +51,7 @@ extensions = [
     'mcrl2_pygment',
     'sphinx.ext.ifconfig',
     'sphinx.ext.imgmath',
+    'mcrl2_imgmath',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
     'sphinx_rtd_theme',
@@ -92,17 +93,23 @@ html_sidebars = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-html_extra_path = ['@DOXYGEN_OUTPUT_PATH@']
 html_js_files = []
 
 # Tweaking how the "last updated" is displayed
 today_fmt = '%d-%m-%Y'
+
+# Enable numbered figures and tables so :numref: works
+numfig = True
 
 # Suppress warnings about unreferenced citations (there are many on the publications page).
 suppress_warnings = ['ref.citation']
 
 if tags.has('build_doxygen'):
     extensions.append('sphinxcontrib.doxylink')
+    html_extra_path = ['@DOXYGEN_OUTPUT_PATH@']
+    doxylink = {
+        'mcrl2' : ('@DOXYGEN_TAG_PATH@', 'doxygen/')
+    }
 
 if tags.has('build_pdflatex'):
    extensions.append('mcrl2_pdflatex')
@@ -110,10 +117,6 @@ if tags.has('build_pdflatex'):
 if tags.has('build_manual'):
    extensions.append('mcrl2_manual')
 
-doxylink = {
-    'mcrl2' : ('@DOXYGEN_TAG_PATH@', 'doxygen/')
-}
-    
 # -- App setup - executed before the build process starts --------------------
 def setup(app):
     os.makedirs(_SPHINX_BUILD_TEMP_DIR, mode = 0o755, exist_ok = True)

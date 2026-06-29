@@ -11,8 +11,6 @@ structures respectively. However, since these are all closely related we put the
 documentation together here.
 
 
-.. include:: list_decision_diagrams.rst
-
 Symbolic Reachability
 ---------------------
 
@@ -21,5 +19,6 @@ See :doc:`symbolic-reachability`.
 .. toctree::
 	:maxdepth: 1
 
+	list_decision_diagrams
 	symbolic-reachability
 	zielonka
