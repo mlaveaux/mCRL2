@@ -74,7 +74,7 @@ struct summand_class
   data::data_expression f;
   data::data_expression_list g;
   /// \brief Encodes the dependency relation belonging to this summand_class
-  /// \detail nxt[i] contains j iff X_i --this--> X_j
+  /// \details nxt[i] contains j iff X_i --this--> X_j
   std::vector<std::set<std::size_t>> nxt;
   summand_set NES;
   summand_set DNA;

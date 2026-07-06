@@ -122,7 +122,7 @@ inline bool allow_(const detail::allow_list_cache& allow_cache,
 ///
 /// \param blocked_actions is a list of action names that are blocked.
 /// \param multi_action contains a multiaction a1(d1)|...|an(dn)
-/// \returns \exists i: ai \in encap_list
+/// \returns \f$\exists i: a_i \in encap\_list\f$
 template <typename Container>
 bool encap(const Container& blocked_actions, const process::action_list& multiaction)
 {
@@ -161,7 +161,7 @@ bool encap(const Container& blocked_actions, const process::action_list& multiac
 ///
 /// \param encap_list is a list of action_name_multisets of size 1. Its single element contains all the blocked actions.
 /// \param multi_action contains a multiaction a1(d1)|...|an(dn)
-/// \returns \exists i: ai \in encap_list
+/// \returns \f$\exists i: a_i \in encap\_list\f$
 inline bool encap(const process::action_name_multiset_list& encaplist, const process::action_list& multiaction)
 {
   assert(encaplist.size() == 1);

@@ -24,15 +24,15 @@ enum t_reach { unknown, reached, explored };
 /// \brief This procedure calculates the transitive tau
 ///        closure as a separate vector of transitions, for
 ///        a given transition system.
-/// \parameter l A labelled transition system
-/// \parameter forward A boolean that indicates whether the resulting closure
+/// \param l A labelled transition system
+/// \param forward A boolean that indicates whether the resulting closure
 //             points forward, to the next state, or backward, to the previous state.
 /// \return A map from states to sets of states indicating for each state those
 //          states that can be reached by one or more tau_steps.
 
 template < class STATE_LABEL_T, class ACTION_LABEL_T, class LTS_BASE_CLASS >
 std::map < std::size_t,
-           std::set <typename lts<STATE_LABEL_T,ACTION_LABEL_T, LTS_BASE_CLASS>::states_size_type > > 
+           std::set <typename lts<STATE_LABEL_T,ACTION_LABEL_T, LTS_BASE_CLASS>::states_size_type > >
             calculate_non_reflexive_transitive_tau_closure(lts<STATE_LABEL_T, ACTION_LABEL_T, LTS_BASE_CLASS>& l,
             const bool forward)
 {
@@ -46,8 +46,8 @@ std::map < std::size_t,
   {
     if (l.is_tau(l.apply_hidden_label_map(i->label())))
     {
-      if (forward) 
-      { 
+      if (forward)
+      {
         resulting_tau_transitions[i->from()].insert(i->to());
       }
       else
@@ -61,7 +61,7 @@ std::map < std::size_t,
   while (new_state_added)
   {
     new_state_added=false;
-    for(typename map_from_states_to_states::iterator i=resulting_tau_transitions.begin(); 
+    for(typename map_from_states_to_states::iterator i=resulting_tau_transitions.begin();
                        i!=resulting_tau_transitions.end(); ++i)
     {
       const std::set<std::size_t>& outgoing_states= i->second;
@@ -72,7 +72,7 @@ std::map < std::size_t,
           resulting_tau_transitions[outgoing_state].end());
       }
       if (i->second.size()<new_outgoing_states.size())
-      { 
+      {
         i->second=new_outgoing_states;
         new_state_added=true;
       }
@@ -119,7 +119,7 @@ void reflexive_transitive_tau_closure(lts<STATE_LABEL_T, ACTION_LABEL_T, LTS_BAS
   {
     new_transitions.insert(transition(i,l.tau_label_index(),i));
   }
-  
+
   // Add the newly generated transitions
   for (const auto& new_transition: new_transitions)
   {
@@ -128,8 +128,8 @@ void reflexive_transitive_tau_closure(lts<STATE_LABEL_T, ACTION_LABEL_T, LTS_BAS
 }
 
 
-/// \brief Removes each transition s-a->s' if also transitions s-a->-tau->s' or s-tau->-a->s' are 
-///        present. It uses the hidden_label_set to determine whether transitions are internal. 
+/// \brief Removes each transition s-a->s' if also transitions s-a->-tau->s' or s-tau->-a->s' are
+///        present. It uses the hidden_label_set to determine whether transitions are internal.
 template < class STATE_LABEL_T, class ACTION_LABEL_T, class LTS_BASE_CLASS >
 void remove_redundant_transitions(lts<STATE_LABEL_T, ACTION_LABEL_T, LTS_BASE_CLASS>& l)
 {
@@ -146,7 +146,7 @@ void remove_redundant_transitions(lts<STATE_LABEL_T, ACTION_LABEL_T, LTS_BASE_CL
     for(size_t j=outgoing_transitions.lowerbound(from); j<outgoing_transitions.upperbound(from); ++j)
     {
       const outgoing_pair_t& p = outgoing_transitions.get_transitions()[j];
-      const state_type from_=from;         // the start state of a transition under consideration. 
+      const state_type from_=from;         // the start state of a transition under consideration.
       const label_type label_=label(p);    // the label
       const state_type to_=to(p);          // the target state
 
@@ -164,24 +164,24 @@ void remove_redundant_transitions(lts<STATE_LABEL_T, ACTION_LABEL_T, LTS_BASE_CL
         else if (label_==label(j))
         {
           assert(!l.is_tau(l.apply_hidden_label_map(label_)));
-          states_reachable_in_one_visible_action.insert(to(j)); 
+          states_reachable_in_one_visible_action.insert(to(j));
         }
       }
 
       // Now check whether to is reachable in one step from one of the two sets constructed above. If no,
-      // insert the transition in l.transitions. 
+      // insert the transition in l.transitions.
       bool found=false;
-      
+
       for(const state_type& middle: states_reachable_in_one_hidden_action)
       {
         // Find a visible step from state middle to state to, unless label is hidden, in which case we search
-        // a hidden step. 
+        // a hidden step.
         // for(const outgoing_pair_t& j: outgoing_transitions[middle])
         for(size_t j_=outgoing_transitions.lowerbound(middle); j_<outgoing_transitions.upperbound(middle); ++j_)
         {
           const outgoing_pair_t& j=outgoing_transitions.get_transitions()[j_];
           if (l.is_tau(l.apply_hidden_label_map(label_)))
-          { 
+          {
             if (l.is_tau(l.apply_hidden_label_map(label(j))) && to(j)==to_)
             {
               assert(!found);
@@ -202,7 +202,7 @@ void remove_redundant_transitions(lts<STATE_LABEL_T, ACTION_LABEL_T, LTS_BASE_CL
           break;
         }
       }
-      
+
       if (!found && !l.is_tau(l.apply_hidden_label_map(label_)))
       {
         for(const state_type& middle: states_reachable_in_one_visible_action)
@@ -213,10 +213,10 @@ void remove_redundant_transitions(lts<STATE_LABEL_T, ACTION_LABEL_T, LTS_BASE_CL
           {
             const outgoing_pair_t& j=outgoing_transitions.get_transitions()[j_];
             if (l.is_tau(l.apply_hidden_label_map(label(j))) && to(j)==to_)
-            { 
+            {
               assert(!found);
               found=true; break;
-            } 
+            }
           }
           if (found)
           {
@@ -226,11 +226,11 @@ void remove_redundant_transitions(lts<STATE_LABEL_T, ACTION_LABEL_T, LTS_BASE_CL
       }
 
       // If no alternative transition is found, add this transition to l.transitions().
-      if (!found) 
+      if (!found)
       {
         l.add_transition(transition(from_, label_, to_));
       }
-    }  
+    }
   }
 }
 
@@ -266,7 +266,7 @@ void tau_star_reduce(lts< STATE_LABEL_T, ACTION_LABEL_T, LTS_BASE_CLASS >& l)
     }
   }
   l.clear_transitions();
-  
+
   // Add the newly generated transitions
   for (const auto& new_transition: new_transitions)
   {

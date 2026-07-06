@@ -92,7 +92,9 @@ namespace mcrl2::data::sort_machine_word
       }
 
       /// \brief The data expression of an application of the constant symbol \@zero_word.
-      /// \details This function is to be implemented manually.       /// \return The data expression corresponding to an application of \@zero_word to a number of arguments.
+      /// \details This function is to be implemented manually.
+      /// \param[out] result A data expression.
+      /// \post result is the data expression corresponding to an application of \@zero_word.
       inline
       void zero_word_manual_implementation(data_expression& result);
 
@@ -170,8 +172,9 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@succ_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \return The data expression corresponding to an application of \@succ_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \post result is the data expression corresponding to an application of \@succ_word.
       inline
       void succ_word_manual_implementation(data_expression& result, const data_expression& arg0);
 
@@ -255,7 +258,9 @@ namespace mcrl2::data::sort_machine_word
       }
 
       /// \brief The data expression of an application of the constant symbol \@one_word.
-      /// \details This function is to be implemented manually.       /// \return The data expression corresponding to an application of \@one_word to a number of arguments.
+      /// \details This function is to be implemented manually.
+      /// \param[out] result A data expression.
+      /// \post result is the data expression corresponding to an application of \@one_word.
       inline
       void one_word_manual_implementation(data_expression& result);
 
@@ -302,7 +307,9 @@ namespace mcrl2::data::sort_machine_word
       }
 
       /// \brief The data expression of an application of the constant symbol \@two_word.
-      /// \details This function is to be implemented manually.       /// \return The data expression corresponding to an application of \@two_word to a number of arguments.
+      /// \details This function is to be implemented manually.
+      /// \param[out] result A data expression.
+      /// \post result is the data expression corresponding to an application of \@two_word.
       inline
       void two_word_manual_implementation(data_expression& result);
 
@@ -349,7 +356,9 @@ namespace mcrl2::data::sort_machine_word
       }
 
       /// \brief The data expression of an application of the constant symbol \@three_word.
-      /// \details This function is to be implemented manually.       /// \return The data expression corresponding to an application of \@three_word to a number of arguments.
+      /// \details This function is to be implemented manually.
+      /// \param[out] result A data expression.
+      /// \post result is the data expression corresponding to an application of \@three_word.
       inline
       void three_word_manual_implementation(data_expression& result);
 
@@ -396,7 +405,9 @@ namespace mcrl2::data::sort_machine_word
       }
 
       /// \brief The data expression of an application of the constant symbol \@four_word.
-      /// \details This function is to be implemented manually.       /// \return The data expression corresponding to an application of \@four_word to a number of arguments.
+      /// \details This function is to be implemented manually.
+      /// \param[out] result A data expression.
+      /// \post result is the data expression corresponding to an application of \@four_word.
       inline
       void four_word_manual_implementation(data_expression& result);
 
@@ -443,7 +454,9 @@ namespace mcrl2::data::sort_machine_word
       }
 
       /// \brief The data expression of an application of the constant symbol \@max_word.
-      /// \details This function is to be implemented manually.       /// \return The data expression corresponding to an application of \@max_word to a number of arguments.
+      /// \details This function is to be implemented manually.
+      /// \param[out] result A data expression.
+      /// \post result is the data expression corresponding to an application of \@max_word.
       inline
       void max_word_manual_implementation(data_expression& result);
 
@@ -521,8 +534,9 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@equals_zero_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \return The data expression corresponding to an application of \@equals_zero_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \post result is the data expression corresponding to an application of \@equals_zero_word.
       inline
       void equals_zero_word_manual_implementation(data_expression& result, const data_expression& arg0);
 
@@ -602,8 +616,9 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@not_equals_zero_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \return The data expression corresponding to an application of \@not_equals_zero_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \post result is the data expression corresponding to an application of \@not_equals_zero_word.
       inline
       void not_equals_zero_word_manual_implementation(data_expression& result, const data_expression& arg0);
 
@@ -683,8 +698,9 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@equals_one_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \return The data expression corresponding to an application of \@equals_one_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \post result is the data expression corresponding to an application of \@equals_one_word.
       inline
       void equals_one_word_manual_implementation(data_expression& result, const data_expression& arg0);
 
@@ -764,8 +780,9 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@equals_max_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \return The data expression corresponding to an application of \@equals_max_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \post result is the data expression corresponding to an application of \@equals_max_word.
       inline
       void equals_max_word_manual_implementation(data_expression& result, const data_expression& arg0);
 
@@ -847,9 +864,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@add_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@add_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@add_word.
       inline
       void add_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -931,9 +949,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@add_with_carry_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@add_with_carry_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@add_with_carry_word.
       inline
       void add_with_carry_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -1015,9 +1034,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@add_overflow_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@add_overflow_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@add_overflow_word.
       inline
       void add_overflow_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -1099,9 +1119,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@add_with_carry_overflow_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@add_with_carry_overflow_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@add_with_carry_overflow_word.
       inline
       void add_with_carry_overflow_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -1183,9 +1204,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@times_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@times_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@times_word.
       inline
       void times_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -1269,10 +1291,11 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@times_with_carry_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \return The data expression corresponding to an application of \@times_with_carry_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \post result is the data expression corresponding to an application of \@times_with_carry_word.
       inline
       void times_with_carry_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2);
 
@@ -1354,9 +1377,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@times_overflow_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@times_overflow_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@times_overflow_word.
       inline
       void times_overflow_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -1440,10 +1464,11 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@times_with_carry_overflow_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \return The data expression corresponding to an application of \@times_with_carry_overflow_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \post result is the data expression corresponding to an application of \@times_with_carry_overflow_word.
       inline
       void times_with_carry_overflow_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2);
 
@@ -1525,9 +1550,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@minus_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@minus_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@minus_word.
       inline
       void minus_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -1609,9 +1635,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@monus_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@monus_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@monus_word.
       inline
       void monus_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -1693,9 +1720,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@div_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@div_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@div_word.
       inline
       void div_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -1777,9 +1805,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@mod_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@mod_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@mod_word.
       inline
       void mod_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -1859,8 +1888,9 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@sqrt_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \return The data expression corresponding to an application of \@sqrt_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \post result is the data expression corresponding to an application of \@sqrt_word.
       inline
       void sqrt_word_manual_implementation(data_expression& result, const data_expression& arg0);
 
@@ -1944,10 +1974,11 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@div_doubleword.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \return The data expression corresponding to an application of \@div_doubleword to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \post result is the data expression corresponding to an application of \@div_doubleword.
       inline
       void div_doubleword_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2);
 
@@ -2033,11 +2064,12 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@div_double_doubleword.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \return The data expression corresponding to an application of \@div_double_doubleword to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \post result is the data expression corresponding to an application of \@div_double_doubleword.
       inline
       void div_double_doubleword_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3);
 
@@ -2125,12 +2157,13 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@div_triple_doubleword.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
-      /// \return The data expression corresponding to an application of \@div_triple_doubleword to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
+      /// \post result is the data expression corresponding to an application of \@div_triple_doubleword.
       inline
       void div_triple_doubleword_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4);
 
@@ -2214,10 +2247,11 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@mod_doubleword.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \return The data expression corresponding to an application of \@mod_doubleword to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \post result is the data expression corresponding to an application of \@mod_doubleword.
       inline
       void mod_doubleword_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2);
 
@@ -2299,9 +2333,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@sqrt_doubleword.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@sqrt_doubleword to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@sqrt_doubleword.
       inline
       void sqrt_doubleword_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -2385,10 +2420,11 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@sqrt_tripleword.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \return The data expression corresponding to an application of \@sqrt_tripleword to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \post result is the data expression corresponding to an application of \@sqrt_tripleword.
       inline
       void sqrt_tripleword_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2);
 
@@ -2472,10 +2508,11 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@sqrt_tripleword_overflow.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \return The data expression corresponding to an application of \@sqrt_tripleword_overflow to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \post result is the data expression corresponding to an application of \@sqrt_tripleword_overflow.
       inline
       void sqrt_tripleword_overflow_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2);
 
@@ -2561,11 +2598,12 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@sqrt_quadrupleword.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \return The data expression corresponding to an application of \@sqrt_quadrupleword to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \post result is the data expression corresponding to an application of \@sqrt_quadrupleword.
       inline
       void sqrt_quadrupleword_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3);
 
@@ -2651,11 +2689,12 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@sqrt_quadrupleword_overflow.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \return The data expression corresponding to an application of \@sqrt_quadrupleword_overflow to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \post result is the data expression corresponding to an application of \@sqrt_quadrupleword_overflow.
       inline
       void sqrt_quadrupleword_overflow_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3);
 
@@ -2735,8 +2774,9 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@pred_word.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \return The data expression corresponding to an application of \@pred_word to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \post result is the data expression corresponding to an application of \@pred_word.
       inline
       void pred_word_manual_implementation(data_expression& result, const data_expression& arg0);
 
@@ -2818,9 +2858,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@equal.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@equal to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@equal.
       inline
       void equal_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -2902,9 +2943,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@not_equal.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@not_equal to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@not_equal.
       inline
       void not_equal_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -2986,9 +3028,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@less.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@less to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@less.
       inline
       void less_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -3070,9 +3113,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@less_equal.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@less_equal to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@less_equal.
       inline
       void less_equal_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -3154,9 +3198,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@greater.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@greater to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@greater.
       inline
       void greater_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -3238,9 +3283,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@greater_equal.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@greater_equal to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@greater_equal.
       inline
       void greater_equal_word_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 
@@ -3320,8 +3366,9 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@rightmost_bit.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \return The data expression corresponding to an application of \@rightmost_bit to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \post result is the data expression corresponding to an application of \@rightmost_bit.
       inline
       void rightmost_bit_manual_implementation(data_expression& result, const data_expression& arg0);
 
@@ -3403,9 +3450,10 @@ namespace mcrl2::data::sort_machine_word
 
       /// \brief The data expression of an application of the function symbol \@shift_right.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \return The data expression corresponding to an application of \@shift_right to a number of arguments.
+      /// \param[out] result A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \post result is the data expression corresponding to an application of \@shift_right.
       inline
       void shift_right_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1);
 

@@ -110,7 +110,6 @@ struct linear_process_conversion_traverser: public process_expression_traverser<
   }
 
   /// \brief Visit delta node
-  /// \return The result of visiting the node
   /// \param x A process expression
   void leave(const delta& /* x */)
   {
@@ -120,7 +119,6 @@ struct linear_process_conversion_traverser: public process_expression_traverser<
   }
 
   /// \brief Visit tau node
-  /// \return The result of visiting the node
   /// \param x A process expression
   void leave(const process::tau& /* x */)
   {
@@ -130,10 +128,7 @@ struct linear_process_conversion_traverser: public process_expression_traverser<
   }
 
   /// \brief Visit action node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param l An action label
-  /// \param v A sequence of data expressions
   void leave(const process::action& x)
   {
     action a(x.label(), x.arguments());
@@ -143,10 +138,7 @@ struct linear_process_conversion_traverser: public process_expression_traverser<
   }
 
   /// \brief Visit sum node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param v A sequence of data variables
-  /// \param right A process expression
   void leave(const process::sum& x)
   {
     m_sum_variables = m_sum_variables + x.variables();
@@ -154,60 +146,42 @@ struct linear_process_conversion_traverser: public process_expression_traverser<
   }
 
   /// \brief Visit block node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param s A sequence of identifiers
-  /// \param right A process expression
   void leave(const process::block& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit hide node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param s A sequence of identifiers
-  /// \param right A process expression
   void leave(const process::hide& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit rename node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param r A sequence of rename expressions
-  /// \param right A process expression
   void leave(const process::rename& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit comm node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param c A sequence of communication expressions
-  /// \param right A process expression
   void leave(const process::comm& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit allow node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param s A sequence of multi-action names
-  /// \param right A process expression
   void leave(const process::allow& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit sync node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param left A process expression
-  /// \param right A process expression
   void apply(const process::sync& x)
   {
     apply(x.left());
@@ -220,10 +194,7 @@ struct linear_process_conversion_traverser: public process_expression_traverser<
   }
 
   /// \brief Visit at node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param left A process expression
-  /// \param d A data expression
   void leave(const process::at& x)
   {
     if (is_delta(x))
@@ -239,10 +210,7 @@ struct linear_process_conversion_traverser: public process_expression_traverser<
   }
 
   /// \brief Visit seq node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param left A process expression
-  /// \param right A process expression
   void apply(const process::seq& x)
   {
     apply(x.left());
@@ -282,10 +250,7 @@ struct linear_process_conversion_traverser: public process_expression_traverser<
   }
 
   /// \brief Visit if_then node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param d A data expression
-  /// \param right A process expression
   void leave(const process::if_then& x)
   {
     m_condition = x.condition();
@@ -293,51 +258,35 @@ struct linear_process_conversion_traverser: public process_expression_traverser<
   }
 
   /// \brief Visit if_then_else node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param d A data expression
-  /// \param left A process expression
-  /// \param right A process expression
   void leave(const process::if_then_else& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit bounded_init node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param left A process expression
-  /// \param right A process expression
   void leave(const process::bounded_init& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit merge node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param left A process expression
-  /// \param right A process expression
   void leave(const process::merge& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit left_merge node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param left A process expression
-  /// \param right A process expression
   void leave(const process::left_merge& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit choice node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param left A process expression
-  /// \param right A process expression
   void apply(const process::choice& x)
   {
     apply(x.left());
@@ -509,7 +458,6 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
   }
 
   /// \brief Visit delta node
-  /// \return The result of visiting the node
   /// \param x A process expression
   void leave(const delta& /* x */)
   {
@@ -519,7 +467,6 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
   }
 
   /// \brief Visit tau node
-  /// \return The result of visiting the node
   /// \param x A process expression
   void leave(const process::tau& /* x */)
   {
@@ -529,10 +476,7 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
   }
 
   /// \brief Visit action node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param l An action label
-  /// \param v A sequence of data expressions
   void leave(const process::action& x)
   {
     action a(x.label(), x.arguments());
@@ -542,10 +486,7 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
   }
 
   /// \brief Visit sum node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param v A sequence of data variables
-  /// \param right A process expression
   void leave(const process::sum& x)
   {
     m_sum_variables = m_sum_variables + x.variables();
@@ -553,60 +494,42 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
   }
 
   /// \brief Visit block node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param s A sequence of identifiers
-  /// \param right A process expression
   void leave(const process::block& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit hide node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param s A sequence of identifiers
-  /// \param right A process expression
   void leave(const process::hide& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit rename node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param r A sequence of rename expressions
-  /// \param right A process expression
   void leave(const process::rename& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit comm node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param c A sequence of communication expressions
-  /// \param right A process expression
   void leave(const process::comm& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit allow node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param s A sequence of multi-action names
-  /// \param right A process expression
   void leave(const process::allow& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit sync node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param left A process expression
-  /// \param right A process expression
   void apply(const process::sync& x)
   {
     apply(x.left());
@@ -619,10 +542,7 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
   }
 
   /// \brief Visit at node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param left A process expression
-  /// \param d A data expression
   void leave(const process::at& x)
   {
     if (is_delta(x))
@@ -638,10 +558,7 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
   }
 
   /// \brief Visit seq node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param left A process expression
-  /// \param right A process expression
   void apply(const process::seq& x)
   {
     apply(x.left());
@@ -689,10 +606,7 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
   }
 
   /// \brief Visit if_then node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param d A data expression
-  /// \param right A process expression
   void leave(const process::if_then& x)
   {
     m_condition = x.condition();
@@ -700,28 +614,20 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
   }
 
   /// \brief Visit if_then_else node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param d A data expression
-  /// \param left A process expression
-  /// \param right A process expression
   void leave(const process::if_then_else& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit bounded_init node
-  /// \return The result of visiting the node
   /// \param x A process expression
-  /// \param left A process expression
-  /// \param right A process expression
   void leave(const process::bounded_init& x)
   {
     throw non_linear_process(x);
   }
 
   /// \brief Visit merge node
-  /// \return The result of visiting the node
   /// \param x A process expression
   void leave(const process::merge& x)
   {
@@ -729,7 +635,6 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
   }
 
   /// \brief Visit left_merge node
-  /// \return The result of visiting the node
   /// \param x A process expression
   void leave(const process::left_merge& x)
   {
@@ -744,7 +649,6 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
   }
 
   /// \brief Visit choice node
-  /// \return The result of visiting the node
   /// \param x A process expression
   void apply(const process::choice& x)
   {

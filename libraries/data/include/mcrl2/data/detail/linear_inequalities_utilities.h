@@ -218,7 +218,7 @@ static bool split_condition_aux(
 
 /// \brief This function first splits the given condition e into real conditions and
 ///        non real conditions.
-/// \detail This function first uses split_condition_aux to split the condition e. Then
+/// \details This function first uses split_condition_aux to split the condition e. Then
 //          it merges equal real conditions by merging the non-real conditions. No further
 //          calculations take place with the non-real conditions, but if the non-real conditions
 //          lead to unnecessary copying, this may lead to a huge overhead in removing the

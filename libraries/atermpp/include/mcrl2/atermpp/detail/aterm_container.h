@@ -97,7 +97,7 @@ template<typename T>
 struct is_markable_aterm<markable_aterm<T>> : std::true_type
 {};
 
-/// \brief Returns T if T is already a markable_aterm<U>, otherwise markable_aterm<T>.
+/// \brief Returns T if T is already a `markable_aterm<U>`, otherwise `markable_aterm<T>`.
 /// \details Prevents double-wrapping when T is already a markable_aterm.
 template<typename T>
 using markable_t = std::conditional_t<is_markable_aterm<std::decay_t<T>>::value, T, markable_aterm<T>>;
@@ -211,8 +211,8 @@ struct markable_aterm<T> : unprotected_aterm_core
 // ---- Specialization: std::pair<F, S> ----
 
 /// \brief Wrapper for std::pair — recursively marks both elements.
-/// \details Each element is stored as markable_t<F> / markable_t<S> to avoid double-wrapping.
-///          Because markable_t<T> always provides mark(), the mark() implementations below
+/// \details Each element is stored as `markable_t<F>` / `markable_t<S>` to avoid double-wrapping.
+///          Because `markable_t<T>` always provides mark(), the mark() implementations below
 ///          call it directly without any if-constexpr dispatch.
 template<typename F, typename S>
 struct markable_aterm<std::pair<F, S>> : std::pair<markable_t<F>, markable_t<S>>

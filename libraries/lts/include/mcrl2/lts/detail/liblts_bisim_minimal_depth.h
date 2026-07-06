@@ -102,9 +102,8 @@ public:
 
   /** \brief Creates a state formula that distinguishes state s from state t.
    *  \details The states s and t are non bisimilar states. A distinguishign state formula phi is
-   *           returned, which has the property that s \in \sem{phi} and  t \not\in\sem{phi}.
-   *           Based on the preprint "Computing minimal distinguishing Hennessey-Milner formulas is NP-hard.
-   *           But variants are tractable", 2023 by Jan Martens and Jan Friso Groote
+   *           returned, which has the property that \f$s \in \llbracket\phi\rrbracket\f$ and \f$t \notin \llbracket\phi\rrbracket\f$. Based on the preprint "Computing minimal distinguishing Hennessey-Milner formulas is
+   * NP-hard. But variants are tractable", 2023 by Jan Martens and Jan Friso Groote
    *  \param[in] s The state number for which the resulting formula should be true
    *  \param[in] t The state number for which the resulting formula should be false
    *  \return A minimal observation depth distinguishing state formula, that is often also minimum negation-depth and

@@ -199,7 +199,7 @@ struct has_unscoped_modal_formula_traverser: public state_formula_traverser<has_
 /// A modal operator (must '[a]' or may '<a>') is <em>unscoped</em> when, on the path from the root of
 /// the formula to that operator, it is not preceded by a fixpoint operator (mu or nu). In other words,
 /// the modal operator is not contained in the scope of any fixpoint. For example '[a]true' and
-/// 'true => <a>true' contain an unscoped modal operator, whereas in 'mu X. [a]<b>true' both modal
+/// 'true => \<a\>true' contain an unscoped modal operator, whereas in 'mu X. [a]\<b\>true' both modal
 /// operators are scoped by the surrounding 'mu X'.
 inline
 bool has_unscoped_modal_formulas(const state_formula& x)
@@ -353,7 +353,7 @@ inline
 state_formulas::state_formula preprocess_state_formula(const state_formulas::state_formula& formula,
                                                        const std::set<core::identifier_string>& context_ids,
                                                        bool preprocess_modal_operators,
-                                                       bool quantitative = false, 
+                                                       bool quantitative = false,
                                                        bool warn_for_modal_operator_nesting = true
                                                       )
 {
@@ -372,7 +372,7 @@ state_formulas::state_formula preprocess_state_formula(const state_formulas::sta
       "point operators in between manually to speed up the transformation." << std::endl;
   }
 
-  mCRL2log(log::debug) << "Formula before preprocessing: " << f << ".\n"; 
+  mCRL2log(log::debug) << "Formula before preprocessing: " << f << ".\n";
 
   // rename data variables in f, to prevent name clashes with data variables in the context
   std::set<core::identifier_string> ids = state_formulas::find_identifiers(f);
@@ -384,7 +384,7 @@ state_formulas::state_formula preprocess_state_formula(const state_formulas::sta
   xyz_generator.add_identifiers(state_formulas::find_identifiers(f));
   f = rename_predicate_variables(f, xyz_generator);
 
-  mCRL2log(log::debug) << "Formula after renaming variables: " << f << ".\n"; 
+  mCRL2log(log::debug) << "Formula after renaming variables: " << f << ".\n";
 
   // add dummy fixpoints between nested modal operators
   if (preprocess_modal_operators)
@@ -393,7 +393,7 @@ state_formulas::state_formula preprocess_state_formula(const state_formulas::sta
     f = state_formulas::preprocess_nested_modal_operators(f);
     if (f0 != f)
     {
-      mCRL2log(log::debug) << "Formula after inserting dummy fix points between modal operators:  " << f << ".\n"; 
+      mCRL2log(log::debug) << "Formula after inserting dummy fix points between modal operators:  " << f << ".\n";
     }
   }
 
@@ -401,7 +401,7 @@ state_formulas::state_formula preprocess_state_formula(const state_formulas::sta
   if (!state_formulas::is_normalized(f))
   {
     f = state_formulas::normalize(f, quantitative); // true indicates that the formula is quantitative.
-    mCRL2log(log::debug) << "Formula after normalization:  " << f << ".\n"; 
+    mCRL2log(log::debug) << "Formula after normalization:  " << f << ".\n";
     assert(state_formulas::is_normalized(f));
   }
 
@@ -412,7 +412,7 @@ state_formulas::state_formula preprocess_state_formula(const state_formulas::sta
     generator.add_identifiers(state_formulas::find_identifiers(f));
     core::identifier_string X = generator("X");
     f = state_formulas::nu(X, data::assignment_list(), f);
-    mCRL2log(log::debug) << "Formula after wrapping the formula inside a 'nu':  " << f << ".\n"; 
+    mCRL2log(log::debug) << "Formula after wrapping the formula inside a 'nu':  " << f << ".\n";
   }
 
   // resolve name clashes like mu X(n: Nat). forall n: Nat

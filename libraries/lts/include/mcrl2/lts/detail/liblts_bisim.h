@@ -93,7 +93,7 @@ class bisim_partitioner
       // used. A set is used to remove double occurrences of transitions.
       std::set < transition > resulting_transitions;
 
-      for (const transition& i: aut.get_transitions()) 
+      for (const transition& i: aut.get_transitions())
       {
         const bool is_transition_i_hidden=aut.is_tau(aut.apply_hidden_label_map(i.label()));
         if (!branching ||
@@ -104,11 +104,11 @@ class bisim_partitioner
           resulting_transitions.insert(
             transition(
               get_eq_class(i.from()),
-// In the line below all hidden transitions are replaced by an explicit tau. It is possible to 
+// In the line below all hidden transitions are replaced by an explicit tau. It is possible to
 // always use i.label() where the resulting transition is only implicitly hidden. This has as effect that
 // the labels of non inert hidden transitions are preserved (e.g. for use in counter examples) but that
-// there are possibly multiple hidden transitions between states, leading to a larger number of 
-// transitions than strictly necessary. 
+// there are possibly multiple hidden transitions between states, leading to a larger number of
+// transitions than strictly necessary.
               (is_transition_i_hidden?aut.tau_label_index():i.label()),
               get_eq_class(i.to())));
         }
@@ -121,9 +121,9 @@ class bisim_partitioner
       {
         aut.add_transition(t);
       }
-     
+
       // Merge the states, by setting the state labels of each state to the concatenation of the state labels of its
-      // equivalence class. 
+      // equivalence class.
       if (aut.has_state_info())   /* If there are no state labels this step can be ignored */
       {
         /* Create a vector for the new labels */
@@ -146,7 +146,7 @@ class bisim_partitioner
       {
         aut.set_num_states(num_eq_classes());
       }
-      
+
       aut.set_initial_state(get_eq_class(aut.initial_state()));
     }
 
@@ -844,8 +844,8 @@ class bisim_partitioner
      * \brief until_formula Creates a state formula that corresponds to the until operator phi1<a>phi2 from HMLU
      * \details This operator intuitively means: "phi1 holds while stuttering until we can do an a-step after which phi2 holds"
      *          In the operators of the mu-calculus that mCRL2 supports we can define this as:
-     *              phi2 || (mu X.phi1 && (<tau>X || <a>phi2))  if a = tau
-     *              mu X.phi1 && (<tau>X || <a>phi2)            else
+     *              phi2 || (mu X.phi1 && (\<tau\>X || \<a\>phi2))  if a = tau
+     *              mu X.phi1 && (\<tau\>X || \<a\>phi2)            else
      * \param[in] phi1 The first state formula for the until operator
      * \param[in] a The action for the until operator
      * \param[in] phi2 The second state formula for the until operator
@@ -1090,7 +1090,7 @@ class bisim_partitioner
 
 
 /** \brief Reduce transition system l with respect to strong or (divergence preserving) branching bisimulation.
- * \param[in/out] l The transition system that is reduced.
+ * \param[in,out] l The transition system that is reduced.
  * \param[in] branching If true branching bisimulation is applied, otherwise strong bisimulation.
  * \param[in] preserve_divergences Indicates whether loops of internal actions on states must be preserved. If false
  *            these are removed. If true these are preserved.  */
@@ -1101,8 +1101,8 @@ void bisimulation_reduce(LTS_TYPE& l, bool branching = false, bool preserve_dive
  * \details This lts and the lts l2 are not usable anymore after this call.
  *          The space consumption is O(n) and time is O(nm). It uses the branching bisimulation
  *          algorithm by Groote and Vaandrager from 1990.
- * \param[in/out] l1 A first transition system.
- * \param[in/out] l2 A second transition system.
+ * \param[in,out] l1 A first transition system.
+ * \param[in,out] l2 A second transition system.
  * \param[in] branching If true branching bisimulation is used, otherwise strong bisimulation is applied.
  * \param[in] preserve_divergences If true and branching is true, preserve tau loops on states.
  * \param[in] generate_counter_examples Whether to generate a counter example
@@ -1124,8 +1124,8 @@ bool destructive_bisimulation_compare(LTS_TYPE& l1,
  *          use destructive_bisimulation_compare. This routine uses the Groote-Vaandrager
  *          branching bisimulation routine. It runs in O(mn) and uses O(n) memory where n is the
  *          number of states and m is the number of transitions.
- * \param[in/out] l1 A first transition system.
- * \param[in/out] l2 A second transistion system.
+ * \param[in,out] l1 A first transition system.
+ * \param[in,out] l2 A second transistion system.
  * \param[in] branching If true branching bisimulation is used, otherwise strong bisimulation is applied.
  * \param[in] preserve_divergences If true and branching is true, preserve tau loops on states.
  * \param[in] generate_counter_examples Whether to generate a counter example

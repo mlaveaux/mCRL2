@@ -119,8 +119,8 @@ class pbes_equation
     }
 
     /// \brief A comparison operator on pbes equations.
-    /// \detail The comparison is on the addresses of aterm objects and can therefore differ in every run.
-    /// \parameter other The variable to compare with. 
+    /// \details The comparison is on the addresses of aterm objects and can therefore differ in every run.
+    /// \param other The variable to compare with.
     /// \return True if the this argument is smaller than other.
     bool operator<(const pbes_equation& other) const
     {

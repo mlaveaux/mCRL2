@@ -174,7 +174,7 @@ class term_appl_prepend_iterator
 
 // The class below transforms a function that is to be applied to
 // the arguments of an application into a function that is not applied
-// to the head, and only applied to the arguments. 
+// to the head, and only applied to the arguments.
 template <class ArgumentConverter>
 class skip_function_application_to_head
 {
@@ -201,7 +201,7 @@ class skip_function_application_to_head
 
 // The class below transforms a function that is to be applied to
 // the arguments of an application into a function that is not applied
-// to the head, and only applied to the arguments. 
+// to the head, and only applied to the arguments.
 template <class ArgumentConverter>
 class skip_function_application_to_head_assignment
 {
@@ -215,7 +215,7 @@ class skip_function_application_to_head_assignment
 
           m_skip_head(skip_head)
     {}
- 
+
     void operator()(data_expression& result, const data_expression& d)
     {
       if (m_skip_head && m_current_index++==0)
@@ -227,7 +227,7 @@ class skip_function_application_to_head_assignment
       return;
     }
 };
- 
+
 
 inline bool contains_untyped_sort(const sort_expression& s)
 {
@@ -363,7 +363,7 @@ class application: public data_expression
 
     /// \brief Constructor.
     template <typename Container>
-      requires(std::ranges::forward_range<Container> && 
+      requires(std::ranges::forward_range<Container> &&
                std::is_convertible_v<std::ranges::range_value_t<Container>, data_expression>)
     application(const data_expression& head,
                 const Container& arguments)
@@ -426,12 +426,12 @@ class application: public data_expression
 
     /// \brief Constructor.
     /// \details Construct at term head(arg_first,...,arg_last) where convert_arguments
-    ///          has been applied to the head and all the arguments. 
-    /// \parameter head This is the new head for the application.
-    /// \parameter first This is a forward iterator yielding the first argument.
-    /// \parameter last  This is an iterator beyond the last argument.
-    /// \parameter convert_arguments This is a function applied to optionally the head and the arguments.
-    /// \parameter skip_first_argument A boolean which is true if the function must not be applied to the head.
+    ///          has been applied to the head and all the arguments.
+    /// \param head This is the new head for the application.
+    /// \param first This is a forward iterator yielding the first argument.
+    /// \param last  This is an iterator beyond the last argument.
+    /// \param convert_arguments This is a function applied to optionally the head and the arguments.
+    /// \param skip_first_argument A boolean which is true if the function must not be applied to the head.
     template <typename FwdIter, class ArgumentConverter>
       requires(!std::is_base_of_v<data_expression, FwdIter> && !std::is_base_of_v<data_expression, ArgumentConverter>)
     application(const data_expression& head,
@@ -446,18 +446,18 @@ class application: public data_expression
     {
       assert(first!=last);
       assert(detail::check_whether_sorts_match(head,data_expression_list(begin(), end())));
-    } 
+    }
 
     /// \brief Constructor.
     /// \details Construct at term head(arg_first,...,arg_last) where convert_arguments
-    ///          has been applied to the head and all the arguments. 
-    /// \parameter head This is the new head for the application.
-    /// \parameter first This is a forward iterator yielding the first argument.
-    /// \parameter last  This is an iterator beyond the last argument.
-    /// \parameter convert_arguments This is a function applied to optionally the head and the arguments.
-    /// \parameter skip_first_argument A boolean which is true if the function must not be applied to the head.
+    ///          has been applied to the head and all the arguments.
+    /// \param head This is the new head for the application.
+    /// \param first This is a forward iterator yielding the first argument.
+    /// \param last  This is an iterator beyond the last argument.
+    /// \param convert_arguments This is a function applied to optionally the head and the arguments.
+    /// \param skip_first_argument A boolean which is true if the function must not be applied to the head.
     template <typename FwdIter, class ArgumentConverter>
-      requires(!std::is_base_of_v<data_expression, FwdIter> && 
+      requires(!std::is_base_of_v<data_expression, FwdIter> &&
                !std::is_base_of_v<data_expression, ArgumentConverter> &&
                std::is_same_v<std::invoke_result_t<ArgumentConverter, data_expression&, typename FwdIter::value_type>,
                    void>)
@@ -522,7 +522,7 @@ inline void swap(application& t1, application& t2) noexcept
   t1.swap(t2);
 }
 
-/// \brief Make function for an application. 
+/// \brief Make function for an application.
 /// \param result variable into which the application is constructed.
 inline void make_application(atermpp::aterm& result)
 {
@@ -547,14 +547,14 @@ make_application(atermpp::aterm& result, const HEAD& head, const TERM& arg1, con
   atermpp::make_term_appl(result,
                           core::detail::function_symbol_DataAppl(sizeof...(Terms)+2),
                           head,
-                          arg1, 
+                          arg1,
                           other_arguments...);
 }
 
 /// \brief Constructor.
 /// \param result variable into which the application is constructed.
 template <typename Container>
-  requires(std::ranges::forward_range<Container> && 
+  requires(std::ranges::forward_range<Container> &&
            std::is_convertible_v<std::ranges::range_value_t<Container>, data_expression>)
 inline void make_application(data_expression& result,
                       const data_expression& head,
@@ -583,7 +583,7 @@ inline void make_application(atermpp::aterm& result,
                           detail::term_appl_prepend_iterator<FwdIter>(first, &head),
                           detail::term_appl_prepend_iterator<FwdIter>(last));
   assert(detail::check_whether_sorts_match(head,data_expression_list(
-                                                   atermpp::down_cast<application>(result).begin(), 
+                                                   atermpp::down_cast<application>(result).begin(),
                                                    atermpp::down_cast<application>(result).end())));
 }
 
@@ -611,15 +611,15 @@ inline void make_application(atermpp::aterm& result,
 
 /// \brief Constructor.
 /// \details Construct at term head(arg_first,...,arg_last) where convert_arguments
-///          has been applied to the head and all the arguments. 
+///          has been applied to the head and all the arguments.
 /// \param result variable into which the application is constructed.
-/// \parameter head This is the new head for the application.
-/// \parameter first This is a forward iterator yielding the first argument.
-/// \parameter last  This is an iterator beyond the last argument.
-/// \parameter convert_arguments This is a function applied to optionally the head and the arguments.
-/// \parameter skip_first_argument A boolean which is true if the function must not be applied to the head.
+/// \param head This is the new head for the application.
+/// \param first This is a forward iterator yielding the first argument.
+/// \param last  This is an iterator beyond the last argument.
+/// \param convert_arguments This is a function applied to optionally the head and the arguments.
+/// \param skip_first_argument A boolean which is true if the function must not be applied to the head.
 template <typename FwdIter, class ArgumentConverter>
-  requires(!std::is_base_of_v<data_expression, FwdIter> && 
+  requires(!std::is_base_of_v<data_expression, FwdIter> &&
            !std::is_base_of_v<data_expression, ArgumentConverter> &&
            std::is_same_v<std::invoke_result_t<ArgumentConverter, typename FwdIter::value_type>,
                data_expression>)
@@ -639,19 +639,19 @@ inline void make_application(atermpp::aterm& result,
   assert(detail::check_whether_sorts_match(head,data_expression_list(
                                                    atermpp::down_cast<application>(result).begin(),
                                                    atermpp::down_cast<application>(result).end())));
-} 
+}
 
 /// \brief Constructor.
 /// \details Construct at term head(arg_first,...,arg_last) where convert_arguments
-///          has been applied to the head and all the arguments. 
+///          has been applied to the head and all the arguments.
 /// \param result variable into which the application is constructed.
-/// \parameter head This is the new head for the application.
-/// \parameter first This is a forward iterator yielding the first argument.
-/// \parameter last  This is an iterator beyond the last argument.
-/// \parameter convert_arguments This is a function applied to optionally the head and the arguments.
-/// \parameter skip_first_argument A boolean which is true if the function must not be applied to the head.
+/// \param head This is the new head for the application.
+/// \param first This is a forward iterator yielding the first argument.
+/// \param last  This is an iterator beyond the last argument.
+/// \param convert_arguments This is a function applied to optionally the head and the arguments.
+/// \param skip_first_argument A boolean which is true if the function must not be applied to the head.
 template <typename FwdIter, class ArgumentConverter>
-  requires(!std::is_base_of_v<data_expression, FwdIter> && 
+  requires(!std::is_base_of_v<data_expression, FwdIter> &&
            !std::is_base_of_v<data_expression, ArgumentConverter> &&
            std::is_same_v<std::invoke_result_t<ArgumentConverter, data_expression&, typename FwdIter::value_type>,
                void>)
@@ -669,7 +669,7 @@ static inline void make_application(atermpp::aterm& result,
                           detail::term_appl_prepend_iterator<FwdIter>(last),
                           detail::skip_function_application_to_head_assignment(convert_arguments,skip_first_argument));
 }
- 
+
 
 //--- start generated class application ---//
 // prototype declaration

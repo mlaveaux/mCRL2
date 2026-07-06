@@ -337,8 +337,8 @@ struct state_type_gj_lb
   /// \brief counter used during `four_way_splitB()`
   /// \details If this counter is set to undefined (0), the state is considered
   /// to be not yet visited.  A visited state has a positive counter,
-  /// consisting of `marked(`<subblock it is expected to move to>`) +`
-  /// <number of outgoing block-inert transitions that are not yet visited>.
+  /// consisting of `marked(` subblock it is expected to move to `) +`
+  /// number of outgoing block-inert transitions that are not yet visited.
   transition_index counter=undefined;
                                                                                 #ifndef NDEBUG
                                                                                   /// \brief print a short state identification for debugging
@@ -7238,7 +7238,7 @@ class bisim_partitioner_gj_lazy_BLC
     {                                                                           assert(m_branching || !m_preserve_divergence);
       // mCRL2log(log::debug) << "Start initialisation.\n";
       // Apply the hidden labels explicitly as the information about hidden labels is not used.
-      aut.rename_hidden_labels_to_tau(); 
+      aut.rename_hidden_labels_to_tau();
       create_initial_partition();
       end_initial_part=std::clock();
       mCRL2log(log::debug) << "After initialisation there are "

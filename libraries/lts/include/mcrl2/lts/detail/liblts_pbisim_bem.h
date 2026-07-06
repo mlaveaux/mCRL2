@@ -23,7 +23,7 @@ class prob_bisim_partitioner_bem
 
   public:
     /** \brief Creates a probabilistic bisimulation partitioner for an PLTS.
-     *  \details This bisimulation partitioner applies the algorithm defined in C. Baier, B. Engelen and M. Majster-Cederbaum. 
+     *  \details This bisimulation partitioner applies the algorithm defined in C. Baier, B. Engelen and M. Majster-Cederbaum.
      *   Deciding Bisimilarity and Similarity for Probabilistic Processes. In Journal of Computer and System Sciences 60, 187-237 (2000)
      */
     prob_bisim_partitioner_bem(LTS_TYPE& l, utilities::execution_timer& timer):aut(l)
@@ -144,7 +144,7 @@ class prob_bisim_partitioner_bem
       distribution_key_type key = 0UL;
       std::vector<std::list<transition*>> incoming_transitions_per_label; // Incoming transitions organized per label
   };
-  
+
   struct block_type
   {
     block_key_type key = 0UL;
@@ -188,14 +188,14 @@ class prob_bisim_partitioner_bem
   };
 
   /** \brief Creates the initial partition of step classes and blocks.
-   *  \detail The blocks are initially partitioned based on the actions that can perform.
+   *  \details The blocks are initially partitioned based on the actions that can perform.
    *          The step classes are partitioned based on the action that leads to the probabilistic state */
   void create_initial_partition()
   {
     std::vector< std::vector< std::list<distribution_type*> > > steps; // Representation of transition in 2-d array
     std::vector<transition>& transitions = aut.get_transitions();
     std::vector< std::vector<bool> > distribution_per_step_class;
-    
+
     distribution_per_step_class.resize(aut.num_action_labels());
     for (std::vector<bool>& i : distribution_per_step_class)
     {
@@ -267,7 +267,7 @@ class prob_bisim_partitioner_bem
               distribution_per_step_class[i][d->key] = true;
             }
           }
-          
+
           step_classes[i].prev_states[s] = true;
 
           if (v->left == nullptr)
@@ -355,13 +355,13 @@ class prob_bisim_partitioner_bem
         state_partition.push_back(&b);
       }
     }
-    
+
     // Add all step classes to the step partition.
     // Initially all are new step classes
     for (step_class_type& sc : step_classes)
     {
       if (sc.distributions.size() > 0)
-      { 
+      {
         step_partition.push_front(&sc);
         sc.is_in_new_step_classes = true;
       }
@@ -438,13 +438,13 @@ class prob_bisim_partitioner_bem
       /* Add all the state probabilities pairs in the mapping to its actual data type*/
       /* Add all the state probabilities pairs in the mapping to its actual data type*/
       typename std::map<state_type, probability_fraction_type>::const_iterator i = prob_state_map.begin();
-      if (++i==prob_state_map.end()) // There is only one state with probability 1. 
+      if (++i==prob_state_map.end()) // There is only one state with probability 1.
       {
         new_prob_state.set(prob_state_map.begin()->first);
       }
       else
       {
-        // This probabilistic state has more components. 
+        // This probabilistic state has more components.
         for (const std::pair<const state_type, probability_fraction_type>& i: prob_state_map)
         {
           new_prob_state.add(i.first, i.second);
@@ -476,7 +476,7 @@ class prob_bisim_partitioner_bem
   }
 
   /** \brief  Two-phased partitioning algorithm described in page 204. Fig 9. Baier.
-  *   \detail Refinement of state partition and step partition until no new blocks/step classes
+  *   \details Refinement of state partition and step partition until no new blocks/step classes
   *           are in front of the partition lists
   */
   void refine_partition_until_it_becomes_stable()
@@ -485,9 +485,9 @@ class prob_bisim_partitioner_bem
     std::list<block_type*> state_partition_old;
 
     // Repeat until no new blocks in front of the partition lists
-    while (state_partition.front()->is_in_new_blocks == true || 
+    while (state_partition.front()->is_in_new_blocks == true ||
            (step_partition.size()>0 && step_partition.front()->is_in_new_step_classes == true))
-    { 
+    {
       // Phase 1: Splitting of step_partition via split(M,C)
       if (state_partition.front()->is_in_new_blocks == true)
       {
@@ -505,7 +505,7 @@ class prob_bisim_partitioner_bem
         pending_new_step_classes.clear();
 
         // iterate over all step classes
-        for (typename std::list<step_class_type*>::iterator sc_iter = step_partition_old.begin(); 
+        for (typename std::list<step_class_type*>::iterator sc_iter = step_partition_old.begin();
           sc_iter != step_partition_old.end(); ++sc_iter)
         {
           step_class_type* sc_ptr = *sc_iter;
@@ -522,7 +522,7 @@ class prob_bisim_partitioner_bem
             distributions_ordered_by_prob[probability].push_back(d);
           }
 
-          // if there are multiple elements in the distributions_ordered_by_prob then we have to 
+          // if there are multiple elements in the distributions_ordered_by_prob then we have to
           // add them to the step partition as a new step class
           if (distributions_ordered_by_prob.size() >= 2)
           {
@@ -534,10 +534,10 @@ class prob_bisim_partitioner_bem
             for (std::pair< probability_fraction_type, std::list<distribution_type*> > ordered_dist : distributions_ordered_by_prob)
             {
               std::list<distribution_type*>& distribution_list = ordered_dist.second;
-              
+
               if (new_class_count == 0)
               {
-                // if it is the first element of the mapping then we do not create a new step class; instead, we 
+                // if it is the first element of the mapping then we do not create a new step class; instead, we
                 // add its elements into the current step class that is being split.
                 sc_ptr->distributions.swap(distribution_list);
 
@@ -556,7 +556,7 @@ class prob_bisim_partitioner_bem
                   }
                 }
 
-                // add to the front of the step partition (as a new step class) if not yet added 
+                // add to the front of the step partition (as a new step class) if not yet added
                 if (sc_ptr->is_in_new_step_classes == false)
                 {
                   // since we are iterating over this step class, we save its iterator in a pending vector,
@@ -620,7 +620,7 @@ class prob_bisim_partitioner_bem
         blocks_to_move_to_front.clear();
         new_blocks_to_move_to_front.clear();
         // for all blocks B in X_old
-        for (typename std::list<block_type*>::iterator block_iter = state_partition_old.begin(); 
+        for (typename std::list<block_type*>::iterator block_iter = state_partition_old.begin();
           block_iter != state_partition_old.end(); ++block_iter)
         {
           block_type* b_to_split = *block_iter;
@@ -659,9 +659,9 @@ class prob_bisim_partitioner_bem
 
             // return states from temp_block to b_to_split
             b_to_split->states.swap(temp_block.states);
-            
+
             // if the current block is not currently a new block then add the smaller
-            // block (between new block and current block) to the list of new blocks; 
+            // block (between new block and current block) to the list of new blocks;
             // hence, in front of state partition
             if (b_to_split->is_in_new_blocks == false)
             {
@@ -772,16 +772,16 @@ class prob_bisim_partitioner_bem
 
 
 /** \brief Reduce transition system l with respect to probabilistic bisimulation.
- * \param[in/out] l The transition system that is reduced.
- * \param[in/out] timer A timer that can be used to report benchmarking results.
+ * \param[in,out] l The transition system that is reduced.
+ * \param[in,out] timer A timer that can be used to report benchmarking results.
  */
 template < class LTS_TYPE>
 void probabilistic_bisimulation_reduce_bem(LTS_TYPE& l, utilities::execution_timer& timer);
 
 /** \brief Checks whether the two initial states of two plts's are probabilistic bisimilar.
 * \details This lts and the lts l2 are not usable anymore after this call.
-* \param[in/out] l1 A first probabilistic transition system.
-* \param[in/out] l2 A second probabilistic transition system.
+* \param[in,out] l1 A first probabilistic transition system.
+* \param[in,out] l2 A second probabilistic transition system.
 * \retval True iff the initial states of the current transition system and l2 are probabilistic bisimilar */
 template < class LTS_TYPE>
 bool destructive_probabilistic_bisimulation_compare_bem(LTS_TYPE& l1, LTS_TYPE& l2, utilities::execution_timer& timer);
@@ -791,8 +791,8 @@ bool destructive_probabilistic_bisimulation_compare_bem(LTS_TYPE& l1, LTS_TYPE& 
 *  \details The current transitions system and the lts l2 are first duplicated and subsequently
 *           reduced modulo bisimulation. If memory space is a concern, one could consider to
 *           use destructive_bisimulation_compare.
-* \param[in/out] l1 A first transition system.
-* \param[in/out] l2 A second transistion system.
+* \param[in,out] l1 A first transition system.
+* \param[in,out] l2 A second transistion system.
 * \retval True iff the initial states of the current transition system and l2 are probabilistic bisimilar */
 template < class LTS_TYPE>
 bool probabilistic_bisimulation_compare_bem(const LTS_TYPE& l1, const LTS_TYPE& l2, utilities::execution_timer& timer);

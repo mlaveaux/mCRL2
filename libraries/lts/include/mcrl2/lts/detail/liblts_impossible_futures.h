@@ -70,7 +70,7 @@ std::pair<bool, trace> check_trace_inclusion(LTS_TYPE& l1,
                                  // This line occurs at another place in the code than in
                                  // the original algorithm, where insertion in the anti-chain
                                  // was too late, causing too many impl-spec pairs to be investigated.
-              
+
   while (!working.empty()) // while working!=empty
   {
     // pop (impl,spec) from working;
@@ -81,9 +81,9 @@ std::pair<bool, trace> check_trace_inclusion(LTS_TYPE& l1,
                          // Small scale experiments show that this is a little bit more expensive than doing the
                          // explicit check below.
 
-                         
+
     mCRL2log(log::trace) << "check_trace_inclusion(): Checking impl: " << impl_spec.state() << ", spec: {";
-    for (const auto& state : impl_spec.states()) 
+    for (const auto& state : impl_spec.states())
     {
       mCRL2log(log::trace) << ", " << state;
     }
@@ -132,9 +132,9 @@ std::pair<bool, trace> check_trace_inclusion(LTS_TYPE& l1,
         return std::make_pair(false,
             generate_counter_example.get_trace(l1, new_counterexample_index)); //    return false;
       }
-      
+
       mCRL2log(log::trace) << "check_trace_inclusion(): spec_prime = {";
-      for (const auto& state : spec_prime) 
+      for (const auto& state : spec_prime)
       {
         mCRL2log(log::trace) << ", " << state;
       }
@@ -158,7 +158,7 @@ std::pair<bool, trace> check_trace_inclusion(LTS_TYPE& l1,
           working.push_front(impl_spec_counterex); // push(impl,spec') into working;
         }
       }
-      else 
+      else
       {
         mCRL2log(log::trace) << "check_trace_inclusion(): Not added to working\n";
       }
@@ -173,7 +173,7 @@ std::pair<bool, trace> check_trace_inclusion(LTS_TYPE& l1,
   return std::make_pair(true, trace()); // return true;
 }
 
-/// Generates a counter example of the shape AG EF, which is a modal formula [\sigma]\bigvee{i in I} <rho_i>true.
+/// Generates a counter example of the shape AG EF, which is a modal formula \f$[\sigma]\bigvee_{i \in I} \langle\rho_i\rangle\mathit{true}\f$.
 ///
 /// This counter examples that there is an implementation state (reached from the initial state by \sigma) whose
 /// language is not included in any of the specification states reachable by \sigma.
@@ -206,7 +206,7 @@ write_counter_example(const LTS& lts, std::ostream& stream, const trace& initial
         }
         index += 1;
       }
- 
+
       if (skip)
       {
         continue;
@@ -268,9 +268,9 @@ write_counter_example(const LTS& lts, std::ostream& stream, const trace& initial
             skip = true;
           }
         }
-        index += 1;      
+        index += 1;
       }
- 
+
       if (skip)
       {
         continue;
@@ -286,7 +286,7 @@ write_counter_example(const LTS& lts, std::ostream& stream, const trace& initial
         first_action = false;
       }
 
-      stream << action; 
+      stream << action;
     }
 
     // Deal with the empty case.
@@ -372,7 +372,7 @@ bool destructive_impossible_futures(LTS& l1,
 
     inner_counter_examples.clear();
     mCRL2log(log::trace) << "Checking impl: " << impl << ", spec: {";
-    for (const auto& state : spec) 
+    for (const auto& state : spec)
     {
       mCRL2log(log::trace) << ", " << state;
     }
@@ -490,7 +490,7 @@ bool destructive_impossible_futures(LTS& l1,
       }
 
       mCRL2log(log::trace) << "spec_prime = {";
-      for (const auto& state : spec_prime) 
+      for (const auto& state : spec_prime)
       {
         mCRL2log(log::trace) << ", " << state;
       }
@@ -515,7 +515,7 @@ bool destructive_impossible_futures(LTS& l1,
           working.push_front(impl_spec_counterex);
         }
       }
-      else 
+      else
       {
         mCRL2log(log::trace) << "Not added to working\n";
       }

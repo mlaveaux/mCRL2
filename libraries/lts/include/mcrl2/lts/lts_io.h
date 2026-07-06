@@ -43,7 +43,7 @@ namespace detail
 
 /** \brief Determines the LTS format from a filename by its extension.
  * \param[in] s The name of the file of which the format will be determined.
- * \param[in] be_verbose If true, messages about the detected file format are printed in verbose mode. 
+ * \param[in] be_verbose If true, messages about the detected file format are printed in verbose mode.
  * \return The LTS format based on the extension of \a s.
  * If no supported format can be determined from the extension then \a
  * lts_none is returned.  */
@@ -62,7 +62,7 @@ lts_type guess_format(std::string const& s, bool be_verbose = true);
 lts_type parse_format(std::string const& s);
 
 /** \brief Gives a string representation of an LTS format.
- * \details This is the "inverse" of \ref parse_format.
+ * \details This is the "inverse" of \ref parse_format(std::string const&).
  * \param[in] type The LTS format.
  * \return The name of the LTS format specified by \a type. */
 std::string string_for_type(lts_type type);
@@ -135,7 +135,7 @@ inline void read_data_context(const std::string& data_file,
 {
   // Add "init delta;" to the file to make the input a proper data specification.
   // "init delta;" must appear at the front, such that a second init clause will be
-  // reported as wrong. 
+  // reported as wrong.
   const std::string input="init delta; " + utilities::read_text(data_file);
   process::process_specification procspec =
       process::parse_process_specification(input);
@@ -155,8 +155,8 @@ inline void read_mcrl2_context(const std::string& data_file,
 
 // converts an arbitrary lts to lts_lts_t
 template <class LTS_TYPE_IN, class LTS_TYPE_OUT>
-inline void convert_to_lts_lts(LTS_TYPE_IN& src, 
-                               LTS_TYPE_OUT& dest, 
+inline void convert_to_lts_lts(LTS_TYPE_IN& src,
+                               LTS_TYPE_OUT& dest,
                                const data_file_type_t extra_data_file_type,
                                const std::string& extra_data_file_name)
 {
@@ -166,19 +166,19 @@ inline void convert_to_lts_lts(LTS_TYPE_IN& src,
   bool extra_data_is_defined=true;
   switch (extra_data_file_type)
   {
-    case data_e:  
-    { 
-      read_data_context(extra_data_file_name,data,action_labels); 
+    case data_e:
+    {
+      read_data_context(extra_data_file_name,data,action_labels);
       break;
     }
-    case lps_e:   
+    case lps_e:
     {
-      read_lps_context(extra_data_file_name,data,action_labels,process_parameters); 
+      read_lps_context(extra_data_file_name,data,action_labels,process_parameters);
       break;
     }
-    case mcrl2_e: 
+    case mcrl2_e:
     {
-      read_mcrl2_context(extra_data_file_name,data,action_labels); 
+      read_mcrl2_context(extra_data_file_name,data,action_labels);
       break;
     }
     default:
@@ -193,19 +193,19 @@ inline void convert_to_lts_lts(LTS_TYPE_IN& src,
 
 /** \brief Loads an lts of the indicated type, transforms it to an lts of the form lts_lts_t using the additional data parameters.
  *  \details The file can refer to any file in lts, aut, fsm, or dot
- *           format. After reading it is is translated into .lts format. For this 
- *           a file is read with the name extra_data_file, which is interpreted 
+ *           format. After reading it is is translated into .lts format. For this
+ *           a file is read with the name extra_data_file, which is interpreted
  *           as a data specification if extra_data_file_type has type data_e, a linear process specification
  *           if it has value lps_e, and an mcrl2 file if it has value mcrl2_e.
- *  \param[out] result The lts in which the transition system is put. 
+ *  \param[out] result The lts in which the transition system is put.
  *  \param[in] infilename The name of the file containing the lts.
  *  \param[in] type The type of the lts file, i.e. .lts, .fsm, .dot or .aut.
  *  \param[in] extra_data_file_type The type of the file containing extra information, such as a data specification.
  *  \param[in] extra_data_file_name The name of the file containing extra information. */
 template <class LTS_TYPE>
-inline void load_lts(LTS_TYPE& result, 
+inline void load_lts(LTS_TYPE& result,
                      const std::string& infilename,
-                     lts_type type,  
+                     lts_type type,
                      const data_file_type_t extra_data_file_type=none_e,
                      const std::string& extra_data_file_name="")
 {

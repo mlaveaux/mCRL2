@@ -75,7 +75,7 @@ struct tuple_list
   {}
 };
 
-/// Extends the list S to S ++ [(a \oplus alpha, c \land c') | (alpha, c') \in T]
+/// Extends the list \f$S\f$ to \f$S \mathrel{++} [(a \oplus \alpha, c \land c') \mid (\alpha, c') \in T]\f$
 ///
 /// Note that by using move semantics for L, we force the caller to transfer ownership of L to this function,
 /// and make it explicit that L should not be used by the caller afterwards.
@@ -245,7 +245,7 @@ public:
   /// That is, the actions in m consting of actions and data occur in C, such tat a communication
   /// can take place.
   ///
-  /// if \exists_{(b,c) \in C} b = \mu(m), return c, otherwise return action_label()
+  /// if \f$\exists_{(b,c) \in C} b = \mu(m)\f$, return \f$c\f$, otherwise return action_label()
   process::action_label can_communicate(const process::action_list& m)
   {
     assert(std::is_sorted(m.begin(), m.end()));
@@ -274,7 +274,7 @@ public:
     return result;
   }
 
-  /// Calculate \exists_{o,c} (\mu(m) \oplus o, c) \in C, with o \subseteq n
+  /// Calculate \f$\exists_{o,c}\ (\mu(m) \oplus o,\ c) \in C\f$, with \f$o \subseteq n\f$
   ///
   /// The function calculates whether the actions in m (consisting of actions and data) occur in a left hand side
   /// of a communication a1|...|ak -> b in C (that is, the names of m are a subbag of a1|...|ak), and the actions
@@ -390,7 +390,7 @@ public:
   /// parameters are equal for the actions in the left-hand-sides of the matching communication expressions.
   /// Multiactions whose condition is false may be removed.
   ///
-  /// This is the function $\overline{\gamma}$ in M. v. Weerdenburg. Calculation of Communication with Open Terms in
+  /// This is the function \f$\overline{\gamma}\f$ in M. v. Weerdenburg. Calculation of Communication with Open Terms in
   /// GenSpect Process Algebra.
   ///
   /// \param m The multiaction to which the communication operator is applied
@@ -667,7 +667,7 @@ protected:
   /// Calculate data expression for pairwise equality of the elements of l1 and l2.
   ///
   /// If the lengths of l1 and l2 differ, or for some index i, the sort l1[i] and l2[i] is different, the pairwise
-  /// match is false, otherwise an expression equivalent to \bigwegde_i (l1[i] == l2[i]) is returned.
+  /// match is false, otherwise an expression equivalent to \f$\bigwedge_i (l1[i] == l2[i])\f$ is returned.
   data::data_expression pairwise_equal_to(const data::data_expression_list& l1,
       const data::data_expression_list& l2) const
   {
@@ -720,7 +720,7 @@ protected:
 
   /// Calculate the communication operator applied to a multiaction.
   ///
-  /// This is the function $\overline(\gamma, C, r)$ as described in M. v. Weerdenburg. Calculation of Communication
+  /// This is the function \f$\overline{\gamma}(C, r)\f$ as described in M. v. Weerdenburg. Calculation of Communication
   /// with Open Terms in GenSpect Process Algebra.
   ///
   /// \param m_first Start of a range of multiactions to which the communication operator should be applied
@@ -774,7 +774,7 @@ protected:
     return S;
   }
 
-  /// Calculate $\phi(m, d, w, n, C, r)$ as described in M. v. Weerdenburg. Calculation of Communication
+  /// Calculate \f$\phi(m, d, w, n, C, r)\f$ as described in M. v. Weerdenburg. Calculation of Communication
   /// with Open Terms in GenSpect Process Algebra.
   ///
   /// phi is a function that yields a list of pairs indicating how the actions in m|w|n can communicate.

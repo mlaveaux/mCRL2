@@ -81,7 +81,7 @@ public:
     std::size_t num_blocks_created = 1;
     std::size_t level = 0;
 
-    while (num_blocks_created > num_old_blocks && in_same_class(m_lts.initial_state(), initial_l2)) 
+    while (num_blocks_created > num_old_blocks && in_same_class(m_lts.initial_state(), initial_l2))
     {
       level += 1;
       num_old_blocks = num_blocks_created;
@@ -96,9 +96,8 @@ public:
 
   /** \brief Creates a state formula that distinguishes state s from state t.
    *  \details The states s and t are non branching bisimilar states. A distinguishign state formula phi is
-   *           returned, which has the property that s \in \sem{phi} and  t \not\in\sem{phi}.
-   *           Based on the preprint "Minimal Depth Distinguishing Formulas without Until for Branching Bisimulation",
-   *           2024 by Jan Martens and Jan Friso Groote.
+   *           returned, which has the property that \f$s \in \llbracket\phi\rrbracket\f$ and \f$t \notin \llbracket\phi\rrbracket\f$. Based on the preprint "Minimal Depth Distinguishing Formulas without Until for
+   * Branching Bisimulation", 2024 by Jan Martens and Jan Friso Groote.
    *  \param[in] s The state number for which the resulting formula should be true
    *  \param[in] t The state number for which the resulting formula should be false
    *  \return A minimal observation depth distinguishing state formula, that is often also minimum negation-depth and
@@ -155,7 +154,7 @@ private:
       std::swap(b.level, level);
     }
 
-    bool operator==(const block& other) 
+    bool operator==(const block& other)
     {
       return block_index == other.block_index;
     }
@@ -166,13 +165,13 @@ private:
     }
   };
   std::vector<block> blocks;
-  
+
   /*
   * Auxiliary function that computes whether a label is a tau index.
   */
   bool is_tau(label_type l)
-  { 
-    return m_lts.is_tau(m_lts.apply_hidden_label_map(l)); 
+  {
+    return m_lts.is_tau(m_lts.apply_hidden_label_map(l));
   }
 
   signature_type get_signature(state_type s)
@@ -323,9 +322,9 @@ private:
         truths_new.insert(b_og);
       }
     }
-    truths = truths_new; 
+    truths = truths_new;
   }
-  
+
   /**
    * \brief is_dist Checks if a given conjunction correctly exludes a set of blocks.
    * \param dist_blockpairs The blockpairs that were used to generate the conjuncts.
@@ -335,7 +334,7 @@ private:
    */
   bool is_dist(std::set<blockpair_type>& dist_blockpairs,
     std::set<block_index_type>& to_dist)
-  { 
+  {
     if (to_dist.empty())
     {
       return true;
@@ -369,10 +368,10 @@ private:
     }
     return true;
   }
-  
+
 
   std::vector<mcrl2::state_formulas::state_formula> filtered_dist_conjunction(
-    std::map<blockpair_type, mcrl2::state_formulas::state_formula>& Phi, 
+    std::map<blockpair_type, mcrl2::state_formulas::state_formula>& Phi,
     std::set<block_index_type>& Tdist,
     std::set<block_index_type>& Truths)
   {
@@ -414,7 +413,7 @@ private:
     // make blocks same level
     assert(block1.level == block2.level); // This should be true, otherwise need to make them same level.
     assert(block1.parent_block_index == block2.parent_block_index); // This should be true, otherwise need to make them same level.)
-    
+
     signature_type ds = block1.sig;
     signature_type dt = block2.sig;
 
@@ -447,7 +446,7 @@ private:
               blockpair2truths[std::make_pair(block1.block_index, block2.block_index)].begin()));
       return phi;
     }
-    
+
 
     // We have a distinguishing observation, start constructing the formula.
     label_type dist_label = std::get<1>(dist_obs);
@@ -474,7 +473,7 @@ private:
       // the following observation: block2 -\tau->> path2 -(tau)-> path2.
       T.push_back(std::make_pair(block2.parent_block_index, block2.parent_block_index));
     }
-    
+
     //Keep a copy of T for backwards filtering in postprocessing.
     std::set<blockpair_type> T_og;
     for (auto t : T)
@@ -485,12 +484,12 @@ private:
     // TODO: Remove this part and make T a set.
     // Sort T, such that the block with the highest distlevel in s'' get dealt with first.
     // This is a heuristic, no idea if it improves much or can be improved
-    std::sort(T.begin(), T.end(), 
+    std::sort(T.begin(), T.end(),
       [this, B2](std::pair<block_index_type, block_index_type> a, std::pair<block_index_type, block_index_type> b)
-        { 
+        {
         if (a.second == B2) {
           return false;
-        } 
+        }
         if (b.second == B2)
         {
           return true;
@@ -517,7 +516,7 @@ private:
       {
         std::pair<block_index_type, block_index_type> liftedPair = min_split_blockpair(B2, Bt1_Bt2.second);
         Phi1[liftedPair] = dist_formula(liftedPair.first, liftedPair.second);
-        // Update truthvalues for the formula <(dist_label)> phi1. 
+        // Update truthvalues for the formula <(dist_label)> phi1.
         split_and_intersect(Truths1, liftedPair);
       }
       else
@@ -550,7 +549,7 @@ private:
       }
     }
 
-    std::vector<mcrl2::state_formulas::state_formula> returnPhi1 = filtered_dist_conjunction(Phi1, Tset, Truths1); 
+    std::vector<mcrl2::state_formulas::state_formula> returnPhi1 = filtered_dist_conjunction(Phi1, Tset, Truths1);
 
 
     Tset.clear();
@@ -607,7 +606,7 @@ private:
             create_regular_formula(m_lts.action_label(0))), returnPhi);
     return blockpair2formula[std::make_pair(block1.block_index, block2.block_index)];
   }
- 
+
 };
 
 template <class LTS_TYPE>
@@ -633,13 +632,13 @@ bool destructive_branching_bisimulation_compare_minimal_depth(LTS_TYPE& l1,
     return true;
   }
 
-  init_l2 = branching_bisim_part.get_eq_class(init_l2); 
+  init_l2 = branching_bisim_part.get_eq_class(init_l2);
   branching_bisim_part.finalize_minimized_LTS();
 
-  //Start the new debugging to get minimal depth splitting information.  
+  //Start the new debugging to get minimal depth splitting information.
   branching_bisim_partitioner_minimal_depth<LTS_TYPE> branching_bisim_min(l1, init_l2);
 
-  //Min-depth partitioner should agree with dnj.  
+  //Min-depth partitioner should agree with dnj.
   assert(!branching_bisim_min.in_same_class(l1.initial_state(), init_l2));
 
   // LTSs are not bisimilar, we can create a counter example.

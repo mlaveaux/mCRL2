@@ -47,7 +47,7 @@ class prob_bisim_partitioner_grv  // Called after Groote, Rivera Verduzco and de
     }
 
     /** \brief Gives the bisimulation equivalence class number of a state.
-    *  \param[in] A state number.
+    *  \param[in] s A state number.
     *  \return The number of the bisimulation equivalence class to which the state belongs to. */
     std::size_t get_eq_class(const std::size_t s)
     {
@@ -56,7 +56,7 @@ class prob_bisim_partitioner_grv  // Called after Groote, Rivera Verduzco and de
     }
 
     /** \brief Gives the bisimulation equivalence probabilistic class number of a probabilistic state.
-    *  \param[in] A probabilistic state number.
+    *  \param[in] s A probabilistic state number.
     *  \return The number of the probabilistic class to which the state belongs to. */
     std::size_t get_eq_probabilistic_class(const std::size_t s)
     {
@@ -1318,15 +1318,15 @@ class prob_bisim_partitioner_grv  // Called after Groote, Rivera Verduzco and de
 
 
 /** \brief Reduce transition system l with respect to probabilistic bisimulation.
-* \param[in/out] l The transition system that is reduced.
+* \param[in,out] l The transition system that is reduced.
 */
 template < class LTS_TYPE>
 void probabilistic_bisimulation_reduce_grv(LTS_TYPE& l, utilities::execution_timer& timer);
 
 /** \brief Checks whether the two initial states of two plts's are probabilistic bisimilar.
 * \details This lts and the lts l2 are not usable anymore after this call.
-* \param[in/out] l1 A first probabilistic transition system.
-* \param[in/out] l2 A second probabilistic transition system.
+* \param[in,out] l1 A first probabilistic transition system.
+* \param[in,out] l2 A second probabilistic transition system.
 * \retval True iff the initial states of the current transition system and l2 are probabilistic bisimilar */
 template < class LTS_TYPE>
 bool destructive_probabilistic_bisimulation_compare_grv(LTS_TYPE& l1, LTS_TYPE& l2, utilities::execution_timer& timer);
@@ -1335,8 +1335,8 @@ bool destructive_probabilistic_bisimulation_compare_grv(LTS_TYPE& l1, LTS_TYPE& 
 *  \details The current transitions system and the lts l2 are first duplicated and subsequently
 *           reduced modulo bisimulation. If memory space is a concern, one could consider to
 *           use destructive_bisimulation_compare.
-* \param[in/out] l1 A first transition system.
-* \param[in/out] l2 A second transistion system.
+* \param[in,out] l1 A first transition system.
+* \param[in,out] l2 A second transistion system.
 * \retval True iff the initial states of the current transition system and l2 are probabilistic bisimilar */
 template < class LTS_TYPE>
 bool probabilistic_bisimulation_compare_grv(const LTS_TYPE& l1, const LTS_TYPE& l2, utilities::execution_timer& timer);
