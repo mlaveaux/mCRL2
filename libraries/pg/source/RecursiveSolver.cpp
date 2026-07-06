@@ -44,7 +44,7 @@ static std::vector<verti> get_complement(verti V, const DenseSet<verti> &s)
 }
 
 /*! Returns the first inversion in parity for priorities occurring in the given
-    game; i.e. the least value 'p` such that there is a priority `q` such that
+    game; i.e. the least value `p` such that there is a priority `q` such that
     cardinality(q) > 0 && cardinality(p) > 0 && q < p && q%2 != p%2.
 
     If there are no inversions, the priority limit, d, is returned instead. */

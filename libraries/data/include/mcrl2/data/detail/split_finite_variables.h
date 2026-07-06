@@ -17,13 +17,13 @@
 namespace mcrl2::data::detail
 {
 
-/// \brief Splits the variables in a subset with finite sort, with infinite sort and those that are not used according to a filter. 
+/// \brief Splits the variables in a subset with finite sort, with infinite sort and those that are not used according to a filter.
 /// \param variables A sequence of data variables.
 /// \param data A data specification.
 /// \param finite_variables A sequence of data variables.
 /// \param infinite_variables A sequence of data variables.
 /// \param unused A sequence of data variables that do not pass the filter.
-/// \param FILTER A predicate that indicates whether a variable is used. 
+/// \param filter A predicate that indicates whether a variable is used.
 template<typename FILTER>
 inline
 void split_finite_variables(data::variable_list variables, 
@@ -54,10 +54,10 @@ void split_finite_variables(data::variable_list variables,
 /// \param variables A sequence of data variables.
 /// \param data A data specification.
 /// \param rewr A data rewriter to determine which elements are enumerable.
-/// \param finite_variables A sequence of data variables.
-/// \param infinite_variables A sequence of data variables.
+/// \param enumerable_variables A sequence of data variables.
+/// \param non_enumerable_variables A sequence of data variables.
 /// \param unused A sequence of data variables that do not pass the filter.
-/// \param FILTER A predicate that indicates whether a variable is used. 
+/// \param filter A predicate that indicates whether a variable is used.
 template <typename Rewriter, typename FILTER>
 inline
 void split_enumerable_variables(data::variable_list variables, 

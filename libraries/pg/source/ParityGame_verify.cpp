@@ -10,7 +10,7 @@
 #include "mcrl2/pg/ParityGame.h"
 #include "mcrl2/pg/SCC.h"
 
-/*! \file ParityGame_verify.cc
+/*! \file pg/source/ParityGame_verify.cpp
 
     Implementation of parity game solution verification algorithm.
 */

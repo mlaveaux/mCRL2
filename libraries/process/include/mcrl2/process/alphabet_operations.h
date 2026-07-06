@@ -317,7 +317,7 @@ comm_inverse_cache calculate_comm_inverse_cache(const communication_expression_l
 /// \param action_names the set of action names that are allowed to be used in the result.
 /// \param alpha1 the multi action name to which the inverse of communication expressions are applied.
 /// \param alpha2 the multi action name to which the inverse of communication expressions have been applied.
-/// \param A_includes_subsets if true, in case not all action names in alpha = alpha1 \cup alpha2 are in action_names, the result will include the maximum subset of alpha of actions in action_names
+/// \param A_includes_subsets if true, in case not all action names in \f$ \alpha = \alpha1 \cup \alpha2\f$ are in action_names, the result will include the maximum subset of \f$ \alpha \f$ of actions in action_names
 /// \param result the set of multi action names that are the result of applying the inverse of communication expressions to alpha1 and alpha2.
 inline
 void comm_inverse(const comm_inverse_cache& C_inverse, const action_name_set& action_names, const multi_action_name& alpha1, const multi_action_name& alpha2, const bool A_includes_subsets, multi_action_name_set& result)

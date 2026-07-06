@@ -115,8 +115,8 @@ class pbesinst_lazy_todo
 
     void set_todo(atermpp::deque<propositional_variable_instantiation>& new_todo)
     {
-      todo.swap(new_todo); // Note: std::swap(todo, new_todo) is wrong when doing multithreading as the atermpp 
-                           // wrapper is not moved simultaneously with the content of the deque. 
+      todo.swap(new_todo); // Note: std::swap(todo, new_todo) is wrong when doing multithreading as the atermpp
+                           // wrapper is not moved simultaneously with the content of the deque.
       assert(check_invariants());
     }
 };
@@ -246,10 +246,9 @@ class pbesinst_lazy_algorithm
   public:
 
     /// \brief Constructor.
+    /// \param options The options used in the exploration algorithm.
     /// \param p The pbes used in the exploration algorithm.
-    /// \param options Te.
-    /// \param search_strategy The search strategy used to explore the pbes, typically depth or breadth first.
-    /// \param optimization An indication of the optimisation level.
+    /// \param rewriter An optional data rewriter. If not provided, one is constructed from the pbes.
     explicit pbesinst_lazy_algorithm(
       const pbessolve_options& options,
       const pbes& p,
@@ -388,7 +387,7 @@ class pbesinst_lazy_algorithm
           // If pruning took place, the current equation may not have been relevant, and therefore we simply
           // ignore it. If the current equation is not relevant, the newly discovered variables are also possibly
           // not relevant, and should not be added into the todo set, as otherwise these irrelevant variables
-          // will be explored further, potentially leading to massively wasted exploration and solving effort. 
+          // will be explored further, potentially leading to massively wasted exploration and solving effort.
           if (local_current_prune_round == global_current_prune_round)
           {
             mCRL2log(log::debug) << "generated equation " << X_e << " = " << psi_e

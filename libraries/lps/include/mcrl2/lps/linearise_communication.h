@@ -394,8 +394,6 @@ public:
   /// GenSpect Process Algebra.
   ///
   /// \param m The multiaction to which the communication operator is applied
-  /// \param C The communication expressions to be applied
-  /// \param RewriteTerm The rewriter that should be used to simplify the conditions.
   tuple_list apply(const process::action_list& m)
   {
     assert(std::is_sorted(m.begin(), m.end()));
@@ -723,11 +721,8 @@ protected:
   /// This is the function \f$\overline{\gamma}(C, r)\f$ as described in M. v. Weerdenburg. Calculation of Communication
   /// with Open Terms in GenSpect Process Algebra.
   ///
-  /// \param m_first Start of a range of multiactions to which the communication operator should be applied
-  /// \param m_last End of a range of multiactions to which the communication operator should be applied
-  /// \param C The communication expressions that must be applied to the multiaction
-  /// \param r
-  /// \param RewriteTerm Data rewriter for simplifying expressions.
+  /// \param m The multiaction to which the communication operator should be applied
+  /// \param r The communication expressions that must be applied to the multiaction
   inline tuple_list makeMultiActionConditionList_aux(const process::action_list& m, const process::action_list& r)
   {
     assert(std::is_sorted(m.begin(), m.end()));

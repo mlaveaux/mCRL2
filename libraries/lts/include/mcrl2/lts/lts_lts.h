@@ -158,7 +158,6 @@ class action_label_lts: public mcrl2::lps::multi_action
     }
 
     /** \brief Hide the actions with labels in tau_actions.
-        \return Returns whether the hidden action becomes empty, i.e. a tau or hidden action.
     */
     void hide_actions(const std::vector<std::string>& tau_actions)
     {
@@ -196,7 +195,7 @@ inline std::string pp(const action_label_lts& l)
              mcrl2::runtime_error is thrown.
     \param[in] multi_action_string The string to be parsed.
     \param[in] data_spec The data specification used for parsing.
-    \param[in] act_decls Action declarations.
+    \param[in] typechecker The type checker used for parsing.
     \return The parsed and type checked multi action. */
 inline action_label_lts parse_lts_action(
   const std::string& multi_action_string,

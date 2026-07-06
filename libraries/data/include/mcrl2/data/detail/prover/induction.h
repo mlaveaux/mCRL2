@@ -169,7 +169,7 @@ class Induction
       return f_list_variables.size() != f_count;
     }
 
-    /// \requires can_apply_induction()
+    /// \pre can_apply_induction()
     data_expression apply_induction()
     {
       assert(can_apply_induction());

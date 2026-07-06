@@ -296,7 +296,7 @@ bool compare(const LTS_TYPE& l1,
  * \param[in] l2 The second LTS to be compared.
  * \param[in] pre The preorder with respect to which the LTSs will be
  *            compared.
- * \param[in] generate_counter_examples Whether to generate a counter example
+ * \param[in] generate_counter_example Whether to generate a counter example
  * \param[in] counter_example_file The file to store the counter example in
  * \param[in] strategy Choose breadth-first or depth-first for exploration strategy
  *            of the antichain algorithms.
@@ -326,7 +326,7 @@ bool destructive_compare(LTS_TYPE& l1,
  * \param[in] l1 The first LTS to be compared.
  * \param[in] l2 The second LTS to be compared.
  * \param[in] pre The preorder with respect to which the LTSs will be compared.
- * \param[in] generate_counter_examples Whether to generate a counter example
+ * \param[in] generate_counter_example Whether to generate a counter example
  * \param[in] counter_example_file The file to store the counter example in
  * \param[in] strategy Choose breadth-first or depth-first for exploration strategy
  *            of the antichain algorithms.

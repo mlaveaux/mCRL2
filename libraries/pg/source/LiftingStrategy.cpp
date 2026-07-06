@@ -16,7 +16,7 @@
 #include <cstdlib>
 
 /// \brief Convert string to lowercase.
-/// \param in An input string
+/// \param s An input string
 /// \return The text in \a in in lowercase
 static inline
 std::string tolower(std::string s)

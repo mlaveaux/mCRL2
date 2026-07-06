@@ -74,7 +74,6 @@ class probabilistic_state
 
     /** \brief Constructor of a probabilistic state from a non probabilistic state.
      *  \param[in] s A state.
-     *  \return The generated probabilistic state.
      **/
     explicit probabilistic_state(const STATE& s)
       : m_single_state(s)
@@ -106,8 +105,7 @@ class probabilistic_state
 
     /** \brief Creates a probabilistic state on the basis of state_probability_pairs.
      * \param[in] begin Iterator to the first state_probability_pair.
-     * \param[in] end Iterator to the last state_probability_pair.
-     * \return Resulting probabilistic state.  **/
+     * \param[in] end Iterator to the last state_probability_pair.  **/
     template <class STATE_PROBABILITY_PAIR_ITERATOR>
     probabilistic_state(const STATE_PROBABILITY_PAIR_ITERATOR begin, const STATE_PROBABILITY_PAIR_ITERATOR end)
       : m_single_state(STATE(-1)),
@@ -161,7 +159,7 @@ class probabilistic_state
     }
 
     /** \brief Swap this probabilistic state.
-     * \param[in] s A probabilistic state. */
+     * \param[in] other A probabilistic state. */
     void swap(probabilistic_state& other) noexcept
     {
       std::swap(m_single_state,other.m_single_state);
@@ -191,10 +189,9 @@ class probabilistic_state
       m_single_state=s; 
     }
 
-    /** \brief Get a probabilistic state if is is simple, i.e., consists of a single state. 
+    /** \brief Get a probabilistic state if is is simple, i.e., consists of a single state.
      * \details It is assumed that the given state probability pair does not have
-               any element.
-     * \param[in] s The state. */
+               any element. */
     STATE get() const
     {
       if (m_probabilistic_state.size()>1)

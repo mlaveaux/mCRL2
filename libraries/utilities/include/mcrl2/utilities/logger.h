@@ -238,7 +238,6 @@ class logger: private utilities::noncopyable
     }
 
     /// Get access to the stream provided by the logger.
-    /// \param[in] l Log level for the stream
     std::ostringstream& get()
     {
       return m_os;

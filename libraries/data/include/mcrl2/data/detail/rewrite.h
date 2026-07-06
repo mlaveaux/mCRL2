@@ -80,15 +80,16 @@ class Rewriter
 
     /**
      * \brief Rewrite an mCRL2 data term.
-     * \param Term The term to be rewritten. This term should be a data_term
-     * \return The normal form of Term.
+     * \param term The term to be rewritten. This term should be a data_term
+     * \return The normal form of term.
      **/
     virtual data_expression rewrite(const data_expression& term, substitution_type& sigma) = 0;
 
     /**
      * \brief Rewrite an mCRL2 data term.
-     * \param Term The term to be rewritten. This term should be a data_term
-     * \return The normal form of Term.
+     * \param result The normal form of term.
+     * \param term The term to be rewritten. This term should be a data_term
+     * \post result contains the normal form of term.
      **/
     virtual void rewrite(data_expression& result, const data_expression& term, substitution_type& sigma) = 0;
 

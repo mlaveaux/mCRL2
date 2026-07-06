@@ -69,7 +69,7 @@ public:
   explicit term_list(const aterm& t) noexcept
     : aterm(t)
   {
-    assert(type_is_list());  // A list should not be a default aterm. 
+    assert(type_is_list());  // A list should not be a default aterm.
   }
 
   /// \brief Copy constructor.
@@ -135,7 +135,7 @@ public:
   /// \param convert_to_aterm A class with a () operation, which is applied to each element
   ///                   before it is put into the list.
   /// \param aterm_filter A class with an operator () that yields a bool, and if true the elements is inserted in the list.
-  ///                     Otherwise, it is ignored. 
+  ///                     Otherwise, it is ignored.
   template <class Iter, class ATermConverter, class ATermFilter>
     requires std::is_base_of_v<std::bidirectional_iterator_tag,
       typename std::iterator_traits<Iter>::iterator_category>
@@ -202,7 +202,7 @@ public:
   /// \param convert_to_aterm A class with a () operation, whic is applied to each element
   ///                      before it is put into the list.
   /// \param aterm_filter A class with an operator () yielding a bool that if true allows the element to be added to the list.
-  ///                     Otherwise, the element is not added. 
+  ///                     Otherwise, the element is not added.
   template <class Iter, class ATermConverter, class ATermFilter>
     requires (!std::is_base_of_v<std::bidirectional_iterator_tag,
       typename std::iterator_traits<Iter>::iterator_category>)
@@ -264,7 +264,7 @@ public:
   void push_front(const Term& el);
 
   /// \brief Construct and insert a new element at the beginning of the current list.
-  /// \param el The term that is added.
+  /// \param arguments Arguments forwarded to construct the new element.
   template<typename ...Args>
   void emplace_front(Args&&... arguments);
 
@@ -327,7 +327,7 @@ public:
 
 
 /// \brief Make an empty list and put it in target;
-/// \param target The variable to which the empty list is assigned. 
+/// \param target The variable to which the empty list is assigned.
 template <class Term>
 void make_term_list(term_list<Term>& target)
 {
@@ -336,7 +336,7 @@ void make_term_list(term_list<Term>& target)
 
 /// \brief Creates a term_list with the elements from first to last.
 /// \details It is assumed that the range can be traversed from last to first.
-/// \param target The variable to which the list is assigned. 
+/// \param target The variable to which the list is assigned.
 /// \param first The start of a range of elements.
 /// \param last The end of a range of elements.
 template <class Term, class Iter>
@@ -354,7 +354,7 @@ void make_term_list(term_list<Term>& target,
 /// \brief Creates a term_list with the elements from first to last converting the elements before inserting.
 /// \details It is assumed that the range can be traversed from last to first. The operator () in the class
 ///          ATermConverter is applied to each element before inserting it in the list.
-/// \param target The variable to which the list is assigned. 
+/// \param target The variable to which the list is assigned.
 /// \param first The start of a range of elements.
 /// \param last The end of a range of elements.
 /// \param convert_to_aterm A class with a () operation, which is applied to each element
@@ -375,7 +375,7 @@ void make_term_list(term_list<Term>& target,
 /// \details It is assumed that the range can be traversed from last to first. The operator () in the class
 ///          ATermConverter is applied to each element before inserting it in the list. Elements are only
 ///          inserted if the operator () of the class ATermFilter yields true when applied to such an element.
-/// \param target The variable to which the list is assigned. 
+/// \param target The variable to which the list is assigned.
 /// \param first The start of a range of elements.
 /// \param last The end of a range of elements.
 /// \param convert_to_aterm A class with a () operation, which is applied to each element
@@ -398,7 +398,7 @@ void make_term_list(term_list<Term>& target,
 /// \details The range is traversed from first to last. This requires
 ///           to copy the elements internally, which is less efficient
 ///           than this function with random access iterators as arguments.
-/// \param target The variable to which the list is assigned. 
+/// \param target The variable to which the list is assigned.
 /// \param first The start of a range of elements.
 /// \param last The end of a range of elements.
 template <class Term, class Iter>
@@ -419,7 +419,7 @@ void make_term_list(term_list<Term>& target,
 ///           than this function with random access iterators as arguments.
 ///           The operator () in the class
 ///           ATermConverter is applied to each element before inserting it in the list.
-/// \param target The variable to which the list is assigned. 
+/// \param target The variable to which the list is assigned.
 /// \param first The start of a range of elements.
 /// \param last The end of a range of elements.
 /// \param convert_to_aterm A class with a () operation, which is applied to each element
@@ -444,7 +444,7 @@ void make_term_list(term_list<Term>& target,
 ///           The operator () in the class ATermConverter is applied to
 ///           each element before inserting it in the list. Elements are only
 ///           inserted if the operator () of the class ATermFilter yields true when applied to such an element.
-/// \param target The variable to which the list is assigned. 
+/// \param target The variable to which the list is assigned.
 /// \param first The start of a range of elements.
 /// \param last The end of a range of elements.
 /// \param convert_to_aterm A class with a () operation, which is applied to each element
@@ -466,7 +466,7 @@ void make_term_list(term_list<Term>& target,
 
 /// \brief A constructor based on an initializer list.
 /// \details This constructor is not made explicit to conform to initializer lists in standard containers.
-/// \param target The variable to which the list is assigned. 
+/// \param target The variable to which the list is assigned.
 /// \param init The initialiser list.
 template <class Term>
 void make_term_list(term_list<Term>& target, std::initializer_list<Term> init)
@@ -504,8 +504,8 @@ public:
   std::size_t size() const
   {
     std::size_t size=0;
-    for(_aterm_list const* i=this; 
-        i->function()!=detail::g_term_pool().as_empty_list(); 
+    for(_aterm_list const* i=this;
+        i->function()!=detail::g_term_pool().as_empty_list();
         i=static_cast<_aterm_list const*>(address(i->tail())))
     {
       ++size;
@@ -522,11 +522,11 @@ public:
 /// \brief A term_list with elements of type aterm.
 using aterm_list = term_list<aterm>;
 
-/// \brief Returns whether the given list is sorted according to the given ordering which is by default the standard ordering on Term. 
+/// \brief Returns whether the given list is sorted according to the given ordering which is by default the standard ordering on Term.
 /// \param l A list.
-/// \param ordering A total orderings relation on Term, by default the ordering relation on Terms. 
-/// \details This operator has linear complexity. 
-/// \return A boolean indicating whether the list is sorted. 
+/// \param ordering A total orderings relation on Term, by default the ordering relation on Terms.
+/// \details This operator has linear complexity.
+/// \return A boolean indicating whether the list is sorted.
 template <typename Term, typename Compare = std::less<Term>>
 inline
 bool is_sorted(const term_list<Term>& l, Compare ordering = Compare{})
@@ -534,10 +534,6 @@ bool is_sorted(const term_list<Term>& l, Compare ordering = Compare{})
   return std::is_sorted(l.begin(), l.end(), ordering);
 }
 
-
-/// \brief Returns the list with the elements sorted according to the given ordering which is by default standard ordering on Term. 
-/// \param l A list.
-/// \param ordering A total orderings relation on Term, by default the ordering relation on Terms. 
 
 /// \brief Returns the list with the elements in reversed order.
 /// \param l A list.
@@ -547,29 +543,29 @@ template <typename Term>
 inline
 term_list<Term> reverse(const term_list<Term>& l);
 
-/// \brief Returns the list with the elements sorted according to given ordering which is by default the ordering of addresses of terms. 
+/// \brief Returns the list with the elements sorted according to given ordering which is by default the ordering of addresses of terms.
 /// \param l A list.
-/// \param ordering An total orderings relation on Term, by default the ordering relation on Terms. 
+/// \param ordering An total orderings relation on Term, by default the ordering relation on Terms.
 /// \details This operator has complexity nlog n where n is the size of the list.
 /// \return The sorted list.
 template <typename Term, typename Compare = std::less<Term>>
 inline
 term_list<Term> sort_list(const term_list<Term>& l, Compare ordering = Compare{});
 
-/// \brief Returns the list with element t inserted in l lexicographically according to the provided ordering. 
+/// \brief Returns the list with element t inserted in l lexicographically according to the provided ordering.
 /// \param t An element to be inserted.
 /// \param l A list.
-/// \param ordering A total orderings relation on Term, by default the ordering relation on Terms. 
-/// \details This operator has linear complexity. It is assumed that the list l is ordered for it to work. 
+/// \param ordering A total orderings relation on Term, by default the ordering relation on Terms.
+/// \details This operator has linear complexity. It is assumed that the list l is ordered for it to work.
 /// \return The sorted list.
 template <typename Term, typename Compare = std::less<Term>>
 inline
 term_list<Term> insert_sorted(const Term& t, const term_list<Term>& l, Compare ordering = Compare{});
 
-/// \brief Returns the merged list sorted according to the given ordering, which is by default the ordering of addresses of terms. 
+/// \brief Returns the merged list sorted according to the given ordering, which is by default the ordering of addresses of terms.
 /// \param l1 An ordered list.
 /// \param l2 Another ordered list.
-/// \param ordering A total orderings relation on Term, by default the ordering relation on Terms. 
+/// \param ordering A total orderings relation on Term, by default the ordering relation on Terms.
 /// \details This operator is linear in the cumulative length of l1 and l2. In debug mode it checks whether l1 and l2 are ordered.
 /// \return The sorted list.
 template <typename Term, typename Compare = std::less<Term>>

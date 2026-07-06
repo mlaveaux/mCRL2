@@ -24,7 +24,7 @@ namespace mcrl2::lts
 {
 
 /** \brief Sorts the transitions using a sort style.
- * \param[in/out] transitions A vector of transitions to be sorted. 
+ * \param[in,out] transitions A vector of transitions to be sorted. 
  * \param[in] hidden_label_set A set that tells which actions are to be interpreted as being hidden.
  *            Sorting takes place after mapping hidden actions to zero.
  * \param[in] ts The sort style to use.
@@ -80,7 +80,7 @@ inline void sort_transitions(std::vector<transition>& transitions,
  * \details This function is linear in time, but it uses that the labels have a limited range, 
  *          i.e., it is also linear in time and space in the largest used index of a label. 
  *          This function does not employ the hidden label set. 
- * \param[in/out] transitions A vector of transitions to be sorted. 
+ * \param[in,out] transitions A vector of transitions to be sorted. 
  **/
 inline std::string ptr(const transition t)
     {
@@ -387,7 +387,7 @@ inline void group_transitions_on_tgt_label(LTS_TYPE& aut)
 }
 
 /** \brief Sorts the transitions using a sort style.
- * \param[in/out] transitions A vector of transitions to be sorted. 
+ * \param[in,out] transitions A vector of transitions to be sorted. 
  * \param[in] ts The sort style to use.
  */
 

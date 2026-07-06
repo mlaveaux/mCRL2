@@ -202,14 +202,13 @@ namespace detail
 
     /** \brief  Creates the determine function.
       * \param sort The sort on which this function operates
-      * \return A function that maps constructors to the fresh basic sort
+      * \post The determine function for the given sort has been added to the data specification.
     **/
     void create_determine_function(const data::sort_expression& sort);
 
     /** \brief  Creates projection functions for the unfolded process parameter.
       * \param sort The sort on which these functions operate
-      * \return A function that returns the projection functions for the
-      *         constructors of the unfolded process parameter.
+      * \post The projection functions for the given sort have been added to the data specification.
     **/
     void create_projection_functions(const data::sort_expression& sort);
 
@@ -223,7 +222,7 @@ namespace detail
 
     /** \brief  Creates a set of constructors for the fresh basic sort
       * \param sort The sort for which to create analogous constructors
-      * \return The constructors that are created for the fresh basic sort
+      * \post The new constructors for the given sort have been added to the data specification.
     **/
     void create_new_constructors(const data::sort_expression& sort);
 
