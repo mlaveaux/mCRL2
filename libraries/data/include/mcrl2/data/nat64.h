@@ -156,7 +156,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@succ_nat.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@succ_nat to a number of arguments.
       inline
       application succ_nat(const data_expression& arg0)
@@ -165,9 +165,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@succ_nat.
-      /// \param result The data expression where the \@succ_nat expression is put.
+      /// \param[out] result The data expression where the \@succ_nat expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_succ_nat(data_expression& result, const data_expression& arg0)
       {
@@ -218,8 +218,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@nnPair.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@nnPair to a number of arguments.
       inline
       application nnpair(const data_expression& arg0, const data_expression& arg1)
@@ -228,10 +228,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@nnPair.
-      /// \param result The data expression where the \@nnPair expression is put.
+      /// \param[out] result The data expression where the \@nnPair expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_nnpair(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -316,7 +316,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@most_significant_digitNat.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@most_significant_digitNat to a number of arguments.
       inline
       application most_significant_digit_nat(const data_expression& arg0)
@@ -325,9 +325,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@most_significant_digitNat.
-      /// \param result The data expression where the \@most_significant_digitNat expression is put.
+      /// \param[out] result The data expression where the \@most_significant_digitNat expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_most_significant_digit_nat(data_expression& result, const data_expression& arg0)
       {
@@ -391,8 +391,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@concat_digit.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@concat_digit to a number of arguments.
       inline
       application concat_digit(const data_expression& arg0, const data_expression& arg1)
@@ -401,10 +401,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@concat_digit.
-      /// \param result The data expression where the \@concat_digit expression is put.
+      /// \param[out] result The data expression where the \@concat_digit expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_concat_digit(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -455,7 +455,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@equals_zero.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@equals_zero to a number of arguments.
       inline
       application equals_zero(const data_expression& arg0)
@@ -464,9 +464,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@equals_zero.
-      /// \param result The data expression where the \@equals_zero expression is put.
+      /// \param[out] result The data expression where the \@equals_zero expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_equals_zero(data_expression& result, const data_expression& arg0)
       {
@@ -517,7 +517,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@not_equals_zero.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@not_equals_zero to a number of arguments.
       inline
       application not_equals_zero(const data_expression& arg0)
@@ -526,9 +526,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@not_equals_zero.
-      /// \param result The data expression where the \@not_equals_zero expression is put.
+      /// \param[out] result The data expression where the \@not_equals_zero expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_not_equals_zero(data_expression& result, const data_expression& arg0)
       {
@@ -579,7 +579,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@equals_one.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@equals_one to a number of arguments.
       inline
       application equals_one(const data_expression& arg0)
@@ -588,9 +588,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@equals_one.
-      /// \param result The data expression where the \@equals_one expression is put.
+      /// \param[out] result The data expression where the \@equals_one expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_equals_one(data_expression& result, const data_expression& arg0)
       {
@@ -641,7 +641,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol Pos2Nat.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of Pos2Nat to a number of arguments.
       inline
       application pos2nat(const data_expression& arg0)
@@ -650,9 +650,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol Pos2Nat.
-      /// \param result The data expression where the Pos2Nat expression is put.
+      /// \param[out] result The data expression where the Pos2Nat expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_pos2nat(data_expression& result, const data_expression& arg0)
       {
@@ -703,7 +703,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol Nat2Pos.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of Nat2Pos to a number of arguments.
       inline
       application nat2pos(const data_expression& arg0)
@@ -712,9 +712,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol Nat2Pos.
-      /// \param result The data expression where the Nat2Pos expression is put.
+      /// \param[out] result The data expression where the Nat2Pos expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_nat2pos(data_expression& result, const data_expression& arg0)
       {
@@ -765,7 +765,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol succ.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of succ to a number of arguments.
       inline
       application succ(const data_expression& arg0)
@@ -774,9 +774,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol succ.
-      /// \param result The data expression where the succ expression is put.
+      /// \param[out] result The data expression where the succ expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_succ(data_expression& result, const data_expression& arg0)
       {
@@ -848,8 +848,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol max.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of max to a number of arguments.
       inline
       application maximum(const data_expression& arg0, const data_expression& arg1)
@@ -858,10 +858,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol max.
-      /// \param result The data expression where the max expression is put.
+      /// \param[out] result The data expression where the max expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_maximum(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -925,8 +925,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol min.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of min to a number of arguments.
       inline
       application minimum(const data_expression& arg0, const data_expression& arg1)
@@ -935,10 +935,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol min.
-      /// \param result The data expression where the min expression is put.
+      /// \param[out] result The data expression where the min expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_minimum(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -989,7 +989,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol pred.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of pred to a number of arguments.
       inline
       application pred(const data_expression& arg0)
@@ -998,9 +998,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol pred.
-      /// \param result The data expression where the pred expression is put.
+      /// \param[out] result The data expression where the pred expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_pred(data_expression& result, const data_expression& arg0)
       {
@@ -1051,7 +1051,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@pred_whr.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@pred_whr to a number of arguments.
       inline
       application pred_whr(const data_expression& arg0)
@@ -1060,9 +1060,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@pred_whr.
-      /// \param result The data expression where the \@pred_whr expression is put.
+      /// \param[out] result The data expression where the \@pred_whr expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_pred_whr(data_expression& result, const data_expression& arg0)
       {
@@ -1134,8 +1134,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol +.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of + to a number of arguments.
       inline
       application plus(const data_expression& arg0, const data_expression& arg1)
@@ -1144,10 +1144,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol +.
-      /// \param result The data expression where the + expression is put.
+      /// \param[out] result The data expression where the + expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_plus(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1211,8 +1211,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@add_with_carry.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@add_with_carry to a number of arguments.
       inline
       application add_with_carry(const data_expression& arg0, const data_expression& arg1)
@@ -1221,10 +1221,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@add_with_carry.
-      /// \param result The data expression where the \@add_with_carry expression is put.
+      /// \param[out] result The data expression where the \@add_with_carry expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_add_with_carry(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1275,8 +1275,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@plus_nat.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@plus_nat to a number of arguments.
       inline
       application auxiliary_plus_nat(const data_expression& arg0, const data_expression& arg1)
@@ -1285,10 +1285,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@plus_nat.
-      /// \param result The data expression where the \@plus_nat expression is put.
+      /// \param[out] result The data expression where the \@plus_nat expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_auxiliary_plus_nat(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1352,8 +1352,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol *.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of * to a number of arguments.
       inline
       application times(const data_expression& arg0, const data_expression& arg1)
@@ -1362,10 +1362,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol *.
-      /// \param result The data expression where the * expression is put.
+      /// \param[out] result The data expression where the * expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_times(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1429,8 +1429,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@times_ordered.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@times_ordered to a number of arguments.
       inline
       application times_ordered(const data_expression& arg0, const data_expression& arg1)
@@ -1439,10 +1439,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@times_ordered.
-      /// \param result The data expression where the \@times_ordered expression is put.
+      /// \param[out] result The data expression where the \@times_ordered expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_times_ordered(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1506,9 +1506,9 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@times_overflow.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@times_overflow to a number of arguments.
       inline
       application times_overflow(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -1517,11 +1517,11 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@times_overflow.
-      /// \param result The data expression where the \@times_overflow expression is put.
+      /// \param[out] result The data expression where the \@times_overflow expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_times_overflow(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -1572,8 +1572,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol div.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of div to a number of arguments.
       inline
       application div(const data_expression& arg0, const data_expression& arg1)
@@ -1582,10 +1582,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol div.
-      /// \param result The data expression where the div expression is put.
+      /// \param[out] result The data expression where the div expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_div(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1636,8 +1636,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol mod.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of mod to a number of arguments.
       inline
       application mod(const data_expression& arg0, const data_expression& arg1)
@@ -1646,10 +1646,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol mod.
-      /// \param result The data expression where the mod expression is put.
+      /// \param[out] result The data expression where the mod expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_mod(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1713,8 +1713,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol exp.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of exp to a number of arguments.
       inline
       application exp(const data_expression& arg0, const data_expression& arg1)
@@ -1723,10 +1723,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol exp.
-      /// \param result The data expression where the exp expression is put.
+      /// \param[out] result The data expression where the exp expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_exp(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1777,7 +1777,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol sqrt.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of sqrt to a number of arguments.
       inline
       application sqrt(const data_expression& arg0)
@@ -1786,9 +1786,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol sqrt.
-      /// \param result The data expression where the sqrt expression is put.
+      /// \param[out] result The data expression where the sqrt expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_sqrt(data_expression& result, const data_expression& arg0)
       {
@@ -1839,7 +1839,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@natpred.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@natpred to a number of arguments.
       inline
       application natpred(const data_expression& arg0)
@@ -1848,9 +1848,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@natpred.
-      /// \param result The data expression where the \@natpred expression is put.
+      /// \param[out] result The data expression where the \@natpred expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_natpred(data_expression& result, const data_expression& arg0)
       {
@@ -1901,7 +1901,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@is_odd.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@is_odd to a number of arguments.
       inline
       application is_odd(const data_expression& arg0)
@@ -1910,9 +1910,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@is_odd.
-      /// \param result The data expression where the \@is_odd expression is put.
+      /// \param[out] result The data expression where the \@is_odd expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_is_odd(data_expression& result, const data_expression& arg0)
       {
@@ -1963,7 +1963,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@div2.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@div2 to a number of arguments.
       inline
       application div2(const data_expression& arg0)
@@ -1972,9 +1972,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@div2.
-      /// \param result The data expression where the \@div2 expression is put.
+      /// \param[out] result The data expression where the \@div2 expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_div2(data_expression& result, const data_expression& arg0)
       {
@@ -2025,8 +2025,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@monus.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@monus to a number of arguments.
       inline
       application monus(const data_expression& arg0, const data_expression& arg1)
@@ -2035,10 +2035,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@monus.
-      /// \param result The data expression where the \@monus expression is put.
+      /// \param[out] result The data expression where the \@monus expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_monus(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -2089,11 +2089,11 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@monus_whr.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       /// \return Application of \@monus_whr to a number of arguments.
       inline
       application monus_whr(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
@@ -2102,13 +2102,13 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@monus_whr.
-      /// \param result The data expression where the \@monus_whr expression is put.
+      /// \param[out] result The data expression where the \@monus_whr expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       inline
       void make_monus_whr(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
       {
@@ -2159,9 +2159,9 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@exp_aux3p.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@exp_aux3p to a number of arguments.
       inline
       application exp_aux3p(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -2170,11 +2170,11 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@exp_aux3p.
-      /// \param result The data expression where the \@exp_aux3p expression is put.
+      /// \param[out] result The data expression where the \@exp_aux3p expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_exp_aux3p(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -2225,10 +2225,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@exp_aux4p.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@exp_aux4p to a number of arguments.
       inline
       application exp_aux4p(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -2237,12 +2237,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@exp_aux4p.
-      /// \param result The data expression where the \@exp_aux4p expression is put.
+      /// \param[out] result The data expression where the \@exp_aux4p expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_exp_aux4p(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -2293,9 +2293,9 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@exp_aux3n.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@exp_aux3n to a number of arguments.
       inline
       application exp_aux3n(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -2304,11 +2304,11 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@exp_aux3n.
-      /// \param result The data expression where the \@exp_aux3n expression is put.
+      /// \param[out] result The data expression where the \@exp_aux3n expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_exp_aux3n(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -2359,10 +2359,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@exp_aux4n.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@exp_aux4n to a number of arguments.
       inline
       application exp_aux4n(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -2371,12 +2371,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@exp_aux4n.
-      /// \param result The data expression where the \@exp_aux4n expression is put.
+      /// \param[out] result The data expression where the \@exp_aux4n expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_exp_aux4n(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -2427,9 +2427,9 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@exp_auxtruep.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@exp_auxtruep to a number of arguments.
       inline
       application exp_auxtruep(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -2438,11 +2438,11 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@exp_auxtruep.
-      /// \param result The data expression where the \@exp_auxtruep expression is put.
+      /// \param[out] result The data expression where the \@exp_auxtruep expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_exp_auxtruep(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -2493,9 +2493,9 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@exp_auxtruen.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@exp_auxtruen to a number of arguments.
       inline
       application exp_auxtruen(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -2504,11 +2504,11 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@exp_auxtruen.
-      /// \param result The data expression where the \@exp_auxtruen expression is put.
+      /// \param[out] result The data expression where the \@exp_auxtruen expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_exp_auxtruen(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -2559,9 +2559,9 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@exp_auxfalsep.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@exp_auxfalsep to a number of arguments.
       inline
       application exp_auxfalsep(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -2570,11 +2570,11 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@exp_auxfalsep.
-      /// \param result The data expression where the \@exp_auxfalsep expression is put.
+      /// \param[out] result The data expression where the \@exp_auxfalsep expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_exp_auxfalsep(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -2625,9 +2625,9 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@exp_auxfalsen.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@exp_auxfalsen to a number of arguments.
       inline
       application exp_auxfalsen(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -2636,11 +2636,11 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@exp_auxfalsen.
-      /// \param result The data expression where the \@exp_auxfalsen expression is put.
+      /// \param[out] result The data expression where the \@exp_auxfalsen expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_exp_auxfalsen(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -2691,8 +2691,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@div_bold.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@div_bold to a number of arguments.
       inline
       application div_bold(const data_expression& arg0, const data_expression& arg1)
@@ -2701,10 +2701,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@div_bold.
-      /// \param result The data expression where the \@div_bold expression is put.
+      /// \param[out] result The data expression where the \@div_bold expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_div_bold(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -2755,12 +2755,12 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@div_bold_whr.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
-      /// \param arg5 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
+      /// \param[in] arg5 A data expression.
       /// \return Application of \@div_bold_whr to a number of arguments.
       inline
       application div_bold_whr(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4, const data_expression& arg5)
@@ -2769,14 +2769,14 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@div_bold_whr.
-      /// \param result The data expression where the \@div_bold_whr expression is put.
+      /// \param[out] result The data expression where the \@div_bold_whr expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
-      /// \param arg5 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
+      /// \param[in] arg5 A data expression.
       inline
       void make_div_bold_whr(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4, const data_expression& arg5)
       {
@@ -2827,10 +2827,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@div_whr1.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@div_whr1 to a number of arguments.
       inline
       application div_whr1(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -2839,12 +2839,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@div_whr1.
-      /// \param result The data expression where the \@div_whr1 expression is put.
+      /// \param[out] result The data expression where the \@div_whr1 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_div_whr1(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -2895,11 +2895,11 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@div_whr2.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       /// \return Application of \@div_whr2 to a number of arguments.
       inline
       application div_whr2(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
@@ -2908,13 +2908,13 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@div_whr2.
-      /// \param result The data expression where the \@div_whr2 expression is put.
+      /// \param[out] result The data expression where the \@div_whr2 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       inline
       void make_div_whr2(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
       {
@@ -2965,10 +2965,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@mod_whr1.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@mod_whr1 to a number of arguments.
       inline
       application mod_whr1(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -2977,12 +2977,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@mod_whr1.
-      /// \param result The data expression where the \@mod_whr1 expression is put.
+      /// \param[out] result The data expression where the \@mod_whr1 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_mod_whr1(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -3033,8 +3033,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@divmod_aux.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@divmod_aux to a number of arguments.
       inline
       application divmod_aux(const data_expression& arg0, const data_expression& arg1)
@@ -3043,10 +3043,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@divmod_aux.
-      /// \param result The data expression where the \@divmod_aux expression is put.
+      /// \param[out] result The data expression where the \@divmod_aux expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_divmod_aux(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -3097,10 +3097,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@divmod_aux_whr1.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@divmod_aux_whr1 to a number of arguments.
       inline
       application divmod_aux_whr1(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -3109,12 +3109,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@divmod_aux_whr1.
-      /// \param result The data expression where the \@divmod_aux_whr1 expression is put.
+      /// \param[out] result The data expression where the \@divmod_aux_whr1 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_divmod_aux_whr1(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -3165,11 +3165,11 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@divmod_aux_whr2.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       /// \return Application of \@divmod_aux_whr2 to a number of arguments.
       inline
       application divmod_aux_whr2(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
@@ -3178,13 +3178,13 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@divmod_aux_whr2.
-      /// \param result The data expression where the \@divmod_aux_whr2 expression is put.
+      /// \param[out] result The data expression where the \@divmod_aux_whr2 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       inline
       void make_divmod_aux_whr2(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
       {
@@ -3235,11 +3235,11 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@divmod_aux_whr3.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       /// \return Application of \@divmod_aux_whr3 to a number of arguments.
       inline
       application divmod_aux_whr3(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
@@ -3248,13 +3248,13 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@divmod_aux_whr3.
-      /// \param result The data expression where the \@divmod_aux_whr3 expression is put.
+      /// \param[out] result The data expression where the \@divmod_aux_whr3 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       inline
       void make_divmod_aux_whr3(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
       {
@@ -3305,10 +3305,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@divmod_aux_whr4.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@divmod_aux_whr4 to a number of arguments.
       inline
       application divmod_aux_whr4(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -3317,12 +3317,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@divmod_aux_whr4.
-      /// \param result The data expression where the \@divmod_aux_whr4 expression is put.
+      /// \param[out] result The data expression where the \@divmod_aux_whr4 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_divmod_aux_whr4(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -3373,10 +3373,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@divmod_aux_whr5.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@divmod_aux_whr5 to a number of arguments.
       inline
       application divmod_aux_whr5(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -3385,12 +3385,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@divmod_aux_whr5.
-      /// \param result The data expression where the \@divmod_aux_whr5 expression is put.
+      /// \param[out] result The data expression where the \@divmod_aux_whr5 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_divmod_aux_whr5(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -3441,11 +3441,11 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@divmod_aux_whr6.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       /// \return Application of \@divmod_aux_whr6 to a number of arguments.
       inline
       application divmod_aux_whr6(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
@@ -3454,13 +3454,13 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@divmod_aux_whr6.
-      /// \param result The data expression where the \@divmod_aux_whr6 expression is put.
+      /// \param[out] result The data expression where the \@divmod_aux_whr6 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       inline
       void make_divmod_aux_whr6(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
       {
@@ -3511,7 +3511,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@msd.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@msd to a number of arguments.
       inline
       application msd(const data_expression& arg0)
@@ -3520,9 +3520,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@msd.
-      /// \param result The data expression where the \@msd expression is put.
+      /// \param[out] result The data expression where the \@msd expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_msd(data_expression& result, const data_expression& arg0)
       {
@@ -3573,8 +3573,8 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@swap_zero.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@swap_zero to a number of arguments.
       inline
       application swap_zero(const data_expression& arg0, const data_expression& arg1)
@@ -3583,10 +3583,10 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@swap_zero.
-      /// \param result The data expression where the \@swap_zero expression is put.
+      /// \param[out] result The data expression where the \@swap_zero expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_swap_zero(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -3637,10 +3637,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@swap_zero_add.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@swap_zero_add to a number of arguments.
       inline
       application swap_zero_add(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -3649,12 +3649,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@swap_zero_add.
-      /// \param result The data expression where the \@swap_zero_add expression is put.
+      /// \param[out] result The data expression where the \@swap_zero_add expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_swap_zero_add(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -3705,10 +3705,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@swap_zero_min.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@swap_zero_min to a number of arguments.
       inline
       application swap_zero_min(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -3717,12 +3717,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@swap_zero_min.
-      /// \param result The data expression where the \@swap_zero_min expression is put.
+      /// \param[out] result The data expression where the \@swap_zero_min expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_swap_zero_min(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -3773,10 +3773,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@swap_zero_monus.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@swap_zero_monus to a number of arguments.
       inline
       application swap_zero_monus(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -3785,12 +3785,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@swap_zero_monus.
-      /// \param result The data expression where the \@swap_zero_monus expression is put.
+      /// \param[out] result The data expression where the \@swap_zero_monus expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_swap_zero_monus(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -3841,10 +3841,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@sqrt_whr1.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@sqrt_whr1 to a number of arguments.
       inline
       application sqrt_whr1(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -3853,12 +3853,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@sqrt_whr1.
-      /// \param result The data expression where the \@sqrt_whr1 expression is put.
+      /// \param[out] result The data expression where the \@sqrt_whr1 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_sqrt_whr1(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -3909,11 +3909,11 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@sqrt_whr2.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       /// \return Application of \@sqrt_whr2 to a number of arguments.
       inline
       application sqrt_whr2(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
@@ -3922,13 +3922,13 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@sqrt_whr2.
-      /// \param result The data expression where the \@sqrt_whr2 expression is put.
+      /// \param[out] result The data expression where the \@sqrt_whr2 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       inline
       void make_sqrt_whr2(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
       {
@@ -3979,7 +3979,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@sqrt_pair.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@sqrt_pair to a number of arguments.
       inline
       application sqrt_pair(const data_expression& arg0)
@@ -3988,9 +3988,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@sqrt_pair.
-      /// \param result The data expression where the \@sqrt_pair expression is put.
+      /// \param[out] result The data expression where the \@sqrt_pair expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_sqrt_pair(data_expression& result, const data_expression& arg0)
       {
@@ -4041,10 +4041,10 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@sqrt_pair_whr1.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       /// \return Application of \@sqrt_pair_whr1 to a number of arguments.
       inline
       application sqrt_pair_whr1(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
@@ -4053,12 +4053,12 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@sqrt_pair_whr1.
-      /// \param result The data expression where the \@sqrt_pair_whr1 expression is put.
+      /// \param[out] result The data expression where the \@sqrt_pair_whr1 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
       inline
       void make_sqrt_pair_whr1(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3)
       {
@@ -4109,11 +4109,11 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@sqrt_pair_whr2.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       /// \return Application of \@sqrt_pair_whr2 to a number of arguments.
       inline
       application sqrt_pair_whr2(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
@@ -4122,13 +4122,13 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@sqrt_pair_whr2.
-      /// \param result The data expression where the \@sqrt_pair_whr2 expression is put.
+      /// \param[out] result The data expression where the \@sqrt_pair_whr2 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       inline
       void make_sqrt_pair_whr2(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
       {
@@ -4179,9 +4179,9 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@sqrt_pair_whr3.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@sqrt_pair_whr3 to a number of arguments.
       inline
       application sqrt_pair_whr3(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -4190,11 +4190,11 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@sqrt_pair_whr3.
-      /// \param result The data expression where the \@sqrt_pair_whr3 expression is put.
+      /// \param[out] result The data expression where the \@sqrt_pair_whr3 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_sqrt_pair_whr3(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -4245,12 +4245,12 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@sqrt_pair_whr4.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
-      /// \param arg5 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
+      /// \param[in] arg5 A data expression.
       /// \return Application of \@sqrt_pair_whr4 to a number of arguments.
       inline
       application sqrt_pair_whr4(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4, const data_expression& arg5)
@@ -4259,14 +4259,14 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@sqrt_pair_whr4.
-      /// \param result The data expression where the \@sqrt_pair_whr4 expression is put.
+      /// \param[out] result The data expression where the \@sqrt_pair_whr4 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
-      /// \param arg5 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
+      /// \param[in] arg5 A data expression.
       inline
       void make_sqrt_pair_whr4(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4, const data_expression& arg5)
       {
@@ -4317,11 +4317,11 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@sqrt_pair_whr5.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       /// \return Application of \@sqrt_pair_whr5 to a number of arguments.
       inline
       application sqrt_pair_whr5(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
@@ -4330,13 +4330,13 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@sqrt_pair_whr5.
-      /// \param result The data expression where the \@sqrt_pair_whr5 expression is put.
+      /// \param[out] result The data expression where the \@sqrt_pair_whr5 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \param arg3 A data expression.
-      /// \param arg4 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \param[in] arg3 A data expression.
+      /// \param[in] arg4 A data expression.
       inline
       void make_sqrt_pair_whr5(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2, const data_expression& arg3, const data_expression& arg4)
       {
@@ -4387,9 +4387,9 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@sqrt_pair_whr6.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@sqrt_pair_whr6 to a number of arguments.
       inline
       application sqrt_pair_whr6(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -4398,11 +4398,11 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@sqrt_pair_whr6.
-      /// \param result The data expression where the \@sqrt_pair_whr6 expression is put.
+      /// \param[out] result The data expression where the \@sqrt_pair_whr6 expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_sqrt_pair_whr6(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -4453,7 +4453,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@first.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@first to a number of arguments.
       inline
       application first(const data_expression& arg0)
@@ -4462,9 +4462,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@first.
-      /// \param result The data expression where the \@first expression is put.
+      /// \param[out] result The data expression where the \@first expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_first(data_expression& result, const data_expression& arg0)
       {
@@ -4515,7 +4515,7 @@ namespace mcrl2::data::sort_nat
 
       /// \brief Application of function symbol \@last.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@last to a number of arguments.
       inline
       application last(const data_expression& arg0)
@@ -4524,9 +4524,9 @@ namespace mcrl2::data::sort_nat
       }
 
       /// \brief Make an application of function symbol \@last.
-      /// \param result The data expression where the \@last expression is put.
+      /// \param[out] result The data expression where the \@last expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_last(data_expression& result, const data_expression& arg0)
       {

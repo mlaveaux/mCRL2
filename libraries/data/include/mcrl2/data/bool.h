@@ -188,7 +188,7 @@ namespace mcrl2::data::sort_bool
 
       /// \brief Application of function symbol !.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of ! to a number of arguments.
       inline
       application not_(const data_expression& arg0)
@@ -197,9 +197,9 @@ namespace mcrl2::data::sort_bool
       }
 
       /// \brief Make an application of function symbol !.
-      /// \param result The data expression where the ! expression is put.
+      /// \param[out] result The data expression where the ! expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_not(data_expression& result, const data_expression& arg0)
       {
@@ -250,8 +250,8 @@ namespace mcrl2::data::sort_bool
 
       /// \brief Application of function symbol &&.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of && to a number of arguments.
       inline
       application and_(const data_expression& arg0, const data_expression& arg1)
@@ -260,10 +260,10 @@ namespace mcrl2::data::sort_bool
       }
 
       /// \brief Make an application of function symbol &&.
-      /// \param result The data expression where the && expression is put.
+      /// \param[out] result The data expression where the && expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_and(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -314,8 +314,8 @@ namespace mcrl2::data::sort_bool
 
       /// \brief Application of function symbol ||.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of || to a number of arguments.
       inline
       application or_(const data_expression& arg0, const data_expression& arg1)
@@ -324,10 +324,10 @@ namespace mcrl2::data::sort_bool
       }
 
       /// \brief Make an application of function symbol ||.
-      /// \param result The data expression where the || expression is put.
+      /// \param[out] result The data expression where the || expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_or(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -378,8 +378,8 @@ namespace mcrl2::data::sort_bool
 
       /// \brief Application of function symbol =>.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of => to a number of arguments.
       inline
       application implies(const data_expression& arg0, const data_expression& arg1)
@@ -388,10 +388,10 @@ namespace mcrl2::data::sort_bool
       }
 
       /// \brief Make an application of function symbol =>.
-      /// \param result The data expression where the => expression is put.
+      /// \param[out] result The data expression where the => expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_implies(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {

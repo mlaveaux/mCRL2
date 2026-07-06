@@ -122,8 +122,8 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol \@cReal.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@cReal to a number of arguments.
       inline
       application creal(const data_expression& arg0, const data_expression& arg1)
@@ -132,10 +132,10 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol \@cReal.
-      /// \param result The data expression where the \@cReal expression is put.
+      /// \param[out] result The data expression where the \@cReal expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_creal(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -186,7 +186,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol Pos2Real.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of Pos2Real to a number of arguments.
       inline
       application pos2real(const data_expression& arg0)
@@ -195,9 +195,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol Pos2Real.
-      /// \param result The data expression where the Pos2Real expression is put.
+      /// \param[out] result The data expression where the Pos2Real expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_pos2real(data_expression& result, const data_expression& arg0)
       {
@@ -248,7 +248,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol Nat2Real.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of Nat2Real to a number of arguments.
       inline
       application nat2real(const data_expression& arg0)
@@ -257,9 +257,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol Nat2Real.
-      /// \param result The data expression where the Nat2Real expression is put.
+      /// \param[out] result The data expression where the Nat2Real expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_nat2real(data_expression& result, const data_expression& arg0)
       {
@@ -310,7 +310,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol Int2Real.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of Int2Real to a number of arguments.
       inline
       application int2real(const data_expression& arg0)
@@ -319,9 +319,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol Int2Real.
-      /// \param result The data expression where the Int2Real expression is put.
+      /// \param[out] result The data expression where the Int2Real expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_int2real(data_expression& result, const data_expression& arg0)
       {
@@ -372,7 +372,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol Real2Pos.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of Real2Pos to a number of arguments.
       inline
       application real2pos(const data_expression& arg0)
@@ -381,9 +381,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol Real2Pos.
-      /// \param result The data expression where the Real2Pos expression is put.
+      /// \param[out] result The data expression where the Real2Pos expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_real2pos(data_expression& result, const data_expression& arg0)
       {
@@ -434,7 +434,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol Real2Nat.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of Real2Nat to a number of arguments.
       inline
       application real2nat(const data_expression& arg0)
@@ -443,9 +443,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol Real2Nat.
-      /// \param result The data expression where the Real2Nat expression is put.
+      /// \param[out] result The data expression where the Real2Nat expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_real2nat(data_expression& result, const data_expression& arg0)
       {
@@ -496,7 +496,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol Real2Int.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of Real2Int to a number of arguments.
       inline
       application real2int(const data_expression& arg0)
@@ -505,9 +505,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol Real2Int.
-      /// \param result The data expression where the Real2Int expression is put.
+      /// \param[out] result The data expression where the Real2Int expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_real2int(data_expression& result, const data_expression& arg0)
       {
@@ -603,8 +603,8 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol max.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of max to a number of arguments.
       inline
       application maximum(const data_expression& arg0, const data_expression& arg1)
@@ -613,10 +613,10 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol max.
-      /// \param result The data expression where the max expression is put.
+      /// \param[out] result The data expression where the max expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_maximum(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -688,8 +688,8 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol min.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of min to a number of arguments.
       inline
       application minimum(const data_expression& arg0, const data_expression& arg1)
@@ -698,10 +698,10 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol min.
-      /// \param result The data expression where the min expression is put.
+      /// \param[out] result The data expression where the min expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_minimum(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -765,7 +765,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol abs.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of abs to a number of arguments.
       inline
       application abs(const data_expression& arg0)
@@ -774,9 +774,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol abs.
-      /// \param result The data expression where the abs expression is put.
+      /// \param[out] result The data expression where the abs expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_abs(data_expression& result, const data_expression& arg0)
       {
@@ -848,7 +848,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol -.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of - to a number of arguments.
       inline
       application negate(const data_expression& arg0)
@@ -857,9 +857,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol -.
-      /// \param result The data expression where the - expression is put.
+      /// \param[out] result The data expression where the - expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_negate(data_expression& result, const data_expression& arg0)
       {
@@ -931,7 +931,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol succ.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of succ to a number of arguments.
       inline
       application succ(const data_expression& arg0)
@@ -940,9 +940,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol succ.
-      /// \param result The data expression where the succ expression is put.
+      /// \param[out] result The data expression where the succ expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_succ(data_expression& result, const data_expression& arg0)
       {
@@ -1014,7 +1014,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol pred.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of pred to a number of arguments.
       inline
       application pred(const data_expression& arg0)
@@ -1023,9 +1023,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol pred.
-      /// \param result The data expression where the pred expression is put.
+      /// \param[out] result The data expression where the pred expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_pred(data_expression& result, const data_expression& arg0)
       {
@@ -1105,8 +1105,8 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol +.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of + to a number of arguments.
       inline
       application plus(const data_expression& arg0, const data_expression& arg1)
@@ -1115,10 +1115,10 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol +.
-      /// \param result The data expression where the + expression is put.
+      /// \param[out] result The data expression where the + expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_plus(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1190,8 +1190,8 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol -.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of - to a number of arguments.
       inline
       application minus(const data_expression& arg0, const data_expression& arg1)
@@ -1200,10 +1200,10 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol -.
-      /// \param result The data expression where the - expression is put.
+      /// \param[out] result The data expression where the - expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_minus(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1275,8 +1275,8 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol *.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of * to a number of arguments.
       inline
       application times(const data_expression& arg0, const data_expression& arg1)
@@ -1285,10 +1285,10 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol *.
-      /// \param result The data expression where the * expression is put.
+      /// \param[out] result The data expression where the * expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_times(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1360,8 +1360,8 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol exp.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of exp to a number of arguments.
       inline
       application exp(const data_expression& arg0, const data_expression& arg1)
@@ -1370,10 +1370,10 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol exp.
-      /// \param result The data expression where the exp expression is put.
+      /// \param[out] result The data expression where the exp expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_exp(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1424,8 +1424,8 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol /.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of / to a number of arguments.
       inline
       application divides(const data_expression& arg0, const data_expression& arg1)
@@ -1434,10 +1434,10 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol /.
-      /// \param result The data expression where the / expression is put.
+      /// \param[out] result The data expression where the / expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_divides(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1488,7 +1488,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol floor.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of floor to a number of arguments.
       inline
       application floor(const data_expression& arg0)
@@ -1497,9 +1497,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol floor.
-      /// \param result The data expression where the floor expression is put.
+      /// \param[out] result The data expression where the floor expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_floor(data_expression& result, const data_expression& arg0)
       {
@@ -1550,7 +1550,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol ceil.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of ceil to a number of arguments.
       inline
       application ceil(const data_expression& arg0)
@@ -1559,9 +1559,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol ceil.
-      /// \param result The data expression where the ceil expression is put.
+      /// \param[out] result The data expression where the ceil expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_ceil(data_expression& result, const data_expression& arg0)
       {
@@ -1612,7 +1612,7 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol round.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of round to a number of arguments.
       inline
       application round(const data_expression& arg0)
@@ -1621,9 +1621,9 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol round.
-      /// \param result The data expression where the round expression is put.
+      /// \param[out] result The data expression where the round expression is put.
       
-      /// \param arg0 A data expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_round(data_expression& result, const data_expression& arg0)
       {
@@ -1674,8 +1674,8 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol \@redfrac.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@redfrac to a number of arguments.
       inline
       application reduce_fraction(const data_expression& arg0, const data_expression& arg1)
@@ -1684,10 +1684,10 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol \@redfrac.
-      /// \param result The data expression where the \@redfrac expression is put.
+      /// \param[out] result The data expression where the \@redfrac expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_reduce_fraction(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
@@ -1738,9 +1738,9 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol \@redfracwhr.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@redfracwhr to a number of arguments.
       inline
       application reduce_fraction_where(const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -1749,11 +1749,11 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol \@redfracwhr.
-      /// \param result The data expression where the \@redfracwhr expression is put.
+      /// \param[out] result The data expression where the \@redfracwhr expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_reduce_fraction_where(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -1804,8 +1804,8 @@ namespace mcrl2::data::sort_real
 
       /// \brief Application of function symbol \@redfrachlp.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@redfrachlp to a number of arguments.
       inline
       application reduce_fraction_helper(const data_expression& arg0, const data_expression& arg1)
@@ -1814,10 +1814,10 @@ namespace mcrl2::data::sort_real
       }
 
       /// \brief Make an application of function symbol \@redfrachlp.
-      /// \param result The data expression where the \@redfrachlp expression is put.
+      /// \param[out] result The data expression where the \@redfrachlp expression is put.
       
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_reduce_fraction_helper(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {

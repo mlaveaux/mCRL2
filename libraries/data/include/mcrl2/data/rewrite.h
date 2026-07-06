@@ -136,7 +136,7 @@ T rewrite(const T& x,
          )
   requires std::is_base_of_v<atermpp::aterm, T>
 {
-  T result; 
+  T result;
   data::detail::make_rewrite_data_expressions_with_substitution_builder<data::data_expression_builder>(R, sigma).apply(result, x);
   return result;
 }

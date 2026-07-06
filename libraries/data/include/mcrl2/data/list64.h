@@ -122,9 +122,9 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Application of function symbol |>.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of |> to a number of arguments.
       inline
       application cons_(const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
@@ -133,10 +133,10 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Make an application of function symbol |>.
-      /// \param result The data expression where the |> expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[out] result The data expression where the |> expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_cons(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
@@ -221,9 +221,9 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Application of function symbol in.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of in to a number of arguments.
       inline
       application in(const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
@@ -232,10 +232,10 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Make an application of function symbol in.
-      /// \param result The data expression where the in expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[out] result The data expression where the in expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_in(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
@@ -285,8 +285,8 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Application of function symbol #.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of # to a number of arguments.
       inline
       application count(const sort_expression& s, const data_expression& arg0)
@@ -295,9 +295,9 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Make an application of function symbol #.
-      /// \param result The data expression where the # expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[out] result The data expression where the # expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_count(data_expression& result, const sort_expression& s, const data_expression& arg0)
       {
@@ -347,9 +347,9 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Application of function symbol <|.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of <| to a number of arguments.
       inline
       application snoc(const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
@@ -358,10 +358,10 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Make an application of function symbol <|.
-      /// \param result The data expression where the <| expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[out] result The data expression where the <| expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_snoc(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
@@ -411,9 +411,9 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Application of function symbol ++.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of ++ to a number of arguments.
       inline
       application concat(const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
@@ -422,10 +422,10 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Make an application of function symbol ++.
-      /// \param result The data expression where the ++ expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[out] result The data expression where the ++ expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_concat(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
@@ -475,9 +475,9 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Application of function symbol ..
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of . to a number of arguments.
       inline
       application element_at(const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
@@ -486,10 +486,10 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Make an application of function symbol ..
-      /// \param result The data expression where the . expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[out] result The data expression where the . expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_element_at(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
@@ -539,8 +539,8 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Application of function symbol head.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of head to a number of arguments.
       inline
       application head(const sort_expression& s, const data_expression& arg0)
@@ -549,9 +549,9 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Make an application of function symbol head.
-      /// \param result The data expression where the head expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[out] result The data expression where the head expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_head(data_expression& result, const sort_expression& s, const data_expression& arg0)
       {
@@ -601,8 +601,8 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Application of function symbol tail.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of tail to a number of arguments.
       inline
       application tail(const sort_expression& s, const data_expression& arg0)
@@ -611,9 +611,9 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Make an application of function symbol tail.
-      /// \param result The data expression where the tail expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[out] result The data expression where the tail expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_tail(data_expression& result, const sort_expression& s, const data_expression& arg0)
       {
@@ -663,8 +663,8 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Application of function symbol rhead.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of rhead to a number of arguments.
       inline
       application rhead(const sort_expression& s, const data_expression& arg0)
@@ -673,9 +673,9 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Make an application of function symbol rhead.
-      /// \param result The data expression where the rhead expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[out] result The data expression where the rhead expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_rhead(data_expression& result, const sort_expression& s, const data_expression& arg0)
       {
@@ -725,8 +725,8 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Application of function symbol rtail.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of rtail to a number of arguments.
       inline
       application rtail(const sort_expression& s, const data_expression& arg0)
@@ -735,9 +735,9 @@ namespace mcrl2::data::sort_list
       }
 
       /// \brief Make an application of function symbol rtail.
-      /// \param result The data expression where the rtail expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[out] result The data expression where the rtail expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_rtail(data_expression& result, const sort_expression& s, const data_expression& arg0)
       {

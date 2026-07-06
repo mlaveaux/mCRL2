@@ -26,6 +26,7 @@ import string
 # X = it is an expression super class
 # W = do not generate swap overload
 # N = term has an additional index as last argument  TODO: Constructors must still be adapted.
+# N = term has an additional index as last argument  TODO: Constructors must still be adapted.
 # i = this class can be cast to an aterm_int.
 
 CORE_CLASSES = r'''
@@ -967,7 +968,7 @@ inline void swap(<CLASSNAME>& t1, <CLASSNAME>& t2) noexcept
     def make_function(self):
         if 'i' in self.modifiers():
           text = r'''/// \\brief The function make_<CLASSNAME> constructs a new term into a given address.
-/// \\ \param t The reference into which the new <CLASSNAME> is constructed.
+/// \param[out] t The reference into which the new <CLASSNAME> is constructed. 
 template <class... ARGUMENTS>
 inline void make_<CLASSNAME>(atermpp::aterm& t, size_t n)
 {
@@ -975,7 +976,7 @@ inline void make_<CLASSNAME>(atermpp::aterm& t, size_t n)
 }'''
         else:
           text = r'''/// \\brief The function make_<CLASSNAME> constructs a new term into a given address.
-/// \\ \param t The reference into which the new <CLASSNAME> is constructed.
+/// \\param[out] t The reference into which the new <CLASSNAME> is constructed. 
 template <class... ARGUMENTS>
 inline void make_<CLASSNAME>(atermpp::aterm& t, const ARGUMENTS&... args)
 {

@@ -671,7 +671,7 @@ ${cases}
       }
 
       /// \\brief Make an application of function symbol ${namestring}.
-      /// \\param result The data expression where the ${namestring} expression is put.
+      /// \\param[out] result The data expression where the ${namestring} expression is put.
       ${sortparameterstring}
       ${dataparameterstring}
       inline
@@ -687,8 +687,8 @@ ${cases}
         stripped_name = name.identifier.string.rstrip('_')
         return CODE_TEMPLATE.substitute(
           namestring = escape(fullname),
-          sortparameterstring = '' if sort_params == '' else '\n      '.join(['/// \\param {0} A sort expression.'.format(fcode(x, spec)) for x in sort_params]),
-          dataparameterstring = '' if data_params == '' else '\n      '.join(['/// \\param {0} A data expression.'.format(fcode(x, spec)) for x in data_params]),
+          sortparameterstring = '' if sort_params == '' else '\n      '.join(['/// \\param[in] {0} A sort expression.'.format(fcode(x, spec)) for x in sort_params]),
+          dataparameterstring = '' if data_params == '' else '\n      '.join(['/// \\param[in] {0} A data expression.'.format(fcode(x, spec)) for x in data_params]),
           functionname = name,
           functionname_without_trailing_underscore = stripped_name,
           parameters = ', '.join(formal_sort_params + formal_data_params),
@@ -702,8 +702,9 @@ ${cases}
           return ""
         CODE_TEMPLATE = Template('''
       /// \\brief The data expression of an application of the constant symbol ${namestring}.
-      /// \\details This function is to be implemented manually. \
-      /// \\return The data expression corresponding to an application of ${namestring} to a number of arguments.
+      /// \\details This function is to be implemented manually.
+      /// \\param[out] result The data expression where the result is stored.
+      /// \\post result is the data expression corresponding to an application of ${namestring}.
       inline
       void ${functionname}_manual_implementation(data_expression& result);
 
@@ -735,8 +736,9 @@ ${cases}
         CODE_TEMPLATE = Template('''
       /// \\brief The data expression of an application of the function symbol ${namestring}.
       /// \\details This function is to be implemented manually.
+      /// \\param[out] result The data expression where the result is stored.
       ${dataparameterstring}
-      /// \\return The data expression corresponding to an application of ${namestring} to a number of arguments.
+      /// \\post result is the data expression corresponding to an application of ${namestring}.
       inline
       void ${functionname}_manual_implementation(data_expression& result, ${parameters});\n
 
@@ -756,8 +758,8 @@ ${cases}
         domain_params = ['{0}.sort()'.format(x) for x in data_params] if polymorphic else []
         return CODE_TEMPLATE.substitute(
           namestring = escape(fullname),
-          sortparameterstring = '' if sort_params == '' else '\n      '.join(['/// \\param {0} A sort expression.'.format(fcode(x, spec)) for x in sort_params]),
-          dataparameterstring = '' if data_params == '' else '\n      '.join(['/// \\param {0} A data expression.'.format(fcode(x, spec)) for x in data_params]),
+          sortparameterstring = '' if sort_params == '' else '\n      '.join(['/// \\param[in] {0} A sort expression.'.format(fcode(x, spec)) for x in sort_params]),
+          dataparameterstring = '' if data_params == '' else '\n      '.join(['/// \\param[in] {0} A data expression.'.format(fcode(x, spec)) for x in data_params]),
           functionname = name,
           parameters = ', '.join(formal_data_params),
           domain_parameters = ''.join([fcode(x, spec) + ', ' for x in domain_params]),

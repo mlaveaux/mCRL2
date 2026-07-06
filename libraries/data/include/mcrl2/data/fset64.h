@@ -121,9 +121,9 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Application of function symbol \@fset_insert.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@fset_insert to a number of arguments.
       inline
       application insert(const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
@@ -132,10 +132,10 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Make an application of function symbol \@fset_insert.
-      /// \param result The data expression where the \@fset_insert expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[out] result The data expression where the \@fset_insert expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_insert(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
@@ -220,9 +220,9 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Application of function symbol \@fset_cons.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of \@fset_cons to a number of arguments.
       inline
       application cons_(const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
@@ -231,10 +231,10 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Make an application of function symbol \@fset_cons.
-      /// \param result The data expression where the \@fset_cons expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[out] result The data expression where the \@fset_cons expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_cons(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
@@ -284,10 +284,10 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Application of function symbol \@fset_cinsert.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@fset_cinsert to a number of arguments.
       inline
       application cinsert(const sort_expression& s, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -296,11 +296,11 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Make an application of function symbol \@fset_cinsert.
-      /// \param result The data expression where the \@fset_cinsert expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[out] result The data expression where the \@fset_cinsert expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_cinsert(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -350,9 +350,9 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Application of function symbol in.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of in to a number of arguments.
       inline
       application in(const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
@@ -361,10 +361,10 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Make an application of function symbol in.
-      /// \param result The data expression where the in expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[out] result The data expression where the in expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_in(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
@@ -414,9 +414,9 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Application of function symbol -.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of - to a number of arguments.
       inline
       application difference(const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
@@ -425,10 +425,10 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Make an application of function symbol -.
-      /// \param result The data expression where the - expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[out] result The data expression where the - expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_difference(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
@@ -478,9 +478,9 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Application of function symbol +.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of + to a number of arguments.
       inline
       application union_(const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
@@ -489,10 +489,10 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Make an application of function symbol +.
-      /// \param result The data expression where the + expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[out] result The data expression where the + expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_union(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
@@ -542,9 +542,9 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Application of function symbol *.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       /// \return Application of * to a number of arguments.
       inline
       application intersection(const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
@@ -553,10 +553,10 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Make an application of function symbol *.
-      /// \param result The data expression where the * expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
+      /// \param[out] result The data expression where the * expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
       inline
       void make_intersection(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
@@ -606,8 +606,8 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Application of function symbol #.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of # to a number of arguments.
       inline
       application count(const sort_expression& s, const data_expression& arg0)
@@ -616,9 +616,9 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Make an application of function symbol #.
-      /// \param result The data expression where the # expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[out] result The data expression where the # expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_count(data_expression& result, const sort_expression& s, const data_expression& arg0)
       {
@@ -668,8 +668,8 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Application of function symbol pick.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of pick to a number of arguments.
       inline
       application pick(const sort_expression& s, const data_expression& arg0)
@@ -678,9 +678,9 @@ namespace mcrl2::data::sort_fset
       }
 
       /// \brief Make an application of function symbol pick.
-      /// \param result The data expression where the pick expression is put.
-      /// \param s A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[out] result The data expression where the pick expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_pick(data_expression& result, const sort_expression& s, const data_expression& arg0)
       {

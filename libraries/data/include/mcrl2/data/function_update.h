@@ -89,11 +89,11 @@ namespace mcrl2::data
       }
 
       /// \brief Application of function symbol \@func_update.
-      /// \param s A sort expression.
-      /// \param t A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] t A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@func_update to a number of arguments.
       inline
       application function_update(const sort_expression& s, const sort_expression& t, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -102,12 +102,12 @@ namespace mcrl2::data
       }
 
       /// \brief Make an application of function symbol \@func_update.
-      /// \param result The data expression where the \@func_update expression is put.
-      /// \param s A sort expression.
-      /// \param t A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[out] result The data expression where the \@func_update expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] t A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_function_update(data_expression& result, const sort_expression& s, const sort_expression& t, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -158,11 +158,11 @@ namespace mcrl2::data
       }
 
       /// \brief Application of function symbol \@func_update_stable.
-      /// \param s A sort expression.
-      /// \param t A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] t A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@func_update_stable to a number of arguments.
       inline
       application function_update_stable(const sort_expression& s, const sort_expression& t, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -171,12 +171,12 @@ namespace mcrl2::data
       }
 
       /// \brief Make an application of function symbol \@func_update_stable.
-      /// \param result The data expression where the \@func_update_stable expression is put.
-      /// \param s A sort expression.
-      /// \param t A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[out] result The data expression where the \@func_update_stable expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] t A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_function_update_stable(data_expression& result, const sort_expression& s, const sort_expression& t, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -227,9 +227,9 @@ namespace mcrl2::data
       }
 
       /// \brief Application of function symbol \@is_not_an_update.
-      /// \param s A sort expression.
-      /// \param t A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] t A sort expression.
+      /// \param[in] arg0 A data expression.
       /// \return Application of \@is_not_an_update to a number of arguments.
       inline
       application is_not_a_function_update(const sort_expression& s, const sort_expression& t, const data_expression& arg0)
@@ -238,10 +238,10 @@ namespace mcrl2::data
       }
 
       /// \brief Make an application of function symbol \@is_not_an_update.
-      /// \param result The data expression where the \@is_not_an_update expression is put.
-      /// \param s A sort expression.
-      /// \param t A sort expression.
-      /// \param arg0 A data expression.
+      /// \param[out] result The data expression where the \@is_not_an_update expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] t A sort expression.
+      /// \param[in] arg0 A data expression.
       inline
       void make_is_not_a_function_update(data_expression& result, const sort_expression& s, const sort_expression& t, const data_expression& arg0)
       {
@@ -260,8 +260,9 @@ namespace mcrl2::data
 
       /// \brief The data expression of an application of the function symbol \@is_not_an_update.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \return The data expression corresponding to an application of \@is_not_an_update to a number of arguments.
+      /// \param[out] result The data expression where the result is stored.
+      /// \param[in] arg0 A data expression.
+      /// \post result is the data expression corresponding to an application of \@is_not_an_update.
       inline
       void is_not_a_function_update_manual_implementation(data_expression& result, const data_expression& arg0);
 
@@ -311,11 +312,11 @@ namespace mcrl2::data
       }
 
       /// \brief Application of function symbol \@if_always_else.
-      /// \param s A sort expression.
-      /// \param t A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[in] s A sort expression.
+      /// \param[in] t A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       /// \return Application of \@if_always_else to a number of arguments.
       inline
       application if_always_else(const sort_expression& s, const sort_expression& t, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
@@ -324,12 +325,12 @@ namespace mcrl2::data
       }
 
       /// \brief Make an application of function symbol \@if_always_else.
-      /// \param result The data expression where the \@if_always_else expression is put.
-      /// \param s A sort expression.
-      /// \param t A sort expression.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
+      /// \param[out] result The data expression where the \@if_always_else expression is put.
+      /// \param[in] s A sort expression.
+      /// \param[in] t A sort expression.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
       inline
       void make_if_always_else(data_expression& result, const sort_expression& s, const sort_expression& t, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2)
       {
@@ -348,10 +349,11 @@ namespace mcrl2::data
 
       /// \brief The data expression of an application of the function symbol \@if_always_else.
       /// \details This function is to be implemented manually.
-      /// \param arg0 A data expression.
-      /// \param arg1 A data expression.
-      /// \param arg2 A data expression.
-      /// \return The data expression corresponding to an application of \@if_always_else to a number of arguments.
+      /// \param[out] result The data expression where the result is stored.
+      /// \param[in] arg0 A data expression.
+      /// \param[in] arg1 A data expression.
+      /// \param[in] arg2 A data expression.
+      /// \post result is the data expression corresponding to an application of \@if_always_else.
       inline
       void if_always_else_manual_implementation(data_expression& result, const data_expression& arg0, const data_expression& arg1, const data_expression& arg2);
 
