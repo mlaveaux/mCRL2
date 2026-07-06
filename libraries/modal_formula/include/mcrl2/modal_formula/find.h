@@ -23,19 +23,18 @@ namespace action_formulas
 {
 
 //--- start generated action_formulas find code ---//
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in,out] o an output iterator to which all variables occurring in x are written.
-/// \\return All variables that occur in the term x
+/// \brief Writes all variables that occur in an object to an output iterator.
+/// \param[in] x an object containing variables
+/// \param[in,out] o an output iterator to which all variables occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_all_variables(const T& x, OutputIterator o)
 {
   data::detail::make_find_all_variables_traverser<action_formulas::variable_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\return All variables that occur in the object x
+/// \brief Returns all variables that occur in an object.
+/// \param[in] x an object containing variables
+/// \return All variables that occur in the object x
 template <typename T>
 std::set<data::variable> find_all_variables(const T& x)
 {
@@ -44,30 +43,28 @@ std::set<data::variable> find_all_variables(const T& x)
   return result;
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in,out] o an output iterator to which all variables occurring in x are added.
-/// \\return All free variables that occur in the object x
+/// \brief Writes all free variables that occur in an object to an output iterator.
+/// \param[in] x an object containing variables
+/// \param[in,out] o an output iterator to which all variables occurring in x are added.
 template <typename T, typename OutputIterator>
 void find_free_variables(const T& x, OutputIterator o)
 {
   data::detail::make_find_free_variables_traverser<action_formulas::data_expression_traverser, action_formulas::add_data_variable_traverser_binding>(o).apply(x);
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in,out] o an output iterator to which all variables occurring in x are written.
-/// \\param[in] bound a container of variables
-/// \\return All free variables that occur in the object x
+/// \brief Writes all free variables that occur in an object to an output iterator.
+/// \param[in] x an object containing variables
+/// \param[in,out] o an output iterator to which all variables occurring in x are written.
+/// \param[in] bound a container of variables
 template <typename T, typename OutputIterator, typename VariableContainer>
 void find_free_variables_with_bound(const T& x, OutputIterator o, const VariableContainer& bound)
 {
   data::detail::make_find_free_variables_traverser<action_formulas::data_expression_traverser, action_formulas::add_data_variable_traverser_binding>(o, bound).apply(x);
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\return All free variables that occur in the object x
+/// \brief Returns all free variables that occur in an object.
+/// \param[in] x an object containing variables
+/// \return All free variables that occur in the object x
 template <typename T>
 std::set<data::variable> find_free_variables(const T& x)
 {
@@ -76,10 +73,10 @@ std::set<data::variable> find_free_variables(const T& x)
   return result;
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in] bound a bound a container of variables
-/// \\return All free variables that occur in the object x
+/// \brief Returns all free variables that occur in an object.
+/// \param[in] x an object containing variables
+/// \param[in] bound a container of variables
+/// \return All free variables that occur in the object x
 template <typename T, typename VariableContainer>
 std::set<data::variable> find_free_variables_with_bound(const T& x, VariableContainer const& bound)
 {
@@ -88,19 +85,18 @@ std::set<data::variable> find_free_variables_with_bound(const T& x, VariableCont
   return result;
 }
 
-/// \\brief Returns all identifiers that occur in an object
-/// \\param[in] x an object containing identifiers
-/// \\param[in,out] o an output iterator to which all identifiers occurring in x are written.
-/// \\return All identifiers that occur in the term x
+/// \brief Writes all identifiers that occur in an object to an output iterator.
+/// \param[in] x an object containing identifiers
+/// \param[in,out] o an output iterator to which all identifiers occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_identifiers(const T& x, OutputIterator o)
 {
   data::detail::make_find_identifiers_traverser<action_formulas::identifier_string_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all identifiers that occur in an object
-/// \\param[in] x an object containing identifiers
-/// \\return All identifiers that occur in the object x
+/// \brief Returns all identifiers that occur in an object.
+/// \param[in] x an object containing identifiers
+/// \return All identifiers that occur in the object x
 template <typename T>
 std::set<core::identifier_string> find_identifiers(const T& x)
 {
@@ -109,19 +105,18 @@ std::set<core::identifier_string> find_identifiers(const T& x)
   return result;
 }
 
-/// \\brief Returns all sort expressions that occur in an object
-/// \\param[in] x an object containing sort expressions
-/// \\param[in,out] o an output iterator to which all sort expressions occurring in x are written.
-/// \\return All sort expressions that occur in the term x
+/// \brief Writes all sort expressions that occur in an object to an output iterator.
+/// \param[in] x an object containing sort expressions
+/// \param[in,out] o an output iterator to which all sort expressions occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_sort_expressions(const T& x, OutputIterator o)
 {
   data::detail::make_find_sort_expressions_traverser<action_formulas::sort_expression_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all sort expressions that occur in an object
-/// \\param[in] x an object containing sort expressions
-/// \\return All sort expressions that occur in the object x
+/// \brief Returns all sort expressions that occur in an object.
+/// \param[in] x an object containing sort expressions
+/// \return All sort expressions that occur in the object x
 template <typename T>
 std::set<data::sort_expression> find_sort_expressions(const T& x)
 {
@@ -130,19 +125,18 @@ std::set<data::sort_expression> find_sort_expressions(const T& x)
   return result;
 }
 
-/// \\brief Returns all function symbols that occur in an object
-/// \\param[in] x an object containing function symbols
-/// \\param[in,out] o an output iterator to which all function symbols occurring in x are written.
-/// \\return All function symbols that occur in the term x
+/// \brief Writes all function symbols that occur in an object to an output iterator.
+/// \param[in] x an object containing function symbols
+/// \param[in,out] o an output iterator to which all function symbols occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_function_symbols(const T& x, OutputIterator o)
 {
   data::detail::make_find_function_symbols_traverser<action_formulas::data_expression_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all function symbols that occur in an object
-/// \\param[in] x an object containing function symbols
-/// \\return All function symbols that occur in the object x
+/// \brief Returns all function symbols that occur in an object.
+/// \param[in] x an object containing function symbols
+/// \return All function symbols that occur in the object x
 template <typename T>
 std::set<data::function_symbol> find_function_symbols(const T& x)
 {
@@ -158,19 +152,18 @@ namespace regular_formulas
 {
 
 //--- start generated regular_formulas find code ---//
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in,out] o an output iterator to which all variables occurring in x are written.
-/// \\return All variables that occur in the term x
+/// \brief Writes all variables that occur in an object to an output iterator.
+/// \param[in] x an object containing variables
+/// \param[in,out] o an output iterator to which all variables occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_all_variables(const T& x, OutputIterator o)
 {
   data::detail::make_find_all_variables_traverser<regular_formulas::variable_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\return All variables that occur in the object x
+/// \brief Returns all variables that occur in an object.
+/// \param[in] x an object containing variables
+/// \return All variables that occur in the object x
 template <typename T>
 std::set<data::variable> find_all_variables(const T& x)
 {
@@ -179,30 +172,28 @@ std::set<data::variable> find_all_variables(const T& x)
   return result;
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in,out] o an output iterator to which all variables occurring in x are added.
-/// \\return All free variables that occur in the object x
+/// \brief Writes all free variables that occur in an object to an output iterator.
+/// \param[in] x an object containing variables
+/// \param[in,out] o an output iterator to which all variables occurring in x are added.
 template <typename T, typename OutputIterator>
 void find_free_variables(const T& x, OutputIterator o)
 {
   data::detail::make_find_free_variables_traverser<regular_formulas::data_expression_traverser, regular_formulas::add_data_variable_traverser_binding>(o).apply(x);
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in,out] o an output iterator to which all variables occurring in x are written.
-/// \\param[in] bound a container of variables
-/// \\return All free variables that occur in the object x
+/// \brief Writes all free variables that occur in an object to an output iterator.
+/// \param[in] x an object containing variables
+/// \param[in,out] o an output iterator to which all variables occurring in x are written.
+/// \param[in] bound a container of variables
 template <typename T, typename OutputIterator, typename VariableContainer>
 void find_free_variables_with_bound(const T& x, OutputIterator o, const VariableContainer& bound)
 {
   data::detail::make_find_free_variables_traverser<regular_formulas::data_expression_traverser, regular_formulas::add_data_variable_traverser_binding>(o, bound).apply(x);
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\return All free variables that occur in the object x
+/// \brief Returns all free variables that occur in an object.
+/// \param[in] x an object containing variables
+/// \return All free variables that occur in the object x
 template <typename T>
 std::set<data::variable> find_free_variables(const T& x)
 {
@@ -211,10 +202,10 @@ std::set<data::variable> find_free_variables(const T& x)
   return result;
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in] bound a bound a container of variables
-/// \\return All free variables that occur in the object x
+/// \brief Returns all free variables that occur in an object.
+/// \param[in] x an object containing variables
+/// \param[in] bound a container of variables
+/// \return All free variables that occur in the object x
 template <typename T, typename VariableContainer>
 std::set<data::variable> find_free_variables_with_bound(const T& x, VariableContainer const& bound)
 {
@@ -223,19 +214,18 @@ std::set<data::variable> find_free_variables_with_bound(const T& x, VariableCont
   return result;
 }
 
-/// \\brief Returns all identifiers that occur in an object
-/// \\param[in] x an object containing identifiers
-/// \\param[in,out] o an output iterator to which all identifiers occurring in x are written.
-/// \\return All identifiers that occur in the term x
+/// \brief Writes all identifiers that occur in an object to an output iterator.
+/// \param[in] x an object containing identifiers
+/// \param[in,out] o an output iterator to which all identifiers occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_identifiers(const T& x, OutputIterator o)
 {
   data::detail::make_find_identifiers_traverser<regular_formulas::identifier_string_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all identifiers that occur in an object
-/// \\param[in] x an object containing identifiers
-/// \\return All identifiers that occur in the object x
+/// \brief Returns all identifiers that occur in an object.
+/// \param[in] x an object containing identifiers
+/// \return All identifiers that occur in the object x
 template <typename T>
 std::set<core::identifier_string> find_identifiers(const T& x)
 {
@@ -244,19 +234,18 @@ std::set<core::identifier_string> find_identifiers(const T& x)
   return result;
 }
 
-/// \\brief Returns all sort expressions that occur in an object
-/// \\param[in] x an object containing sort expressions
-/// \\param[in,out] o an output iterator to which all sort expressions occurring in x are written.
-/// \\return All sort expressions that occur in the term x
+/// \brief Writes all sort expressions that occur in an object to an output iterator.
+/// \param[in] x an object containing sort expressions
+/// \param[in,out] o an output iterator to which all sort expressions occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_sort_expressions(const T& x, OutputIterator o)
 {
   data::detail::make_find_sort_expressions_traverser<regular_formulas::sort_expression_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all sort expressions that occur in an object
-/// \\param[in] x an object containing sort expressions
-/// \\return All sort expressions that occur in the object x
+/// \brief Returns all sort expressions that occur in an object.
+/// \param[in] x an object containing sort expressions
+/// \return All sort expressions that occur in the object x
 template <typename T>
 std::set<data::sort_expression> find_sort_expressions(const T& x)
 {
@@ -265,19 +254,18 @@ std::set<data::sort_expression> find_sort_expressions(const T& x)
   return result;
 }
 
-/// \\brief Returns all function symbols that occur in an object
-/// \\param[in] x an object containing function symbols
-/// \\param[in,out] o an output iterator to which all function symbols occurring in x are written.
-/// \\return All function symbols that occur in the term x
+/// \brief Writes all function symbols that occur in an object to an output iterator.
+/// \param[in] x an object containing function symbols
+/// \param[in,out] o an output iterator to which all function symbols occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_function_symbols(const T& x, OutputIterator o)
 {
   data::detail::make_find_function_symbols_traverser<regular_formulas::data_expression_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all function symbols that occur in an object
-/// \\param[in] x an object containing function symbols
-/// \\return All function symbols that occur in the object x
+/// \brief Returns all function symbols that occur in an object.
+/// \param[in] x an object containing function symbols
+/// \return All function symbols that occur in the object x
 template <typename T>
 std::set<data::function_symbol> find_function_symbols(const T& x)
 {
@@ -293,19 +281,18 @@ namespace state_formulas
 {
 
 //--- start generated state_formulas find code ---//
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in,out] o an output iterator to which all variables occurring in x are written.
-/// \\return All variables that occur in the term x
+/// \brief Writes all variables that occur in an object to an output iterator.
+/// \param[in] x an object containing variables
+/// \param[in,out] o an output iterator to which all variables occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_all_variables(const T& x, OutputIterator o)
 {
   data::detail::make_find_all_variables_traverser<state_formulas::variable_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\return All variables that occur in the object x
+/// \brief Returns all variables that occur in an object.
+/// \param[in] x an object containing variables
+/// \return All variables that occur in the object x
 template <typename T>
 std::set<data::variable> find_all_variables(const T& x)
 {
@@ -314,30 +301,28 @@ std::set<data::variable> find_all_variables(const T& x)
   return result;
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in,out] o an output iterator to which all variables occurring in x are added.
-/// \\return All free variables that occur in the object x
+/// \brief Writes all free variables that occur in an object to an output iterator.
+/// \param[in] x an object containing variables
+/// \param[in,out] o an output iterator to which all variables occurring in x are added.
 template <typename T, typename OutputIterator>
 void find_free_variables(const T& x, OutputIterator o)
 {
   data::detail::make_find_free_variables_traverser<state_formulas::data_expression_traverser, state_formulas::add_data_variable_traverser_binding>(o).apply(x);
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in,out] o an output iterator to which all variables occurring in x are written.
-/// \\param[in] bound a container of variables
-/// \\return All free variables that occur in the object x
+/// \brief Writes all free variables that occur in an object to an output iterator.
+/// \param[in] x an object containing variables
+/// \param[in,out] o an output iterator to which all variables occurring in x are written.
+/// \param[in] bound a container of variables
 template <typename T, typename OutputIterator, typename VariableContainer>
 void find_free_variables_with_bound(const T& x, OutputIterator o, const VariableContainer& bound)
 {
   data::detail::make_find_free_variables_traverser<state_formulas::data_expression_traverser, state_formulas::add_data_variable_traverser_binding>(o, bound).apply(x);
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\return All free variables that occur in the object x
+/// \brief Returns all free variables that occur in an object.
+/// \param[in] x an object containing variables
+/// \return All free variables that occur in the object x
 template <typename T>
 std::set<data::variable> find_free_variables(const T& x)
 {
@@ -346,10 +331,10 @@ std::set<data::variable> find_free_variables(const T& x)
   return result;
 }
 
-/// \\brief Returns all variables that occur in an object
-/// \\param[in] x an object containing variables
-/// \\param[in] bound a bound a container of variables
-/// \\return All free variables that occur in the object x
+/// \brief Returns all free variables that occur in an object.
+/// \param[in] x an object containing variables
+/// \param[in] bound a container of variables
+/// \return All free variables that occur in the object x
 template <typename T, typename VariableContainer>
 std::set<data::variable> find_free_variables_with_bound(const T& x, VariableContainer const& bound)
 {
@@ -358,19 +343,18 @@ std::set<data::variable> find_free_variables_with_bound(const T& x, VariableCont
   return result;
 }
 
-/// \\brief Returns all identifiers that occur in an object
-/// \\param[in] x an object containing identifiers
-/// \\param[in,out] o an output iterator to which all identifiers occurring in x are written.
-/// \\return All identifiers that occur in the term x
+/// \brief Writes all identifiers that occur in an object to an output iterator.
+/// \param[in] x an object containing identifiers
+/// \param[in,out] o an output iterator to which all identifiers occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_identifiers(const T& x, OutputIterator o)
 {
   data::detail::make_find_identifiers_traverser<state_formulas::identifier_string_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all identifiers that occur in an object
-/// \\param[in] x an object containing identifiers
-/// \\return All identifiers that occur in the object x
+/// \brief Returns all identifiers that occur in an object.
+/// \param[in] x an object containing identifiers
+/// \return All identifiers that occur in the object x
 template <typename T>
 std::set<core::identifier_string> find_identifiers(const T& x)
 {
@@ -379,19 +363,18 @@ std::set<core::identifier_string> find_identifiers(const T& x)
   return result;
 }
 
-/// \\brief Returns all sort expressions that occur in an object
-/// \\param[in] x an object containing sort expressions
-/// \\param[in,out] o an output iterator to which all sort expressions occurring in x are written.
-/// \\return All sort expressions that occur in the term x
+/// \brief Writes all sort expressions that occur in an object to an output iterator.
+/// \param[in] x an object containing sort expressions
+/// \param[in,out] o an output iterator to which all sort expressions occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_sort_expressions(const T& x, OutputIterator o)
 {
   data::detail::make_find_sort_expressions_traverser<state_formulas::sort_expression_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all sort expressions that occur in an object
-/// \\param[in] x an object containing sort expressions
-/// \\return All sort expressions that occur in the object x
+/// \brief Returns all sort expressions that occur in an object.
+/// \param[in] x an object containing sort expressions
+/// \return All sort expressions that occur in the object x
 template <typename T>
 std::set<data::sort_expression> find_sort_expressions(const T& x)
 {
@@ -400,19 +383,18 @@ std::set<data::sort_expression> find_sort_expressions(const T& x)
   return result;
 }
 
-/// \\brief Returns all function symbols that occur in an object
-/// \\param[in] x an object containing function symbols
-/// \\param[in,out] o an output iterator to which all function symbols occurring in x are written.
-/// \\return All function symbols that occur in the term x
+/// \brief Writes all function symbols that occur in an object to an output iterator.
+/// \param[in] x an object containing function symbols
+/// \param[in,out] o an output iterator to which all function symbols occurring in x are written.
 template <typename T, typename OutputIterator>
 void find_function_symbols(const T& x, OutputIterator o)
 {
   data::detail::make_find_function_symbols_traverser<state_formulas::data_expression_traverser>(o).apply(x);
 }
 
-/// \\brief Returns all function symbols that occur in an object
-/// \\param[in] x an object containing function symbols
-/// \\return All function symbols that occur in the object x
+/// \brief Returns all function symbols that occur in an object.
+/// \param[in] x an object containing function symbols
+/// \return All function symbols that occur in the object x
 template <typename T>
 std::set<data::function_symbol> find_function_symbols(const T& x)
 {
@@ -528,10 +510,9 @@ std::set<core::identifier_string> find_state_variable_names(const state_formula&
   return f.names;
 }
 
-/// \brief Returns all state variables that occur in an object
+/// \brief Writes all state variables that occur in an object to an output iterator.
 /// \param[in] x an object containing state variables
 /// \param[in,out] o an output iterator to which all state variables occurring in x are written.
-/// \return All variables that occur in the term x
 template <typename T, typename OutputIterator>
 void find_state_variables(const T& x, OutputIterator o)
 {
@@ -549,10 +530,9 @@ std::set<state_formulas::variable> find_state_variables(const T& x)
   return result;
 }
 
-/// \brief Returns all free state variables that occur in an object
+/// \brief Writes all free state variables that occur in an object to an output iterator.
 /// \param[in] x an object containing state variables
 /// \param[in,out] o an output iterator to which all state variables occurring in x are added.
-/// \return All free state variables that occur in the object x
 template <typename T, typename OutputIterator>
 void find_free_state_variables(const T& x, OutputIterator o)
 {
@@ -570,10 +550,9 @@ std::set<state_formulas::variable> find_free_state_variables(const T& x)
   return result;
 }
 
-/// \brief Returns all action labels that occur in an object
+/// \brief Writes all action labels that occur in an object to an output iterator.
 /// \param[in] x an object containing action labels
 /// \param[in,out] o an output iterator to which all action labels occurring in x are written.
-/// \return All action labels that occur in the term x
 template <typename T, typename OutputIterator>
 void find_action_labels(const T& x, OutputIterator o)
 {
