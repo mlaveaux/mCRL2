@@ -25,7 +25,7 @@ namespace mcrl2::lts::detail
 {
 
 /** \brief Reduce LTS l with respect to (divergence-preserving) weak bisimulation.
- * \param[in/out] l The transition system that is reduced.
+ * \param[in,out] l The transition system that is reduced.
  * \param[in] preserve_divergences Indicates whether loops of internal actions on states must be preserved. If false
  *            these are removed. If true these are preserved.  */
 template < class LTS_TYPE>
@@ -63,8 +63,8 @@ void weak_bisimulation_reduce(
  * \details The LTSs l1 and l2 are not usable anymore after this call.
  *          The space consumption is O(n) and running time is dominated by the
  *          transitive closure (after branching bisimulation).
- * \param[in/out] l1 A first transition system.
- * \param[in/out] l2 A second transistion system.
+ * \param[in,out] l1 A first transition system.
+ * \param[in,out] l2 A second transistion system.
  * \param[preserve_divergences] If true and branching is true, preserve tau loops on states.
  * \retval True iff the initial states of the current transition system and l2 are (divergence preserving) (branching) bisimilar */
 template < class LTS_TYPE>
@@ -87,8 +87,8 @@ bool destructive_weak_bisimulation_compare(
  *           (after branching bisimulation).  It uses O(m+n) memory
  *           in addition to the copies of l1 and l2, where n is the
  *           number of states and m is the number of transitions.
- * \param[in/out] l1 A first transition system.
- * \param[in/out] l2 A second transistion system.
+ * \param[in,out] l1 A first transition system.
+ * \param[in,out] l2 A second transistion system.
  * \param[preserve_divergences] If true and branching is true, preserve tau loops on states.
  * \retval True iff the initial states of the current transition system and l2 are (divergence preserving) (branching) bisimilar */
 template < class LTS_TYPE>
