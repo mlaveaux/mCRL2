@@ -526,7 +526,7 @@ public:
    * int.
    *
    * \return *this
-   * \pre long_identifier must be a non-empty string that only contain characters from [a-z0-9] or `-'
+   * \pre long_identifier must be a non-empty string that only contain characters from [a-z0-9] or @c -
    * \pre short_identifier must a single character [a-zA-Z0-9]
    * \throw std::runtime_error when an option with long_identifier is already part of the interface
    * \throw std::runtime_error when an option with short_identifier is already part of the interface
@@ -570,7 +570,7 @@ public:
    * \param[in] description description of the option
    * \param[in] short_identifier an optional single-character short representation of the option
    * \return *this
-   * \pre long_identifier must be a non-empty string that only contain characters from [a-z0-9] or `-' '_'
+   * \pre long_identifier must be a non-empty string that only contain characters from [a-z0-9] or @c - @c _
    * \pre short_identifier must a single character [a-zA-Z0-9]
    * \throw std::runtime_error when an option with long_identifier is already part of the interface
    * \throw std::runtime_error when an option with short_identifier is already part of the interface
@@ -991,6 +991,7 @@ interface_description::optional_argument<ArgumentType> make_optional_argument(st
    tool -r                  (effect: options("recursive").count() == 1 && option_argument("recursive") == 2)
    tool --recursive=3       (effect: options("recursive").count() == 1 && option_argument("recursive") == 3)
    tool -r3                 (effect: options("recursive").count() == 1 && option_argument("recursive") == 3)
+ * \endverbatim
  */
 interface_description::optional_argument<std::string> make_optional_argument(std::string const& name,
   std::string const& default_value);
@@ -1058,7 +1059,7 @@ interface_description::mandatory_argument<ArgumentType> make_mandatory_argument(
    tool -r                  (effect: options("recursive").count() == 0 && option_argument("recursive") == 2)
    tool --recursive=3       (effect: options("recursive").count() == 1 && option_argument("recursive") == 3)
    tool -r3                 (effect: options("recursive").count() == 1 && option_argument("recursive") == 3)
- *
+ * \endverbatim
  **/
 interface_description::mandatory_argument<std::string> make_mandatory_argument(std::string const& name,
   std::string const& default_value);

@@ -23,9 +23,11 @@
 namespace mcrl2::pbes_system::detail
 {  
   
+/// \cond INTERNAL_DOCS
 static std::regex positive("Zpos_(\\d+)_.*");
 static std::regex negative("Zneg_(\\d+)_.*");
 static std::regex positive_or_negative("Z(neg|pos)_(\\d+)_.*");
+/// \endcond
 
 /// \brief Returns true iff the name is Zpos, name must be a counter example name.
 inline

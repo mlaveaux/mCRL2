@@ -29,7 +29,7 @@
 /// and therefore no more than log2(n) steps (of a certain kind) can be
 /// assigned to any single state or transition.
 ///
-/// Note that an ``increase'' is by at least 1, but it may be more than 1.  If
+/// Note that an "increase" is by at least 1, but it may be more than 1.  If
 /// one always increases to the maximal allowed value, it is ensured that a
 /// very small block found early will only incur work that corresponds to its
 /// own size (and not to the size of the block from which it was split off).
@@ -168,7 +168,7 @@ class check_complexity
     enum counter_type
     {
         // block counters: every state in the block is regarded as visited.  In
-        // this way, every state is ``visited'' O(log n) times.
+        // this way, every state is "visited" O(log n) times.
         // Invariant of the following block counters:
         // 0 <= (counter value) <= ilog2(n) - ilog2(constellation size)
         while_C_contains_a_nontrivial_constellation_2_4 = 0,
@@ -218,7 +218,7 @@ class check_complexity
                 STATE_MAX = for_all_old_bottom_states_s_in_RedB_selfloop_4_15,
 
         // B_to_C_descriptor counters: every transition in the B_to_C-slice is
-        // regarded as visited.  In this way, every transition is ``visited''
+        // regarded as visited.  In this way, every transition is "visited"
         // O(log n) times.
         // Invariant:
         // 0 <= (counter value) <= ilog2(n) - ilog2(target constellation size)
@@ -294,12 +294,12 @@ class check_complexity
         // otherwise, the counter is 0 or 1.
         refine_outgoing_transition_postprocess_new_bottom_3_6l,
         refine_outgoing_transition_from_new_bottom_3_23l,
-            // For the following counters, we have an ``a priori'' and an ``a
+            // For the following counters, we have an "a priori" and an ``a
             // posteriori'' variant.  The reason is, as explained with the
             // B_to_C slice counters, that sometimes a constellation is
             // reachable from the block of new bottom states but it is not yet
             // clear which of the source states will become a new bottom state.
-            // In that case, the ``a posteriori'' counters are used.  Later,
+            // In that case, the "a posteriori" counters are used.  Later,
             // the same block and the same constellation may be refined another
             // time, but now with known new bottom states; then, the ``a
             // priori'' counters are used.
@@ -1878,7 +1878,7 @@ class check_complexity
     /// \details Many functions that assign work to a counter actually return
     /// `true` if everything is ok and `false` if the counter was too large.
     /// In the latter case, they also print the start of an error message
-    /// (``Counter ... too large''), but as they do not know to which larger
+    /// ("Counter ... too large"), but as they do not know to which larger
     /// unit (state, transition etc.) the counter belongs, this macro prints
     /// the end of the error message and aborts the program with a return code
     /// indicating failure.

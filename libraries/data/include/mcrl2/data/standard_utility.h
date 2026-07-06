@@ -56,7 +56,7 @@ is_system_defined(const sort_expression& s)
  * The basic idea is to keep expressions that result from application of
  * any of the container operations by applying the usual rules of logic.
  *
- * For example and(true, x) as in `and' applied to `true' and `x' yields x.
+ * For example and(true, x) as in @c and applied to @c true and @c x yields x.
  **/
 namespace lazy
 {

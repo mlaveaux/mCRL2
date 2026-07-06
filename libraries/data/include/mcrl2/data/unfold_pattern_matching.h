@@ -408,7 +408,7 @@ bool is_pattern_matching_rule(StructInfo& ssf, const data_equation& rewrite_rule
  *                               !sign_of_list_sum(tail(l))))
  *
  * Two complications can arise. The rewrite rule set may contain rules that do not
- * pattern-match on the function parameters, such as 'not(not(b)) = b`; rules like
+ * pattern-match on the function parameters, such as 'not(not(b)) = b'; rules like
  * these are discarded.
  * More problematically, the set of rewrite rules may not be complete, or may not
  * easily be proven complete; in the example above, if the rewriter cannot rewrite

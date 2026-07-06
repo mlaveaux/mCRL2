@@ -1086,7 +1086,7 @@ std::set < variable >  gauss_elimination(
 ///      in the context of inequalities.
 inline bool is_a_redundant_inequality(
   const std::vector < linear_inequality >& inequalities,
-  const std::vector < linear_inequality > :: iterator i,
+  const std::vector<linear_inequality>::iterator i,
   const rewriter& r)
 {
 #ifndef NDEBUG

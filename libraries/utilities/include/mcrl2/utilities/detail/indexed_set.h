@@ -24,9 +24,9 @@ namespace detail
 static const std::size_t STEP = 1; ///< The position on which the next hash entry is searched.
 
 /// in the hashtable we use the following constant to indicate free positions.
-static constexpr std::size_t EMPTY(std::numeric_limits<std::size_t>::max());
+static constexpr std::size_t EMPTY = std::numeric_limits<std::size_t>::max();
 
-static constexpr std::size_t RESERVED(std::numeric_limits<std::size_t>::max()-1);
+static constexpr std::size_t RESERVED = std::numeric_limits<std::size_t>::max() - 1;
 
 static constexpr float max_load_factor = 0.6f; ///< The load factor before the hash table is resized.
 

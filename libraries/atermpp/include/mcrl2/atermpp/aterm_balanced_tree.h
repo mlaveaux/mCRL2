@@ -19,10 +19,12 @@ namespace atermpp
 
 namespace
 {
+  /// \cond INTERNAL_DOCS
   global_function_symbol g_empty("@empty@", 0);
   global_function_symbol g_tree_node("@node@", 2);
   global_function_symbol g_single_tree_node("@single_node@", 1);
   aterm g_empty_tree(g_empty);
+  /// \endcond
 }
 
 template <typename Term>

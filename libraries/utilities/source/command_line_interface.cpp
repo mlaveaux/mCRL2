@@ -220,9 +220,9 @@ std::string interface_description::option_descriptor::man_page_description() con
   s << std::endl
     << std::regex_replace(
          std::regex_replace(word_wrap(m_description, 80),
-                            std::regex("\'"), 
+                            std::regex("\'"),
                             std::string("\\&'")),
-         std::regex("\\."), 
+         std::regex("\\."),
          "\\&.")
     << std::endl;
 
@@ -245,9 +245,9 @@ std::string interface_description::option_descriptor::man_page_description() con
 
       s << std::regex_replace(
             std::regex_replace(word_wrap(arg, 80),
-                               std::regex("\'"), 
+                               std::regex("\'"),
                                std::string("\\&'")),
-            std::regex("\\."), 
+            std::regex("\\."),
             std::string("\\&."))
        << std::endl;
     }
@@ -917,8 +917,8 @@ std::vector< std::string > command_line_parser::convert(const int count, wchar_t
 
   return result;
 }
-/// \endcond
 #endif // __CYGWIN__
+/// \endcond
 
 /**
  * Parses a string as if it were an unparsed command line and stores it as
@@ -1086,4 +1086,3 @@ void command_line_parser::process_default_options(interface_description& d)
   }
 }
 } // namespace mcrl2::utilities
-

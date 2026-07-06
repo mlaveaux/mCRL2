@@ -9,6 +9,8 @@
 namespace mcrl2::data::concepts
 {
 
+/// \cond INTERNAL_DOCS
+
 BOOST_concept(Substitution,(S)) :
   boost::UnaryFunction< S, typename S::expression_type, typename S::expression_type >
 {
@@ -83,6 +85,8 @@ BOOST_concept(Enumerator,(E)) : boost_concepts::ForwardTraversal< E >
   }
 };
 } // namespace mcrl2::data::concepts
+
+/// \endcond
 
 
 

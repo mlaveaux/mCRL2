@@ -300,7 +300,7 @@ class sort_specification
     ///       The second argument is used to check which sorts are added, to prevent
     ///       useless repetitions of additions of sorts.
     /// \details The function normalise_sorts imports for the given sort_expression sort all sorts, constructors,
-    ///       mappings and equations that belong to this sort to the `normalised' sets in this
+    ///       mappings and equations that belong to this sort to the @c normalised sets in this
     ///       data type. E.g. for the sort Nat of natural numbers, it is required that Pos
     ///       (positive numbers) are defined.
     void import_system_defined_sort(const sort_expression& sort);

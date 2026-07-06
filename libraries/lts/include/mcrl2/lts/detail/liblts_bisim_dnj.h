@@ -27,7 +27,7 @@
 /// 2020.  pp 3-20.  https://doi.org/10.1007/978-3-030-45237-7_1
 ///
 /// Partition refinement means that the algorithm maintains a partition of the
-/// state space of the LTS into ``blocks''.  A block contains all states in one
+/// state space of the LTS into "blocks".  A block contains all states in one
 /// or several branching bisimulation equivalence classes.  Blocks are being
 /// refined until every block contains exactly one branching bisimulation
 /// equivalence class.
@@ -102,15 +102,17 @@ namespace mcrl2::lts::detail
 // file.
 // NOLINTBEGIN(cppcoreguidelines-macro-usage,misc-static-assert,cppcoreguidelines-avoid-goto,cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
                                                                                 #ifndef NDEBUG
+                                                                                    /// \cond INTERNAL_DOCS
                                                                                     /// \brief include something in Debug mode
                                                                                     /// \details In a few places, we have to include an additional parameter to
                                                                                     /// a function in Debug mode.  While it is in principle possible to use
                                                                                     /// #ifndef NDEBUG ... #endif, that would lead to distributing the code
                                                                                     /// over many code lines.  This macro expands to its arguments in Debug
-// state_type and trans_type are defined in check_complexity.h.                     /// mode and to nothing otherwise.
+                                                                                    /// mode and to nothing otherwise.
                                                                                     #define ONLY_IF_DEBUG(...) __VA_ARGS__
                                                                                 #else
                                                                                     #define ONLY_IF_DEBUG(...)
+                                                                                    /// \endcond
                                                                                 #endif
 /// \brief type used to store label numbers and counts
 /// \details It would be better to define it as LTS_TYPE::labels_size_type, but
@@ -175,8 +177,7 @@ class action_block_entry;
 
 
 
-/// \defgroup part_state
-/// \brief data structures for states
+/// \defgroup part_state Data structures for states
 /// \details States are stored in a refinable partition data structure.  The
 /// actual state information will not be moved around, but only entries in
 /// a separate permutation array.  Entries is this array are grouped per
@@ -239,7 +240,7 @@ class state_info_entry
     /// \brief block where the state belongs
     /// \details During initialisation, this field is used to point at the
     /// first unused slot of the (non-inert) bledecessors, ahem, predecessors.
-    /// Sorry for the mock-chinese ``typo''.  So we always assume that it
+    /// Sorry for the mock-chinese "typo".  So we always assume that it
     /// starts as a pred_entry*, at some moment is converted to a block_t*, and
     /// then stays that way until it is destroyed.
     union bl_t {
@@ -752,8 +753,7 @@ class part_state_t
                                                                                 #endif
 
 
-/// \defgroup part_trans
-/// \brief data structures for transitions used during partition refinement
+/// \defgroup part_trans Data structures for transitions used during partition refinement
 /// \details These definitions provide a partition for transition data
 /// structure that can be used for the partition refinement algorithm.
 ///
@@ -2883,8 +2883,7 @@ inline bunch_t* bunch_t::split_off_small_action_block_slice(
 
 
 
-/// \defgroup part_refine
-/// \brief classes to calculate the stutter equivalence quotient of a LTS
+/// \defgroup part_refine Classes to calculate the stutter equivalence quotient of a LTS
 ///@{
 
 
@@ -4940,8 +4939,7 @@ class bisim_partitioner_dnj
 
 
 
-/// \defgroup part_interface
-/// \brief nonmember functions serving as interface with the rest of mCRL2
+/// \defgroup part_interface Nonmember functions serving as interface with the rest of mCRL2
 /// \details These functions are copied, almost without changes, from
 /// liblts_bisim_gw.h, which was written by Anton Wijs.
 ///@{

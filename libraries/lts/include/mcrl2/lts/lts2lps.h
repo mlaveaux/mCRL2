@@ -7,7 +7,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 /// \file lts2lps.h
-/// \brief This file contains functions to translate lts's into`
+/// \brief This file contains functions to translate lts's into
 ///        LPS format.
 
 

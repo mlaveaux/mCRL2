@@ -39,6 +39,7 @@ namespace mcrl2::lts::detail
 // whole file.
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
                                                                                 #ifndef NDEBUG
+                                                                                    /// \cond INTERNAL_DOCS
                                                                                     /// \brief include something in Debug mode
                                                                                     /// \details In a few places, we have to include an additional parameter to
                                                                                     /// a function in Debug mode.  While it is in principle possible to use
@@ -48,6 +49,7 @@ namespace mcrl2::lts::detail
                                                                                     #define ONLY_IF_DEBUG(...) __VA_ARGS__
                                                                                 #else
                                                                                     #define ONLY_IF_DEBUG(...)
+                                                                                    /// \endcond
                                                                                 #endif
 // state_type and trans_type are defined in check_complexity.h.
 
@@ -64,8 +66,7 @@ using label_type = std::size_t;
 
 
 
-/// \defgroup part_state
-/// \brief data structures for a refinable partition
+/// \defgroup part_state Data structures for states
 /// \details The following definitions provide a _refinable partition_ data
 /// structure.  The basic idea is that we store a permutation of the states (in
 /// a permutation_t array), so that states belonging to the same block are
@@ -99,8 +100,8 @@ using label_type = std::size_t;
 ///   state_info_ptr actually contains a pointer to a state_info_entry with
 ///   the additional guarantee that this is not the last entry in state_info_t.
 ///   (To make this a small bit more type safe, we could change the type
-///   state_info_ptr to something like ``pointer to an array with two
-///   state_info_entries'', typedef state_info_entry (*state_info_ptr)[2];.
+///   state_info_ptr to something like "pointer to an array with two
+///   state_info_entries", typedef state_info_entry (*state_info_ptr)[2];.
 ///   Still, that would allow unsafe pointer juggling.)
 /// - A block_t also contains information about its outgoing inert transitions.
 /// - A state_info_entry also contains information used during `refine()` or
@@ -156,7 +157,7 @@ using B_to_C_desc_const_iter_t = B_to_C_desc_list::const_iterator;
 /// there is one more `state_info_entry`.  The reason is that iterators past
 /// the last transition are not actually stored here, as they are equal to the
 /// iterator to the first transition of the next state.  The array will contain
-/// one additional ``state'' that is only used for these pointers.
+/// one additional "state" that is only used for these pointers.
 class state_info_entry
 {
   private:
@@ -1029,7 +1030,7 @@ class part_state_t
 
   private:
     /// \brief array with all other information about states
-    /// \details We allocate 1 additional ``state'' to allow for the iterators
+    /// \details We allocate 1 additional "state" to allow for the iterators
     /// past the last transition, as described in the documentation of
     /// `state_info_entry`.
     fixed_vector<state_info_entry> state_info;
@@ -1045,7 +1046,7 @@ class part_state_t
     /// \param n number of states in the Kripke structure
     part_state_t(state_type n)
       : permutation(n),
-        state_info(n+1) //< an additional ``state'' is needed to store pointers
+        state_info(n+1) //< an additional "state" is needed to store pointers
             // to the end of the slices of transitions of the last state
     {                                                                           assert(0 == block_t::nr_of_blocks);
                                                                                 #ifndef NDEBUG
@@ -1160,8 +1161,7 @@ class part_state_t
 
 
 
-/// \defgroup part_trans
-/// \brief data structures for transitions used during partition refinement
+/// \defgroup part_trans Data structures for transitions used during partition refinement
 /// \details These definitions provide a partition for transition data
 /// structure that can be used for the partition refinement algorithm.
 ///
@@ -1669,8 +1669,7 @@ class part_trans_t
 
 
 
-/// \defgroup part_refine
-/// \brief classes to calculate the stutter equivalence quotient of a LTS
+/// \defgroup part_refine Classes to calculate the stutter equivalence quotient of a LTS
 ///@{
 
 
@@ -1868,8 +1867,7 @@ class bisim_partitioner_gjkw
 
 
 
-/// \defgroup part_interface
-/// \brief nonmember functions serving as interface with the rest of mCRL2
+/// \defgroup part_interface Nonmember functions serving as interface with the rest of mCRL2
 /// \details These functions are copied, almost without changes, from
 /// liblts_bisim_gw.h, which was written by Anton Wijs.
 ///@{

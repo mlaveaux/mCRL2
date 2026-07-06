@@ -29,7 +29,7 @@
 /// and therefore no more than log2(n) steps (of a certain kind) can be
 /// assigned to any single state or transition.
 ///
-/// Note that an ``increase'' is by at least 1, but it may be more than 1.  If
+/// Note that an "increase" is by at least 1, but it may be more than 1.  If
 /// one always increases to the maximal allowed value, it is ensured that a
 /// very small block found early will only incur work that corresponds to its
 /// own size (and not to the size of the block from which it was split off).

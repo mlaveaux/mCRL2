@@ -83,6 +83,7 @@ namespace mcrl2::lts::detail
 
 
 #ifdef USE_POOL_ALLOCATOR
+    /// \cond INTERNAL_DOCS
     #define ONLY_IF_POOL_ALLOCATOR(...) __VA_ARGS__ // NOLINT(cppcoreguidelines-macro-usage)
     #ifndef USE_SIMPLE_LIST
         #error "Using the pool allocator also requires using the simple list"
@@ -279,6 +280,7 @@ namespace mcrl2::lts::detail
     };
 #else
     #define ONLY_IF_POOL_ALLOCATOR(...)
+    /// \endcond
 #endif // #define USE_POOL_ALLOCATOR
 
 #ifdef USE_SIMPLE_LIST
@@ -456,7 +458,7 @@ namespace mcrl2::lts::detail
         };
 
         /// \brief class that stores either an iterator or a null value
-        /// \details We cannot use C++14's ``null forward iterators'', as they
+        /// \details We cannot use C++14's "null forward iterators", as they
         /// are not guaranteed to compare unequal to valid iterators.  We also
         /// need to compare null iterators with non-null ones.
         class iterator_or_null : public iterator
