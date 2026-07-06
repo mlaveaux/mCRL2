@@ -201,7 +201,10 @@ Alphabet reduction
 -------------------
 
 Alphabet reduction is a preprocessing step for linearization. It is a transformation on process
-expressions that preserves branching bisimulation.
+expressions that preserves branching bisimulation. The transformation distributes renaming
+operators (``allow``, ``hide``, ``rename``, ``block``, and ``comm``) over the other process
+operators, with the goal of reducing the number of multi-actions that arise during intermediate
+steps of the linearization procedure.
 
 Notations
 ~~~~~~~~~~

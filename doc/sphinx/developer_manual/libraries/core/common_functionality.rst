@@ -34,28 +34,13 @@ When deriving from a traverser class, the ``enter`` and ``leave`` functions must
 
 .. note::
 
-   For Visual C++ the following workaround must be applied as well, otherwise it will
-   complain about ambiguities of ``operator()``.
-
-.. code-block:: c++
-
-   #if BOOST_MSVC
-         // Workaround for malfunctioning MSVC 2008 overload resolution
-         template < typename Container >
-         void operator()(Container const& a)
-         {
-           super::operator()(a);
-         }
-   #endif
-
-.. note::
-
    It is possible to change the way an object is traversed by overriding member
-   functions. How that works exactly needs be figured out.
+   functions by providing specialisations of ``operator()``, ``enter()``, or
+   ``leave()`` in the derived class.
 
 Implementation details
 ^^^^^^^^^^^^^^^^^^^^^^
-                                         
+
 The traverser classes have the following structure:
 
 .. code-block:: c++
@@ -71,7 +56,7 @@ The traverser classes have the following structure:
 
    template < typename Derived >
    class sort_traverser : public traverser< Derived >;
-        
+
 The default implementation for ``operator()`` calls the function ``enter`` upon
 entering and ``leave`` upon leaving an object. By default these functions have an
 empty body, so they can be optimized away by the compiler. The user can override
@@ -132,6 +117,14 @@ Find functions
 
 The mCRL2 Library contains a wide range of algorithms built on top of the traversers and builders.
 An overview of the most commonly used traverser based functions is given below.
+
+.. note::
+
+   The find, replace, and other traverser-based functions listed below are **not** part of the
+   ``mcrl2::core`` namespace. They are generic patterns, each implemented as a set of overloads
+   in the library that owns the relevant type. For example, ``find_free_variables`` on an LPS
+   object lives in ``mcrl2::lps``, not ``mcrl2::core``. Always include the correct library header
+   and use the matching namespace overload to avoid compilation errors or silent runtime failures.
 
 The mCRL2 Library contains a range of generic find functions. These are:
 
@@ -230,9 +223,9 @@ In this case, A models data::detail::traverser, B models lps::detail::traverser
 and C models data::detail::find_helper.
 
 .. code-block:: c++
-  
+
    #include <iostream>
-   
+
    // base class
    template <typename Derived>
    struct A
@@ -242,7 +235,7 @@ and C models data::detail::find_helper.
        std::cout << "A::a()" << std::endl;
      }
    };
-   
+
    // extended class
    template <typename Derived>
    struct B: public A<Derived>
@@ -251,9 +244,9 @@ and C models data::detail::find_helper.
      {
        std::cout << "B::b()" << std::endl;
        static_cast<Derived&>(*this).a();
-     } 
+     }
    };
-   
+
    // override the a() function
    template <template <class> class T>
    struct override: public T<override<T> >
@@ -263,13 +256,13 @@ and C models data::detail::find_helper.
        std::cout << "override::a()" << std::endl;
      }
    };
-   
+
    int main()
-   { 
+   {
      override<B> f;
      f.a();
      f.b();
-   
+
      return 0;
    }
 
@@ -310,4 +303,3 @@ semantics.
 The ``mutable_substition`` template class implements the Mutable Substitution
 concept. In addition, it has a number additional member functions in common
 with a ``std::map``.
-

@@ -17,6 +17,7 @@ Core
    :maxdepth: 1
 
    libraries/core/core_library
+   libraries/core/core_parsing
    libraries/core/common_functionality
    libraries/core/mcrl2_syntax_definition
 
