@@ -27,6 +27,7 @@ namespace mcrl2::pbes_system
 namespace detail
 {
 
+/// \cond INTERNAL_DOCS
 inline
 void make_constelm_substitution(const std::map<data::variable, data::data_expression>& m, data::rewriter::substitution_type& result)
 {

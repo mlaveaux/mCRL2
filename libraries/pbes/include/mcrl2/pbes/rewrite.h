@@ -22,6 +22,7 @@ namespace mcrl2::pbes_system {
 namespace detail
 {
 
+/// \cond INTERNAL_DOCS
 template <template <class> class Builder, class Rewriter>
 struct rewrite_pbes_expressions_builder: public Builder<rewrite_pbes_expressions_builder<Builder, Rewriter> >
 {
