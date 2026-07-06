@@ -43,7 +43,7 @@ namespace detail
 
 inline
 bool save_trace(
-  class trace& tr,
+  trace& tr,
   const std::string& filename
 )
 {
@@ -62,9 +62,9 @@ bool save_trace(
 
 inline
 void save_traces(
-  class trace& tr,
+  trace& tr,
   const std::string& filename1,
-  class trace& tr2,
+  trace& tr2,
   const std::string& filename2
 )
 {
