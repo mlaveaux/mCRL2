@@ -1189,18 +1189,6 @@ bool bisimulation_compare(
                                           generate_counter_examples, structured_output);
 }
 
-/** \brief Checks whether the two initial states of two lts's are strong or branching bisimilar.
- * \details This lts and the lts l2 are not usable anymore after this call.
- *          The space consumption is O(n) and time is O(nm). It uses the branching bisimulation
- *          algorithm by Groote and Vaandrager from 1990.
- * \param[in/out] l1 A first transition system.
- * \param[in/out] l2 A second transition system.
- * \param[in] branching If true branching bisimulation is used, otherwise strong bisimulation is applied.
- * \param[in] preserve_divergences If true and branching is true, preserve tau loops on states.
- * \param[in] generate_counter_examples Whether to generate a counter example
- * \param[in] counter_example_file The file to store the counter example in
- * \param[in] structured_output
- * \retval True iff the initial states of the current transition system and l2 are (divergence preserving) (branching) bisimilar */
 template < class LTS_TYPE>
 bool destructive_bisimulation_compare(
   LTS_TYPE& l1,
