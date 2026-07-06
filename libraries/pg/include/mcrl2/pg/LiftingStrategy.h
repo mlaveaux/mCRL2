@@ -17,7 +17,7 @@
 
 class SmallProgressMeasures;
 
-/*! \defgroup LiftingStrategies
+/*! \defgroup LiftingStrategies Lifting strategies
 
     Lifting strategies for the Small Progress Measures solving algorithm.
 */

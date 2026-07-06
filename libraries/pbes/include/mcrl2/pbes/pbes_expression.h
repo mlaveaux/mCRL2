@@ -152,7 +152,7 @@ class propositional_variable_instantiation: public pbes_expression
       : propositional_variable_instantiation(core::identifier_string(name), parameters)
     {
     }
-    
+
     /// \brief Constructor.
     explicit propositional_variable_instantiation(const core::identifier_string& name)
       : propositional_variable_instantiation(name, data::data_expression_list())
@@ -932,6 +932,7 @@ pbes_expression optimized_not(const pbes_expression& p)
 /// \param result Placeholder for the resulting PBES expression <tt>p && q</tt>. This is more efficient than delivering it as the result of a function. 
 /// \param p A PBES expression
 /// \param q A PBES expression
+/// \post result is the optimized negation of <tt>!p</tt>
 inline
 void make_optimized_and(pbes_expression& result, const pbes_expression& p, const pbes_expression& q)
 {
@@ -941,7 +942,7 @@ void make_optimized_and(pbes_expression& result, const pbes_expression& p, const
 /// \brief Make a conjunction
 /// \param p A PBES expression
 /// \param q A PBES expression
-/// \return The value <tt>p && q</tt>
+/// \post result is the optimized conjunction of <tt>p && q</tt>
 inline
 pbes_expression optimized_and(const pbes_expression& p, const pbes_expression& q)
 {
@@ -959,6 +960,7 @@ void make_optimized_or(pbes_expression& result, const pbes_expression& p, const 
 }
 
 /// \brief Make a disjunction
+/// \param result Placeholder for the resulting PBES expression <tt>p || q</tt>. This is more efficient than delivering it as the result of a function. 
 /// \param p A PBES expression
 /// \param q A PBES expression
 /// \return The value <tt>p || q</tt>
@@ -978,7 +980,7 @@ void make_optimized_imp(pbes_expression& result, const pbes_expression& p, const
   core::make_optimized_imp(result, p, q);
 }
 
-/// \brief Make an implication
+/// \brief Make a disjunction
 /// \param p A PBES expression
 /// \param q A PBES expression
 /// \return The value <tt>p => q</tt>
@@ -994,7 +996,7 @@ pbes_expression optimized_imp(const pbes_expression& p, const pbes_expression& q
 /// \param l A sequence of data variables
 /// \param p A PBES expression
 /// \param remove_variables If true variables not occurring in p will be removed. This requires complexity in the size of p. 
-/// \return The value <tt>forall l.p</tt>
+/// \post result is the optimized universal quantification <tt>forall l.p</tt>
 inline
 void make_optimized_forall(pbes_expression& result, const data::variable_list& l, const pbes_expression& p, bool remove_variables = false)
 {
@@ -1029,7 +1031,7 @@ void make_optimized_exists(pbes_expression& result, const data::variable_list& l
 /// \param l A sequence of data variables
 /// \param p A PBES expression
 /// \param remove_variables If true variables not occurring in p will be removed. This requires complexity in the size of p. 
-/// \return The value <tt>exists l.p</tt>
+/// \post result is the optimized existential quantification <tt>exists l.p</tt>
 inline
 pbes_expression optimized_exists(const data::variable_list& l, const pbes_expression& p, bool remove_variables = false)
 {

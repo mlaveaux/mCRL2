@@ -23,7 +23,7 @@
 #   define ATTR_PACKED
 #endif
 
-/*! \defgroup ParityGameData
+/*! \defgroup ParityGameData Parity game data structures
 
     Data structures used to represent parity games in memory.
 */

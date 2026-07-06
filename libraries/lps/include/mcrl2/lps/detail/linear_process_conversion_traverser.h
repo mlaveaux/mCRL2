@@ -301,8 +301,7 @@ struct linear_process_conversion_traverser: public process_expression_traverser<
     }
   }
 
-  /// \brief Returns true if the process equation e is linear.
-  /// \param e A process equation
+  /// \brief Converts a process equation.
   void convert(const process_equation& /* e */)
   {
     clear_summand();
@@ -664,8 +663,7 @@ struct stochastic_linear_process_conversion_traverser: public process_expression
     }
   }
 
-  /// \brief Returns true if the process equation e is linear.
-  /// \param e A process equation
+  /// \brief Converts a process equation.
   void convert(const process_equation& /* e */)
   {
     clear_summand();

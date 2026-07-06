@@ -84,10 +84,9 @@ class pbes
     /// sequence of propositional variable declarations [first, last).
     /// \param first Start of a sequence of propositional variable declarations
     /// \param last End of a sequence of propositional variable declarations
-    /// \param v A propositional variable instantation
+    /// \param v A propositional variable instantiation
     /// \param data_spec A data specification.
     /// \return True if the type of \p v is matched correctly
-    /// \param v A propositional variable instantiation
     template <typename Iter>
     bool is_declared_in(Iter first, Iter last, const propositional_variable_instantiation& v, const data::data_specification& data_spec) const
     {

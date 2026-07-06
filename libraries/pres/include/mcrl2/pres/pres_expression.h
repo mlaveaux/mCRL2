@@ -1568,7 +1568,7 @@ void make_optimized_and(pres_expression& result, const pres_expression& p, const
 /// \brief Make a conjunction
 /// \param p A PRES expression
 /// \param q A PRES expression
-/// \return The value <tt>p && q</tt>
+/// \post result is the optimized version of <tt>p && q</tt>
 inline
 pres_expression optimized_and(const pres_expression& p, const pres_expression& q)
 {
@@ -1585,10 +1585,10 @@ void make_optimized_or(pres_expression& result, const pres_expression& p, const 
   core::make_optimized_or(result, p, q);
 }
 
-/// \brief Make a disjunction
+/// \brief Make a sum
 /// \param p A PRES expression
 /// \param q A PRES expression
-/// \return The value <tt>p || q</tt>
+/// \post result is the optimized version of <tt>p + q</tt>
 inline
 pres_expression optimized_or(const pres_expression& p, const pres_expression& q)
 {
@@ -1621,7 +1621,7 @@ void make_optimized_plus(pres_expression& result, const pres_expression& p, cons
         return;
       }
     }
-    make_plus(result, p, q);  
+    make_plus(result, p, q);
   }
   else if (is_false(q))
   {
@@ -1634,7 +1634,7 @@ void make_optimized_plus(pres_expression& result, const pres_expression& p, cons
         return;
       }
     }
-    make_plus(result, p, q);  
+    make_plus(result, p, q);
   }
   else if (data::sort_real::is_zero(p))
   {
@@ -1725,7 +1725,7 @@ void make_optimized_supremum(pres_expression& result, const data::variable_list&
 /// \brief Make an optimized supremum.
 /// \param l A sequence of data variables
 /// \param p A PRES expression
-/// \return The value <tt>sup l.p</tt>
+/// \post result is the optimized version of <tt>sup l.p</tt>
 inline
 pres_expression optimized_supremum(const data::variable_list& l, const pres_expression& p, bool remove_variables = false)
 {
@@ -1797,7 +1797,7 @@ void make_optimized_sum(pres_expression& result,
     {
       if (!is_true(p) && !is_false(p) && !data::sort_real::is_zero(p))
       {
-        // Determine the cardinality. 
+        // Determine the cardinality.
         std::size_t c = cardinality(v.sort());
         if (c==0) // This means the cardinality is infinite or cannot be determined.
         {
@@ -1830,7 +1830,7 @@ void make_optimized_sum(pres_expression& result,
       const data::data_expression& d = atermpp::down_cast<data::data_expression>(p);
       if (d.sort()==data::sort_bool::bool_())
       {
-        result = atermpp::down_cast<pres_expression>(d);  
+        result = atermpp::down_cast<pres_expression>(d);
       }
       else
       {
@@ -1843,7 +1843,7 @@ void make_optimized_sum(pres_expression& result,
       make_const_multiply(result, data::sort_real::real_(factor),p);
     }
   }
-  else 
+  else
   {
     result=p;
   }
@@ -1852,7 +1852,7 @@ void make_optimized_sum(pres_expression& result,
     make_sum(result, new_l, result);
   }
   return;
-} 
+}
 
 /// \brief Make an optimized sum quantification.
 /// If l is empty, p is returned.
@@ -1895,11 +1895,11 @@ void make_optimized_condsm(pres_expression& result, const pres_expression& p1, c
   return;
 }
 
-/// \brief Make an optimized condsm expression
+/// \brief Make an optimized condeq expression
 /// \param p1 A pres expression
 /// \param p2 A pres expression
 /// \param p3 A pres expression
-/// \return An optimized representation of condsm(p1, p2, p3)
+/// \post result is an optimized representation of condeq(p1, p2, p3)
 inline
 pres_expression optimized_condsm(const pres_expression& p1, const pres_expression& p2, const pres_expression& p3)
 {
@@ -1970,9 +1970,9 @@ void make_optimized_eqinf(pres_expression& result, const pres_expression& p)
   make_eqinf(result, p);
 }
 
-/// \brief Make an optimized eqinf expression
+/// \brief Make an optimized eqninf expression
 /// \param p A pres expression
-/// \return An optimized representation of eqinf(p)
+/// \post result is an optimized representation of eqninf(\a p)
 inline
 pres_expression optimized_eqinf(const pres_expression& p)
 {
@@ -2064,7 +2064,7 @@ inline
 void make_optimized_const_multiply_alt(pres_expression& result, const data::data_expression& d, const pres_expression& p)
 {
   if (data::sort_real::is_zero(d))
-  { 
+  {
     result = atermpp::down_cast<pres_expression>(d);
     return;
   }
@@ -2075,7 +2075,7 @@ void make_optimized_const_multiply_alt(pres_expression& result, const data::data
   }
   if (data::sort_real::is_larger_zero(d) && 
       (p==false_() || p==true_() || is_eqinf(p) || is_eqninf(d)))
-  { 
+  {
     result = p;
     return;
   }
@@ -2107,7 +2107,7 @@ data::variable_list free_variables(const pres_expression& x)
 }
 
 /// \\brief Make_propositional_variable constructs a new term into a given address.
-/// \\ \param t The reference into which the new propositional_variable is constructed. 
+/// \\ \param t The reference into which the new propositional_variable is constructed.
 template <class... ARGUMENTS>
 inline void make_propositional_variable(atermpp::aterm& t, const ARGUMENTS&... args)
 {
@@ -2534,7 +2534,7 @@ struct term_traits<pres_system::pres_expression>
   {
     // Forall and exists are not fully supported by the data library
     assert(!data::is_data_expression(t) || (!data::is_abstraction(t)
-                                        || (!is_infimum(atermpp::down_cast<pres_system::pres_expression>(data::abstraction(t))) && 
+                                        || (!is_infimum(atermpp::down_cast<pres_system::pres_expression>(data::abstraction(t))) &&
                                             !is_supremum(atermpp::down_cast<pres_system::pres_expression>(data::abstraction(t))))));
     assert(is_supremum(t) || is_infimum(t));
 
