@@ -19,35 +19,43 @@ The grammar source for the mCRL2 language is
 Key classes
 -----------
 
-.. table:: Classes in ``mcrl2/core/dparser.h`` and ``mcrl2/core/parse.h``
-   :widths: 30 20 50
+.. list-table:: Classes in :mcrl2:`mcrl2/core/dparser.h <dparser.h>` and :mcrl2:`mcrl2/core/parse.h <parse.h>`
+   :header-rows: 1
+   :widths: 28 17 55
 
-   ========================================  ===============  ============================================================
-   Class                                     Header           Purpose
-   ========================================  ===============  ============================================================
-   ``parse_node``                            ``dparser.h``    Wraps a ``D_ParseNode``. Gives access to the matched
-                                                              symbol (``symbol()``), source text (``string()``),
-                                                              children (``child(i)``, ``child_count()``), and
-                                                              source location (``line()``, ``column()``).
-   ``parser_table``                          ``dparser.h``    Wraps ``D_ParserTables``. Supports symbol lookup by index
-                                                              (``symbol_name()``) and finding start symbols by name
-                                                              (``start_symbol_index()``).
-   ``parser``                                ``dparser.h``    Wraps ``D_Parser``. Drives a parse run via ``parse()``,
-                                                              holds the ``parser_table``, and provides
-                                                              ``destroy_parse_node()`` for cleanup.
-   ``parser_actions``                        ``parse.h``      Base class for parse-tree traversal. Provides
-                                                              ``traverse(node, f)`` that walks the tree calling ``f``
-                                                              on each node, and factory functions for ``visitor`` and
-                                                              ``collector`` callbacks (see below).
-   ``default_parser_actions``                ``parse.h``      Extends ``parser_actions`` with ``parse_list()``,
-                                                              ``parse_vector()``, ``parse_Id()``, and
-                                                              ``parse_Number()`` helpers.
-   ``parse_node_exception``                  ``parse.h``      Exception thrown when a parse node does not have the
-                                                              expected structure. Includes line/column context.
-   ``parse_node_unexpected_exception``       ``parse.h``      Specialisation of ``parse_node_exception`` for nodes
-                                                              of an entirely unexpected type; adds a dump of the
-                                                              node to the error message.
-   ========================================  ===============  ============================================================
+   * - Class
+     - Header
+     - Purpose
+   * - :mcrl2:`parse_node <mcrl2::core::parse_node>`
+     - ``dparser.h``
+     - Wraps a ``D_ParseNode``. Gives access to the matched symbol (``symbol()``),
+       source text (``string()``), children (``child(i)``, ``child_count()``), and
+       source location (``line()``, ``column()``).
+   * - :mcrl2:`parser_table <mcrl2::core::parser_table>`
+     - ``dparser.h``
+     - Wraps ``D_ParserTables``. Supports symbol lookup by index (``symbol_name()``)
+       and finding start symbols by name (``start_symbol_index()``).
+   * - :mcrl2:`parser <mcrl2::core::parser>`
+     - ``dparser.h``
+     - Wraps ``D_Parser``. Drives a parse run via ``parse()``, holds the
+       ``parser_table``, and provides ``destroy_parse_node()`` for cleanup.
+   * - :mcrl2:`parser_actions <mcrl2::core::parser_actions>`
+     - ``parse.h``
+     - Base class for parse-tree traversal. Provides ``traverse(node, f)`` that walks
+       the tree calling ``f`` on each node, and factory functions for ``visitor`` and
+       ``collector`` callbacks (see below).
+   * - :mcrl2:`default_parser_actions <mcrl2::core::default_parser_actions>`
+     - ``parse.h``
+     - Extends ``parser_actions`` with ``parse_list()``, ``parse_vector()``,
+       ``parse_Id()``, and ``parse_Number()`` helpers.
+   * - :mcrl2:`parse_node_exception <mcrl2::core::parse_node_exception>`
+     - ``parse.h``
+     - Exception thrown when a parse node does not have the expected structure.
+       Includes line/column context.
+   * - :mcrl2:`parse_node_unexpected_exception <mcrl2::core::parse_node_unexpected_exception>`
+     - ``parse.h``
+     - Specialisation of ``parse_node_exception`` for nodes of an entirely unexpected
+       type; adds a dump of the node to the error message.
 
 Parsing an expression
 ---------------------
@@ -87,15 +95,15 @@ Parse-tree traversal helpers
 ``parser_actions`` provides two inner callback types for use with
 ``traverse()``:
 
-``visitor``
+:mcrl2:`visitor <mcrl2::core::parser_actions::visitor>`
    Calls a function ``f(node)`` whenever a node's symbol name matches a given
    type string. Traversal stops descending into a matched node.
 
-``collector``
+:mcrl2:`collector <mcrl2::core::parser_actions::collector>`
    Like ``visitor``, but appends ``f(node)`` to a container instead of calling
    a side-effecting function.
 
-``set_collector``
+:mcrl2:`set_collector <mcrl2::core::parser_actions::set_collector>`
    Like ``collector``, but inserts into a set container.
 
 Factory functions ``make_visitor``, ``make_collector``, and
@@ -131,7 +139,7 @@ parse run. The relevant free functions are:
 Parser utility helpers
 -----------------------
 
-``mcrl2/core/parser_utility.h`` provides predicates and warning functions
+:mcrl2:`mcrl2/core/parser_utility.h <parser_utility.h>` provides predicates and warning functions
 for detecting operator-precedence patterns that changed between mCRL2
 versions:
 

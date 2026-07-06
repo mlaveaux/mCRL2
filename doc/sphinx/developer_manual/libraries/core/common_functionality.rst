@@ -21,7 +21,8 @@ different types of travelsals possible:
 
 
 Each library defines classes that support these traversal types, namely
-``traverser`` and ``builder``. They are the most commonly occurring traversals.
+:mcrl2:`traverser <mcrl2::core::traverser>` and
+:mcrl2:`builder <mcrl2::core::builder>`. They are the most commonly occurring traversals.
 When writing an algorithm that needs to traverse an object, one can usually
 implement it using one of the predefined traversal classes.
 
