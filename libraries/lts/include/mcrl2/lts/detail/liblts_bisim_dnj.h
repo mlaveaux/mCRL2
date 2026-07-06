@@ -1299,14 +1299,6 @@ inline bunch_t* succ_entry::bunch() const
     return block_bunch->slice->bunch;
 }
                                                                                 #if !defined(NDEBUG) || defined(COUNT_WORK_BALANCE)
-                                                                                    /// \brief register that work has been done for the out-slice containing
-                                                                                    /// `out_slice_begin`
-                                                                                    /// \details This function should be used if work
-                                                                                    /// \param partitioner      the partitioner data structure, used to write
-                                                                                    ///                         diagnostic messages
-                                                                                    /// \param out_slice_begin  the first transition in the out-slice
-                                                                                    /// \param ctr              counter type to which work has to be assigned
-                                                                                    /// \param max_value        new value of the counter
                                                                                     template <class LTS_TYPE>
                                                                                     /* static */ inline void succ_entry::add_work_to_out_slice(
                                                                                         const bisim_partitioner_dnj<LTS_TYPE>& partitioner,
@@ -2689,15 +2681,6 @@ class part_trans_t
 };
 
 
-/// \brief refine a block
-/// \details This function is called after a refinement function has found
-/// where to split the block into unmarked (U) and marked (R) states.
-/// It creates a new block for the smaller subblock.
-/// \param  new_block_mode  indicates whether the U- or the R-block should be
-///                         the new one.  (This parameter is necessary in case
-///                         the two halves have exactly the same size.)
-/// \param  new_seqnr       is the sequence number of the new block
-/// \returns pointer to the new block
                                                                                 ONLY_IF_DEBUG( template<class LTS_TYPE> )
 inline block_t* block_t::split_off_block(
         enum new_block_mode_t const new_block_mode,                             ONLY_IF_DEBUG( const bisim_partitioner_dnj<LTS_TYPE>& partitioner, )
