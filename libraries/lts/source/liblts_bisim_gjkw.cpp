@@ -133,19 +133,6 @@ block_t* block_t::split_off_blue(permutation_iter_t const blue_nonbottom_end)
     return NewB;
 }
 
-/// \brief refine the block (the red subblock is smaller)
-/// \details This function is called after a refinement function has found
-/// that the red subblock is the smaller one.  It creates a new block for
-/// the red states.
-///
-/// Both `split_off_blue()` and `split_off_red()` unmark all states in the blue
-/// subblock and mark all bottom states in the red subblock.  (This will help
-/// the caller to distinguish old bottom states from new bottom states found
-/// after `split_off_blue()` or `split_off_red()`, respectively.)  The two
-/// functions use the same complexity counters because their operations belong
-/// together.
-/// \param red_nonbottom_begin iterator to the first red non-bottom state
-/// \returns pointer to the new (red) block
 block_t* block_t::split_off_red(permutation_iter_t const red_nonbottom_begin)
 {                                                                               assert(marked_nonbottom_begin() == red_nonbottom_begin);
                                                                                 assert(marked_nonbottom_end() >= red_nonbottom_begin);
@@ -475,9 +462,10 @@ void part_trans_t::split_inert_to_C(block_t* const SpB)
 /// that the new constellation does not (yet) have _inert_ incoming
 /// transitions.  It returns the boundary between transitions to SpC and
 /// transitions to NewC in the state's outgoing transition array.
+///
+/// In debug mode, two additional parameters `SpC` (splitter constellation) and
+/// `NewC` (new constellation) are available for assertions.
 /// \param pred_iter  transition that has to be changed
-/// \param SpC        splitter constellation
-/// \param NewC       new constellation, where the transition goes to now
 /// \param first_transition_of_state  This is the first transition of the
 ///                                   state, so a new constln slice is started.
 /// \param first_transition_of_block  This is the first transition of the
@@ -556,13 +544,12 @@ succ_iter_t part_trans_t::change_to_C(pred_iter_t const pred_iter,              
 
 
 /// \brief Split outgoing transitions of a state in the splitter
-/// \details split_s_inert_out splits the outgoing transitions from s to its
+/// \details split_s_inert_out splits the outgoing transitions from `s` to its
 /// own constellation into two:  the inert transitions become transitions to
-/// the new constellation of which s is now part;  the non-inert transitions
-/// remain transitions to OldC.
-/// Its time complexity is O(1 + min { |out_\nottau(s)|, |out_\tau(s)| }).
-/// \param s     state whose outgoing transitions need to be split
-/// \param OldC  old constellation (of which the splitter was a part earlier)
+/// the new constellation of which `s` is now part;  the non-inert transitions
+/// remain transitions to `OldC` (the old constellation, only available in debug
+/// mode).
+/// Its time complexity is O(1 + min { |out_notau(s)|, |out_tau(s)| }).
 /// \result true iff the state also has transitions to OldC
 bool part_trans_t::split_s_inert_out(state_info_ptr s                           ONLY_IF_DEBUG( , constln_t* OldC )
                                                      )
@@ -1761,7 +1748,8 @@ init_transitions(part_state_t& part_st, part_trans_t& part_tr,
 /// Anton Wijs.
 ///
 /// \pre The bisimulation equivalence classes have been computed.
-/// \param branching Causes non-internal transitions to be removed.
+/// \note In debug mode, an additional parameter `branching` is available to
+///       indicate that non-internal transitions should be removed.
 template <class LTS_TYPE>
 void bisim_partitioner_gjkw_initialise_helper<LTS_TYPE>::
          replace_transition_system(const part_state_t& part_st,                 ONLY_IF_DEBUG( const bool branching, )
@@ -2400,12 +2388,12 @@ void bisim_partitioner_gjkw<LTS_TYPE>::
 /// \param RfnB             the block that has to be refined
 /// \param SpC              the splitter constellation
 /// \param FromRed          the set of transitions from `RfnB` to `SpC`
-/// \param size_SpB         (only used for measuring the time complexity, and
-///                         only if called from line 2.26) the size of the
-///                         original splitter block SpB, to which the work on
-///                         red bottom states is ascribed.
 /// \param postprocessing   true iff `refine()` is called during postprocessing
 ///                         new bottom states
+/// \note In debug mode, an additional parameter `NewC` is available:
+///       (only used for measuring the time complexity, and only if called from
+///       line 2.26) the constellation that was used as the basis of marking
+///       states.  If not called from line 2.26, pass `nullptr`.
 /// \result a pointer to the block that contains the red part of `RfnB`.
 
 template <class LTS_TYPE>

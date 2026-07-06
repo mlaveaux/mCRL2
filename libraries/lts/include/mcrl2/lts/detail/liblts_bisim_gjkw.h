@@ -47,9 +47,9 @@ namespace mcrl2::lts::detail
                                                                                     /// over many code lines.  This macro expands to its arguments in Debug
                                                                                     /// mode and to nothing otherwise.
                                                                                     #define ONLY_IF_DEBUG(...) __VA_ARGS__
+                                                                                    /// \endcond
                                                                                 #else
                                                                                     #define ONLY_IF_DEBUG(...)
-                                                                                    /// \endcond
                                                                                 #endif
 // state_type and trans_type are defined in check_complexity.h.
 
@@ -432,7 +432,7 @@ class block_t
     /// \details This list serves two purposes: it contains all
     /// B_to_C_descriptors, so that the constellations reachable from this
     /// block can be found; and if this block has transitions to the current
-    /// splitter SpC\SpB, then the first element of the list points to these
+    /// splitter SpC\\SpB, then the first element of the list points to these
     /// transitions.
     B_to_C_desc_list to_constln;
   private:
@@ -781,6 +781,13 @@ class block_t
     /// \details This function is called after a refinement function has found
     /// that the red subblock is the smaller one.  It creates a new block for
     /// the red states.
+    ///
+    /// Both `split_off_blue()` and `split_off_red()` unmark all states in the blue
+    /// subblock and mark all bottom states in the red subblock.  (This will help
+    /// the caller to distinguish old bottom states from new bottom states found
+    /// after `split_off_blue()` or `split_off_red()`, respectively.)  The two
+    /// functions use the same complexity counters because their operations belong
+    /// together.
     /// \param red_nonbottom_begin iterator to the first red non-bottom state
     /// \returns pointer to the new (red) block
     block_t* split_off_red(permutation_iter_t red_nonbottom_begin);
@@ -1583,7 +1590,7 @@ class part_trans_t
     reflect that noninert and inert transitions from block b would go to
     different constellations.
     Its time complexity is O(1+min {|out_noninert(b-->C)|, |out_inert(b)|}). */
-    void split_inert_to_C(block_t* B);
+    void split_inert_to_C(block_t* SpB);
 
     /* part_trans_t::change_to_C has to be called after a transition target has
     changed its constellation.  The member function will adapt the transition
@@ -1639,8 +1646,8 @@ class part_trans_t
     at least while postprocessing.
 
     Its time complexity is O(1 + |out(NewB)|). */
-    void new_blue_block_created(block_t* OldB, block_t* NewB);
-    void new_red_block_created(block_t*OldB,block_t*NewB, bool postprocessing);
+    void new_blue_block_created(block_t* RfnB, block_t* NewB);
+    void new_red_block_created(block_t* RfnB, block_t* NewB, bool postprocessing);
 
     B_to_C_const_iter_t B_to_C_begin() const  {  return B_to_C.begin();  }
     B_to_C_iter_t       B_to_C_end  ()        {  return B_to_C.end  ();  }
