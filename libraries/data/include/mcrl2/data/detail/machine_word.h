@@ -218,57 +218,42 @@ inline std::size_t shift_right(const data_expression& e1, const std::size_t n)
 } // end namespace detail 
 
 /// \brief The machine number representing 0.
-/// \param result The data_expression into which the created object is stored.
-/// \return The machine number 0.
 inline void zero_word_manual_implementation(data_expression& result)
 {
   result=detail::zero_word();
 }
 
 /// \brief The machine number representing 1.
-/// \param result The data_expression into which the created object is stored.
-/// \return The machine number 1.
 inline void one_word_manual_implementation(data_expression& result)
 {
   result=detail::one_word();
 }
 
 /// \brief The machine number representing 2.
-/// \param result The data_expression into which the created object is stored.
-/// \return The machine number 2.
 inline void two_word_manual_implementation(data_expression& result)
 {
   result=detail::two_word();
 }
 
 /// \brief The machine number representing 3.
-/// \param result The data_expression into which the created object is stored.
-/// \return The machine number 3.
 inline void three_word_manual_implementation(data_expression& result)
 {
   result=detail::three_word();
 }
 
 /// \brief The machine number representing 4.
-/// \param result The data_expression into which the created object is stored.
-/// \return The machine number 4.
 inline void four_word_manual_implementation(data_expression& result)
 {
   result=detail::four_word();
 }
 
 /// \brief The largest representable machine number.
-/// \param result The data_expression into which the created object is stored.
-/// \return The largest number a machine word can hold. 
 inline void max_word_manual_implementation(data_expression& result)
 {
   result=detail::max_word();
 }
 
 /// \brief Checks whether the argument is equal to 0.
-/// \param e 
-/// \param result The data_expression into which the created object is stored.
-/// \return True if e equals 0, otherwise false.
 inline void equals_zero_word_manual_implementation(data_expression& result, const data_expression& e)
 {
   assert(is_machine_number(e));
@@ -282,9 +267,6 @@ inline void equals_zero_word_manual_implementation(data_expression& result, cons
 }
 
 /// \brief Checks whether the argument is not equal to 0.
-/// \param e 
-/// \param result The data_expression into which the created object is stored.
-/// \return True if e equals 0, otherwise false.
 inline void not_equals_zero_word_manual_implementation(data_expression& result, const data_expression& e)
 {
   assert(is_machine_number(e));
@@ -298,9 +280,6 @@ inline void not_equals_zero_word_manual_implementation(data_expression& result, 
 }
 
 /// \brief Checks whether the argument is equal to 1.
-/// \param e 
-/// \param result The data_expression into which the created object is stored.
-/// \return True if e equals 0, otherwise false.
 inline void equals_one_word_manual_implementation(data_expression& result, const data_expression& e)
 {
   assert(is_machine_number(e));
@@ -314,9 +293,6 @@ inline void equals_one_word_manual_implementation(data_expression& result, const
 }
 
 /// \brief Checks whether the argument is equal to the largest 64 bit number.
-/// \param e 
-/// \param result The data_expression into which the created object is stored.
-/// \return True if e equals the largest 64 number, otherwise false.
 inline void equals_max_word_manual_implementation(data_expression& result, const data_expression& e)
 {
   assert(is_machine_number(e));
@@ -330,9 +306,6 @@ inline void equals_max_word_manual_implementation(data_expression& result, const
 }
 
 /// \brief The successor function on a machine numbers, that wraps around.
-/// \param result The data_expression into which the created object is stored.
-/// \param e 
-/// \return e+1, or zero if n is the maximum number.
 inline void succ_word_manual_implementation(data_expression& result, const data_expression& e)
 {
   assert(is_machine_number(e));
@@ -340,10 +313,6 @@ inline void succ_word_manual_implementation(data_expression& result, const data_
 }
 
 /// \brief The equality function on two machine words. 
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1==e2.
 inline void equal_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -354,10 +323,6 @@ inline void equal_word_manual_implementation(data_expression& result, const data
 }
 
 /// \brief The non equality function on two machine words. 
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1!=e2.
 inline void not_equal_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -368,10 +333,6 @@ inline void not_equal_word_manual_implementation(data_expression& result, const 
 }
 
 /// \brief The less than function on two machine words. 
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1<e2.
 inline void less_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -380,10 +341,6 @@ inline void less_word_manual_implementation(data_expression& result, const data_
 }
 
 /// \brief The less than or equal function on two machine words. 
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1<=e2.
 inline void less_equal_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -392,10 +349,6 @@ inline void less_equal_word_manual_implementation(data_expression& result, const
 }
 
 /// \brief The greater than function on two machine words. 
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1>e2.
 inline void greater_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -404,10 +357,6 @@ inline void greater_word_manual_implementation(data_expression& result, const da
 }
 
 /// \brief The greater than or equal function on two machine words. 
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1>=e2.
 inline void greater_equal_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -416,10 +365,6 @@ inline void greater_equal_word_manual_implementation(data_expression& result, co
 }
 
 /// \brief The result of adding two words modulo the maximal representable machine word plus 1.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1+e2 modulo the machine word. 
 inline void add_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -429,10 +374,6 @@ inline void add_word_manual_implementation(data_expression& result, const data_e
 }
 
 /// \brief The result of adding two words plus 1 modulo the maximal representable machine word plus 1.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1+e2+1 modulo the machine word. 
 inline void add_with_carry_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -442,10 +383,6 @@ inline void add_with_carry_word_manual_implementation(data_expression& result, c
 }
 
 /// \brief An indication whether an overflow occurs when e1 and e2 are added. 
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return If e1+e2 is larger than a machine word, then true, else false. 
 inline void add_overflow_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -460,10 +397,6 @@ inline void add_overflow_word_manual_implementation(data_expression& result, con
 }
 
 /// \brief An indication whether an overflow occurs when e1 and e2 are added. 
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return If e1+e2+1 is larger than a machine word, then true, else false. 
 inline void add_with_carry_overflow_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -478,10 +411,6 @@ inline void add_with_carry_overflow_word_manual_implementation(data_expression& 
 }
 
 /// \brief The result of multiplying two words modulo the maximal representable machine word plus 1.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1*e2 modulo the machine word. 
 inline void times_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -491,10 +420,6 @@ inline void times_word_manual_implementation(data_expression& result, const data
 }
 
 /// \brief The result of multiplying two words and adding the third modulo the maximal representable machine word plus 1.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1*e2+e3 modulo the machine word. 
 inline void times_with_carry_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2, const data_expression& e3)
 {
   assert(is_machine_number(e1) && is_machine_number(e2) && is_machine_number(e3));
@@ -505,10 +430,6 @@ inline void times_with_carry_word_manual_implementation(data_expression& result,
 }
 
 /// \brief The result of multiplying two words divided by the maximal representable machine word plus 1.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1*e2 div the maximal machine word+1. 
 inline void times_overflow_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -518,10 +439,6 @@ inline void times_overflow_word_manual_implementation(data_expression& result, c
 }
 
 /// \brief The result of multiplying two words and adding a third divided by the maximal representable machine word plus 1.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1*e2 div the maximal machine word+1. 
 inline void times_with_carry_overflow_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2, const data_expression& e3)
 {
   assert(is_machine_number(e1) && is_machine_number(e2) && is_machine_number(e3));
@@ -532,10 +449,6 @@ inline void times_with_carry_overflow_word_manual_implementation(data_expression
 }
 
 /// \brief The result of subtracting two words modulo the maximal representable machine word plus 1.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1-e2 modulo the machine word. 
 inline void minus_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -545,10 +458,6 @@ inline void minus_word_manual_implementation(data_expression& result, const data
 }
 
 /// \brief The result of subtracting two words. If the result is negative 0 is returned. 
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return max(0,e1-e2).
 inline void monus_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -558,10 +467,6 @@ inline void monus_word_manual_implementation(data_expression& result, const data
 }
 
 /// \brief Calculates the division of the first word by the second. 
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1/e2.
 inline void div_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -571,10 +476,6 @@ inline void div_word_manual_implementation(data_expression& result, const data_e
 }
 
 /// \brief Calculates e1 modulo e2.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return e1 modulo e2. 
 inline void mod_word_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -584,9 +485,6 @@ inline void mod_word_manual_implementation(data_expression& result, const data_e
 }
 
 /// \brief The square root of e, rounded down to a machine word. 
-/// \param result The data_expression into which the created object is stored.
-/// \param e The argument.
-/// \return The square root of e rounded down. 
 inline void sqrt_word_manual_implementation(data_expression& result, const data_expression& e)
 {
   assert(is_machine_number(e));
@@ -594,11 +492,6 @@ inline void sqrt_word_manual_implementation(data_expression& result, const data_
 }
 
 /// \brief Calculates (base*e1 + e2) div e3.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \param e3 The third argument. 
-/// \return (base*e1 + e2) div e3
 inline void div_doubleword_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2, const data_expression& e3)
 {
   assert(is_machine_number(e1) && is_machine_number(e2) && is_machine_number(e3));
@@ -609,12 +502,6 @@ inline void div_doubleword_manual_implementation(data_expression& result, const 
 }
 
 /// \brief Calculates (base*e1 + e2) div (base*e3 + e4).
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \param e3 The third argument. 
-/// \param e4 The fourth argument. 
-/// \return (base*e1 + e2) div (base*e3 + e4)
 inline void div_double_doubleword_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2, const data_expression& e3, const data_expression& e4)
 {
   assert(is_machine_number(e1) && is_machine_number(e2) && is_machine_number(e3) && is_machine_number(e4));
@@ -626,13 +513,6 @@ inline void div_double_doubleword_manual_implementation(data_expression& result,
 }
 
 /// \brief Calculates (base*(base*e1 + e2)+e3) div (base*e4 + e5).
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \param e3 The third argument. 
-/// \param e4 The fourth argument. 
-/// \param e5 The fifth argument. 
-/// \return (base*(base*e1 + e2)+e3) div (base*e4 + e5)
 inline void div_triple_doubleword_manual_implementation(
                         data_expression& result, 
                         const data_expression& e1, 
@@ -651,12 +531,6 @@ inline void div_triple_doubleword_manual_implementation(
 }
 
 /// \brief Calculates (base*e1 + e2) mod (base*e3 + e4).
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \param e3 The third argument. 
-/// \param e4 The fourth argument. 
-/// \return (base*e1 + e2) mod (base*e3 + e4)
 inline void mod_double_doubleword_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2, const data_expression& e3, const data_expression& e4)
 {
   assert(is_machine_number(e1) && is_machine_number(e2) && is_machine_number(e3) && is_machine_number(e4));
@@ -668,10 +542,6 @@ inline void mod_double_doubleword_manual_implementation(data_expression& result,
 }
 
 /// \brief The square root of base*e1+e2 rounded down.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \return The square root of base*e1+e2 rounded down.
 inline void sqrt_doubleword_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(is_machine_number(e1) && is_machine_number(e2));
@@ -681,11 +551,6 @@ inline void sqrt_doubleword_manual_implementation(data_expression& result, const
 }
 
 /// \brief Calculates (base*e1 + e2) mod e3. The result fits in one word.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \param e3 The third argument. 
-/// \return (base*e1 + e2) mod e3
 inline void mod_doubleword_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2, const data_expression& e3)
 {
   assert(is_machine_number(e1) && is_machine_number(e2) && is_machine_number(e3));
@@ -696,11 +561,6 @@ inline void mod_doubleword_manual_implementation(data_expression& result, const 
 }
 
 /// \brief Calculates the least significant word of the square root of base*(base*e1+e2)+e3.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \param e3 The third argument. 
-/// \return the least significant word of the square root of base*(base*e1+e2)+e3.
 inline void sqrt_tripleword_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2, const data_expression& e3)
 {
   assert(is_machine_number(e1) && is_machine_number(e2) && is_machine_number(e3));
@@ -711,11 +571,6 @@ inline void sqrt_tripleword_manual_implementation(data_expression& result, const
 }
 
 /// \brief Calculates the most significant word of the square root of base*(base*e1+e2)+e3.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \param e3 The third argument. 
-/// \return the most significant word of the square root of base*(base*e1+e2)+e3.
 inline void sqrt_tripleword_overflow_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2, const data_expression& e3)
 {
   assert(is_machine_number(e1) && is_machine_number(e2) && is_machine_number(e3));
@@ -726,12 +581,6 @@ inline void sqrt_tripleword_overflow_manual_implementation(data_expression& resu
 }
 
 /// \brief Calculates the least significant word of the square root of base*(base*(base*e1+e2)+e3)+e4.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \param e3 The third argument. 
-/// \param e4 The fourth argument. 
-/// \return The least significant word of the square root of base*(base*(base*e1+e2)+e3)+e4.
 inline void sqrt_quadrupleword_manual_implementation(
                                       data_expression& result, 
                                       const data_expression& e1, 
@@ -748,12 +597,6 @@ inline void sqrt_quadrupleword_manual_implementation(
 }
 
 /// \brief Calculates the most significant word of the square root of base*(base*(base*e1+e2)+e3)+e4.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 The first argument.
-/// \param e2 The second argument. 
-/// \param e3 The third argument. 
-/// \param e4 The fourth argument. 
-/// \return The most significant word of the square root of base*(base*(base*e1+e2)+e3)+e4.
 inline void sqrt_quadrupleword_overflow_manual_implementation(
                                       data_expression& result, 
                                       const data_expression& e1, 
@@ -770,28 +613,18 @@ inline void sqrt_quadrupleword_overflow_manual_implementation(
 }
 
 /// \brief The predecessor function on a machine numbers, that wraps around.
-/// \param result The data_expression into which the created object is stored.
-/// \param e 
-/// \return e-1, or maxword if e is zero.
 inline void pred_word_manual_implementation(data_expression& result, const data_expression& e)
 {
   make_machine_number(result, detail::pred_word(atermpp::down_cast<machine_number>(e).value())); 
 }
 
 /// \brief The right most bit of a machine number.
-/// \param result The data_expression into which the created object is stored.
-/// \param e 
-/// \return true if the rightmost bit is 1.
 inline void rightmost_bit_manual_implementation(data_expression& result, const data_expression& e)
 {
   detail::rightmost_bit(result, atermpp::down_cast<machine_number>(e).value()); 
 }
 
 /// \brief The machine word shifted one position to the right.
-/// \param result The data_expression into which the created object is stored.
-/// \param e1 A boolean indicating what the left most bit must be.  
-/// \param e2 The value shifted to the right. 
-/// \return The machine number e2 divided by 2 prepended with a bit 1 if e1 is true. 
 inline void shift_right_manual_implementation(data_expression& result, const data_expression& e1, const data_expression& e2)
 {
   assert(e1==sort_bool::true_() || e1==sort_bool::false_());
