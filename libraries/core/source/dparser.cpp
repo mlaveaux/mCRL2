@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/core/dparser.cpp
+/// \file mcrl2/core/source/dparser.cpp
 /// \brief add your file description here.
 
 #include "mcrl2/core/dparser.h"
@@ -243,7 +243,7 @@ parse_node parser::parse(const std::string& text, unsigned int start_symbol_inde
   m_parser->partial_parses = partial_parses ? 1 : 0;
   D_ParseNode* result = dparse(m_parser, const_cast<char*>(text.c_str()), static_cast<int>(text.size()));
   if (!result || m_parser->syntax_errors)
-  {    
+  {
     if (result != nullptr) {
       free_D_ParseNode(m_parser, result);
     }
@@ -369,7 +369,7 @@ D_ParseNode* ambiguity_fn(struct D_Parser * /*p*/, int n, struct D_ParseNode **v
   //
   // Introducing a ActFrmNoBrackets doesn't work since rule priorities are only applied to recursive applications of the rule, i.e., T :: T && T, and not T :: U && U, and U :: T.
   //
-  // Instead we take the parse tree that starts with RegFrm(ActFrm).  
+  // Instead we take the parse tree that starts with RegFrm(ActFrm).
   for (int i = 1; i < n; ++i)
   {
     core::parse_node vi(v[i]);
@@ -392,15 +392,15 @@ D_ParseNode* ambiguity_fn(struct D_Parser * /*p*/, int n, struct D_ParseNode **v
   {
     core::parse_node vi(v[i]);
     if (table.symbol_name(vi) == table.symbol_name(candidate))
-    {    
-      if (vi.priority() == candidate.priority()) 
+    {
+      if (vi.priority() == candidate.priority())
       {
         // There are two nodes with the same priority.
         mCRL2log(log::trace) << "Two candidates with the same priority." << std::endl;
         chosen_candidate = false;
       }
 
-      if (vi.priority() < candidate.priority()) 
+      if (vi.priority() < candidate.priority())
       {
         mCRL2log(log::trace) << "Selecting " << vi.tree() << " as the parse tree with lower priority " << vi.priority() <<  std::endl;
         candidate = vi;
@@ -422,7 +422,7 @@ D_ParseNode* ambiguity_fn(struct D_Parser * /*p*/, int n, struct D_ParseNode **v
     mCRL2log(log::info) << "Candidate: " << vi.tree() << std::endl;
     mCRL2log(log::debug) << "Candidate (verbose): " << table.tree(vi) << std::endl;
   }
-  
+
   throw mcrl2::runtime_error("Failed to parse the input. Several ambiguous parse trees where found, see the candidates above.");
 }
 
@@ -517,6 +517,3 @@ void parser::custom_parse_error(const std::string& message) const
 }
 
 } // namespace mcrl2::core
-
-
-

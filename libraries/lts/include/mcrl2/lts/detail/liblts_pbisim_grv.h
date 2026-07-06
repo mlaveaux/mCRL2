@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file lts/detail/liblts_pbisim.h
+/// \file mcrl2/lts/detail/liblts_pbisim_grv.h
 
 #ifndef MCRL2_LTS_DETAIL_LIBLTS_PBISIM_GRV_H
 #define MCRL2_LTS_DETAIL_LIBLTS_PBISIM_GRV_H

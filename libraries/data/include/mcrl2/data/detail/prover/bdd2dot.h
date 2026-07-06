@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/utilities/bdd2dot.h
+/// \file mcrl2/data/detail/prover/bdd2dot.h
 /// \brief Interface to class BDD2Dot
 
 #ifndef MCRL2_DATA_DETAIL_PROVER_BDD2DOT_H

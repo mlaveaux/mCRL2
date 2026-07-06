@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file general_utilities.h
+/// \file mcrl2/utilities/math.h
 /// \brief Some general mathematical functions not provided by standard libraries.
 
 #ifndef MCRL2_UTILITIES_MATH_H

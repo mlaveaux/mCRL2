@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file include/disjointness_checker.h
+/// \file mcrl2/lps/disjointness_checker.h
 /// \brief Checks disjointness of read/write parameters of summands in a linear process.
 
 // Interface to class Disjointness_Checker

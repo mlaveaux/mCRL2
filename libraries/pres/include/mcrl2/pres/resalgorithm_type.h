@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/pres/pres/resalgorithm_type.h
+/// \file mcrl2/pres/resalgorithm_type.h
 /// \brief Contains the various types of algorithms to solve res's.
 
 #ifndef MCRL2_PRES_RESALGORITHM_TYPE_H

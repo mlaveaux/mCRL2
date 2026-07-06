@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/pbes/pbesinst_lazyh
+/// \file mcrl2/pbes/pbesinst_lazy.h
 /// \brief A lazy algorithm for instantiating a PBES, ported from bes_deprecated.h.
 
 #ifndef MCRL2_PBES_PBESINST_LAZY_H

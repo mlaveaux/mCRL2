@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/formula_checker.h
+/// \file mcrl2/data/detail/prover/formula_checker.h
 /// \brief Interface to class Formula_Checker
 
 #ifndef FORMULA_CHECKER_H

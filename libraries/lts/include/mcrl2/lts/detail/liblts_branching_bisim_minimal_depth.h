@@ -6,7 +6,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
-/// \file lts/detail/liblts_bisim_m.h
+/// \file mcrl2/lts/detail/liblts_branching_bisim_minimal_depth.h
 ///
 /// \brief Partition refinement algorithm for guaruanteed minimal depth
 /// counter-examples.

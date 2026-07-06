@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file lpsparunfold/lpsparunfoldlib.h
+/// \file mcrl2/lps/lpsparunfoldlib.h
 /// \brief Unfold process parameters in mCRL2 process specifications.
 
 #ifndef MCRL2_LPS_LPSPARUNFOLDLIB_H

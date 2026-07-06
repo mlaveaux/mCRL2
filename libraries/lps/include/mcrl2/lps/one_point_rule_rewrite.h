@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/lps/rewriters/one_point_rule_rewrite.h
+/// \file mcrl2/lps/one_point_rule_rewrite.h
 /// \brief Applies the one point rule rewriter to the data expressions in an LPS.
 
 #ifndef MCRL2_LPS_ONE_POINT_RULE_REWRITE_H

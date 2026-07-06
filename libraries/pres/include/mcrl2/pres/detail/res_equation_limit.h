@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/pres/detail/bes_equation_limit.h
+/// \file mcrl2/pres/detail/res_equation_limit.h
 /// \brief A global variable for counting the number of RES equations in presinst
 /// and parity_game_generator. If the number of equations exceeds a limit, an
 /// exception is thrown. A static template class variable is used, that can be

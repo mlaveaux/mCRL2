@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/utilities/input_input_input_output_tool.h
+/// \file mcrl2/utilities/input_input_output_tool.h
 /// \brief add your file description here.
 
 #ifndef MCRL2_UTILITIES_INPUT_INPUT_OUTPUT_TOOL_H

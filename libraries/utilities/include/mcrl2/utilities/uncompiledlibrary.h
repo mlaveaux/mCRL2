@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/utilities/uncompiled_library.h
+/// \file mcrl2/utilities/uncompiledlibrary.h
 /// \brief Extends the dynamic_library from dynamiclibrary.h to be able to compile a
 ///        source file and load the resulting library.
 

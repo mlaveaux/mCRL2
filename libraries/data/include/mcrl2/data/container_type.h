@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/data/container.h
+/// \file mcrl2/data/container_type.h
 /// \brief The class container_type.
 
 #ifndef MCRL2_DATA_CONTAINER_TYPE_H

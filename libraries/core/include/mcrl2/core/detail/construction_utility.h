@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/core/construction_utility.h
+/// \file mcrl2/core/detail/construction_utility.h
 /// \brief construction utility
 
 #ifndef MCRL2_CORE_DETAIL_CONSTRUCTION_UTILITY_H

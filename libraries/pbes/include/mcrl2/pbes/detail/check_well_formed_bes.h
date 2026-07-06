@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file pbes/include/mcrl2/pbes/details/is_well_formed_bes.h
+/// \file mcrl2/pbes/detail/check_well_formed_bes.h
 /// \brief This file contains a function that checks whether a pbes expression is a bes in the sense
 //         that is does not contain quantifiers or boolean expressions not equal to true and false.
 

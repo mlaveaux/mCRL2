@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/confluence_checker.h
+/// \file mcrl2/lps/confluence_checker.h
 /// \brief Checks confluence of tau-summands in a linear process specification.
 
 // Interface to class Confluence_Checker

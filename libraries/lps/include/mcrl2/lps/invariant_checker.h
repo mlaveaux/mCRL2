@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/invariant_checker.h
+/// \file mcrl2/lps/invariant_checker.h
 /// \brief Add your file description here.
 
 // Interface to class Invariant_Checker

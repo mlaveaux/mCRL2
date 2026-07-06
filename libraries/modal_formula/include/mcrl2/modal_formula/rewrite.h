@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file lps/include/mcrl2/modal_formula/rewrite.h
+/// \file mcrl2/modal_formula/rewrite.h
 /// \brief add your file description here.
 
 #ifndef LPS_INCLUDE_MCRL2_MODAL_FORMULA_REWRITE_H

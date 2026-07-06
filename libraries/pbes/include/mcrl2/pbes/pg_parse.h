@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/bes/pg_parse.h
+/// \file mcrl2/pbes/pg_parse.h
 /// \brief Parsing of parity games in the format used by PGSolver.
 
 #ifndef MCRL2_BES_PG_PARSE_H

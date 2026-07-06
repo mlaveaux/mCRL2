@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/pbes/detail/free_variable_visitor.h
+/// \file mcrl2/pbes/detail/find_free_variables.h
 /// \brief Add your file description here.
 
 #ifndef MCRL2_PBES_DETAIL_FIND_FREE_VARIABLES_H

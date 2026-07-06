@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/utilities/dynamic_library.h
+/// \file mcrl2/utilities/dynamiclibrary.h
 
 
 #ifndef MCRL2_UTILITIES_DYNAMIC_LIBRARY_H

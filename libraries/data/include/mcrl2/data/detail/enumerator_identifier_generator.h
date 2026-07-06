@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-/// \file mcrl2/data/enumerator_identifier_generator.h
+/// \file mcrl2/data/detail/enumerator_identifier_generator.h
 /// \brief The class enumerator_identifier_genierator 
 ///        contains a generator of fresh identifier strings that
 ///        works intimately together with the atermpp function_symbols
