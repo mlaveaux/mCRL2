@@ -21,6 +21,8 @@ namespace mcrl2::lps
 
 namespace detail {
 
+} // namespace detail
+
 //--- start generated lps replace code ---//
 template <typename T, typename Substitution>
 void replace_sort_expressions(T& x,
