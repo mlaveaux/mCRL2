@@ -11,10 +11,10 @@ AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortEnumsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Inline
+AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: Inline
-AllowShortLoopsOnASingleLine: true
+AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: Yes
@@ -31,6 +31,7 @@ ContinuationIndentWidth: 2
 ColumnLimit: 120
 CompactNamespaces: false
 IncludeBlocks: Preserve
+SortIncludes: CaseSensitive
 SpaceBeforeRangeBasedForLoopColon: false
 SpaceBeforeSquareBrackets: false
 SpaceAfterTemplateKeyword: false
@@ -62,6 +63,10 @@ IndentAccessModifiers: false
 IndentCaseBlocks: false
 KeepEmptyLinesAtTheStartOfBlocks: false
 Language: Cpp
+IndentWidth: 2
+UseTab: Never
+NamespaceIndentation: None
+Standard: Latest
 LambdaBodyIndentation: Signature
 IndentExternBlock: NoIndent
 IndentGotoLabels: false
