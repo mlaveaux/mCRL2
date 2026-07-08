@@ -41,14 +41,36 @@ ctest --test-dir build -j8 --output-on-failure
 
 Known useful target names include `tooltests`, `exampletests`, `random_*`, and `regression_*`.
 
-## 4. Report results
+## 4. Sanitizer validation
+For changes touching memory handling or parallelism, build and test in dedicated sanitizer trees (never mix sanitizer runtimes in one build directory):
+
+```bash
+# ASan + UBSan + LeakSanitizer
+cmake -S . -B build-asan -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+  -DMCRL2_ENABLE_GUI_TOOLS=OFF -DMCRL2_ENABLE_TESTS=ON \
+  -DMCRL2_ENABLE_ADDRESSSANITIZER=ON
+cmake --build build-asan -j
+ctest --test-dir build-asan -R <pattern> --output-on-failure
+
+# ThreadSanitizer for concurrent code
+cmake -S . -B build-tsan -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+  -DMCRL2_ENABLE_GUI_TOOLS=OFF -DMCRL2_ENABLE_TESTS=ON \
+  -DMCRL2_ENABLE_THREADSANITIZER=ON
+cmake --build build-tsan -j
+TSAN_OPTIONS="suppressions=$PWD/cmake/thread_sanitizer.suppress" \
+  ctest --test-dir build-tsan -R <pattern> --output-on-failure
+```
+
+See the `mcrl2-sanitizer-validation` skill for interpretation and policy.
+
+## 5. Report results
 Always report:
 - exact configure/build/test commands used,
 - which subsets were executed,
 - failures and likely root cause,
-- what was not validated.
+- what was not validated (including which sanitizers were not run).
 
-## 5. Safety checks
+## 6. Safety checks
 - Do not edit `3rd-party/` unless requested.
-- Keep changes minimal and aligned with existing style.
+- Keep changes minimal and aligned with existing style; touched code must be `clang-format` clean.
 - If tests require Python dependencies, install `requirements.txt` first.

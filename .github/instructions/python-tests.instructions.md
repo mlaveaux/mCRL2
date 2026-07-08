@@ -19,6 +19,7 @@ description: "Use for Python test runners and maintenance scripts in mCRL2; pres
 - When adding CLI options, keep old options working unless deprecation is explicit.
 - Do not silently broaden runtime cost (timeouts, repetitions, process counts) without rationale.
 - Ensure failures remain actionable, with clear stderr/stdout messages.
+- When adding a regression test for a bug fix, first verify the test fails on the unfixed code, then confirm it passes after the fix.
 
 ## Validation expectations
 - Run the specific Python entry point you changed.

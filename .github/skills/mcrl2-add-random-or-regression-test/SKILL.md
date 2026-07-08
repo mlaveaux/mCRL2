@@ -25,7 +25,16 @@ For regression tests:
 - Add a focused reproduction case with concrete inputs and expected outcomes.
 - Keep naming explicit and searchable.
 
-## 4. Validate locally
+## 4. Demonstrate the failure first (bug fixes)
+When the test reproduces a defect, follow the test-first workflow:
+1. Add the regression test against the unfixed code.
+2. Run it and record the failure output; it must fail for the expected reason (not a setup error).
+3. Implement the fix.
+4. Re-run: the test must now pass and remains as a permanent regression test.
+
+Never finalize a fix whose regression test was not observed to fail first.
+
+## 5. Validate locally
 From the build directory, run narrow patterns first:
 
 ```bash
@@ -33,9 +42,9 @@ ctest --test-dir build -R random_<name> --output-on-failure
 ctest --test-dir build -R regression_<name> --output-on-failure
 ```
 
-Then run broader suites if needed.
+Then run broader suites if needed. For memory- or concurrency-related defects, also run the reproducer in a sanitizer build (see the `mcrl2-sanitizer-validation` skill).
 
-## 5. Keep tests maintainable
+## 6. Keep tests maintainable
 - Prefer deterministic assertions.
 - Avoid unnecessarily long-running tests.
 - Include enough failure context for debugging.
