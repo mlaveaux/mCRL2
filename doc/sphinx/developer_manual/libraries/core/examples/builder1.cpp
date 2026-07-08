@@ -9,28 +9,26 @@ struct int_builder: public core::builder<int_builder>
 {
   // The following lines are needed to make static polymorphism work.
   typedef core::builder<int_builder> super;
-  using super::operator();
   using super::enter;
   using super::leave;
+  using super::update;
 
   // Handle integers.
-  void operator()(int& i)
+  void apply(int& result, int i)
   {
-    i += 1;
+    result = i + 1;
   }
 };
 
 int main()
 {
-  std::vector<int> v;
-  v.push_back(1);
-  v.push_back(4);
+  std::vector<int> v = { 1, 4 };
 
   int_builder f;
-  f(v);
+  f.update(v);
   assert(v[0] == 2);
   assert(v[1] == 5);
-  
+
   return 0;
 }
 //]

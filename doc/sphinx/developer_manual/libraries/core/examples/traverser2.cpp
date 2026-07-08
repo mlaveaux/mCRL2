@@ -20,14 +20,14 @@ template <typename Derived>
 struct int_traverser: public core::traverser<Derived>
 {
   typedef core::traverser<Derived> super;
-  using super::operator();
+  using super::apply;
   using super::enter;
   using super::leave;
-  
+
   // Handle integers.
-  void operator()(int i)
+  void apply(int i)
   {
-    std::cout << "i = " << i << std::endl;
+    std::cout << "i = " << i << '\n';
   }
 };
 
@@ -35,16 +35,16 @@ template <typename Derived>
 struct A_traverser: public int_traverser<Derived>
 {
   typedef int_traverser<Derived> super;
-  using super::operator();
+  using super::apply;
   using super::enter;
   using super::leave;
-  
+
   // Handle A.
-  void operator()(const A& a)
+  void apply(const A& a)
   {
     // The static_cast<Derived&>(*this) makes it possible to override functions.
-    static_cast<Derived&>(*this)(a.i);
-    static_cast<Derived&>(*this)(a.v);
+    static_cast<Derived&>(*this).apply(a.i);
+    static_cast<Derived&>(*this).apply(a.v);
   }
 };
 
@@ -52,14 +52,14 @@ template <typename Derived>
 struct B_traverser: public A_traverser<Derived>
 {
   typedef A_traverser<Derived> super;
-  using super::operator();
+  using super::apply;
   using super::enter;
   using super::leave;
-  
+
   // Override the handler for integers.
-  void operator()(int i)
+  void apply(int i)
   {
-    std::cout << "2*i = " << 2*i << std::endl;
+    std::cout << "2*i = " << 2*i << '\n';
   }
 };
 
@@ -77,16 +77,16 @@ int main()
   // i = 1
   // i = 4
   //
-  core::apply_traverser<A_traverser>()(a);
+  core::apply_traverser<A_traverser>().apply(a);
 
-  // Apply A_traverser to a. This gives the following output:
+  // Apply B_traverser to a. This gives the following output:
   //
   // 2*i = 6
   // 2*i = 2
   // 2*i = 8
   //
-  core::apply_traverser<B_traverser>()(a);
-  
+  core::apply_traverser<B_traverser>().apply(a);
+
   return 0;
 }
 //]

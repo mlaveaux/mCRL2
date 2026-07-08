@@ -173,6 +173,10 @@ endif()
 
 if (MCRL2_ENABLE_TESTS)
   add_subdirectory(tests)
+
+  # Build (and run) the C++ example snippets embedded in the developer manual as
+  # a "doctest" suite, independent of whether the documentation is generated.
+  add_subdirectory(doc/sphinx/developer_manual/libraries/core/examples doctest)
 endif()
 
 # Install the example directory.
