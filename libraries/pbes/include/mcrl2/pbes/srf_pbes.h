@@ -920,9 +920,103 @@ using srf_pbes = detail::pre_srf_pbes<false>;
 using srf_pbes_with_ce = detail::pre_srf_pbes<true>;
 
 
+/// \brief Simplifies a PBES in standard recursive form (SRF) by removing summands whose
+/// condition simplifies to true or false.
+///
+/// Such trivial summands commonly arise from pre_srf2srfpbes, where substituting
+/// true/false for the counter example variables Zpos/Zneg may turn some summands into
+/// ones of the shape `exists <> . true && X_true()` (disjunctive equations) or
+/// `exists params . false && X(...)` (dead disjuncts), respectively
+/// `forall <> . false || X_false()` (conjunctive equations) or
+/// `forall params . true || X(...)` (vacuous conjuncts). These are recognized and
+/// simplified away below: a dead disjunct/vacuous conjunct is dropped, and an
+/// unconditionally true/false summand collapses the whole equation to a single
+/// summand recursing into X_true/X_false, which is semantically equivalent but
+/// avoids spurious dependencies on the other, now irrelevant, summands.
+inline srf_pbes simplify_srf_pbes(const srf_pbes& p)
+{
+  simplify_rewriter simplify;
+
+  // By construction, the last two equations of p are always
+  // the equations for X_false and X_true, in that order. Passes like unify_parameters may attach extra parameters to every summand target, so identify them by name only, and reuse their own
+  // self-referencing summand as the canonical placeholder below.
+  std::size_t n = p.equations().size();
+  const core::identifier_string& X_false_name = p.equations()[n - 2].variable().name();
+  const core::identifier_string& X_true_name = p.equations()[n - 1].variable().name();
+  const propositional_variable_instantiation& X_false = p.equations()[n - 2].summands().front().variable();
+  const propositional_variable_instantiation& X_true = p.equations()[n - 1].summands().front().variable();
+
+  std::vector<detail::pre_srf_equation<false>> equations;
+  for (const auto& equation : p.equations())
+  {
+    bool conjunctive = equation.is_conjunctive();
+    std::vector<detail::pre_srf_summand<false>> summands;
+    bool equation_is_trivial = false;
+
+    for (const auto& summand : equation.summands())
+    {
+      const pbes_expression& condition = atermpp::down_cast<pbes_expression>(summand.condition());
+      const propositional_variable_instantiation& variable = summand.variable();
+
+      // For conjunctive equations, to_pbes() builds or_(distribute_not_over_and(condition), variable);
+      // mirror that here to determine whether the guard is vacuously true or unsatisfiable.
+      pbes_expression guard = conjunctive ? simplify(detail::distribute_not_over_and(condition)) : condition;
+
+      if (conjunctive)
+      {
+        if (guard == true_())
+        {
+          // forall params . true || X(...) always holds; drop the vacuous conjunct.
+          continue;
+        }
+        if (guard == false_() && summand.parameters().empty() && variable.name() == X_false_name)
+        {
+          // forall <> . false || X_false() == X_false(): the whole equation is false.
+          equation_is_trivial = true;
+          break;
+        }
+      }
+      else
+      {
+        if (guard == false_())
+        {
+          // exists params . false && X(...) never holds; drop the dead disjunct.
+          continue;
+        }
+        if (guard == true_() && summand.parameters().empty() && variable.name() == X_true_name)
+        {
+          // exists <> . true && X_true() == X_true(): the whole equation is true.
+          equation_is_trivial = true;
+          break;
+        }
+      }
+
+      summands.emplace_back(summand.parameters(), condition, variable);
+    }
+
+    if (equation_is_trivial)
+    {
+      summands = {detail::pre_srf_summand<false>(data::variable_list(), true_(), conjunctive ? X_false : X_true)};
+    }
+    else if (summands.empty())
+    {
+      // All summands were dropped as dead disjuncts / vacuous conjuncts. The result is
+      // semantically correct either way (join_and/join_or of an empty range default to
+      // true_()/false_(), the same identity element), but an explicit summand keeps every
+      // SRF equation shaped as "at least one summand", as downstream code assumes.
+      summands = {detail::pre_srf_summand<false>(data::variable_list(), true_(), conjunctive ? X_true : X_false)};
+    }
+
+    equations.emplace_back(equation.symbol(), equation.variable(), summands, conjunctive);
+  }
+
+  return srf_pbes(p.data(), equations, p.initial_state());
+}
+
 /// \brief Converts a pre-SRF PBES into standard recursive form. Note that the
 /// counter example information of the pre_srf_pbes is removed since otherwise
 /// the result is not in SRF.
+/// The result is simplified using simplify_srf_pbes.
 inline srf_pbes pre_srf2srfpbes(const srf_pbes_with_ce& p)
 {
   // Used to remove counter example information
@@ -932,25 +1026,28 @@ inline srf_pbes pre_srf2srfpbes(const srf_pbes_with_ce& p)
   std::vector<detail::pre_srf_equation<false>> equations;
   for (const auto& equation : p.equations())
   {
-    if (!detail::is_counter_example_equation(equation.to_pbes()))
+    if (detail::is_counter_example_equation(equation.to_pbes()))
     {
-      std::vector<detail::pre_srf_summand<false>> summands;
-      for (const auto& summand : equation.summands())
-      {
-        pbes_expression result;
-        f.apply(result, summand.variable());
-        propositional_variable_instantiation variable = atermpp::down_cast<propositional_variable_instantiation>(simplify(result));
-
-        f.apply(result, summand.condition());
-
-        summands.emplace_back(summand.parameters(), simplify(result), variable);
-      }
-
-      equations.emplace_back(equation.symbol(), equation.variable(), summands, equation.is_conjunctive());
+      continue;
     }
+
+    std::vector<detail::pre_srf_summand<false>> summands;
+    for (const auto& summand : equation.summands())
+    {
+      pbes_expression result;
+      f.apply(result, summand.variable());
+      propositional_variable_instantiation variable = atermpp::down_cast<propositional_variable_instantiation>(simplify(result));
+
+      f.apply(result, summand.condition());
+      pbes_expression condition = simplify(result);
+
+      summands.emplace_back(summand.parameters(), condition, variable);
+    }
+
+    equations.emplace_back(equation.symbol(), equation.variable(), summands, equation.is_conjunctive());
   }
 
-  return srf_pbes(p.data(), equations, p.initial_state());
+  return simplify_srf_pbes(srf_pbes(p.data(), equations, p.initial_state()));
 }
 
 
