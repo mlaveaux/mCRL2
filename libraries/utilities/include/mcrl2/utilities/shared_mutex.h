@@ -13,11 +13,12 @@
 #include <algorithm>
 #include <atomic>
 #include <cassert>
+#include <concepts>
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <vector>
 
-#include "mcrl2/utilities/noncopyable.h"
 #include "mcrl2/utilities/configuration.h"
 #include "mcrl2/utilities/hardware_interference_size.h"
 
@@ -26,71 +27,6 @@ namespace mcrl2::utilities
 
 // Forward declaration.
 class shared_mutex;
-
-/// A shared lock guard for the shared_mutex.
-class shared_guard : private mcrl2::utilities::noncopyable
-{
-public:
-  
-  /// Locks the guard again explicitly.
-  inline
-  void lock_shared();
-
-  /// Unlocks the acquired shared guard explicitly. Otherwise, performed in destructor.
-  inline
-  void unlock_shared();
-
-  ~shared_guard()
-  {
-    if (m_is_locked)
-    {
-      unlock_shared();
-    }
-  }
-
-private:
-  friend class shared_mutex;
-
-  shared_guard(shared_mutex& mutex)
-    : m_mutex(mutex)
-  {}
-
-  shared_mutex& m_mutex;
-  bool m_is_locked = true;
-};
-
-/// An exclusive lock guard for the shared_mutex.
-class lock_guard : private mcrl2::utilities::noncopyable
-{
-public:
-  /// Unlocks the acquired shared guard explicitly. Otherwise, performed in destructor.
-  void unlock();
-
-  bool try_lock();
-
-  ~lock_guard()
-  {
-    if (m_is_locked)
-    {
-      unlock();
-    }
-  }
-
-  bool owns_lock() const
-  {
-    return m_is_locked;
-  }
-
-private:
-  friend class shared_mutex;
-
-  lock_guard(shared_mutex& mutex, bool locked=true)
-    : m_mutex(mutex), m_is_locked(locked)
-  {}
-
-  shared_mutex& m_mutex;
-  bool m_is_locked;
-};
 
 struct shared_mutex_data 
 {
@@ -174,37 +110,126 @@ public:
     return *this;
   }
 
-  // Obtain exclusive access to the busy-forbidden lock.
+  /// \brief Obtain exclusive access, and stop all other threads that use this mutex.
+  /// \details Equivalent to std::shared_mutex::lock. Blocks until exclusive access is acquired.
+  /// \pre The calling thread does not hold a (shared) lock on this mutex.
+  /// \post All threads sharing this mutex are suspended outside of their shared sections.
   inline
-  lock_guard lock()
+  void lock()
   {
-    lock_impl();
-    return lock_guard(*this);
+    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
+    {
+      // Only one thread can halt everything.
+      m_shared->mutex.lock();
+      set_forbidden_flags();
+    }
   }
 
-  // Try to obtain exclusive access to the busy-forbidden lock without blocking.
-  // Returns a lock_guard with is_locked set to true if successful, false otherwise.
+  /// \brief Try to obtain exclusive access without blocking on other exclusive locks.
+  /// \details Equivalent to std::shared_mutex::try_lock.
+  /// \pre The calling thread does not hold a (shared) lock on this mutex.
+  /// \returns True iff exclusive access was acquired.
+  [[nodiscard]]
   inline
-  lock_guard try_lock()
+  bool try_lock()
   {
-    bool acquired = try_lock_impl();
-    return lock_guard(*this, acquired);
+    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
+    {
+      // Try to obtain the lock. If the surrounding mutex cannot be locked, this fails.
+      if (!m_shared->mutex.try_lock())
+      {
+        return false;
+      }
+
+      set_forbidden_flags();
+    }
+    return true;
   }
 
-  // Release exclusive access to the busy-forbidden lock.
+  /// \brief Release exclusive access.
+  /// \details Equivalent to std::shared_mutex::unlock.
+  /// \pre The calling thread holds the exclusive lock.
   inline
   void unlock()
   {
-    unlock_impl();
+    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
+    {
+      for (shared_mutex* mutex : m_shared->other)
+      {
+        mutex->set_forbidden(false);
+      }
+
+      m_shared->mutex.unlock();
+    }
   }
 
-  /// Acquires a shared lock on this instance, returns a shared guard that keeps the lock until it is destroyed.
-  /// Or alternative, unlock_shared is called explicitly.
+  /// \brief Acquires a shared lock on this mutex.
+  /// \details Equivalent to std::shared_mutex::lock_shared, except that recursive shared
+  ///          locking by the owning thread is explicitly allowed: every lock_shared() must
+  ///          be balanced by exactly one unlock_shared().
+  /// \post No thread can acquire the exclusive lock until the last unlock_shared().
   inline
-  shared_guard lock_shared()
+  void lock_shared()
   {
-    lock_shared_impl();
-    return shared_guard(*this);
+    if (mcrl2::utilities::detail::GlobalThreadSafe && m_lock_depth == 0)
+    {
+      assert(!m_busy_flag);
+      m_busy_flag.store(true);
+
+      // Wait for the forbidden flag to become false.
+      while (m_forbidden_flag.load())
+      {
+        m_busy_flag = false;
+
+        // Wait for the global lock.
+        m_shared->mutex.lock();
+        m_shared->mutex.unlock();
+
+        m_busy_flag = true;
+      }
+    }
+
+    ++m_lock_depth;
+  }
+
+  /// \brief Tries to acquire a shared lock on this mutex without blocking.
+  /// \details Equivalent to std::shared_mutex::try_lock_shared.
+  /// \returns True iff the shared lock was acquired.
+  [[nodiscard]]
+  inline
+  bool try_lock_shared()
+  {
+    if (mcrl2::utilities::detail::GlobalThreadSafe && m_lock_depth == 0)
+    {
+      assert(!m_busy_flag);
+      m_busy_flag.store(true);
+
+      if (m_forbidden_flag.load())
+      {
+        // An exclusive lock is being held or requested.
+        m_busy_flag.store(false);
+        return false;
+      }
+    }
+
+    ++m_lock_depth;
+    return true;
+  }
+
+  /// \brief Releases a shared lock on this mutex.
+  /// \details Equivalent to std::shared_mutex::unlock_shared.
+  /// \pre The calling thread holds a shared lock on this mutex.
+  inline
+  void unlock_shared()
+  {
+    assert(!mcrl2::utilities::detail::GlobalThreadSafe || m_lock_depth > 0);
+
+    --m_lock_depth;
+    if (mcrl2::utilities::detail::GlobalThreadSafe && m_lock_depth == 0)
+    {
+      assert(m_busy_flag);
+      m_busy_flag.store(false, std::memory_order_release);
+    }
   }
 
   /// \returns True iff the shared mutex is in the shared section
@@ -213,9 +238,10 @@ public:
     return m_lock_depth != 0;
   }
 
+private:
   inline
-  void set_forbidden_flags() 
-  {    
+  void set_forbidden_flags()
+  {
     // Shared and exclusive sections MUST be disjoint.
     assert(!m_busy_flag);
 
@@ -237,89 +263,6 @@ public:
       {
         mutex->wait_for_busy();
       }
-    }
-  }
-
-  inline
-  void lock_impl() 
-  {    
-    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
-    {
-      // Only one thread can halt everything.
-      m_shared->mutex.lock();
-      set_forbidden_flags();
-    }
-  }
-
-  inline
-  bool try_lock_impl() 
-  {    
-    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
-    {
-      // Try to obtain the lock. If the surrounding mutex cannot be locked, this fails.
-      if (!m_shared->mutex.try_lock())
-      {
-        return false;
-      }
-
-      set_forbidden_flags();
-    }
-    return true;
-  }
-
-  inline
-  void lock_shared_impl()
-  {
-    if (mcrl2::utilities::detail::GlobalThreadSafe && m_lock_depth == 0)
-    {
-      assert(!m_busy_flag);
-      m_busy_flag.store(true);
-
-      // Wait for the forbidden flag to become false.
-      while (m_forbidden_flag.load())
-      {
-        m_busy_flag = false;
-
-        // Wait for the global lock.
-        m_shared->mutex.lock();
-        m_shared->mutex.unlock();
-        
-        m_busy_flag = true;
-      }
-    }
-
-    ++m_lock_depth;
-  }
-
-  // Release shared access to the busy-forbidden lock.
-  inline
-  void unlock_shared()
-  {
-    assert(!mcrl2::utilities::detail::GlobalThreadSafe || m_lock_depth > 0);
-
-    --m_lock_depth;
-    if (mcrl2::utilities::detail::GlobalThreadSafe && m_lock_depth == 0)
-    {
-      assert(m_busy_flag);
-      m_busy_flag.store(false, std::memory_order_release);
-    }
-  }
-
-private:
-  friend class lock_guard;
-  friend class shared_guard;
-  friend class shared_mutex_pool;
-
-  void unlock_impl()
-  {
-    if constexpr (mcrl2::utilities::detail::GlobalThreadSafe)
-    {
-      for (shared_mutex* mutex : m_shared->other)
-      {
-        mutex->set_forbidden(false);
-      }
-
-      m_shared->mutex.unlock();
     }
   }
 
@@ -354,33 +297,38 @@ private:
   std::shared_ptr<shared_mutex_data> m_shared;
 };
 
-inline
-void shared_guard::lock_shared()   
-{    
-  // Uses the internal implementation since we don't need a shared_guard.
-  m_mutex.lock_shared_impl();
-  m_is_locked = true;
-}
-
-inline
-void shared_guard::unlock_shared()
-{    
-  m_mutex.unlock_shared();
-  m_is_locked = false;
-}
-
-inline
-bool lock_guard::try_lock()
+namespace detail
 {
-  return m_mutex.try_lock_impl();
-}
 
-inline
-void lock_guard::unlock()
-{
-  m_mutex.unlock();
-  m_is_locked = false;
-}
+/// \brief The Cpp17Lockable named requirement; the standard library provides no concept for it.
+template<typename Mutex>
+concept IsLockable = requires(Mutex m) {
+  { m.lock() } -> std::same_as<void>;
+  { m.unlock() } -> std::same_as<void>;
+  { m.try_lock() } -> std::same_as<bool>;
+};
+
+/// \brief The Cpp17SharedLockable named requirement; the standard library provides no concept for it.
+template<typename Mutex>
+concept IsSharedLockable = requires(Mutex m) {
+  { m.lock_shared() } -> std::same_as<void>;
+  { m.try_lock_shared() } -> std::same_as<bool>;
+  { m.unlock_shared() } -> std::same_as<void>;
+};
+
+} // namespace detail
+
+// The interface must behave as std::shared_mutex, such that the standard library lock guards apply.
+static_assert(detail::IsLockable<shared_mutex>,
+    "shared_mutex must satisfy Cpp17Lockable, like std::shared_mutex, for use with std::unique_lock");
+static_assert(detail::IsSharedLockable<shared_mutex>,
+    "shared_mutex must satisfy Cpp17SharedLockable, like std::shared_mutex, for use with std::shared_lock");
+
+/// \brief An exclusive lock guard for the shared_mutex, as in the standard library.
+using lock_guard = std::unique_lock<shared_mutex>;
+
+/// \brief A shared lock guard for the shared_mutex, as in the standard library.
+using shared_guard = std::shared_lock<shared_mutex>;
 
 } // namespace mcrl2::utilities
 

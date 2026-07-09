@@ -95,13 +95,13 @@ void aterm_pool::collect(mcrl2::utilities::shared_mutex& mutex)
 
 void aterm_pool::register_thread_aterm_pool(thread_aterm_pool_interface& pool)
 {
-  mcrl2::utilities::lock_guard guard = m_shared_mutex.lock();
+  mcrl2::utilities::lock_guard guard(m_shared_mutex);
   m_thread_pools.insert(m_thread_pools.end(), &pool);
 }
 
 void aterm_pool::remove_thread_aterm_pool(thread_aterm_pool_interface& pool)
 {
-  mcrl2::utilities::lock_guard guard = m_shared_mutex.lock();
+  mcrl2::utilities::lock_guard guard(m_shared_mutex);
   
   auto it = std::find(m_thread_pools.begin(), m_thread_pools.end(), &pool);
   if (it != m_thread_pools.end())
@@ -200,13 +200,12 @@ void aterm_pool::collect_impl(mcrl2::utilities::shared_mutex& shared_mutex)
       return;
     }
 
-    mcrl2::utilities::lock_guard guard = shared_mutex.try_lock();
+    mcrl2::utilities::lock_guard guard(shared_mutex, std::try_to_lock);
     if (!guard.owns_lock())
     { 
-      // Another process owns the exclusive lock and is resizing. Wait until resizing is done.
-      // The next line generates a shared_guard that automatically is destroyed. No need for an explicit shared_mutex.unlock_shared()
-      shared_mutex.lock_shared();
-      // mutex.unlock_shared();
+      // Another process owns the exclusive lock and is resizing. Block until resizing is
+      // done by acquiring (and immediately releasing) a shared lock.
+      mcrl2::utilities::shared_guard shared(shared_mutex);
       return;
     } 
 
@@ -381,7 +380,7 @@ bool aterm_pool::create_appl_dynamic(aterm& term,
 
 bool aterm_pool::resize_is_needed(mcrl2::utilities::shared_mutex& mutex) const
 {
-  mcrl2::utilities::shared_guard guard = mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(mutex);
   return m_function_symbol_pool.resize_is_needed() ||
          m_int_storage.resize_is_needed() ||
          std::get<0>(m_appl_storage).resize_is_needed() ||
@@ -397,13 +396,12 @@ bool aterm_pool::resize_is_needed(mcrl2::utilities::shared_mutex& mutex) const
 
 void aterm_pool::resize_if_needed(mcrl2::utilities::shared_mutex& mutex)
 {
-  mcrl2::utilities::lock_guard guard = mutex.try_lock();
+  mcrl2::utilities::lock_guard guard(mutex, std::try_to_lock);
   if (!guard.owns_lock())
   {
-    // Another process owns the exclusive lock and is resizing. Wait until resizing is done.
-    // The next line generates a shared_guard that automatically is destroyed. No need for an explicit mutex.unlock_shared()
-    mutex.lock_shared();
-    // mutex.unlock_shared();
+    // Another process owns the exclusive lock and is resizing. Block until resizing is
+    // done by acquiring (and immediately releasing) a shared lock.
+    mcrl2::utilities::shared_guard shared(mutex);
     return;
   } 
 

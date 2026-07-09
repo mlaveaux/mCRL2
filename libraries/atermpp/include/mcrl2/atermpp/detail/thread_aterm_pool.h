@@ -149,10 +149,10 @@ public:
   inline std::size_t protection_set_size() const;
 
   /// Acquire a shared lock on this thread aterm pool.
-  inline mcrl2::utilities::shared_guard lock_shared() { return m_shared_mutex.lock_shared(); }
+  [[nodiscard]] inline mcrl2::utilities::shared_guard lock_shared() { return mcrl2::utilities::shared_guard(m_shared_mutex); }
 
   /// Acquire an exclusive lock
-  inline mcrl2::utilities::lock_guard lock() { return m_shared_mutex.lock(); }
+  [[nodiscard]] inline mcrl2::utilities::lock_guard lock() { return mcrl2::utilities::lock_guard(m_shared_mutex); }
 
   /// Returns true iff we are in a shared section.
   inline bool is_shared_locked() { return m_shared_mutex.is_shared_locked(); }

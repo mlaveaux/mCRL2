@@ -22,7 +22,7 @@ namespace atermpp::detail
 
 function_symbol thread_aterm_pool::create_function_symbol(std::string&& name, const std::size_t arity, const bool check_for_registered_functions)
 {
-  mcrl2::utilities::shared_guard guard = m_shared_mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(m_shared_mutex);
   function_symbol symbol = m_pool.create_function_symbol(std::move(name), arity, check_for_registered_functions);
   return symbol;
 }
@@ -35,18 +35,18 @@ function_symbol thread_aterm_pool::create_function_symbol(const std::string& nam
 
 void thread_aterm_pool::create_int(aterm& term, size_t val)
 {
-  mcrl2::utilities::shared_guard guard = m_shared_mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(m_shared_mutex);
   bool added = m_pool.create_int(term, val);
-  guard.unlock_shared();
+  guard.unlock();
    
   if (added) { m_pool.created_term(m_shared_mutex, m_count_until_check); }
 }
 
 void thread_aterm_pool::create_term(aterm& term, const atermpp::function_symbol& sym)
 {
-  mcrl2::utilities::shared_guard guard = m_shared_mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(m_shared_mutex);
   bool added = m_pool.create_term(term, sym);
-  guard.unlock_shared();
+  guard.unlock();
 
   if (added) { m_pool.created_term(m_shared_mutex, m_count_until_check); }
 }
@@ -54,9 +54,9 @@ void thread_aterm_pool::create_term(aterm& term, const atermpp::function_symbol&
 template<class ...Terms>
 void thread_aterm_pool::create_appl(aterm& term, const function_symbol& sym, const Terms&... arguments)
 {
-  mcrl2::utilities::shared_guard guard = m_shared_mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(m_shared_mutex);
   bool added = m_pool.create_appl(term, sym, arguments...);
-  guard.unlock_shared();
+  guard.unlock();
 
   if (added) { m_pool.created_term(m_shared_mutex, m_count_until_check); }
 }
@@ -64,7 +64,7 @@ void thread_aterm_pool::create_appl(aterm& term, const function_symbol& sym, con
 template<class Term, class INDEX_TYPE, class ...Terms>
 void thread_aterm_pool::create_appl_index(aterm& term, const function_symbol& sym, const Terms&... arguments)
 {
-  mcrl2::utilities::shared_guard guard = m_shared_mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(m_shared_mutex);
   std::array<unprotected_aterm_core, sizeof...(arguments)> argument_array;
   store_in_argument_array(argument_array, arguments...);
 
@@ -92,7 +92,7 @@ void thread_aterm_pool::create_appl_index(aterm& term, const function_symbol& sy
                                 insert(*reinterpret_cast<INDEX_TYPE*>(&argument_array[0])));
     added = m_pool.create_appl(term, sym, argument_array[0], argument_array[1], term);
   }
-  guard.unlock_shared();
+  guard.unlock();
 
   if (added) { m_pool.created_term(m_shared_mutex, m_count_until_check); }
 }
@@ -103,9 +103,9 @@ void thread_aterm_pool::create_appl_dynamic(aterm& term,
                             InputIterator begin,
                             InputIterator end)
 {
-  mcrl2::utilities::shared_guard guard = m_shared_mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(m_shared_mutex);
   bool added = m_pool.create_appl_dynamic(term, sym, begin, end);
-  guard.unlock_shared();
+  guard.unlock();
     
   if (added) { m_pool.created_term(m_shared_mutex, m_count_until_check); }
 }
@@ -117,9 +117,9 @@ void thread_aterm_pool::create_appl_dynamic(aterm& term,
                             InputIterator begin,
                             InputIterator end)
 {  
-  mcrl2::utilities::shared_guard guard = m_shared_mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(m_shared_mutex);
   bool added = m_pool.create_appl_dynamic(term, sym, convert_to_aterm, begin, end);
-  guard.unlock_shared();
+  guard.unlock();
 
   if (added) { m_pool.created_term(m_shared_mutex, m_count_until_check); }
 }
@@ -128,7 +128,7 @@ void thread_aterm_pool::register_variable(aterm_core* variable)
 {
   if constexpr (EnableVariableRegistrationMetrics) { ++m_variable_insertions; }
 
-  mcrl2::utilities::shared_guard guard = m_shared_mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(m_shared_mutex);
       
   // Resizing of the protection set should not interfere with garbage collection and rehashing 
   if (m_variables->must_resize())
@@ -145,7 +145,7 @@ void thread_aterm_pool::register_variable(aterm_core* variable)
 
 void thread_aterm_pool::deregister_variable(aterm_core* variable)
 {
-  mcrl2::utilities::shared_guard guard = m_shared_mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(m_shared_mutex);
   m_variables->erase(variable);
 }
 
@@ -153,7 +153,7 @@ void thread_aterm_pool::register_container(aterm_container* container)
 {
   if constexpr (EnableVariableRegistrationMetrics) { ++m_container_insertions; }
 
-  mcrl2::utilities::shared_guard guard = m_shared_mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(m_shared_mutex);
   if (m_containers->must_resize())
   {
     m_containers->resize();
@@ -168,7 +168,7 @@ void thread_aterm_pool::register_container(aterm_container* container)
 
 void thread_aterm_pool::deregister_container(aterm_container* container)
 {
-  mcrl2::utilities::shared_guard guard = m_shared_mutex.lock_shared();
+  mcrl2::utilities::shared_guard guard(m_shared_mutex);
   m_containers->erase(container);
 }
 

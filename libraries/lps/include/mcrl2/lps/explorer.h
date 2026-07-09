@@ -557,14 +557,14 @@ class explorer: public abortable
         auto it = summand.projection_cache.find(key);
         if (it == summand.projection_cache.end())
         {
-          g.unlock_shared();
+          g.unlock();
 
           std::vector<projected_transition> projected = enumerate_projected_transitions();
           it = summand.projection_cache.emplace(key, std::move(projected)).first;
         }
         else
         {
-          g.unlock_shared();
+          g.unlock();
         }
 
         for (const projected_transition& t : it->second)
@@ -591,7 +591,7 @@ class explorer: public abortable
         auto q = cache.find(detail::cheap_cache_key(sigma, summand.gamma));
         if (q == cache.end())
         {
-          g.unlock_shared();
+          g.unlock();
 
           atermpp::term_list<data::data_expression_list> solutions;
           // Enumerate all satisfying valuations for this summand and store them in the cache.
@@ -607,7 +607,7 @@ class explorer: public abortable
         }
         else
         {
-          g.unlock_shared();
+          g.unlock();
         }
 
         for (const auto& e : static_cast<atermpp::term_list<data::data_expression_list>&>(q->second))
