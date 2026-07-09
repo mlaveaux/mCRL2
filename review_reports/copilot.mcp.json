@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "code-review-graph": {
+      "type": "stdio",
+      "command": "/workspaces/mCRL2/.venv/bin/code-review-graph",
+      "args": [
+        "serve",
+        "--repo",
+        "/workspaces/mCRL2"
+      ],
+      "cwd": "/workspaces/mCRL2"
+    },
+    "clangd": {
+      "type": "stdio",
+      "command": "iflow-mcp-felipeerias-clangd-mcp-server",
+      "args": [],
+      "cwd": "/workspaces/mCRL2",
+      "env": {
+        "PROJECT_ROOT": "/workspaces/mCRL2",
+        "COMPILE_COMMANDS_DIR": "/workspaces/mCRL2/build",
+        "CLANGD_PATH": "/usr/bin/clangd"
+      }
+    }
+  }
+}

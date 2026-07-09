@@ -19,7 +19,8 @@ mCRL2 is a model checker: an incorrect result is the worst possible defect.
 
 ## Language and safety policy
 - Baseline is C++20 (`CMAKE_CXX_STANDARD 20`). C++23 features may be used as soon as all minimum supported toolchains accept them (GCC 11, Clang 16, AppleClang 14, MSVC 19.31 / VS 2022 17.1); the project raises these requirements as features become widely available. Verify availability before use.
-- Prefer modern constructs that bring safety close to Rust: RAII and ownership types over raw `new`/`delete`, `std::span`/`std::string_view` (mind dangling), concepts over SFINAE, `constexpr`, scoped enums, `template<...>` without space (modern style).
+- Prefer modern constructs that bring safety close to Rust: RAII and ownership types over raw `new`/`delete`, `std::span`/`std::string_view` (mind dangling), `constexpr`, scoped enums, `template<...>` without space (modern style).
+- SFINAE must always be avoided and replaced by concepts/`requires` clauses if possible: never introduce new `std::enable_if`-style constraints, and migrate existing SFINAE when touching code that uses it (prefer named concepts, e.g. in `mcrl2/data/concepts.h`).
 - Use Clang lifetime analysis where APIs return references or views tied to argument lifetimes: annotate with `[[clang::lifetimebound]]` (guard via `__has_cpp_attribute` for portability) and keep `-Wdangling*` diagnostics clean.
 - No undefined behavior: no signed overflow, out-of-bounds access, invalid casts, dangling references, uninitialized reads, or use of invalidated iterators. When in doubt, verify with UBSan.
 

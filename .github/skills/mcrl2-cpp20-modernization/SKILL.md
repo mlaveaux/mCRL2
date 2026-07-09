@@ -9,7 +9,7 @@ The codebase is compiled with `-std=c++20` and is actively modernizing. C++23 fe
 
 Current priorities:
 
-1. **Concepts** — replacing `std::enable_if`/SFINAE with `requires` clauses. The pattern `std::is_base_of_v<atermpp::aterm, T>` (typically inside `enable_if` guards) appears in ~60 headers and is being replaced with named concepts (e.g., `IsSubstitution` in `libraries/data/include/mcrl2/data/concepts.h`).
+1. **Concepts** — SFINAE must always be avoided and replaced by concepts/`requires` clauses whenever possible. Never introduce new SFINAE (`std::enable_if`, `std::void_t` tricks, tag dispatch for constraint purposes); when touching code that uses it, migrate it. The pattern `std::is_base_of_v<atermpp::aterm, T>` (typically inside `enable_if` guards) appears in ~60 headers and is being replaced with named concepts (e.g., `IsSubstitution` in `libraries/data/include/mcrl2/data/concepts.h`).
 2. **Spaceship operator** — replacing manual comparison operators with `operator<=>`.
 3. **`std::span`** — replacing `(const T*, size_t)` pairs and `const std::vector<T>&` where ownership isn't needed (watch lifetimes).
 4. **`std::ranges`** — replacing `std::find_if(v.begin(), v.end(), pred)` with `std::ranges::find_if(v, pred)`, etc.

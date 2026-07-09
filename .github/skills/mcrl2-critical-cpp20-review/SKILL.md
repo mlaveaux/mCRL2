@@ -16,6 +16,7 @@ Use this skill when reviewing C++ changes in mCRL2.
 ## C++20 quality bar
 - Baseline is C++20; C++23 features are acceptable once supported by all minimum toolchains (GCC 11, Clang 16, AppleClang 14, MSVC 19.31).
 - Evaluate whether modern C++ features are used appropriately (not just for style); reward safety constructs approaching Rust-level guarantees (RAII, concepts, `[[nodiscard]]`, `[[clang::lifetimebound]]`).
+- Flag any SFINAE (`std::enable_if`, `std::void_t` tricks) in new or touched code: SFINAE must always be avoided and replaced by concepts/`requires` clauses if possible.
 - Require explicit contracts: new or changed public APIs need Doxygen `\pre`/`\post` or assertions, with expensive checks behind `#ifndef MCRL2_NO_SOUNDNESS_CHECKS`.
 - Hunt undefined behavior aggressively: overflow, dangling views/references, invalidated iterators, uninitialized reads, invalid casts.
 - Treat potential data races as severe: parallel code must be TSan-clean and use the `mcrl2/utilities/` synchronisation wrappers (`mutex.h`, `shared_mutex.h`).
