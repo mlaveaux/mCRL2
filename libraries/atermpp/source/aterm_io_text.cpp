@@ -210,7 +210,8 @@ aterm_int text_aterm_istream::parse_aterm_int(int& character)
     character = next_char(true, true);
   }
 
-  while (isdigit(character) && it != number.end())
+  // Leave room for the terminating null character written after the loop.
+  while (isdigit(character) && it != std::prev(number.end()))
   {
     *it = static_cast<char>(character);
     ++it;
@@ -361,7 +362,7 @@ std::string text_aterm_istream::parse_unquoted_string(int& character)
   {
     // First parse the identifier
     while (character != '"' && character != '(' && character != ')' && character != ']'
-      && character != ']' && character != ',' && character != ' ' && character != '\n'
+      && character != '[' && character != ',' && character != ' ' && character != '\n'
       && character != '\t' && character != '\r' && character != EOF)
     {
       string += static_cast<char>(character);

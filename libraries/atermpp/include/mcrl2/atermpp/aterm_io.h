@@ -98,7 +98,7 @@ inline aterm_istream& operator>>(aterm_istream& stream, aterm& term)
 
 // Utility functions
 
-/// \brief A helper class to restore the state of the aterm_{i,o}stream objects upon destruction. Currently, onlt
+/// \brief A helper class to restore the state of the aterm_{i,o}stream objects upon destruction. Currently, only
 ///        preserves the transformer object.
 class aterm_stream_state
 {
@@ -108,6 +108,13 @@ public:
   {
     m_transformer = stream.get_transformer();
   }
+
+  // This class is a scope guard: copying or moving it would restore the stream
+  // state more than once, corrupting the transformer of the referenced stream.
+  aterm_stream_state(const aterm_stream_state&) = delete;
+  aterm_stream_state(aterm_stream_state&&) = delete;
+  aterm_stream_state& operator=(const aterm_stream_state&) = delete;
+  aterm_stream_state& operator=(aterm_stream_state&&) = delete;
 
   ~aterm_stream_state() { m_stream.set_transformer(m_transformer); }
 

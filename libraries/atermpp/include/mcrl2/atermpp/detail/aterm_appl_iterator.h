@@ -99,7 +99,7 @@ class term_appl_iterator
     {
       term_appl_iterator temp=*this;
       --m_term;
-      return *this;
+      return temp;
     }
 
     /// \brief Increase the iterator with n steps.

@@ -39,13 +39,15 @@ public:
   explicit aterm_int(const aterm& t)
    : aterm(t)
   {
-    assert(type_is_int() || !defined());
+    assert(!defined() || type_is_int());
   }
 
   /// \brief Provide the value stored in an aterm. 
   /// \returns The value of the integer term.
   std::size_t value() const noexcept
   {
+    assert(defined());
+    assert(type_is_int());
     return reinterpret_cast<const detail::_aterm_int*>(m_term)->value();
   }
 

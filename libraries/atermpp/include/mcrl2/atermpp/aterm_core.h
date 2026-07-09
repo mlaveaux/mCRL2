@@ -64,7 +64,8 @@ public:
   /// \details This function has constant complexity.
   bool type_is_int() const noexcept
   {
-    const function_symbol& f=m_term->function();
+    assert(defined());
+    const function_symbol& f = m_term->function();
     return f == detail::g_as_int;
   }
 
@@ -73,7 +74,8 @@ public:
   /// \details This function has constant complexity.
   bool type_is_list() const noexcept
   {
-    const function_symbol& f=m_term->function();
+    assert(defined());
+    const function_symbol& f = m_term->function();
     return f == detail::g_as_list || f == detail::g_as_empty_list;
   }
 
@@ -96,7 +98,7 @@ public:
   /// \return True iff the current term is smaller than the argument.
   std::weak_ordering operator<=>(const unprotected_aterm_core& t) const
   {
-    return m_term<=>t.m_term;
+    return m_term <=> t.m_term;
   }
 
   /// \brief Returns true if this term is not equal to the term assigned by
@@ -126,6 +128,7 @@ public:
   /// \details This is for internal use only.
   const function_symbol& function() const
   {
+    assert(defined());
     return m_term->function();
   }
 };

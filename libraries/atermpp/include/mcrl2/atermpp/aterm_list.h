@@ -204,7 +204,7 @@ public:
   /// \param aterm_filter A class with an operator () yielding a bool that if true allows the element to be added to the list.
   ///                     Otherwise, the element is not added. 
   template <class Iter, class ATermConverter, class ATermFilter>
-    requires (!std::is_base_of_v<std::random_access_iterator_tag,
+    requires (!std::is_base_of_v<std::bidirectional_iterator_tag,
       typename std::iterator_traits<Iter>::iterator_category>)
     explicit term_list(Iter first,
       Iter last,
@@ -451,7 +451,7 @@ void make_term_list(term_list<Term>& target,
 ///                      before it is put into the list.
 /// \param aterm_filter A class with an operator () that is used to determine whether elements can be inserted in the list.
 template <class Term, class Iter, class ATermConverter, class ATermFilter>
-  requires (!std::is_base_of_v<std::random_access_iterator_tag,
+  requires (!std::is_base_of_v<std::bidirectional_iterator_tag,
       typename std::iterator_traits<Iter>::iterator_category>)
 void make_term_list(term_list<Term>& target,
     Iter first,

@@ -57,7 +57,7 @@ private:
   std::shared_ptr<mcrl2::utilities::obitstream> m_stream;
 
   unsigned int m_term_index_width = 0U;       ///< caches the result of term_index_width().
-  unsigned int m_function_symbol_index_width; ///< caches the result of function_symbol_index_width().
+  unsigned int m_function_symbol_index_width = 0U; ///< caches the result of function_symbol_index_width().
 
   atermpp::indexed_set<aterm> m_terms; ///< An index of already written terms.
   mcrl2::utilities::indexed_set<function_symbol> m_function_symbols; ///< An index of already written function symbols.
@@ -83,14 +83,12 @@ private:
   std::shared_ptr<mcrl2::utilities::ibitstream> m_stream;
 
   unsigned int m_term_index_width = 0U;       ///< caches the result of term_index_width().
-  unsigned int m_function_symbol_index_width; ///< caches the result of function_symbol_index_width().
+  unsigned int m_function_symbol_index_width = 0U; ///< caches the result of function_symbol_index_width().
 
   atermpp::deque<aterm> m_terms; ///< An index of read terms.
   std::deque<function_symbol> m_function_symbols; ///< An index of read function symbols.
 };
 
 } // namespace atermpp
-
-bool is_a_binary_aterm(std::istream& is);
 
 #endif // MCRL2_ATERMPP_ATERM_IO_BINARY_H
