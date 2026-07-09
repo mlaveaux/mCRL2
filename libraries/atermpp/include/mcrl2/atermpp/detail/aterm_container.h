@@ -10,6 +10,7 @@
 #ifndef MCRL2_ATERMPP_DETAIL_ATERM_CONTAINER_H
 #define MCRL2_ATERMPP_DETAIL_ATERM_CONTAINER_H
 
+#include <compare>
 #include <concepts>
 #include <stack>
 #include <type_traits>
@@ -127,14 +128,11 @@ public:
   {
     m_t = other;
     return *this;
-    m_t = other;
-    return *this;
   }
 
   markable_aterm& operator=(T&& other) noexcept
   {
     m_t = std::move(other);
-    return *this;
     return *this;
   }
 
@@ -144,6 +142,8 @@ public:
   void mark(term_mark_stack& /* todo */) const noexcept {}
 
   bool operator==(const markable_aterm& other) const { return m_t == other.m_t; }
+
+  auto operator<=>(const markable_aterm& other) const { return m_t <=> other.m_t; }
 };
 
 // ---- Specialization: aterm_core-derived types ----
@@ -242,7 +242,6 @@ public:
   operator std_pair&()
   {
     return *reinterpret_cast<std_pair*>(this);
-    return *reinterpret_cast<std_pair*>(this);
   }
 
   operator const std_pair&() const
@@ -339,11 +338,19 @@ private:
 public:
   markable_aterm() = default;
 
+  markable_aterm(const markable_aterm&) = default;
+  markable_aterm(markable_aterm&&) = default;
+  markable_aterm& operator=(const markable_aterm&) = default;
+  markable_aterm& operator=(markable_aterm&&) = default;
+  ~markable_aterm() = default;
+
   markable_aterm(const stored_type& other) noexcept
     : m_t(other)
   {}
 
+  /// \details Constrained such that it does not hijack the copy/move constructors above.
   template<typename... Args>
+    requires (sizeof...(Args) != 1 || (!std::is_same_v<std::decay_t<Args>, markable_aterm> && ...))
   markable_aterm(Args&&... args) noexcept
     : m_t(std::forward<Args>(args)...)
   {}
@@ -362,6 +369,18 @@ public:
 
   operator stored_type&() { return m_t; }
   operator const stored_type&() const { return m_t; }
+
+  bool operator==(const markable_aterm& other) const
+    requires std::equality_comparable<stored_type>
+  {
+    return m_t == other.m_t;
+  }
+
+  auto operator<=>(const markable_aterm& other) const
+    requires std::three_way_comparable<stored_type>
+  {
+    return m_t <=> other.m_t;
+  }
 
   void mark(term_mark_stack& todo) const
   {
