@@ -128,7 +128,7 @@ public:
   /// \details Complexity is constant per operation.
   iterator begin(std::size_t thread_index = 0) 
   { 
-    shared_guard guard = m_shared_mutexes[thread_index].lock_shared();
+    shared_guard guard(m_shared_mutexes[thread_index]);
     iterator i = m_keys.begin();
     return i;
   }
@@ -136,7 +136,7 @@ public:
   /// \brief End of the forward iterator.
   iterator end(std::size_t thread_index = 0)
   { 
-    shared_guard guard = m_shared_mutexes[thread_index].lock_shared();
+    shared_guard guard(m_shared_mutexes[thread_index]);
     iterator i = m_keys.begin()+m_next_index;
     return i;
   }
@@ -145,7 +145,7 @@ public:
   /// \details Complexity is constant per operation.
   const_iterator begin(std::size_t thread_index = 0) const
   {
-    shared_guard guard = m_shared_mutexes[thread_index].lock_shared();
+    shared_guard guard(m_shared_mutexes[thread_index]);
     const_iterator i = m_keys.begin();
     return i;
   }
@@ -153,7 +153,7 @@ public:
   /// \brief End of the forward iterator.
   const_iterator end(std::size_t thread_index = 0) const
   {
-    shared_guard guard = m_shared_mutexes[thread_index].lock_shared();
+    shared_guard guard(m_shared_mutexes[thread_index]);
     const_iterator i = m_keys.begin()+m_next_index;
     return i;
   }
@@ -161,7 +161,7 @@ public:
   /// \brief const_iterator going through the elements in the set numbered from zero upwards. 
   const_iterator cbegin(std::size_t thread_index = 0) const
   { 
-    shared_guard guard = m_shared_mutexes[thread_index].lock_shared();
+    shared_guard guard(m_shared_mutexes[thread_index]);
     const_iterator i = m_keys.begin();
     return i;
   }
@@ -169,7 +169,7 @@ public:
   /// \brief End of the forward const_iterator. 
   const_iterator cend(std::size_t thread_index = 0) const 
   { 
-    shared_guard guard = m_shared_mutexes[thread_index].lock_shared();
+    shared_guard guard(m_shared_mutexes[thread_index]);
     const_iterator i = m_keys.cbegin() + m_next_index;
     return i;
   }
@@ -177,7 +177,7 @@ public:
   /// \brief Reverse iterator going through the elements in the set from the largest to the smallest index. 
   reverse_iterator rbegin(std::size_t thread_index = 0) 
   { 
-    shared_guard guard = m_shared_mutexes[thread_index].lock_shared();
+    shared_guard guard(m_shared_mutexes[thread_index]);
     reverse_iterator i = m_keys.rend() - m_next_index;
     return i;
   }
@@ -185,7 +185,7 @@ public:
   /// \brief End of the reverse iterator. 
   reverse_iterator rend(std::size_t thread_index = 0)
   { 
-    shared_guard guard = m_shared_mutexes[thread_index].lock_shared();
+    shared_guard guard(m_shared_mutexes[thread_index]);
     reverse_iterator i = m_keys.rend();
     return i;
   }
@@ -193,7 +193,7 @@ public:
   /// \brief Reverse const_iterator going through the elements from the highest to the lowest numbered element. 
   const_reverse_iterator crbegin(std::size_t thread_index = 0) const
   { 
-    shared_guard guard = m_shared_mutexes[thread_index].lock_shared();
+    shared_guard guard(m_shared_mutexes[thread_index]);
     const_reverse_iterator i=m_keys.crend() - m_next_index;
     return i;
   }
@@ -201,7 +201,7 @@ public:
   /// \brief End of the reverse const_iterator. 
   const_reverse_iterator crend(std::size_t thread_index = 0) const 
   { 
-    shared_guard guard = m_shared_mutexes[thread_index].lock_shared();
+    shared_guard guard(m_shared_mutexes[thread_index]);
     const_reverse_iterator i = m_keys.crend();
     return i;
   }
@@ -227,7 +227,7 @@ public:
   /// \details threadsafe
   size_type size(std::size_t thread_index = 0) const
   { 
-    shared_guard guard = m_shared_mutexes[thread_index].lock_shared();
+    shared_guard guard(m_shared_mutexes[thread_index]);
     size_type result=m_next_index;
     return result;
   }

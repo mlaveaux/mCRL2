@@ -22,10 +22,34 @@ namespace atermpp
 {
 
   template<class Key, class Hash, class Pred, class Alloc>
+  unordered_set<Key,Hash,Pred,Alloc>&
+  unordered_set<Key,Hash,Pred,Alloc>::operator=(const unordered_set& other)
+  {
+    if (this != &other)
+    {
+      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      m_container = other.m_container;
+    }
+    return *this;
+  }
+
+  template<class Key, class Hash, class Pred, class Alloc>
+  unordered_set<Key,Hash,Pred,Alloc>&
+  unordered_set<Key,Hash,Pred,Alloc>::operator=(unordered_set&& other) noexcept
+  {
+    if (this != &other)
+    {
+      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      m_container = std::move(other.m_container);
+    }
+    return *this;
+  }
+
+  template<class Key, class Hash, class Pred, class Alloc>
   void unordered_set<Key,Hash,Pred,Alloc>::clear() noexcept
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::clear();
+    m_container.clear();
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -33,16 +57,17 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::insert(const value_type& value)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::insert(value);
+    return m_container.insert(value);
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
   template<class P>
+    requires std::constructible_from<detail::reference_aterm<Key>, P>
   std::pair<typename unordered_set<Key,Hash,Pred,Alloc>::iterator, bool>
   unordered_set<Key,Hash,Pred,Alloc>::insert(P&& value)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::insert(std::forward<P>(value));
+    return m_container.insert(std::forward<P>(value));
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -50,16 +75,17 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::insert(const_iterator hint, const value_type& value)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::insert(hint, value);
+    return m_container.insert(hint, value);
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
   template<class P>
+    requires std::constructible_from<detail::reference_aterm<Key>, P>
   typename unordered_set<Key,Hash,Pred,Alloc>::iterator
   unordered_set<Key,Hash,Pred,Alloc>::insert(const_iterator hint, P&& value)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::insert(hint, std::forward<P>(value));
+    return m_container.insert(hint, std::forward<P>(value));
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -67,14 +93,14 @@ namespace atermpp
   void unordered_set<Key,Hash,Pred,Alloc>::insert(InputIt first, InputIt last)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::insert(first, last);
+    m_container.insert(first, last);
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
   void unordered_set<Key,Hash,Pred,Alloc>::insert(std::initializer_list<value_type> ilist)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::insert(ilist);
+    m_container.insert(ilist);
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -82,7 +108,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::insert(node_type&& nh)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::insert(std::move(nh));
+    return m_container.insert(std::move(nh));
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -90,7 +116,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::insert(const_iterator hint, node_type&& nh)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::insert(hint, std::move(nh));
+    return m_container.insert(hint, std::move(nh));
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -99,7 +125,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::emplace(Args&&... args)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::emplace(std::forward<Args>(args)...);
+    return m_container.emplace(std::forward<Args>(args)...);
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -108,7 +134,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::emplace_hint(const_iterator hint, Args&&... args)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::emplace_hint(hint, std::forward<Args>(args)...);
+    return m_container.emplace_hint(hint, std::forward<Args>(args)...);
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -116,16 +142,16 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::erase(iterator pos)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::erase(pos);
+    return m_container.erase(pos);
   }
 
-  /* To be enabled again if erase(const_iterator pos) is uncommented in atermpp/standard_containers/unordered_set_implemenation.h
+  /* To be enabled again if erase(const_iterator pos) is uncommented in atermpp/standard_containers/unordered_set.h
   template<class Key, class Hash, class Pred, class Alloc>
   typename unordered_set<Key,Hash,Pred,Alloc>::iterator
   unordered_set<Key,Hash,Pred,Alloc>::erase(const_iterator pos)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::erase(pos);
+    return m_container.erase(pos);
   } */
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -133,7 +159,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::erase(const_iterator first, const_iterator last)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::erase(first, last);
+    return m_container.erase(first, last);
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -141,14 +167,14 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::erase(const Key& key)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::erase(key);
+    return m_container.erase(detail::reference_aterm<Key>(key));
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
   void unordered_set<Key,Hash,Pred,Alloc>::swap(unordered_set& other) noexcept
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::swap(other);
+    m_container.swap(other.m_container);
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -156,7 +182,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::extract(const_iterator position)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::extract(position);
+    return m_container.extract(position);
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -164,39 +190,52 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::extract(const Key& k)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::extract(k);
+    return m_container.extract(detail::reference_aterm<Key>(k));
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
-  template<class H2, class P2>
-  void unordered_set<Key,Hash,Pred,Alloc>::merge(std::unordered_set<Key, H2, P2, allocator_type>& source)
+  typename unordered_set<Key,Hash,Pred,Alloc>::iterator
+  unordered_set<Key,Hash,Pred,Alloc>::find(const Key& key)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::merge(source);
+    return m_container.find(detail::reference_aterm<Key>(key));
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
-  template<class H2, class P2>
-  void unordered_set<Key,Hash,Pred,Alloc>::merge(std::unordered_set<Key, H2, P2, allocator_type>&& source)
+  typename unordered_set<Key,Hash,Pred,Alloc>::const_iterator
+  unordered_set<Key,Hash,Pred,Alloc>::find(const Key& key) const
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::merge(std::move(source));
+    return m_container.find(detail::reference_aterm<Key>(key));
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
-  template<class H2, class P2>
-  void unordered_set<Key,Hash,Pred,Alloc>::merge(std::unordered_multiset<Key, H2, P2, allocator_type>& source)
+  typename unordered_set<Key,Hash,Pred,Alloc>::size_type
+  unordered_set<Key,Hash,Pred,Alloc>::count(const Key& key) const
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::merge(source);
+    return m_container.count(detail::reference_aterm<Key>(key));
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
-  template<class H2, class P2>
-  void unordered_set<Key,Hash,Pred,Alloc>::merge(std::unordered_multiset<Key, H2, P2, allocator_type>&& source)
+  bool unordered_set<Key,Hash,Pred,Alloc>::contains(const Key& key) const
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::merge(std::move(source));
+    return m_container.contains(detail::reference_aterm<Key>(key));
+  }
+
+  template<class Key, class Hash, class Pred, class Alloc>
+  void unordered_set<Key,Hash,Pred,Alloc>::rehash(size_type count)
+  {
+    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    m_container.rehash(count);
+  }
+
+  template<class Key, class Hash, class Pred, class Alloc>
+  void unordered_set<Key,Hash,Pred,Alloc>::reserve(size_type count)
+  {
+    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    m_container.reserve(count);
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -204,7 +243,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::begin()
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::begin();
+    return m_container.begin();
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -212,7 +251,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::end()
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::end();
+    return m_container.end();
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -220,7 +259,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::begin() const
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::begin();
+    return m_container.begin();
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -228,7 +267,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::end() const
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::end();
+    return m_container.end();
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -236,7 +275,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::cbegin() const
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::cbegin();
+    return m_container.cbegin();
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -244,14 +283,14 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::cend() const
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::cend();
+    return m_container.cend();
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
   bool unordered_set<Key,Hash,Pred,Alloc>::empty() const noexcept
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::empty();
+    return m_container.empty();
   }
 
   template<class Key, class Hash, class Pred, class Alloc>
@@ -259,7 +298,7 @@ namespace atermpp
   unordered_set<Key,Hash,Pred,Alloc>::max_size() const noexcept
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::max_size();
+    return m_container.max_size();
   }
 
 } // namespace atermpp
@@ -268,28 +307,72 @@ namespace atermpp::utilities
 {
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
+  unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>&
+  unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::operator=(const unordered_set& other)
+  {
+    if (this != &other)
+    {
+      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      m_container = other.m_container;
+    }
+    return *this;
+  }
+
+  template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
+  unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>&
+  unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::operator=(unordered_set&& other) noexcept
+  {
+    if (this != &other)
+    {
+      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      m_container = std::move(other.m_container);
+    }
+    return *this;
+  }
+
+  template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
   inline void unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::rehash(std::size_t new_size)
   {
     if constexpr (ThreadSafe)
     {
       mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
-      super::rehash(new_size);
+      m_container.rehash(new_size);
     }
     else
     {
-      super::rehash(new_size);
+      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      m_container.rehash(new_size);
     }
+  }
+
+  template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
+  inline bool unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::rehash_is_needed() const
+  {
+    return m_container.load_factor() >= m_container.max_load_factor();
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
   inline void unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::rehash_if_needed()
   {
-    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    std::size_t count = super::bucket_count();
-    if (super::load_factor() >= super::max_load_factor())
+    if constexpr (ThreadSafe)
     {
-      guard.unlock_shared();
-      rehash(count * 2);
+      if (rehash_is_needed())
+      {
+        mcrl2::utilities::lock_guard guard = detail::g_thread_term_pool().lock();
+        // Re-check under the exclusive lock: another thread may have rehashed already.
+        if (rehash_is_needed())
+        {
+          m_container.rehash(m_container.bucket_count() * 2);
+        }
+      }
+    }
+    else
+    {
+      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      if (rehash_is_needed())
+      {
+        m_container.rehash(m_container.bucket_count() * 2);
+      }
     }
   }
 
@@ -297,7 +380,7 @@ namespace atermpp::utilities
   void unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::clear() noexcept
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::clear();
+    m_container.clear();
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -308,9 +391,9 @@ namespace atermpp::utilities
     if constexpr (ThreadSafe)
     {
       mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-      return super::find(args...);
+      return m_container.find(args...);
     }
-    return super::find(args...);
+    return m_container.find(args...);
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -321,9 +404,34 @@ namespace atermpp::utilities
     if constexpr (ThreadSafe)
     {
       mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-      return super::find(args...);
+      return m_container.find(args...);
     }
-    return super::find(args...);
+    return m_container.find(args...);
+  }
+
+  template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
+  template<typename... Args>
+  typename unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::size_type
+  unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::count(const Args&... args) const
+  {
+    if constexpr (ThreadSafe)
+    {
+      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      return m_container.count(args...);
+    }
+    return m_container.count(args...);
+  }
+
+  template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
+  template<typename... Args>
+  bool unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::contains(const Args&... args) const
+  {
+    if constexpr (ThreadSafe)
+    {
+      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      return m_container.find(args...) != m_container.end();
+    }
+    return m_container.find(args...) != m_container.end();
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -333,7 +441,7 @@ namespace atermpp::utilities
   {
     rehash_if_needed();
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::emplace(std::forward<Args>(args)...);
+    return m_container.emplace(std::forward<Args>(args)...);
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -341,7 +449,7 @@ namespace atermpp::utilities
   void unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::erase(const Args&... args)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::erase(args...);
+    m_container.erase(args...);
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -349,14 +457,14 @@ namespace atermpp::utilities
   unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::erase(const_iterator it)
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::erase(it);
+    return m_container.erase(it);
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
   void unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::swap(unordered_set& other) noexcept
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::swap(other);
+    m_container.swap(other.m_container);
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -364,7 +472,7 @@ namespace atermpp::utilities
   unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::begin()
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::begin();
+    return m_container.begin();
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -372,7 +480,7 @@ namespace atermpp::utilities
   unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::end()
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::end();
+    return m_container.end();
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -380,7 +488,7 @@ namespace atermpp::utilities
   unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::begin() const
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::begin();
+    return m_container.begin();
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -388,7 +496,7 @@ namespace atermpp::utilities
   unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::end() const
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::end();
+    return m_container.end();
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -396,7 +504,7 @@ namespace atermpp::utilities
   unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::cbegin() const
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::cbegin();
+    return m_container.cbegin();
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -404,14 +512,14 @@ namespace atermpp::utilities
   unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::cend() const
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::cend();
+    return m_container.cend();
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
   bool unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::empty() const noexcept
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::empty();
+    return m_container.empty();
   }
 
   template<class Key, class Hash, class Pred, class Alloc, bool ThreadSafe>
@@ -419,7 +527,7 @@ namespace atermpp::utilities
   unordered_set<Key,Hash,Pred,Alloc,ThreadSafe>::max_size() const noexcept
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::max_size();
+    return m_container.max_size();
   }
 
 } // namespace atermpp::utilities

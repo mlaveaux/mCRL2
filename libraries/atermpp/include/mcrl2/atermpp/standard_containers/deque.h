@@ -7,7 +7,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 //
-/// \file mcrl2/data/standard_containers/deque.h
+/// \file mcrl2/atermpp/standard_containers/deque.h
 /// \brief This file contains a deque class that behaves 
 ///        exactly as a standard deque. It can only be used
 ///        to store class instances that derive from aterms.
@@ -18,6 +18,7 @@
 #ifndef MCRL2_ATERMPP_STANDARD_CONTAINER_DEQUE_H
 #define MCRL2_ATERMPP_STANDARD_CONTAINER_DEQUE_H
 
+#include <compare>
 #include <deque>
 #include "mcrl2/atermpp/detail/aterm_container.h"
 #include "mcrl2/atermpp/detail/global_aterm_pool.h"
@@ -28,14 +29,18 @@
 namespace atermpp
 {
 
-/// \brief A deque class in which aterms can be stored. 
+/// \brief A deque class in which aterms can be stored.
+/// \details The API of a std::deque is exposed by explicit forwarding (composition) instead of
+///          inheritance, such that every structural modification is guaranteed to acquire the
+///          shared lock that keeps the garbage collector out of the container while it changes.
 template < class T, class Alloc = std::allocator<detail::markable_aterm<T> > > 
-class deque : public std::deque< detail::markable_aterm<T>, Alloc >              
+class deque
 {
 protected:
   using super = std::deque<detail::markable_aterm<T>, Alloc>;
 
-  detail::generic_aterm_container<std::deque<detail::markable_aterm<T>, Alloc>> container_wrapper;
+  super m_container;
+  detail::generic_aterm_container<super> container_wrapper;
 
 public:
   
@@ -43,108 +48,195 @@ public:
   using allocator_type = typename super::allocator_type;
   using value_type = typename super::value_type;
   using size_type = typename super::size_type;
+  using difference_type = typename super::difference_type;
   using reference = typename super::reference;
+  using const_reference = typename super::const_reference;
+  using pointer = typename super::pointer;
+  using const_pointer = typename super::const_pointer;
   using iterator = typename super::iterator;
   using const_iterator = typename super::const_iterator;
+  using reverse_iterator = typename super::reverse_iterator;
+  using const_reverse_iterator = typename super::const_reverse_iterator;
 
   /// \brief Default constructor.
   deque()
-   : super(),
-     container_wrapper(*this)     
+   : m_container(),
+     container_wrapper(m_container)     
   {}
 
   /// \brief Constructor.
-  explicit deque (const allocator_type& alloc)
-   : super::deque(alloc),
-     container_wrapper(*this)     
+  explicit deque(const allocator_type& alloc)
+   : m_container(alloc),
+     container_wrapper(m_container)     
   {}
 
   /// \brief Constructor.
-  explicit deque (size_type n, const allocator_type& alloc = allocator_type())
-   : super::deque(n, alloc),
-     container_wrapper(*this)
+  explicit deque(size_type n, const allocator_type& alloc = allocator_type())
+   : m_container(n, alloc),
+     container_wrapper(m_container)
   {}
 
   /// \brief Constructor.
   deque(size_type n, const value_type& val, const allocator_type& alloc = allocator_type())
-   : super::deque(n, detail::markable_aterm<T>(val), alloc),
-     container_wrapper(*this)    
+   : m_container(n, detail::markable_aterm<T>(val), alloc),
+     container_wrapper(m_container)    
   {}
 
   /// \brief Constructor.
   template <class InputIterator>
   deque(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type())
-   : super::deque(first, last, alloc),
-     container_wrapper(*this)     
+   : m_container(first, last, alloc),
+     container_wrapper(m_container)     
   {}
     
   /// \brief Constructor.
   deque(const deque& x)
-   : super::deque(x),
-     container_wrapper(*this)     
+   : m_container(x.m_container),
+     container_wrapper(m_container)     
   {}
 
   /// \brief Constructor.
   deque(const deque& x, const allocator_type& alloc)
-   : super::deque(x, alloc),
-     container_wrapper(*this)     
+   : m_container(x.m_container, alloc),
+     container_wrapper(m_container)     
   {}
   
   /// \brief Constructor.
   deque(deque&& x) noexcept
-      : super::deque(std::move(x)),
-        container_wrapper(*this)
+      : m_container(std::move(x.m_container)),
+        container_wrapper(m_container)
   {}
 
   /// \brief Constructor.
   deque(deque&& x, const allocator_type& alloc)
-   : super::deque(std::move(x), alloc),
-     container_wrapper(*this)     
+   : m_container(std::move(x.m_container), alloc),
+     container_wrapper(m_container)     
   {}
 
   /// \brief Constructor. 
   deque(std::initializer_list<value_type> il, const allocator_type& alloc = allocator_type())
-    : super::deque(il.begin(), il.end(), alloc),
-      container_wrapper(*this)      
+    : m_container(il.begin(), il.end(), alloc),
+      container_wrapper(m_container)      
   {}
 
   /// \brief Copy assignment operator.
-  deque& operator=(const deque& other) = default;
+  deque& operator=(const deque& other)
+  {
+    if (this != &other)
+    {
+      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      m_container = other.m_container;
+    }
+    return *this;
+  }
 
   /// \brief Move assignment operator.
-  deque& operator=(deque&& other) = default;
+  deque& operator=(deque&& other) noexcept
+  {
+    if (this != &other)
+    {
+      mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+      m_container = std::move(other.m_container);
+    }
+    return *this;
+  }
 
   /// \brief Standard destructor.
   ~deque() = default;
 
+  /// \returns The allocator of the underlying container.
+  [[nodiscard]] allocator_type get_allocator() const noexcept
+  {
+    return m_container.get_allocator();
+  }
+
+  void assign(size_type count, const value_type& value)
+  {
+    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    m_container.assign(count, value);
+  }
+
+  template<class InputIt>
+  void assign(InputIt first, InputIt last)
+  {
+    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    m_container.assign(first, last);
+  }
+
+  void assign(std::initializer_list<value_type> ilist)
+  {
+    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    m_container.assign(ilist);
+  }
+
+  [[nodiscard]] reference at(size_type pos) { return m_container.at(pos); }
+  [[nodiscard]] const_reference at(size_type pos) const { return m_container.at(pos); }
+
+  [[nodiscard]] reference operator[](size_type pos) { return m_container[pos]; }
+  [[nodiscard]] const_reference operator[](size_type pos) const { return m_container[pos]; }
+
+  [[nodiscard]] reference front() { return m_container.front(); }
+  [[nodiscard]] const_reference front() const { return m_container.front(); }
+
+  [[nodiscard]] reference back() { return m_container.back(); }
+  [[nodiscard]] const_reference back() const { return m_container.back(); }
+
+  iterator begin() noexcept { return m_container.begin(); }
+  const_iterator begin() const noexcept { return m_container.begin(); }
+  const_iterator cbegin() const noexcept { return m_container.cbegin(); }
+
+  iterator end() noexcept { return m_container.end(); }
+  const_iterator end() const noexcept { return m_container.end(); }
+  const_iterator cend() const noexcept { return m_container.cend(); }
+
+  reverse_iterator rbegin() noexcept { return m_container.rbegin(); }
+  const_reverse_iterator rbegin() const noexcept { return m_container.rbegin(); }
+  const_reverse_iterator crbegin() const noexcept { return m_container.crbegin(); }
+
+  reverse_iterator rend() noexcept { return m_container.rend(); }
+  const_reverse_iterator rend() const noexcept { return m_container.rend(); }
+  const_reverse_iterator crend() const noexcept { return m_container.crend(); }
+
+  [[nodiscard]] bool empty() const noexcept
+  {
+    // Concurrent read/write on the size.
+    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    return m_container.empty();
+  }
+
+  [[nodiscard]] size_type max_size() const noexcept
+  {
+    return m_container.max_size();
+  }
+
   void shrink_to_fit()
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::shrink_to_fit();
+    m_container.shrink_to_fit();
   }
 
   void clear() noexcept
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::clear();
+    m_container.clear();
   }
 
   iterator insert( const_iterator pos, const T& value )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::insert(pos, value);
+    return m_container.insert(pos, value);
   }
 
   iterator insert( const_iterator pos, T&& value )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::insert(pos, std::move(value));
+    return m_container.insert(pos, std::move(value));
   }
   
   iterator insert( const_iterator pos, size_type count, const T& value )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::insert(pos, count, value);
+    return m_container.insert(pos, count, value);
   }
     
   template< class InputIt >
@@ -152,100 +244,122 @@ public:
                   InputIt first, InputIt last )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::insert(pos, first, last);  
+    return m_container.insert(pos, first, last);  
   }
     
   iterator insert( const_iterator pos, std::initializer_list<T> ilist )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::insert(pos, ilist);
+    return m_container.insert(pos, ilist.begin(), ilist.end());
   }
   
   template< class... Args >
   iterator emplace( const_iterator pos, Args&&... args )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::emplace(pos, std::forward<Args>(args)...);
+    return m_container.emplace(pos, std::forward<Args>(args)...);
   }
 
   iterator erase( const_iterator pos )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::erase(pos);
+    return m_container.erase(pos);
   }
 
   iterator erase( const_iterator first, const_iterator last )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::erase(first, last);    
+    return m_container.erase(first, last);    
   }
 
   void push_back( const T& value )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::push_back(value);  
+    m_container.push_back(value);  
   }
   
   void push_back( T&& value )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::push_back(std::move(value));
+    m_container.push_back(std::move(value));
   }
 
   template< class... Args >
   reference emplace_back( Args&&... args )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::emplace_back(std::forward<Args>(args)...);
+    return m_container.emplace_back(std::forward<Args>(args)...);
   }
 
   void pop_back()
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::pop_back();
+    m_container.pop_back();
   }
 
   void push_front( const T& value )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::push_front(value);
+    m_container.push_front(value);
   }
-		
+
   void push_front( T&& value )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::push_front(std::move(value));
+    m_container.push_front(std::move(value));
   }
 
   template< class... Args >
   reference emplace_front( Args&&... args )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    return super::emplace_front(std::forward<Args>(args)...);
+    return m_container.emplace_front(std::forward<Args>(args)...);
+  }
+
+  void pop_front()
+  {
+    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    m_container.pop_front();
   }
 
   void resize( size_type count )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::resize(count);
+    m_container.resize(count);
   }
   
   void resize( size_type count, const value_type& value )
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::resize(count, value);
+    m_container.resize(count, value);
   }
 
-  std::size_t size() const
+  [[nodiscard]] std::size_t size() const
   {
-    return super::size();
+    // Concurrent read/write on the size.
+    mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
+    return m_container.size();
   }
 
   void swap( deque& other ) noexcept
   {
     mcrl2::utilities::shared_guard guard = detail::g_thread_term_pool().lock_shared();
-    super::swap(other); // Invalidates end() so must be protected.
+    m_container.swap(other.m_container); // Invalidates end() so must be protected.
   }
+
+  /// \brief Marks all stored terms during garbage collection; used when this
+  ///        container is an element of another protected container.
+  void mark(term_mark_stack& todo) const
+  {
+    for (const detail::markable_aterm<T>& element : m_container)
+    {
+      element.mark(todo);
+    }
+  }
+
+  bool operator==(const deque& other) const { return m_container == other.m_container; }
+
+  auto operator<=>(const deque& other) const { return m_container <=> other.m_container; }
 };
 
 } // namespace atermpp

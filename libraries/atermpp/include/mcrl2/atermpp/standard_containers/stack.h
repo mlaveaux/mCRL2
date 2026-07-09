@@ -7,9 +7,9 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 //
-/// \file mcrl2/data/standard_containers/deque.h
-/// \brief This file contains a deque class that behaves 
-///        exactly as a standard deque. It can only be used
+/// \file mcrl2/atermpp/standard_containers/stack.h
+/// \brief This file contains a stack class that behaves 
+///        exactly as a standard stack. It can only be used
 ///        to store class instances that derive from aterms.
 ///        The stored aterms are protected as a whole, i.e.,
 ///        time and memory is saved as individual protection
@@ -19,15 +19,13 @@
 #define MCRL2_ATERMPP_STANDARD_CONTAINER_STACK_H
 
 #include "mcrl2/atermpp/detail/aterm_container.h"
-#include "mcrl2/atermpp/detail/thread_aterm_pool.h"
 #include "mcrl2/atermpp/standard_containers/deque.h"
-#include "mcrl2/utilities/shared_mutex.h"
 
 /// \brief The main namespace for the aterm++ library.
 namespace atermpp
 {
 
-/// \brief A deque class in which aterms can be stored. 
+/// \brief A stack class in which aterms can be stored. 
 template < class T, 
            class Container = atermpp::deque< T > > 
 class stack
@@ -43,8 +41,6 @@ public:
   using size_type = typename Container::size_type;
   using reference = typename Container::reference;
   using const_reference = typename Container::const_reference;
-  using iterator = typename Container::iterator;
-  using const_iterator = typename Container::const_iterator;
 
   /// \brief Constructor.
   explicit stack(const Container& cont = Container())
@@ -122,12 +118,12 @@ public:
     return m_container.back();
   }
 
-  bool empty() const
+  [[nodiscard]] bool empty() const
   {
     return m_container.empty();
   }
 
-  size_type size() const
+  [[nodiscard]] size_type size() const
   {
     return m_container.size();
   }
@@ -143,9 +139,9 @@ public:
   }
 
   template< class... Args >
-  void emplace( Args&&... args )
+  decltype(auto) emplace( Args&&... args )
   {
-    m_container.emplace_back(std::forward<Args>(args)...);
+    return m_container.emplace_back(std::forward<Args>(args)...);
   }
 
   void pop()
@@ -153,7 +149,7 @@ public:
     m_container.pop_back();
   }
 
-  void swap( stack& other ) noexcept
+  void swap( stack& other ) noexcept(std::is_nothrow_swappable_v<Container>)
   {
     using std::swap; swap(m_container, other.m_container);
   }
