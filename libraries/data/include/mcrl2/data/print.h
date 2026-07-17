@@ -15,7 +15,7 @@
 #include "mcrl2/data/data_specification.h"
 #include "mcrl2/data/detail/is_untyped.h"
 #include "mcrl2/data/detail/print_utility.h"
-#include "mcrl2/data/nat64.h"
+#include "mcrl2/data/nat.h"
 #include "mcrl2/data/standard_container_utility.h"
 
 namespace mcrl2::data
