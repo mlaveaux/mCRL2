@@ -292,14 +292,14 @@ public:
   void apply(T& result, const infimum& x)
   {
     apply(result, x.body());
-    optimized_infimum(result, x.variables(), result);
+    make_optimized_infimum(result, x.variables(), result, true);
   }
 
   template <class T>
   void apply(T& result, const supremum& x)
   {
     apply(result, x.body());
-    optimized_supremum(result, x.variables(), result);
+    make_optimized_supremum(result, x.variables(), result, true);
   }
 
   template <class T>
@@ -426,7 +426,7 @@ public:
        apply(t2, t1);
        make_eqinf(t1, resulta.right());
        apply(result, t1);
-       optimized_plus(t1, t2, result);
+       make_optimized_plus(t1, t2, result);
        result = t1;
        return;
     }
@@ -662,7 +662,7 @@ public:
   { 
     const data::variable_list vl = substitution_administration.push(x.variables());
     apply(result, x.body());
-    optimized_infimum(result, vl, result);
+    make_optimized_infimum(result, vl, result, true);
     substitution_administration.pop(vl);
   }
 
@@ -671,7 +671,7 @@ public:
   {
     const data::variable_list vl = substitution_administration.push(x.variables());
     apply(result, x.body());
-    optimized_supremum(result, vl, result);
+    make_optimized_supremum(result, vl, result, true);
     substitution_administration.pop(vl);
   }   
 
@@ -681,7 +681,7 @@ public:
     const data::variable_list vl = substitution_administration.push(x.variables());
     pres_expression body;
     apply(body, x.body());
-    optimized_sum(result, vl, body, m_data_spec, super::R);
+    make_optimized_sum(result, vl, body, m_data_spec, super::R);
     substitution_administration.pop(vl);
   }
 

@@ -168,11 +168,11 @@ public:
       // with guards of the form !X, where X is a variable that encodes counterexample
       // information. As other algorithms expect expressions in positive form, we need
       // to push the negation inside.
-      return make_forall_(m_parameters, or_(distribute_not_over_and(atermpp::down_cast<pbes_expression>(m_condition)), m_X));
+      return pbes_system::optimized_forall(m_parameters, or_(distribute_not_over_and(atermpp::down_cast<pbes_expression>(m_condition)), m_X));
     }
     else
     {
-      return make_exists_(m_parameters, and_(atermpp::down_cast<pbes_expression>(m_condition), m_X));
+      return pbes_system::optimized_exists(m_parameters, and_(atermpp::down_cast<pbes_expression>(m_condition), m_X));
     }
   }
 };

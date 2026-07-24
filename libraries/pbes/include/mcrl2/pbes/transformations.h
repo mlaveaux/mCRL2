@@ -34,7 +34,7 @@ struct order_quantified_variables_builder: public pbes_expression_builder<order_
   {
     pbes_expression body;
     apply(body, x.body());
-    result = make_forall_(data::order_variables_to_optimise_enumeration(x.variables(), dataspec), body);
+    pbes_system::make_optimized_forall(result, data::order_variables_to_optimise_enumeration(x.variables(), dataspec), body);
   }
 
   template <class T>
@@ -42,7 +42,7 @@ struct order_quantified_variables_builder: public pbes_expression_builder<order_
   {
     pbes_expression body;
     apply(body, x.body());
-    result = make_exists_(data::order_variables_to_optimise_enumeration(x.variables(), dataspec), body);
+    pbes_system::make_optimized_exists(result, data::order_variables_to_optimise_enumeration(x.variables(), dataspec), body);
   }
 };
 

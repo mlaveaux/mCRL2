@@ -82,7 +82,7 @@ class pres2res_algorithm
     {
       std::size_t max_rank=m_equation_index.max_rank();
       std::vector<atermpp::vector<pres_equation>> generated_equations(max_rank+1);
-      m_stored_variables.insert(atermpp::down_cast<propositional_variable_instantiation>(m_R(m_input_pres.initial_state())));
+      std::ignore = m_stored_variables.insert(atermpp::down_cast<propositional_variable_instantiation>(m_R(m_input_pres.initial_state())));
       assert(m_stored_variables.index(atermpp::down_cast<propositional_variable_instantiation>(m_R(m_input_pres.initial_state())))==0);
       std::vector<propositional_variable_instantiation> new_pres_variables;
       while (m_next_res_variable_index<m_stored_variables.size())
@@ -109,7 +109,7 @@ class pres2res_algorithm
 
         for (const propositional_variable_instantiation& v: occ)
         {
-          m_stored_variables.insert(v);
+          std::ignore = m_stored_variables.insert(v);
         }
 
         // save the generated equation

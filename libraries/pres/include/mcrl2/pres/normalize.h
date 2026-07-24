@@ -127,7 +127,7 @@ struct normalize_builder: public pres_expression_builder<normalize_builder>
   {
     pres_expression body;
     super::apply(body, x.body());
-    result = negated ? make_supremum(x.variables(), body) : make_infimum(x.variables(), body);
+    result = negated ? optimized_supremum(x.variables(), body) : optimized_infimum(x.variables(), body);
   }
 
   template <class T>
@@ -135,7 +135,7 @@ struct normalize_builder: public pres_expression_builder<normalize_builder>
   {
     pres_expression body;
     super::apply(body, x.body());
-    result = negated ? make_infimum(x.variables(), body) : make_supremum(x.variables(), body);
+    result = negated ? optimized_infimum(x.variables(), body) : optimized_supremum(x.variables(), body);
   }
 
   template <class T>

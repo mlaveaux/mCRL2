@@ -179,17 +179,9 @@ void make_optimized_forall(typename TermTraits::term_type& result,
 {
   using tr = TermTraits;
 
-  if (v.empty())
+  if (v.empty() || tr::is_true(arg) || tr::is_false(arg))
   {
     result = arg;
-  }
-  else if (tr::is_true(arg))
-  {
-    result = tr::true_();
-  }
-  else if (tr::is_false(arg))
-  {
-    result = tr::false_();
   }
   else
   {
@@ -228,17 +220,9 @@ void make_optimized_exists(typename TermTraits::term_type& result,
 {
   using tr = TermTraits;
 
-  if (v.empty())
+  if (v.empty() || tr::is_true(arg) || tr::is_false(arg))
   {
     result = arg;
-  }
-  else if (tr::is_true(arg))
-  {
-    result = tr::true_();
-  }
-  else if (tr::is_false(arg))
-  {
-    result = tr::false_();
   }
   else
   {

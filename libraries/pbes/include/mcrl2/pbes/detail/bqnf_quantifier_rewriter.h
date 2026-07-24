@@ -151,7 +151,7 @@ struct bqnf_quantifier_rewriter: public bqnf_visitor
       {
         e_1 =
 // data::exists(    // N.B. Removing this, since it does not make sense to convert a pbes_system::exists to a data::exists (Wieger).
-            make_exists_(
+            optimized_exists(
             data::variable_list(d_intersects_free_g_minus_free_phi_i.begin(), d_intersects_free_g_minus_free_phi_i.end()),
             e_1)
 // )
@@ -255,7 +255,7 @@ struct bqnf_quantifier_rewriter: public bqnf_visitor
             }
             // qvars_i = qvars intersects free(phi_i)
             if (!qvars_i.empty()) {
-              r = make_forall_(data::variable_list(qvars_i.begin(), qvars_i.end()), r);
+              r = optimized_forall(data::variable_list(qvars_i.begin(), qvars_i.end()), r);
             }
             if (is_true(conjunction)) {
               conjunction = r;
@@ -289,7 +289,7 @@ struct bqnf_quantifier_rewriter: public bqnf_visitor
         qexpr = pbes_system::accessors::arg(qexpr);
       }
       pbes_expression r = rewrite_bqnf_expression(qexpr);
-      pbes_expression result = make_exists_(qvars, r);
+      pbes_expression result = optimized_exists(qvars, r);
       return result;
     }
 

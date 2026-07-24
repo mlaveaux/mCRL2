@@ -78,7 +78,7 @@ class lpsstategraph_algorithm: public local_reset_variables_algorithm
           x = data::and_(x, data::application(functions[v.sort()], v ));
         }
         propositional_variable_instantiation Xi(X, gi);
-        conjuncts.push_back(make_forall_(ei, imp(atermpp::down_cast<pbes_expression>(x), Xi)));
+        conjuncts.push_back(pbes_system::optimized_forall(ei, imp(atermpp::down_cast<pbes_expression>(x), Xi)));
       }
       for (const lps::deadlock_summand& summand: lpsspec.process().deadlock_summands())
       {
@@ -86,7 +86,7 @@ class lpsstategraph_algorithm: public local_reset_variables_algorithm
         const auto& ci = summand.condition();
         data::data_expression_list gi = data::make_data_expression_list(lpsspec.process().process_parameters());
         propositional_variable_instantiation Xi(X, gi);
-        conjuncts.push_back(make_forall_(ei, imp(atermpp::down_cast<pbes_expression>(ci), Xi)));
+        conjuncts.push_back(pbes_system::optimized_forall(ei, imp(atermpp::down_cast<pbes_expression>(ci), Xi)));
       }
 
       // N.B. It is essential that the order in which the conjuncts are traversed in a PBES matches the order of the corresponding summands.

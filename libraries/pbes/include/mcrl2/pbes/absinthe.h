@@ -341,12 +341,12 @@ struct absinthe_algorithm
       data::data_expression q = data::lazy::join_and(z.begin(), z.end());
       if (m_is_over_approximation)
       {
-        result = make_exists_(variables, and_(atermpp::down_cast<pbes_expression>(q), 
+        result = optimized_exists(variables, and_(atermpp::down_cast<pbes_expression>(q), 
           propositional_variable_instantiation(x.name(), data::data_expression_list(variables))));
       }
       else
       {
-        result = make_forall_(variables, imp(atermpp::down_cast<pbes_expression>(q), propositional_variable_instantiation(x.name(), data::data_expression_list(variables))));
+        result = optimized_forall(variables, imp(atermpp::down_cast<pbes_expression>(q), propositional_variable_instantiation(x.name(), data::data_expression_list(variables))));
       }
     }
 
@@ -355,7 +355,7 @@ struct absinthe_algorithm
     {
       pbes_system::pbes_expression body;
       super::apply(body, x.body());
-      result = make_forall_(lift(x.variables()), body);
+      result = optimized_forall(lift(x.variables()), body);
     }
 
     template <class T>
@@ -363,7 +363,7 @@ struct absinthe_algorithm
     {
       pbes_system::pbes_expression body;
       super::apply(body, x.body());
-      result = make_exists_(lift(x.variables()), body);
+      result = optimized_exists(lift(x.variables()), body);
     }
 
     void update(pbes_system::pbes_equation& x)

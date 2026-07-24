@@ -125,7 +125,7 @@ struct normalize_builder: public pbes_expression_builder<normalize_builder>
   {
     pbes_expression body;
     super::apply(body, x.body());
-    result = negated ? make_exists_(x.variables(), body) : make_forall_(x.variables(), body);
+    result = negated ? optimized_exists(x.variables(), body) : optimized_forall(x.variables(), body);
   }
 
   template <class T>
@@ -133,7 +133,7 @@ struct normalize_builder: public pbes_expression_builder<normalize_builder>
   {
     pbes_expression body;
     super::apply(body, x.body());
-    result = negated ? make_forall_(x.variables(), body) : make_exists_(x.variables(), body);
+    result = negated ? optimized_forall(x.variables(), body) : optimized_exists(x.variables(), body);
   }
 
   template <class T>

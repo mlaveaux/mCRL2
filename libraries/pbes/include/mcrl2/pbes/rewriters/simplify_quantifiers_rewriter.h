@@ -31,19 +31,15 @@ struct add_simplify_quantifiers: public Builder<Derived>
     super::apply(body, x.body());
     const data::variable_list& variables = x.variables();
 
-    if (variables.empty())
-    {
-      result = true_();
-    }
-    else if (is_not(body))
+    if (is_not(body))
     {
       pbes_system::make_optimized_exists(result, variables, atermpp::down_cast<not_>(body).operand(), true);
       pbes_system::make_optimized_not(result, result);
     }
     if (is_and(body))
     {
-      auto const& left = atermpp::down_cast<and_>(body).left();
-      auto const& right = atermpp::down_cast<and_>(body).right();
+      const pbes_expression& left = atermpp::down_cast<and_>(body).left();
+      const pbes_expression& right = atermpp::down_cast<and_>(body).right();
       pbes_system::make_optimized_forall(result, variables, left, true); 
       pbes_expression result_right;
       pbes_system::make_optimized_forall(result_right, variables, right, true);
@@ -51,8 +47,8 @@ struct add_simplify_quantifiers: public Builder<Derived>
     }
     else if (is_or(body))
     {
-      auto const& left = atermpp::down_cast<or_>(body).left();
-      auto const& right = atermpp::down_cast<or_>(body).right();
+      const pbes_expression& left = atermpp::down_cast<or_>(body).left();
+      const pbes_expression& right = atermpp::down_cast<or_>(body).right();
       data::variable_list lv = data::detail::set_intersection(variables, find_free_variables(left));
       data::variable_list rv = data::detail::set_intersection(variables, find_free_variables(right));
       if (lv.empty())
@@ -83,19 +79,15 @@ struct add_simplify_quantifiers: public Builder<Derived>
     super::apply(body, x.body());
     const data::variable_list& variables = x.variables();
 
-    if (variables.empty())
-    {
-      result = false_();
-    }
-    else if (is_not(body))
+    if (is_not(body))
     {
       pbes_system::make_optimized_forall(result, variables, atermpp::down_cast<not_>(body).operand(), true);
       pbes_system::make_optimized_not(result, result);
     }
     if (is_or(body))
     {
-      auto const& left = atermpp::down_cast<or_>(body).left();
-      auto const& right = atermpp::down_cast<or_>(body).right();
+      const pbes_expression& left = atermpp::down_cast<or_>(body).left();
+      const pbes_expression& right = atermpp::down_cast<or_>(body).right();
       pbes_system::make_optimized_exists(result, variables, left, true);
       pbes_expression result_right;
       pbes_system::make_optimized_exists(result_right, variables, right, true);
@@ -103,8 +95,8 @@ struct add_simplify_quantifiers: public Builder<Derived>
     }
     else if (is_and(body))
     {
-      auto const& left = atermpp::down_cast<and_>(body).left();
-      auto const& right = atermpp::down_cast<and_>(body).right();
+      const pbes_expression& left = atermpp::down_cast<and_>(body).left();
+      const pbes_expression& right = atermpp::down_cast<and_>(body).right();
       data::variable_list lv = data::detail::set_intersection(variables, find_free_variables(left));
       data::variable_list rv = data::detail::set_intersection(variables, find_free_variables(right));
       if (lv.empty())

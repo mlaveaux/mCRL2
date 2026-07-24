@@ -164,7 +164,7 @@ struct enumerate_quantifiers_builder: public simplify_data_rewriter_builder<Deri
                 sigma,
                 [&](const enumerator_element& p)
                 {
-                  optimized_plus(result, result, p.expression());
+                  make_optimized_plus(result, result, p.expression());
                   return is_true(result);
                 },
                 data::sort_real::is_zero,  
@@ -190,13 +190,13 @@ struct enumerate_quantifiers_builder: public simplify_data_rewriter_builder<Deri
                                            [&free_variables](const data::variable& v){ return free_variables.count(v)>0; });
       if (finite.empty())
       { 
-        optimized_infimum(result, infinite, result);
+        make_optimized_infimum(result, infinite, result);
       }
       else
       {
         pres_expression phi_;
         enumerate_infimum(phi_, finite, result);
-        optimized_infimum(result, infinite, phi_);
+        make_optimized_infimum(result, infinite, phi_);
       }
     }
     else
@@ -209,13 +209,13 @@ struct enumerate_quantifiers_builder: public simplify_data_rewriter_builder<Deri
                                                [&free_variables](const data::variable& v){ return free_variables.count(v)>0; });
       if (enumerable.empty())
       {
-        optimized_infimum(result, non_enumerable, result);
+        make_optimized_infimum(result, non_enumerable, result);
       }
       else
       {
         pres_expression phi_;
         enumerate_infimum(phi_, enumerable, result);
-        optimized_infimum(result, non_enumerable, phi_);
+        make_optimized_infimum(result, non_enumerable, phi_);
       }
     }
     redo_substitution(x.variables(), undo);
@@ -237,13 +237,13 @@ struct enumerate_quantifiers_builder: public simplify_data_rewriter_builder<Deri
                                            [&free_variables](const data::variable& v){ return free_variables.count(v)>0; });
       if (finite.empty())
       { 
-        optimized_supremum(result, infinite, result);
+        make_optimized_supremum(result, infinite, result);
       }
       else
       {
         pres_expression phi_;
         enumerate_supremum(phi_, finite, result);
-        optimized_supremum(result, infinite, phi_);
+        make_optimized_supremum(result, infinite, phi_);
       }
     }
     else
@@ -256,13 +256,13 @@ struct enumerate_quantifiers_builder: public simplify_data_rewriter_builder<Deri
                                                [&free_variables](const data::variable& v){ return free_variables.count(v)>0; });
       if (enumerable.empty())
       {
-        optimized_supremum(result, non_enumerable, result);
+        make_optimized_supremum(result, non_enumerable, result);
       }
       else
       {
         pres_expression phi_;
         enumerate_supremum(phi_, enumerable, result);
-        optimized_supremum(result, non_enumerable, phi_);
+        make_optimized_supremum(result, non_enumerable, phi_);
       }
     }
     redo_substitution(x.variables(), undo);
@@ -284,13 +284,13 @@ struct enumerate_quantifiers_builder: public simplify_data_rewriter_builder<Deri
                                            [&free_variables](const data::variable& v){ return free_variables.count(v)>0; });
       if (finite.empty())
       { 
-        optimized_sum(result, infinite + unused, result, m_dataspec, super::R);
+        make_optimized_sum(result, infinite + unused, result, m_dataspec, super::R);
       }
       else
       {
         pres_expression phi_;
         enumerate_sum(phi_, finite, result);
-        optimized_sum(result, infinite + unused, phi_, m_dataspec, super::R);
+        make_optimized_sum(result, infinite + unused, phi_, m_dataspec, super::R);
       }
     }
     else
@@ -303,13 +303,13 @@ struct enumerate_quantifiers_builder: public simplify_data_rewriter_builder<Deri
                                                [&free_variables](const data::variable& v){ return free_variables.count(v)>0; });
       if (enumerable.empty())
       {
-        optimized_sum(result, non_enumerable + unused, result, m_dataspec, super::R);
+        make_optimized_sum(result, non_enumerable + unused, result, m_dataspec, super::R);
       }
       else
       {
         pres_expression phi_;
         enumerate_sum(phi_, enumerable, result);
-        optimized_sum(result, non_enumerable + unused, phi_, m_dataspec, super::R);
+        make_optimized_sum(result, non_enumerable + unused, phi_, m_dataspec, super::R);
       }
     }
     redo_substitution(x.variables(), undo);

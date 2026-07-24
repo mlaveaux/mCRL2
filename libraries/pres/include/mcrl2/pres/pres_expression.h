@@ -13,6 +13,7 @@
 #define MCRL2_PRES_PRES_EXPRESSION_H
 
 #include "mcrl2/data/expression_traits.h"
+#include "mcrl2/data/detail/data_sequence_algorithm.h"
 #include "mcrl2/core/optimized_boolean_operators.h"
 #include "mcrl2/data/real_utilities.h"
 #include "mcrl2/data/cardinality.h"
@@ -1522,46 +1523,36 @@ const data::data_expression_list& param(const pres_expression& t)
 }
 } // namespace accessors
 
-/// \brief Make a generalized minimum. It checks for an empty variable list,
-/// which is not allowed.
-/// \param l A sequence of data variables
-/// \param p A PRES expression
-/// \return The value <tt>infimum l.p</tt>
+/// \brief Make a negation.
+/// \param result The value <tt>!p</tt> is stored here. 
+/// \param p A PRES expression.
 inline
-pres_expression make_infimum(const data::variable_list& l, const pres_expression& p)
+void make_optimized_minus(pres_expression& result, const pres_expression& p)
 {
-  if (l.empty())
+  if (is_true(p))  // Infinity.
   {
-    return p;
+    result=false_();
   }
-  return pres_expression(atermpp::aterm(core::detail::function_symbol_PRESInfimum(), l, p));
+  else if (is_false(p))  // Minus infinity.
+  {
+    result=true_();
+  }
+  else if (data::sort_real::is_zero(p))
+  {
+    result=p;
+  }
+  else make_minus(result, p);
 }
 
-/// \brief Make an generalized maximum. It checks for an empty variable list,
-/// which is not allowed.
-/// \param l A sequence of data variables
-/// \param p A PRES expression
-/// \return The value <tt>exists l.p</tt>
+/// \brief Make a negation.
+/// \param p A PRES expression.
+/// \return The value <tt>!p</tt>.
 inline
-pres_expression make_supremum(const data::variable_list& l, const pres_expression& p)
+pres_expression optimized_minus(const pres_expression& p)
 {
-  if (l.empty())
-  {
-    return p;
-  }
-  return pres_expression(atermpp::aterm(core::detail::function_symbol_PRESSupremum(), l, p));
-}
-
-/// \brief Make a negation
-/// \param p A PRES expression
-/// \return The value <tt>!p</tt>
-inline
-void optimized_minus(pres_expression& result, const pres_expression& p)
-{
-  // Should be optimized. 
-  // true false special cases.
-  // data::sort_real::is_zero(p)
+  pres_expression result;
   make_minus(result, p);
+  return result;
 }
 
 /// \brief Make a conjunction.
@@ -1604,12 +1595,12 @@ pres_expression optimized_or(const pres_expression& p, const pres_expression& q)
   return core::optimized_or(p, q);
 }
 
-/// \brief Make a disjunction
+/// \brief Make a plus.
+/// \param result  The value <tt>p + q</tt> is placed here.
 /// \param p A PRES expression
 /// \param q A PRES expression
-/// \return The value <tt>p || q</tt>
 inline
-void optimized_plus(pres_expression& result, const pres_expression& p, const pres_expression& q)
+void make_optimized_plus(pres_expression& result, const pres_expression& p, const pres_expression& q)
 {
   if (is_true(p))
   {
@@ -1659,75 +1650,101 @@ void optimized_plus(pres_expression& result, const pres_expression& p, const pre
   }
 }
 
-/// \brief Make an implication
+/// \brief Make a plus
 /// \param p A PRES expression
 /// \param q A PRES expression
-/// \return The value <tt>p => q</tt>
-/* inline
-void optimized_imp(pres_expression& result, const pres_expression& p, const pres_expression& q)
+/// \return The value <tt>p + q</tt>
+inline
+pres_expression optimized_plus(const pres_expression& p, const pres_expression& q)
 {
-  data::optimized_imp(result, p, q);
-} */
+  pres_expression result;
+  make_optimized_plus(result, p, q);
+  return result;
+}
 
-/// \brief Make an infimum quantification
+/// \brief Make an optimized infimum quantification.
 /// If l is empty, p is returned.
+/// \param result The value <tt>inf l.p</tt> is stored here. 
+/// \param l A sequence of data variables
+/// \param p A PRES expression
+inline
+void make_optimized_infimum(pres_expression& result, const data::variable_list& l, const pres_expression& p, bool remove_variables = false)
+{
+  if (l.empty() || is_true(p) || is_false(p))
+  {
+    result=p;
+  }
+  else if (remove_variables)
+  { 
+    data::variable_list new_l = data::detail::set_intersection(l, find_free_variables(p));
+    if (new_l.empty())
+    {
+      result=p;
+    }
+    else make_infimum(result, new_l, p);
+  }
+  else make_infimum(result, l, p);
+}
+
+/// \brief Make an optimized infimum quantification
 /// \param l A sequence of data variables
 /// \param p A PRES expression
 /// \return The value <tt>inf l.p</tt>
 inline
-void optimized_infimum(pres_expression& result, const data::variable_list& l, const pres_expression& p)
+pres_expression optimized_infimum(const data::variable_list& l, const pres_expression& p, bool remove_variables = false)
 {
-  std::set<data::variable> free_variables = find_free_variables(p);
-  data::variable_list new_l(l.begin(), 
-                           l.end(), 
-                           [](const data::variable& v){ return v; }, 
-                           [&free_variables](const data::variable& v){ return free_variables.find(v)!=free_variables.end(); });
-  if (new_l.empty())
-  {
-    result=p;
-  }
-  else
-  { 
-    make_infimum(result, new_l, p);
-  }
+  pres_expression result;
+  make_optimized_infimum(result, l, p, remove_variables);
+  return result;
 }
 
 /// \brief Make a supremum.
-/// If l is empty, p is returned.
+/// \param result The optiized value <tt>sup l.p</tt> is stored in result.
+/// \param l A sequence of data variables.
+/// \param p A PRES expression.
+inline
+void make_optimized_supremum(pres_expression& result, const data::variable_list& l, const pres_expression& p, bool remove_variables = false)
+{
+  if (l.empty() || is_true(p) || is_false(p))
+  {
+    result=p;
+  }
+  else if (remove_variables)
+  { 
+    data::variable_list new_l = data::detail::set_intersection(l, find_free_variables(p));
+    if (new_l.empty())
+    {
+      result=p;
+    }
+    else make_supremum(result, new_l, p);
+  }
+  else make_supremum(result, l, p);
+}
+
+/// \brief Make an optimized supremum.
 /// \param l A sequence of data variables
 /// \param p A PRES expression
 /// \return The value <tt>sup l.p</tt>
 inline
-void optimized_supremum(pres_expression& result, const data::variable_list& l, const pres_expression& p)
+pres_expression optimized_supremum(const data::variable_list& l, const pres_expression& p, bool remove_variables = false)
 {
-  std::set<data::variable> free_variables = find_free_variables(p);
-  data::variable_list new_l(l.begin(), 
-                           l.end(), 
-                           [](const data::variable& v){ return v; }, 
-                           [&free_variables](const data::variable& v){ return free_variables.find(v)!=free_variables.end(); });
-  if (new_l.empty())
-  {
-    result=p;
-  }
-  else
-  { 
-    make_supremum(result, new_l, p);
-  }
+  pres_expression result;
+  make_optimized_infimum(result, l, p, remove_variables);
+  return result;
 }
 
-/// \brief Make an sum quantification.
-/// If l is empty, p is returned.
+/// \brief Make an optimized sum quantification.
+/// \param result The optimized value <tt>sum l.p</tt> is stored here. 
 /// \param l A sequence of data variables.
 /// \param p A PRES expression.
 /// \param data_specification A data specification to determine the cardinality of sorts.
 /// \param rewr A rewriter to determine the cardinality of sorts.
-/// \return The value <tt>sum l.p</tt>
 inline
-void optimized_sum(pres_expression& result, 
-                   const data::variable_list& l, 
-                   const pres_expression& p, 
-                   const data::data_specification& data_specification, 
-                   const data::rewriter& rewr)
+void make_optimized_sum(pres_expression& result, 
+                        const data::variable_list& l, 
+                        const pres_expression& p, 
+                        const data::data_specification& data_specification, 
+                        const data::rewriter& rewr)
 {
   if (l.size()==0)
   {
@@ -1801,13 +1818,32 @@ void optimized_sum(pres_expression& result,
   return;
 } 
 
-/// \brief Make an optimized condsm expression
-/// \param p1 A pres expression
-/// \param p2 A pres expression
-/// \param p3 A pres expression
-/// \return An optimized representation of condsm(p1, p2, p3)
+/// \brief Make an optimized sum quantification.
+/// If l is empty, p is returned.
+/// \param l A sequence of data variables.
+/// \param p A PRES expression.
+/// \param data_specification A data specification to determine the cardinality of sorts.
+/// \param rewr A rewriter to determine the cardinality of sorts.
+/// \return The value <tt>sum l.p</tt>
+
 inline
-void optimized_condsm(pres_expression& result, const pres_expression& p1, const pres_expression& p2, const pres_expression& p3)
+pres_expression optimized_sum(const data::variable_list& l, 
+                              const pres_expression& p, 
+                              const data::data_specification& data_specification, 
+                              const data::rewriter& rewr)
+{
+  pres_expression result;
+  make_optimized_sum(result, l, p, data_specification, rewr);
+  return result;
+}
+
+/// \brief Make an optimized condsm expression.
+/// \param result An optimized representation of condsm(p1, p2, p3) is stored here.
+/// \param p1 A pres expression.
+/// \param p2 A pres expression.
+/// \param p3 A pres expression.
+inline
+void make_optimized_condsm(pres_expression& result, const pres_expression& p1, const pres_expression& p2, const pres_expression& p3)
 {
   if (p1==false_())
   {
@@ -1829,7 +1865,20 @@ void optimized_condsm(pres_expression& result, const pres_expression& p1, const 
 /// \param p3 A pres expression
 /// \return An optimized representation of condsm(p1, p2, p3)
 inline
-void optimized_condeq(pres_expression& result, const pres_expression& p1, const pres_expression& p2, const pres_expression& p3)
+pres_expression optimized_condsm(const pres_expression& p1, const pres_expression& p2, const pres_expression& p3)
+{
+  pres_expression result;
+  make_optimized_condsm(result, p1, p2, p3);
+  return result;
+}
+
+/// \brief Make an optimized condsm expression.
+/// \param result An optimized representation of condsm(p1, p2, p3) is stored here. 
+/// \param p1 A pres expression.
+/// \param p2 A pres expression.
+/// \param p3 A pres expression.
+inline
+void make_optimized_condeq(pres_expression& result, const pres_expression& p1, const pres_expression& p2, const pres_expression& p3)
 {
   if (p1==false_())
   {
@@ -1846,11 +1895,24 @@ void optimized_condeq(pres_expression& result, const pres_expression& p1, const 
   return;
 }
 
-/// \brief Make an optimized eqinf expression
-/// \param p A pres expression
-/// \return An optimized representation of eqinf(p)
+/// \brief Make an optimized condsm expression.
+/// \param p1 A pres expression.
+/// \param p2 A pres expression.
+/// \param p3 A pres expression.
+/// \return An optimized representation of condsm(p1, p2, p3).
 inline
-void optimized_eqinf(pres_expression& result, const pres_expression& p)
+pres_expression optimized_condeq(const pres_expression& p1, const pres_expression& p2, const pres_expression& p3)
+{
+  pres_expression result;
+  make_optimized_condeq(result, p1, p2, p3);
+  return result;
+}
+
+/// \brief Make an optimized eqinf expression.
+/// \param result An optimized representation of eqinf(p) is stored here. 
+/// \param p A pres expression.
+inline
+void make_optimized_eqinf(pres_expression& result, const pres_expression& p)
 {
   if (p==false_())
   {
@@ -1876,7 +1938,18 @@ void optimized_eqinf(pres_expression& result, const pres_expression& p)
 /// \param p A pres expression
 /// \return An optimized representation of eqinf(p)
 inline
-void optimized_eqninf(pres_expression& result, const pres_expression& p)
+pres_expression optimized_eqinf(const pres_expression& p)
+{
+  pres_expression result;
+  make_optimized_eqinf(result, p);
+  return result;
+}
+
+/// \brief Make an optimized eqinf expression.
+/// \param result An optimized representation of eqninf(p) is stored here.
+/// \param p A pres expression.
+inline
+void make_optimized_eqninf(pres_expression& result, const pres_expression& p)
 {
   if (p==false_())
   {
@@ -1898,12 +1971,23 @@ void optimized_eqninf(pres_expression& result, const pres_expression& p)
   make_eqninf(result, p);
 }
 
-/// \brief Make an optimized const_multiply expression
-/// \param d A real data expression, which should be positive. 
+/// \brief Make an optimized eqinf expression
 /// \param p A pres expression
-/// \return An optimized representation of eqinf(p)
+/// \return An optimized representation of eqninf(p)
 inline
-void optimized_const_multiply(pres_expression& result, const data::data_expression& d, const pres_expression& p)
+pres_expression optimized_eqninf(const pres_expression& p)
+{
+  pres_expression result;
+  make_optimized_eqninf(result, p);
+  return result;
+}
+
+/// \brief Make an optimized const_multiply expression.
+/// \param result An optimized representation of d*p is stored here.
+/// \param d A real data expression, which should be positive. 
+/// \param p A pres expression.
+inline
+void make_optimized_const_multiply(pres_expression& result, const data::data_expression& d, const pres_expression& p)
 {
   if (data::sort_real::is_zero(d))
   {
@@ -1919,12 +2003,24 @@ void optimized_const_multiply(pres_expression& result, const data::data_expressi
   make_const_multiply(result, d, p);
 }
 
-/// \brief Make an optimized const_multiply_alt expression
+/// \brief Make an optimized const_multiply expression.
 /// \param d A real data expression, which should be positive. 
-/// \param p A pres expression
-/// \return An optimized representation of eqinf(p)
+/// \param p A pres expression.
+/// \return An optimized representation of d*p.
 inline
-void optimized_const_multiply_alt(pres_expression& result, const data::data_expression& d, const pres_expression& p)
+pres_expression optimized_const_multiply(const data::data_expression& d, const pres_expression& p)
+{
+  pres_expression result;
+  make_optimized_const_multiply(result, d, p);
+  return result;
+}
+
+/// \brief Make an optimized const_multiply_alt expression.
+/// \param result An optimized representation of p*d is stored here.
+/// \param d A real data expression, which should be positive. 
+/// \param p A pres expression.
+inline
+void make_optimized_const_multiply_alt(pres_expression& result, const data::data_expression& d, const pres_expression& p)
 {
   if (data::sort_real::is_zero(d))
   { 
@@ -1940,6 +2036,17 @@ void optimized_const_multiply_alt(pres_expression& result, const data::data_expr
   make_const_multiply_alt(result, d, p);
 }
 
+/// \brief Make an optimized const_multiply_alt expression.
+/// \param d A real data expression, which should be positive. 
+/// \param p A pres expression.
+/// \return An optimized representation of p*d.
+inline
+pres_expression optimized_const_multiply_alt(const data::data_expression& d, const pres_expression& p)
+{
+  pres_expression result;
+  make_optimized_const_multiply_alt(result, d, p);
+  return result;
+}
 inline
 bool is_constant(const pres_expression& x)
 {

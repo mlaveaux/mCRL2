@@ -331,7 +331,7 @@ class partial_order_reduction_algorithm
       // an existential quantifier
       data::data_expression make_exists_if_strong(const data::variable_list& vars, const data::data_expression& body)
       {
-        return compute_weak_conditions ? body : make_exists_(vars, body);
+        return compute_weak_conditions ? body : optimized_exists(vars, body);
       }
 
       data::data_expression left_accords_antecedent()
@@ -398,7 +398,7 @@ class partial_order_reduction_algorithm
         }
 
         data::data_expression antecedent = make_antecedent();
-        data::data_expression yes_condition = make_forall_(combined_quantified_vars, data::sort_bool::not_(antecedent));
+        data::data_expression yes_condition = data::optimized_forall(combined_quantified_vars, data::sort_bool::not_(antecedent));
         if (parent.is_true(yes_condition))
         {
           return yes;
@@ -410,7 +410,7 @@ class partial_order_reduction_algorithm
         }
 
         data::data_expression consequent = make_consequent();
-        data::data_expression condition = make_forall_(combined_quantified_vars, data::sort_bool::implies(antecedent, consequent));
+        data::data_expression condition = data::optimized_forall(combined_quantified_vars, data::sort_bool::implies(antecedent, consequent));
 
         return parent.is_true(condition) ? maybe : no;
       }
@@ -458,7 +458,7 @@ class partial_order_reduction_algorithm
 
       bool can_enable()
       {
-        data::data_expression cannot_enable = make_forall_(
+        data::data_expression cannot_enable = data::optimized_forall(
           combined_quantified_vars,
           data::sort_bool::not_(
             detail::make_and(
@@ -818,7 +818,7 @@ class partial_order_reduction_algorithm
         {
           negate = true;
           const data::forall& f = atermpp::down_cast<data::forall>(expr);
-          expr = data::make_exists_(f.variables(), data::sort_bool::not_(f.body()));
+          expr = data::optimized_exists(f.variables(), data::sort_bool::not_(f.body()));
         }
         switch(m_solver->solve(data::variable_list(), expr, m_options.smt_timeout))
         {
@@ -1215,7 +1215,7 @@ class partial_order_reduction_algorithm
         consequent = data::lazy::and_(consequent, data::equal_to(*it1_k, *it2_k));
         ++it1_k; ++it2_k;
       }
-      data::data_expression condition = make_forall_(parameters + qvars1_k + qvars2_k, data::sort_bool::implies(antecedent, consequent));
+      data::data_expression condition = data::optimized_forall(parameters + qvars1_k + qvars2_k, data::sort_bool::implies(antecedent, consequent));
 
       return is_true(condition);
     }

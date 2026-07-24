@@ -909,36 +909,7 @@ const data::data_expression_list& param(const pbes_expression& t)
 }
 } // namespace accessors
 
-/// \brief Make a universal quantification. It checks for an empty variable list,
-/// which is not allowed.
-/// \param l A sequence of data variables
-/// \param p A PBES expression
-/// \return The value <tt>forall l.p</tt>
-inline
-pbes_expression make_forall_(const data::variable_list& l, const pbes_expression& p)
-{
-  if (l.empty())
-  {
-    return p;
-  }
-  return pbes_expression(atermpp::aterm(core::detail::function_symbol_PBESForall(), l, p));
-}
-
-/// \brief Make an existential quantification. It checks for an empty variable list,
-/// which is not allowed.
-/// \param l A sequence of data variables
-/// \param p A PBES expression
-/// \return The value <tt>exists l.p</tt>
-inline
-pbes_expression make_exists_(const data::variable_list& l, const pbes_expression& p)
-{
-  if (l.empty())
-  {
-    return p;
-  }
-  return pbes_expression(atermpp::aterm(core::detail::function_symbol_PBESExists(), l, p));
-}
-
+///
 /// \brief Make a negation
 /// \param result Placeholder for the resulting PBES expression <tt>!p</tt>. This is more efficient than delivering it as the result of a function. 
 /// \param p A PBES expression

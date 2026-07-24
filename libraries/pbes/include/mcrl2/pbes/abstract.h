@@ -95,7 +95,7 @@ struct pbes_abstract_builder: public pbes_expression_builder<pbes_abstract_build
     pbes_expression new_expression;
     apply(new_expression, x.body());
     pop_variables();
-    result = make_forall_(x.variables(), new_expression);
+    result = optimized_forall(x.variables(), new_expression);
   }
 
   /// \brief Visit exists node
@@ -106,7 +106,7 @@ struct pbes_abstract_builder: public pbes_expression_builder<pbes_abstract_build
     pbes_expression new_expression;
     apply(new_expression, x.body());
     pop_variables();
-    result = make_exists_(x.variables(), new_expression);
+    result = optimized_exists(x.variables(), new_expression);
   }
 };
 

@@ -33,48 +33,44 @@ struct add_simplify_quantifiers: public Builder<Derived>
     super::apply(body, x.body());
     const data::variable_list& variables = x.variables();
 
-    if (variables.empty())
+    if (is_minus(body))
     {
-      result = true_();
-    }
-    else if (is_minus(body))
-    {
-      optimized_supremum(result, variables, atermpp::down_cast<minus>(body).operand());
-      optimized_minus(result, result);
+      make_optimized_supremum(result, variables, atermpp::down_cast<minus>(body).operand());
+      make_optimized_minus(result, result);
     }
     if (is_and(body))
     {
-      auto const& left = atermpp::down_cast<and_>(body).left();
-      auto const& right = atermpp::down_cast<and_>(body).right();
-      optimized_infimum(result, variables, left); 
+      const pres_expression& left = atermpp::down_cast<and_>(body).left();
+      const pres_expression& right = atermpp::down_cast<and_>(body).right();
+      make_optimized_infimum(result, variables, left); 
       pres_expression result_right;
-      optimized_infimum(result_right, variables, right);
+      make_optimized_infimum(result_right, variables, right);
       make_optimized_and(result, result, result_right);
     }
     else if (is_or(body))
     {
-      auto const& left = atermpp::down_cast<or_>(body).left();
-      auto const& right = atermpp::down_cast<or_>(body).right();
+      const pres_expression& left = atermpp::down_cast<or_>(body).left();
+      const pres_expression& right = atermpp::down_cast<or_>(body).right();
       data::variable_list lv = data::detail::set_intersection(variables, find_free_variables(left));
       data::variable_list rv = data::detail::set_intersection(variables, find_free_variables(right));
       if (lv.empty())
       {
-        optimized_infimum(result, rv, right);
+        make_optimized_infimum(result, rv, right);
         make_optimized_or(result, left, result);
       }
       else if (rv.empty())
       {
-        optimized_infimum(result, lv, left);
+        make_optimized_infimum(result, lv, left);
         make_optimized_or(result, result, right);
       }
       else
       {
-        optimized_infimum(result, variables, body);
+        make_optimized_infimum(result, variables, body);
       }
     }
     else
     {
-      optimized_infimum(result, variables, body);
+      make_optimized_infimum(result, variables, body);
     }
   }
 
@@ -85,48 +81,44 @@ struct add_simplify_quantifiers: public Builder<Derived>
     super::apply(body, x.body());
     const data::variable_list& variables = x.variables();
 
-    if (variables.empty())
+    if (is_minus(body))
     {
-      result = false_();
-    }
-    else if (is_minus(body))
-    {
-      optimized_infimum(result, variables, atermpp::down_cast<minus>(body).operand());
-      optimized_minus(result, result);
+      make_optimized_infimum(result, variables, atermpp::down_cast<minus>(body).operand());
+      make_optimized_minus(result, result);
     }
     if (is_or(body))
     {
-      auto const& left = atermpp::down_cast<or_>(body).left();
-      auto const& right = atermpp::down_cast<or_>(body).right();
-      optimized_supremum(result, variables, left);
+      const pres_expression& left = atermpp::down_cast<or_>(body).left();
+      const pres_expression& right = atermpp::down_cast<or_>(body).right();
+      make_optimized_supremum(result, variables, left);
       pres_expression result_right;
-      optimized_supremum(result_right, variables, right);
+      make_optimized_supremum(result_right, variables, right);
       make_optimized_or(result, result, result_right);
     }
     else if (is_and(body))
     {
-      auto const& left = atermpp::down_cast<and_>(body).left();
-      auto const& right = atermpp::down_cast<and_>(body).right();
+      const pres_expression& left = atermpp::down_cast<and_>(body).left();
+      const pres_expression& right = atermpp::down_cast<and_>(body).right();
       data::variable_list lv = data::detail::set_intersection(variables, find_free_variables(left));
       data::variable_list rv = data::detail::set_intersection(variables, find_free_variables(right));
       if (lv.empty())
       {
-        optimized_supremum(result, rv, right);
+        make_optimized_supremum(result, rv, right);
         make_optimized_and(result, left, result);
       }
       else if (rv.empty())
       {
-        optimized_supremum(result, lv, left);
+        make_optimized_supremum(result, lv, left);
         make_optimized_and(result, right, result);
       }
       else
       {
-        optimized_supremum(result, variables, body);
+        make_optimized_supremum(result, variables, body);
       }
     }
     else
     {
-      optimized_supremum(result, variables, body);
+      make_optimized_supremum(result, variables, body);
     }
   }
 

@@ -107,13 +107,13 @@ inline mcrl2::pbes_system::pbes_expression pbes_expression_order_quantified_vari
   {
     const forall& pf=atermpp::down_cast<forall>(p);
     const pbes_expression expr = pbes_expression_order_quantified_variables(pf.body(),data_spec);
-    return make_forall_(mcrl2::data::order_variables_to_optimise_enumeration(pf.variables(),data_spec),expr);
+    return optimized_forall(mcrl2::data::order_variables_to_optimise_enumeration(pf.variables(),data_spec),expr);
   }
   else if (is_pbes_exists(p))
   {
     const exists& pe=atermpp::down_cast<exists>(p);
     const pbes_expression expr = pbes_expression_order_quantified_variables(pe.body(),data_spec);
-    return make_exists_(mcrl2::data::order_variables_to_optimise_enumeration(pe.variables(),data_spec),expr);
+    return optimized_exists(mcrl2::data::order_variables_to_optimise_enumeration(pe.variables(),data_spec),expr);
   }
   else
   {
