@@ -62,7 +62,7 @@ class action_label: public atermpp::aterm
     }
 };
 
-/// \\brief Make_action_label constructs a new term into a given address.
+/// \\brief The function make_action_label constructs a new term into a given address.
 /// \\ \param t The reference into which the new action_label is constructed.
 template <class... ARGUMENTS>
 inline void make_action_label(atermpp::aterm& t, const ARGUMENTS&... args)

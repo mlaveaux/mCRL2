@@ -146,7 +146,7 @@ public:
         return;
       }
     }
-    make_and_(result,result, right);
+    make_and(result,result, right);
   }
 
   template <class T>
@@ -187,7 +187,7 @@ public:
         return;
       }
     }
-    make_or_(result,result, right);
+    make_or(result,result, right);
   }
 
   template <class T>

@@ -39,7 +39,7 @@ struct term_traits_optimized<pres_system::pres_expression>: public core::term_tr
   } 
 
   static inline
-  void make_not_(term_type& result, const term_type& x)
+  void make_not(term_type& result, const term_type& x)
   {
     data::optimized_not(result, x);
   }
@@ -53,7 +53,7 @@ struct term_traits_optimized<pres_system::pres_expression>: public core::term_tr
   }
 
   static inline
-  void make_and_(term_type& result, const term_type& x, const term_type& y)
+  void make_and(term_type& result, const term_type& x, const term_type& y)
   {
     data::optimized_and(result, x, y);
   }
@@ -67,7 +67,7 @@ struct term_traits_optimized<pres_system::pres_expression>: public core::term_tr
   } 
 
   static inline
-  void make_or_(term_type& result, const term_type& x, const term_type& y)
+  void make_or(term_type& result, const term_type& x, const term_type& y)
   {
     data::optimized_or(result, x, y);
   }

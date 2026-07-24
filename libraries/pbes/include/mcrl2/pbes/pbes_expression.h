@@ -168,7 +168,7 @@ class propositional_variable_instantiation: public pbes_expression
 //--- end user section propositional_variable_instantiation ---//
 };
 
-/// \\brief Make_propositional_variable_instantiation constructs a new term into a given address.
+/// \\brief The function make_propositional_variable_instantiation constructs a new term into a given address.
 /// \\ \param t The reference into which the new propositional_variable_instantiation is constructed.
 template <class... ARGUMENTS>
 inline void make_propositional_variable_instantiation(atermpp::aterm& t, const ARGUMENTS&... args)
@@ -245,10 +245,10 @@ class not_: public pbes_expression
     }
 };
 
-/// \\brief Make_not_ constructs a new term into a given address.
-/// \\ \param t The reference into which the new not_ is constructed.
+/// \\brief The function make_not constructs a new term into a given address.
+/// \\ \param t The reference into which the new not is constructed.
 template <class... ARGUMENTS>
-inline void make_not_(atermpp::aterm& t, const ARGUMENTS&... args)
+inline void make_not(atermpp::aterm& t, const ARGUMENTS&... args)
 {
   atermpp::make_term_appl(t, core::detail::function_symbol_PBESNot(), args...);
 }
@@ -321,10 +321,10 @@ class and_: public pbes_expression
     }
 };
 
-/// \\brief Make_and_ constructs a new term into a given address.
-/// \\ \param t The reference into which the new and_ is constructed.
+/// \\brief The function make_and constructs a new term into a given address.
+/// \\ \param t The reference into which the new and is constructed.
 template <class... ARGUMENTS>
-inline void make_and_(atermpp::aterm& t, const ARGUMENTS&... args)
+inline void make_and(atermpp::aterm& t, const ARGUMENTS&... args)
 {
   atermpp::make_term_appl(t, core::detail::function_symbol_PBESAnd(), args...);
 }
@@ -397,10 +397,10 @@ class or_: public pbes_expression
     }
 };
 
-/// \\brief Make_or_ constructs a new term into a given address.
-/// \\ \param t The reference into which the new or_ is constructed.
+/// \\brief The function make_or constructs a new term into a given address.
+/// \\ \param t The reference into which the new or is constructed.
 template <class... ARGUMENTS>
-inline void make_or_(atermpp::aterm& t, const ARGUMENTS&... args)
+inline void make_or(atermpp::aterm& t, const ARGUMENTS&... args)
 {
   atermpp::make_term_appl(t, core::detail::function_symbol_PBESOr(), args...);
 }
@@ -473,7 +473,7 @@ class imp: public pbes_expression
     }
 };
 
-/// \\brief Make_imp constructs a new term into a given address.
+/// \\brief The function make_imp constructs a new term into a given address.
 /// \\ \param t The reference into which the new imp is constructed.
 template <class... ARGUMENTS>
 inline void make_imp(atermpp::aterm& t, const ARGUMENTS&... args)
@@ -549,7 +549,7 @@ class forall: public pbes_expression
     }
 };
 
-/// \\brief Make_forall constructs a new term into a given address.
+/// \\brief The function make_forall constructs a new term into a given address.
 /// \\ \param t The reference into which the new forall is constructed.
 template <class... ARGUMENTS>
 inline void make_forall(atermpp::aterm& t, const ARGUMENTS&... args)
@@ -625,7 +625,7 @@ class exists: public pbes_expression
     }
 };
 
-/// \\brief Make_exists constructs a new term into a given address.
+/// \\brief The function make_exists constructs a new term into a given address.
 /// \\ \param t The reference into which the new exists is constructed.
 template <class... ARGUMENTS>
 inline void make_exists(atermpp::aterm& t, const ARGUMENTS&... args)
@@ -1154,9 +1154,9 @@ struct term_traits<pbes_system::pbes_expression>
   /// \param result The value <tt>!p</tt>
   /// \param p A term
   static inline
-  void make_not_(term_type& result, const term_type& p)
+  void make_not(term_type& result, const term_type& p)
   {
-    pbes_system::make_not_(result, p);
+    pbes_system::make_not(result, p);
   }
 
   /// \brief Make a conjunction
@@ -1174,9 +1174,9 @@ struct term_traits<pbes_system::pbes_expression>
   /// \param p A term
   /// \param q A term
   static inline
-  void make_and_(term_type& result, const term_type& p, const term_type& q)
+  void make_and(term_type& result, const term_type& p, const term_type& q)
   {
-    pbes_system::make_and_(result, p, q);
+    pbes_system::make_and(result, p, q);
   }
 
   /// \brief Make a disjunction
@@ -1194,9 +1194,9 @@ struct term_traits<pbes_system::pbes_expression>
   /// \param p A term
   /// \param q A term
   static inline
-  void make_or_(term_type& result, const term_type& p, const term_type& q)
+  void make_or(term_type& result, const term_type& p, const term_type& q)
   {
-    pbes_system::make_or_(result, p,q);
+    pbes_system::make_or(result, p,q);
   }
 
   template <typename FwdIt>

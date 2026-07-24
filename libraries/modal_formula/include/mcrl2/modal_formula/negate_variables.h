@@ -49,7 +49,7 @@ struct state_variable_negator: public state_formulas::state_formula_builder<Deri
       }
       else
       {
-        state_formulas::make_not_(result, x);
+        state_formulas::make_not(result, x);
       }
       return;
     }

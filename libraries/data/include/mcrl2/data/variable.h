@@ -71,7 +71,7 @@ class variable: public data_expression
 //--- end user section variable ---//
 };
 
-/// \\brief Make_variable constructs a new term into a given address.
+/// \\brief The function make_variable constructs a new term into a given address.
 /// \\ \param t The reference into which the new variable is constructed.
 template <class... ARGUMENTS>
 inline void make_variable(atermpp::aterm& t, const ARGUMENTS&... args)

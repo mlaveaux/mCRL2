@@ -201,7 +201,7 @@ namespace mcrl2::data::sort_bool
       
       /// \param arg0 A data expression.
       inline
-      void make_not_(data_expression& result, const data_expression& arg0)
+      void make_not(data_expression& result, const data_expression& arg0)
       {
         make_application(result, sort_bool::not_(),arg0);
       }
@@ -265,7 +265,7 @@ namespace mcrl2::data::sort_bool
       /// \param arg0 A data expression.
       /// \param arg1 A data expression.
       inline
-      void make_and_(data_expression& result, const data_expression& arg0, const data_expression& arg1)
+      void make_and(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
         make_application(result, sort_bool::and_(),arg0, arg1);
       }
@@ -329,7 +329,7 @@ namespace mcrl2::data::sort_bool
       /// \param arg0 A data expression.
       /// \param arg1 A data expression.
       inline
-      void make_or_(data_expression& result, const data_expression& arg0, const data_expression& arg1)
+      void make_or(data_expression& result, const data_expression& arg0, const data_expression& arg1)
       {
         make_application(result, sort_bool::or_(),arg0, arg1);
       }

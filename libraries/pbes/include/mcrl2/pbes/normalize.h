@@ -76,11 +76,11 @@ struct normalize_builder: public pbes_expression_builder<normalize_builder>
     super::apply(right, x.right());
     if (negated)
     {
-      make_or_(result, left, right);
+      make_or(result, left, right);
     }
     else
     {
-      make_and_(result, left, right);
+      make_and(result, left, right);
     }
   }
 
@@ -93,11 +93,11 @@ struct normalize_builder: public pbes_expression_builder<normalize_builder>
     super::apply(right, x.right());
     if (negated)
     {
-      make_and_(result, left, right);
+      make_and(result, left, right);
     }
     else
     {
-      make_or_(result, left, right);
+      make_or(result, left, right);
     }
   }
 
@@ -112,11 +112,11 @@ struct normalize_builder: public pbes_expression_builder<normalize_builder>
     super::apply(right, x.right());
     if (negated)
     {
-      make_and_(result, left, right);
+      make_and(result, left, right);
     }
     else
     {
-      make_or_(result, left, right);
+      make_or(result, left, right);
     }
   }
 

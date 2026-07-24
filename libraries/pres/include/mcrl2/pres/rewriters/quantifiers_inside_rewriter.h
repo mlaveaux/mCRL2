@@ -144,7 +144,7 @@ struct quantifiers_inside_infimum_builder: public data_expression_builder<quanti
   {
     const pres_expression& phi = x.left();
     const pres_expression& psi = x.right();
-    make_and_(result, quantifiers_inside_infimum(V, phi), quantifiers_inside_infimum(V, psi));
+    make_and(result, quantifiers_inside_infimum(V, phi), quantifiers_inside_infimum(V, psi));
   }
 
   template <class T>

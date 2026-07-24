@@ -52,7 +52,7 @@ class untyped_multi_action: public atermpp::aterm
     }
 };
 
-/// \\brief Make_untyped_multi_action constructs a new term into a given address.
+/// \\brief The function make_untyped_multi_action constructs a new term into a given address.
 /// \\ \param t The reference into which the new untyped_multi_action is constructed.
 template <class... ARGUMENTS>
 inline void make_untyped_multi_action(atermpp::aterm& t, const ARGUMENTS&... args)

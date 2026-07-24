@@ -236,7 +236,7 @@ namespace mcrl2::data::sort_fset
       /// \param arg0 A data expression.
       /// \param arg1 A data expression.
       inline
-      void make_cons_(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
+      void make_cons(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
         make_application(result, sort_fset::cons_(s),arg0, arg1);
       }
@@ -494,7 +494,7 @@ namespace mcrl2::data::sort_fset
       /// \param arg0 A data expression.
       /// \param arg1 A data expression.
       inline
-      void make_union_(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
+      void make_union(data_expression& result, const sort_expression& s, const data_expression& arg0, const data_expression& arg1)
       {
         make_application(result, sort_fset::union_(s),arg0, arg1);
       }

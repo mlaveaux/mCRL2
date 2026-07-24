@@ -966,7 +966,7 @@ inline void swap(<CLASSNAME>& t1, <CLASSNAME>& t2) noexcept
     # Generate the make_...  functions that allow the construction of a class member in situ.
     def make_function(self):
         if 'i' in self.modifiers():
-          text = r'''/// \\brief Make_<CLASSNAME> constructs a new term into a given address.
+          text = r'''/// \\brief The function make_<CLASSNAME> constructs a new term into a given address.
 /// \\ \param t The reference into which the new <CLASSNAME> is constructed.
 template <class... ARGUMENTS>
 inline void make_<CLASSNAME>(atermpp::aterm& t, size_t n)
@@ -974,7 +974,7 @@ inline void make_<CLASSNAME>(atermpp::aterm& t, size_t n)
   atermpp::make_aterm_int(reinterpret_cast<atermpp::aterm_int&>(t), n);
 }'''
         else:
-          text = r'''/// \\brief Make_<CLASSNAME> constructs a new term into a given address.
+          text = r'''/// \\brief The function make_<CLASSNAME> constructs a new term into a given address.
 /// \\ \param t The reference into which the new <CLASSNAME> is constructed.
 template <class... ARGUMENTS>
 inline void make_<CLASSNAME>(atermpp::aterm& t, const ARGUMENTS&... args)
@@ -991,8 +991,7 @@ inline void make_<CLASSNAME>(atermpp::aterm& t, const ARGUMENTS&... args)
               text = re.sub('<HASINDEX>', '_with_index<<CLASSNAME>,std::pair<<PARAMETER_SORTS>>>', text)
         else:
           text = re.sub('<HASINDEX>', '', text)
-        # text = re.sub('<CLASSNAME>', self.classname().rstrip('_'), text)
-        text = re.sub('<CLASSNAME>', self.classname(), text)
+        text = re.sub('<CLASSNAME>', self.classname().rstrip('_'), text)
         text = re.sub('<PARAMETER_SORTS>',', '.join([re.sub('const ','',re.sub('&','',p.type())) for p in self.constructor.parameters()]), text)
         return text
 
@@ -1069,7 +1068,6 @@ class <CLASSNAME><SUPERCLASS_DECLARATION>
 
         # generate additional functions
         # if not ('s' in self.modifiers() or 'S' in self.modifiers()):
-        print('HIERO', self.modifiers(),'  ',self.classname())
         if (not 'S' in self.modifiers() and self.constructor.parameters()) and not 'K' in self.modifiers():
             text = text + '\n\n' + self.make_function()
         if 'C' in self.modifiers():
@@ -1306,7 +1304,7 @@ class <CLASSNAME><SUPERCLASS_DECLARATION>
                         updates.append('x.%s()' % p.name())
                 if dependent:
                     # special case for arguments of a data application
-                    make_class_function = re.sub('::', '::make_', classname)
+                    make_class_function = re.sub('::', '::make_', classname.rstrip('_'))
                     if self.classname(True) == 'data::application' and p.name() == 'arguments':
                         visit_text = '''data::make_application(result,
    x.head(),

@@ -75,7 +75,7 @@ class function_symbol: public data_expression
 //--- end user section function_symbol ---//
 };
 
-/// \\brief Make_function_symbol constructs a new term into a given address.
+/// \\brief The function make_function_symbol constructs a new term into a given address.
 /// \\ \param t The reference into which the new function_symbol is constructed.
 template <class... ARGUMENTS>
 inline void make_function_symbol(atermpp::aterm& t, const ARGUMENTS&... args)

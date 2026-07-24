@@ -30,7 +30,7 @@ struct add_sort_expressions: public Builder<Derived>
   using super::apply;
 
   void update(lps::deadlock& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::data_expression result_time;
     static_cast<Derived&>(*this).apply(result_time, x.time());
@@ -40,14 +40,14 @@ struct add_sort_expressions: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::multi_action& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     lps::make_multi_action(result, [&](process::action_list& result){ static_cast<Derived&>(*this).apply(result, x.actions()); }, [&](data::data_expression& result){ static_cast<Derived&>(*this).apply(result, x.time()); });
     static_cast<Derived&>(*this).leave(x);
   }
 
   void update(lps::deadlock_summand& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::variable_list result_summation_variables;
     static_cast<Derived&>(*this).apply(result_summation_variables, x.summation_variables());
@@ -60,7 +60,7 @@ struct add_sort_expressions: public Builder<Derived>
   }
 
   void update(lps::action_summand& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::variable_list result_summation_variables;
     static_cast<Derived&>(*this).apply(result_summation_variables, x.summation_variables());
@@ -79,14 +79,14 @@ struct add_sort_expressions: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::process_initializer& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     lps::make_process_initializer(result, [&](data::data_expression_list& result){ static_cast<Derived&>(*this).apply(result, x.expressions()); });
     static_cast<Derived&>(*this).leave(x);
   }
 
   void update(lps::linear_process& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::variable_list result_process_parameters;
     static_cast<Derived&>(*this).apply(result_process_parameters, x.process_parameters());
@@ -97,7 +97,7 @@ struct add_sort_expressions: public Builder<Derived>
   }
 
   void update(lps::specification& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     process::action_label_list result_action_labels;
     static_cast<Derived&>(*this).apply(result_action_labels, x.action_labels());
@@ -112,14 +112,14 @@ struct add_sort_expressions: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::stochastic_distribution& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     result = x; if (x.is_defined()) { lps::make_stochastic_distribution(result, [&](data::variable_list& result){ static_cast<Derived&>(*this).apply(result, x.variables()); }, [&](data::data_expression& result){ static_cast<Derived&>(*this).apply(result, x.distribution()); }); }
     static_cast<Derived&>(*this).leave(x);
   }
 
   void update(lps::stochastic_action_summand& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::variable_list result_summation_variables;
     static_cast<Derived&>(*this).apply(result_summation_variables, x.summation_variables());
@@ -140,7 +140,7 @@ struct add_sort_expressions: public Builder<Derived>
   }
 
   void update(lps::stochastic_linear_process& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::variable_list result_process_parameters;
     static_cast<Derived&>(*this).apply(result_process_parameters, x.process_parameters());
@@ -151,7 +151,7 @@ struct add_sort_expressions: public Builder<Derived>
   }
 
   void update(lps::stochastic_specification& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     process::action_label_list result_action_labels;
     static_cast<Derived&>(*this).apply(result_action_labels, x.action_labels());
@@ -166,7 +166,7 @@ struct add_sort_expressions: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::stochastic_process_initializer& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     lps::make_stochastic_process_initializer(result, [&](data::data_expression_list& result){ static_cast<Derived&>(*this).apply(result, x.expressions()); }, [&](stochastic_distribution& result){ static_cast<Derived&>(*this).apply(result, x.distribution()); });
     static_cast<Derived&>(*this).leave(x);
@@ -193,7 +193,7 @@ struct add_data_expressions: public Builder<Derived>
   using super::apply;
 
   void update(lps::deadlock& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::data_expression result_time;
     static_cast<Derived&>(*this).apply(result_time, x.time());
@@ -203,14 +203,14 @@ struct add_data_expressions: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::multi_action& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     lps::make_multi_action(result, [&](process::action_list& result){ static_cast<Derived&>(*this).apply(result, x.actions()); }, [&](data::data_expression& result){ static_cast<Derived&>(*this).apply(result, x.time()); });
     static_cast<Derived&>(*this).leave(x);
   }
 
   void update(lps::deadlock_summand& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::data_expression result_condition;
     static_cast<Derived&>(*this).apply(result_condition, x.condition());
@@ -220,7 +220,7 @@ struct add_data_expressions: public Builder<Derived>
   }
 
   void update(lps::action_summand& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::data_expression result_condition;
     static_cast<Derived&>(*this).apply(result_condition, x.condition());
@@ -236,14 +236,14 @@ struct add_data_expressions: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::process_initializer& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     lps::make_process_initializer(result, [&](data::data_expression_list& result){ static_cast<Derived&>(*this).apply(result, x.expressions()); });
     static_cast<Derived&>(*this).leave(x);
   }
 
   void update(lps::linear_process& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     static_cast<Derived&>(*this).update(x.deadlock_summands());
     static_cast<Derived&>(*this).update(x.action_summands());
@@ -251,7 +251,7 @@ struct add_data_expressions: public Builder<Derived>
   }
 
   void update(lps::specification& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     static_cast<Derived&>(*this).update(x.process());
     process_initializer result_initial_process;
@@ -262,14 +262,14 @@ struct add_data_expressions: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::stochastic_distribution& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     result = x; if (x.is_defined()) { lps::make_stochastic_distribution(result, x.variables(), [&](data::data_expression& result){ static_cast<Derived&>(*this).apply(result, x.distribution()); }); }
     static_cast<Derived&>(*this).leave(x);
   }
 
   void update(lps::stochastic_action_summand& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::data_expression result_condition;
     static_cast<Derived&>(*this).apply(result_condition, x.condition());
@@ -287,7 +287,7 @@ struct add_data_expressions: public Builder<Derived>
   }
 
   void update(lps::stochastic_linear_process& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     static_cast<Derived&>(*this).update(x.deadlock_summands());
     static_cast<Derived&>(*this).update(x.action_summands());
@@ -295,7 +295,7 @@ struct add_data_expressions: public Builder<Derived>
   }
 
   void update(lps::stochastic_specification& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     static_cast<Derived&>(*this).update(x.process());
     stochastic_process_initializer result_initial_process;
@@ -306,7 +306,7 @@ struct add_data_expressions: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::stochastic_process_initializer& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     lps::make_stochastic_process_initializer(result, [&](data::data_expression_list& result){ static_cast<Derived&>(*this).apply(result, x.expressions()); }, [&](stochastic_distribution& result){ static_cast<Derived&>(*this).apply(result, x.distribution()); });
     static_cast<Derived&>(*this).leave(x);
@@ -332,7 +332,7 @@ struct add_variables: public Builder<Derived>
   using super::apply;
 
   void update(lps::deadlock& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::data_expression result_time;
     static_cast<Derived&>(*this).apply(result_time, x.time());
@@ -342,14 +342,14 @@ struct add_variables: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::multi_action& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     lps::make_multi_action(result, [&](process::action_list& result){ static_cast<Derived&>(*this).apply(result, x.actions()); }, [&](data::data_expression& result){ static_cast<Derived&>(*this).apply(result, x.time()); });
     static_cast<Derived&>(*this).leave(x);
   }
 
   void update(lps::deadlock_summand& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::variable_list result_summation_variables;
     static_cast<Derived&>(*this).apply(result_summation_variables, x.summation_variables());
@@ -362,7 +362,7 @@ struct add_variables: public Builder<Derived>
   }
 
   void update(lps::action_summand& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::variable_list result_summation_variables;
     static_cast<Derived&>(*this).apply(result_summation_variables, x.summation_variables());
@@ -381,14 +381,14 @@ struct add_variables: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::process_initializer& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     lps::make_process_initializer(result, [&](data::data_expression_list& result){ static_cast<Derived&>(*this).apply(result, x.expressions()); });
     static_cast<Derived&>(*this).leave(x);
   }
 
   void update(lps::linear_process& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::variable_list result_process_parameters;
     static_cast<Derived&>(*this).apply(result_process_parameters, x.process_parameters());
@@ -399,7 +399,7 @@ struct add_variables: public Builder<Derived>
   }
 
   void update(lps::specification& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     static_cast<Derived&>(*this).update(x.global_variables());
     static_cast<Derived&>(*this).update(x.process());
@@ -411,14 +411,14 @@ struct add_variables: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::stochastic_distribution& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     result = x; if (x.is_defined()) { lps::make_stochastic_distribution(result, [&](data::variable_list& result){ static_cast<Derived&>(*this).apply(result, x.variables()); }, [&](data::data_expression& result){ static_cast<Derived&>(*this).apply(result, x.distribution()); }); }
     static_cast<Derived&>(*this).leave(x);
   }
 
   void update(lps::stochastic_action_summand& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::variable_list result_summation_variables;
     static_cast<Derived&>(*this).apply(result_summation_variables, x.summation_variables());
@@ -439,7 +439,7 @@ struct add_variables: public Builder<Derived>
   }
 
   void update(lps::stochastic_linear_process& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     data::variable_list result_process_parameters;
     static_cast<Derived&>(*this).apply(result_process_parameters, x.process_parameters());
@@ -450,7 +450,7 @@ struct add_variables: public Builder<Derived>
   }
 
   void update(lps::stochastic_specification& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     static_cast<Derived&>(*this).update(x.global_variables());
     static_cast<Derived&>(*this).update(x.process());
@@ -462,7 +462,7 @@ struct add_variables: public Builder<Derived>
 
   template <class T>
   void apply(T& result, const lps::stochastic_process_initializer& x)
-  { 
+  {
     static_cast<Derived&>(*this).enter(x);
     lps::make_stochastic_process_initializer(result, [&](data::data_expression_list& result){ static_cast<Derived&>(*this).apply(result, x.expressions()); }, [&](stochastic_distribution& result){ static_cast<Derived&>(*this).apply(result, x.distribution()); });
     static_cast<Derived&>(*this).leave(x);

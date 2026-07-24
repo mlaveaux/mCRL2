@@ -675,7 +675,7 @@ ${cases}
       ${sortparameterstring}
       ${dataparameterstring}
       inline
-      void make_${functionname}(data_expression& result, ${parameters})
+      void make_${functionname_without_trailing_underscore}(data_expression& result, ${parameters})
       {
         make_application(result, ${nsfunctionname}(${actsortparameters}),${actdataparameters});
       }
@@ -684,11 +684,13 @@ ${cases}
         formal_sort_params = ['const sort_expression& {0}'.format(fcode(x, spec)) for x in sort_params]
         formal_data_params = ['const data_expression& {0}'.format(fcode(x, spec)) for x in data_params]
         domain_params = ['{0}.sort()'.format(x) for x in data_params] if polymorphic else []
+        stripped_name = name.identifier.string.rstrip('_')
         return CODE_TEMPLATE.substitute(
           namestring = escape(fullname),
           sortparameterstring = '' if sort_params == '' else '\n      '.join(['/// \\param {0} A sort expression.'.format(fcode(x, spec)) for x in sort_params]),
           dataparameterstring = '' if data_params == '' else '\n      '.join(['/// \\param {0} A data expression.'.format(fcode(x, spec)) for x in data_params]),
           functionname = name,
+          functionname_without_trailing_underscore = stripped_name,
           parameters = ', '.join(formal_sort_params + formal_data_params),
           nsfunctionname = add_namespace(name, self.namespace),
           actsortparameters = ', '.join([fcode(x, spec) for x in sort_params + domain_params]),

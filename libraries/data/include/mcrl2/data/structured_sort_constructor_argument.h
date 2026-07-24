@@ -78,7 +78,7 @@ class structured_sort_constructor_argument: public atermpp::aterm
 //--- end user section structured_sort_constructor_argument ---//
 };
 
-/// \\brief Make_structured_sort_constructor_argument constructs a new term into a given address.
+/// \\brief The function make_structured_sort_constructor_argument constructs a new term into a given address.
 /// \\ \param t The reference into which the new structured_sort_constructor_argument is constructed.
 template <class... ARGUMENTS>
 inline void make_structured_sort_constructor_argument(atermpp::aterm& t, const ARGUMENTS&... args)

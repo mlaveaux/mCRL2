@@ -107,7 +107,7 @@ class data_equation: public atermpp::aterm
 //--- end user section data_equation ---//
 };
 
-/// \\brief Make_data_equation constructs a new term into a given address.
+/// \\brief The function make_data_equation constructs a new term into a given address.
 /// \\ \param t The reference into which the new data_equation is constructed.
 template <class... ARGUMENTS>
 inline void make_data_equation(atermpp::aterm& t, const ARGUMENTS&... args)

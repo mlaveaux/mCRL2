@@ -436,7 +436,7 @@ public:
 //--- end user section structured_sort ---//
 };
 
-/// \\brief Make_structured_sort constructs a new term into a given address.
+/// \\brief The function make_structured_sort constructs a new term into a given address.
 /// \\ \param t The reference into which the new structured_sort is constructed.
 template <class... ARGUMENTS>
 inline void make_structured_sort(atermpp::aterm& t, const ARGUMENTS&... args)

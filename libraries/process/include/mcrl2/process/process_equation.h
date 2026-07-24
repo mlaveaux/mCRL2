@@ -62,7 +62,7 @@ class process_equation: public atermpp::aterm
     }
 };
 
-/// \\brief Make_process_equation constructs a new term into a given address.
+/// \\brief The function make_process_equation constructs a new term into a given address.
 /// \\ \param t The reference into which the new process_equation is constructed.
 template <class... ARGUMENTS>
 inline void make_process_equation(atermpp::aterm& t, const ARGUMENTS&... args)

@@ -55,7 +55,7 @@ class machine_number: public data_expression
     }
 };
 
-/// \\brief Make_machine_number constructs a new term into a given address.
+/// \\brief The function make_machine_number constructs a new term into a given address.
 /// \\ \param t The reference into which the new machine_number is constructed.
 template <class... ARGUMENTS>
 inline void make_machine_number(atermpp::aterm& t, size_t n)

@@ -646,7 +646,7 @@ struct typecheck_builder: public state_formula_builder<typecheck_builder>
     else
     {
       apply(result, static_cast<not_>(x).operand());
-      make_not_(result, result);
+      make_not(result, result);
     }
   }
 

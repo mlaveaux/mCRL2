@@ -62,7 +62,7 @@ class communication_expression: public atermpp::aterm
     }
 };
 
-/// \\brief Make_communication_expression constructs a new term into a given address.
+/// \\brief The function make_communication_expression constructs a new term into a given address.
 /// \\ \param t The reference into which the new communication_expression is constructed.
 template <class... ARGUMENTS>
 inline void make_communication_expression(atermpp::aterm& t, const ARGUMENTS&... args)

@@ -65,7 +65,7 @@ class function_sort: public sort_expression
     }
 };
 
-/// \\brief Make_function_sort constructs a new term into a given address.
+/// \\brief The function make_function_sort constructs a new term into a given address.
 /// \\ \param t The reference into which the new function_sort is constructed.
 template <class... ARGUMENTS>
 inline void make_function_sort(atermpp::aterm& t, const ARGUMENTS&... args)

@@ -63,7 +63,7 @@ class rename_expression: public atermpp::aterm
     }
 };
 
-/// \\brief Make_rename_expression constructs a new term into a given address.
+/// \\brief The function make_rename_expression constructs a new term into a given address.
 /// \\ \param t The reference into which the new rename_expression is constructed.
 template <class... ARGUMENTS>
 inline void make_rename_expression(atermpp::aterm& t, const ARGUMENTS&... args)

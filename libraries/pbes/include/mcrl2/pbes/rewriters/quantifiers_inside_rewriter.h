@@ -148,7 +148,7 @@ struct quantifiers_inside_forall_builder: public data_expression_builder<quantif
   {
     const pbes_expression& phi = x.left();
     const pbes_expression& psi = x.right();
-    make_and_(result, quantifiers_inside_forall(V, phi), quantifiers_inside_forall(V, psi));
+    make_and(result, quantifiers_inside_forall(V, phi), quantifiers_inside_forall(V, psi));
   }
 
   template <class T>

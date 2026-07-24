@@ -57,7 +57,7 @@ class alias: public atermpp::aterm
     }
 };
 
-/// \\brief Make_alias constructs a new term into a given address.
+/// \\brief The function make_alias constructs a new term into a given address.
 /// \\ \param t The reference into which the new alias is constructed.
 template <class... ARGUMENTS>
 inline void make_alias(atermpp::aterm& t, const ARGUMENTS&... args)

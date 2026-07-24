@@ -62,7 +62,7 @@ pbes_expression make_conjunction(Iterator first, Iterator last)
 
   while (it != last)
   {
-    make_and_(result, result, *it);
+    make_and(result, result, *it);
     ++it;
   }
 
@@ -83,7 +83,7 @@ pbes_expression make_disjunction(Iterator first, Iterator last)
 
   while (it != last)
   {
-    make_or_(result, result, *it);
+    make_or(result, result, *it);
     ++it;
   }
 

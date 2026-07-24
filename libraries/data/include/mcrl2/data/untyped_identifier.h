@@ -58,7 +58,7 @@ class untyped_identifier: public data_expression
     }
 };
 
-/// \\brief Make_untyped_identifier constructs a new term into a given address.
+/// \\brief The function make_untyped_identifier constructs a new term into a given address.
 /// \\ \param t The reference into which the new untyped_identifier is constructed.
 template <class... ARGUMENTS>
 inline void make_untyped_identifier(atermpp::aterm& t, const ARGUMENTS&... args)

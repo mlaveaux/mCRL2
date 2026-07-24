@@ -139,7 +139,7 @@ class seq: public regular_formula
     }
 };
 
-/// \\brief Make_seq constructs a new term into a given address.
+/// \\brief The function make_seq constructs a new term into a given address.
 /// \\ \param t The reference into which the new seq is constructed.
 template <class... ARGUMENTS>
 inline void make_seq(atermpp::aterm& t, const ARGUMENTS&... args)
@@ -215,7 +215,7 @@ class alt: public regular_formula
     }
 };
 
-/// \\brief Make_alt constructs a new term into a given address.
+/// \\brief The function make_alt constructs a new term into a given address.
 /// \\ \param t The reference into which the new alt is constructed.
 template <class... ARGUMENTS>
 inline void make_alt(atermpp::aterm& t, const ARGUMENTS&... args)
@@ -286,7 +286,7 @@ class trans: public regular_formula
     }
 };
 
-/// \\brief Make_trans constructs a new term into a given address.
+/// \\brief The function make_trans constructs a new term into a given address.
 /// \\ \param t The reference into which the new trans is constructed.
 template <class... ARGUMENTS>
 inline void make_trans(atermpp::aterm& t, const ARGUMENTS&... args)
@@ -357,7 +357,7 @@ class trans_or_nil: public regular_formula
     }
 };
 
-/// \\brief Make_trans_or_nil constructs a new term into a given address.
+/// \\brief The function make_trans_or_nil constructs a new term into a given address.
 /// \\ \param t The reference into which the new trans_or_nil is constructed.
 template <class... ARGUMENTS>
 inline void make_trans_or_nil(atermpp::aterm& t, const ARGUMENTS&... args)
@@ -443,7 +443,7 @@ class untyped_regular_formula: public regular_formula
     }
 };
 
-/// \\brief Make_untyped_regular_formula constructs a new term into a given address.
+/// \\brief The function make_untyped_regular_formula constructs a new term into a given address.
 /// \\ \param t The reference into which the new untyped_regular_formula is constructed.
 template <class... ARGUMENTS>
 inline void make_untyped_regular_formula(atermpp::aterm& t, const ARGUMENTS&... args)

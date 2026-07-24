@@ -66,9 +66,9 @@ struct term_traits<data::data_expression>
   /// \param result Operator not applied to p
   /// \param p A term
   static inline
-  void make_not_(term_type& result, const term_type& p)
+  void make_not(term_type& result, const term_type& p)
   {
-    data::sort_bool::make_not_(result, p);
+    data::sort_bool::make_not(result, p);
   }
 
   /// \brief Operator and
@@ -86,9 +86,9 @@ struct term_traits<data::data_expression>
   /// \param p A term
   /// \param q A term
   static inline
-  void make_and_(term_type& result, const term_type& p, const term_type& q)
+  void make_and(term_type& result, const term_type& p, const term_type& q)
   {
-    data::sort_bool::make_and_(result, p, q);
+    data::sort_bool::make_and(result, p, q);
   }
 
   /// \brief Operator or
@@ -106,9 +106,9 @@ struct term_traits<data::data_expression>
   /// \param p A term
   /// \param q A term
   static inline
-  void make_or_(term_type& result, const term_type& p, const term_type& q)
+  void make_or(term_type& result, const term_type& p, const term_type& q)
   {
-    data::sort_bool::make_or_(result, p, q);
+    data::sort_bool::make_or(result, p, q);
   }
 
   /// \brief Operator imp

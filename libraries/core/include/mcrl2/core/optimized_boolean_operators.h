@@ -42,7 +42,7 @@ void make_optimized_not(typename TermTraits::term_type& result,
   }
   else
   {
-    tr::make_not_(result, arg);
+    tr::make_not(result, arg);
   }
 }
 
@@ -81,7 +81,7 @@ void make_optimized_and(typename TermTraits::term_type& result,
   }
   else
   {
-    tr::make_and_(result, left, right);
+    tr::make_and(result, left, right);
   }
 }
 
@@ -120,7 +120,7 @@ void make_optimized_or(typename TermTraits::term_type& result,
   }
   else
   {
-    tr::make_or_(result, left, right);
+    tr::make_or(result, left, right);
   }
 }
 
