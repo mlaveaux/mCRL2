@@ -90,11 +90,12 @@ class solve_structure_graph_algorithm
   public:
     // computes solve_recursive(G \ A)
     inline
-    std::pair<vertex_set, vertex_set> solve_recursive(structure_graph& G, const vertex_set& A)
+    std::pair<vertex_set, vertex_set> solve_recursive(structure_graph& G, const vertex_set& A, std::size_t& calculation_steps)
     {
+      calculation_steps++;
       auto exclude = G.exclude() | A.include();
       std::swap(G.exclude(), exclude);
-      auto result = solve_recursive(G);
+      auto result = solve_recursive(G, calculation_steps);
       std::swap(G.exclude(), exclude);
       return result;
     }
@@ -105,8 +106,9 @@ class solve_structure_graph_algorithm
     // N.B. If use_toms_optimization is true, then the oomputed strategy may be incorrect.
     // So this flag should only be used to compute the solution.
     inline
-    std::pair<vertex_set, vertex_set> solve_recursive(structure_graph& G)
+    std::pair<vertex_set, vertex_set> solve_recursive(structure_graph& G, std::size_t& calculation_steps)
     {
+      calculation_steps++;
       mCRL2log(log::debug) << "\n  --- solve_recursive input ---\n" << G << std::endl;
       std::size_t N = G.extent();
 
@@ -124,6 +126,7 @@ class solve_structure_graph_algorithm
       // set strategy
       for (structure_graph::index_type ui: U.vertices())
       {
+        calculation_steps++;
         const auto& u = G.find_vertex(ui);
         if (u.decoration == alpha)
         {
@@ -140,7 +143,7 @@ class solve_structure_graph_algorithm
       vertex_set W_1[2]; // NOLINT(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
 
       vertex_set A = attr_default(G, U, alpha);
-      std::tie(W_1[0], W_1[1]) = solve_recursive(G, A);
+      std::tie(W_1[0], W_1[1]) = solve_recursive(G, A, calculation_steps);
 
       if (use_toms_optimization)
       {
@@ -154,7 +157,7 @@ class solve_structure_graph_algorithm
         }
         else
         {
-          std::tie(W[0], W[1]) = solve_recursive(G, B);
+          std::tie(W[0], W[1]) = solve_recursive(G, B, calculation_steps);
           W[1 - alpha] = set_union(W[1 - alpha], B);
         }
       }
@@ -169,7 +172,7 @@ class solve_structure_graph_algorithm
          else
          {
            vertex_set B = attr_default(G, W_1[1 - alpha], 1 - alpha);
-           std::tie(W[0], W[1]) = solve_recursive(G, B);
+           std::tie(W[0], W[1]) = solve_recursive(G, B, calculation_steps);
            W[1 - alpha] = set_union(W[1 - alpha], B);
          }
       }
@@ -183,9 +186,10 @@ class solve_structure_graph_algorithm
 
     // Handles nodes with decoration true or false.
     inline
-    std::pair<vertex_set, vertex_set> solve_recursive_extended(structure_graph& G)
+    std::pair<vertex_set, vertex_set> solve_recursive_extended(structure_graph& G, std::size_t& calculation_steps)
     {
       mCRL2log(log::debug) << "\n  --- solve_recursive_extended input ---\n" << G << std::endl;
+      calculation_steps++;
 
       std::size_t N = G.extent();
       vertex_set Vconj(N);
@@ -194,6 +198,7 @@ class solve_structure_graph_algorithm
       // find vertices Vconj with decoration false and Vdisj with decoration true
       for (std::size_t vi = 0; vi < N; vi++)
       {
+        calculation_steps++;
         if (!G.contains(vi))
         {
           continue;
@@ -222,14 +227,14 @@ class solve_structure_graph_algorithm
       // default case
       if (Vconj.is_empty() && Vdisj.is_empty())
       {
-        return solve_recursive(G);
+        return solve_recursive(G, calculation_steps);
       }
       else
       {
         vertex_set Wconj(N);
         vertex_set Wdisj(N);
         vertex_set Vunion = set_union(Vconj, Vdisj);
-        std::tie(Wdisj, Wconj) = solve_recursive(G, Vunion);
+        std::tie(Wdisj, Wconj) = solve_recursive(G, Vunion, calculation_steps);
         return std::make_pair(set_union(Wdisj, Vdisj), set_union(Wconj, Vconj));
       }
     }
@@ -246,7 +251,7 @@ class solve_structure_graph_algorithm
       }
     }
 
-    void check_solve_recursive_solution(const structure_graph& G, bool is_disjunctive, const vertex_set& Wdisj, const vertex_set& Wconj)
+    void check_solve_recursive_solution(const structure_graph& G, bool is_disjunctive, const vertex_set& Wdisj, const vertex_set& Wconj, std::size_t& calculation_steps)
     {
       using utilities::detail::contains;
 
@@ -254,6 +259,7 @@ class solve_structure_graph_algorithm
       log_vertex_set(G, Wconj, "Wconj");
       log_vertex_set(G, Wdisj, "Wdisj");
 
+      calculation_steps++;
       using vertex = structure_graph::vertex;
       structure_graph::index_type init = G.initial_vertex();
 
@@ -261,6 +267,7 @@ class solve_structure_graph_algorithm
       structure_graph::vertex_vector V = G.all_vertices();
       for (vertex& v: V)
       {
+        calculation_steps++;
         v.successors.clear();
         v.predecessors.clear();
       }
@@ -270,6 +277,7 @@ class solve_structure_graph_algorithm
 
       while (!todo.empty())
       {
+        calculation_steps++;
         structure_graph::index_type u = *todo.begin();
         todo.erase(todo.begin());
         done.insert(u);
@@ -288,6 +296,7 @@ class solve_structure_graph_algorithm
           // explore all outgoing edges
           for (structure_graph::index_type v: G.successors(u))
           {
+            calculation_steps++;
             insert_edge(V, u, v);
             if (!contains(done, v))
             {
@@ -301,7 +310,7 @@ class solve_structure_graph_algorithm
       vertex_set Wdisj1;
 
       structure_graph Gcopy(V, G.initial_vertex(), G.exclude());
-      std::tie(Wdisj1, Wconj1) = solve_recursive_extended(Gcopy);
+      std::tie(Wdisj1, Wconj1) = solve_recursive_extended(Gcopy, calculation_steps);
       bool is_disjunctive1;
       if (Wdisj1.contains(G.initial_vertex()))
       {
@@ -331,9 +340,10 @@ class solve_structure_graph_algorithm
 
     /// Returns the winning player (alpha)
     inline
-    bool solve(structure_graph& G)
+    bool solve(structure_graph& G, std::size_t& calculation_steps)
     {
-      auto W = solve_partitions(G);
+      calculation_steps++;
+      auto W = solve_partitions(G, calculation_steps);
 
       bool is_disjunctive;
       if (W.first.contains(G.initial_vertex()))
@@ -348,15 +358,23 @@ class solve_structure_graph_algorithm
       return is_disjunctive;
     }
 
+    inline
+    bool solve(structure_graph& G)
+    {
+      std::size_t calculation_steps=0;
+      return solve(G, calculation_steps);
+    }
+
     /// Returns the winning partition
     inline
-    std::pair<vertex_set, vertex_set> solve_partitions(structure_graph& G)
+    std::pair<vertex_set, vertex_set> solve_partitions(structure_graph& G, std::size_t& calculation_steps)
     {
       mCRL2log(log::verbose) << "Solving parity game..." << std::endl;
       mCRL2log(log::debug) << G << std::endl;
       assert(G.extent() > 0);
       assert(G.is_defined());
-      auto W = solve_recursive_extended(G);
+      calculation_steps++;
+      auto W = solve_recursive_extended(G,calculation_steps);
       bool is_disjunctive;
       if (W.first.contains(G.initial_vertex()))
       {
@@ -373,7 +391,7 @@ class solve_structure_graph_algorithm
 
       if (check_strategy)
       {
-        check_solve_recursive_solution(G, is_disjunctive, W.first, W.second);
+        check_solve_recursive_solution(G, is_disjunctive, W.first, W.second, calculation_steps);
       }
 
       mCRL2log(log::debug) << "\nSolved structure graph " << std::endl;
@@ -493,7 +511,8 @@ class lps_solve_structure_graph_algorithm: public solve_structure_graph_algorith
       mCRL2log(log::verbose) << "Solving parity game..." << std::endl;
       vertex_set Wconj;
       vertex_set Wdisj;
-      std::tie(Wdisj, Wconj) = solve_recursive_extended(G);
+      std::size_t calculation_steps=0;
+      std::tie(Wdisj, Wconj) = solve_recursive_extended(G, calculation_steps);
       structure_graph::index_type init = G.initial_vertex();
 
       mCRL2log(log::verbose) << "Extracting evidence..." << std::endl;
@@ -571,7 +590,8 @@ class lts_solve_structure_graph_algorithm: public solve_structure_graph_algorith
       mCRL2log(log::verbose) << "Solving parity game..." << std::endl;
       vertex_set Wconj;
       vertex_set Wdisj;
-      std::tie(Wdisj, Wconj) = solve_recursive_extended(G);
+      std::size_t calculation_steps=0;
+      std::tie(Wdisj, Wconj) = solve_recursive_extended(G, calculation_steps);
       structure_graph::index_type init = G.initial_vertex();
 
       mCRL2log(log::verbose) << "Extracting evidence..." << std::endl;
@@ -582,11 +602,18 @@ class lts_solve_structure_graph_algorithm: public solve_structure_graph_algorith
 };
 
 inline
-bool solve_structure_graph(structure_graph& G, bool check_strategy = false)
+bool solve_structure_graph(structure_graph& G, std::size_t& calculation_steps, bool check_strategy = false)
 {
   bool use_toms_optimization = !check_strategy;
   solve_structure_graph_algorithm algorithm(check_strategy, use_toms_optimization);
-  return algorithm.solve(G);
+  return algorithm.solve(G, calculation_steps);
+}
+
+inline
+bool solve_structure_graph(structure_graph& G, bool check_strategy = false)
+{
+  std::size_t calculation_steps=0;
+  return solve_structure_graph(G, calculation_steps, check_strategy);
 }
 
 /// Returns a mapping from PBES variable instantations to vertices in the structure graph for vertices won by player alpha.
@@ -595,7 +622,8 @@ std::pair<bool, std::unordered_map<pbes_expression, structure_graph::index_type>
 {
   bool use_toms_optimization = !check_strategy;
   solve_structure_graph_algorithm algorithm(check_strategy, use_toms_optimization);
-  auto W = algorithm.solve_partitions(G);
+  std::size_t calculation_steps=0;
+  auto W = algorithm.solve_partitions(G, calculation_steps);
 
   bool is_disjunctive;
   if (W.first.contains(G.initial_vertex()))

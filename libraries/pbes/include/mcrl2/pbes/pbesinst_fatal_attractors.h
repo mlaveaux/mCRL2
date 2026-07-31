@@ -294,6 +294,7 @@ inline
 void fatal_attractors_original(const simple_structure_graph& G,
                                std::array<vertex_set, 2>& S,
                                std::array<strategy_vector, 2>& tau,
+                               std::size_t& calculation_steps,
                                std::size_t equation_count
 )
 {
@@ -307,6 +308,7 @@ void fatal_attractors_original(const simple_structure_graph& G,
 
   // compute V
   vertex_set V(n);
+  calculation_steps=+n;
   for (std::size_t u = 0; u < n; u++)
   {
     V.insert(u);
@@ -343,6 +345,7 @@ void fatal_attractors_original(const simple_structure_graph& G,
         // set strategy for v \in Y \ S[alpha]
         for (structure_graph::index_type v: Y.vertices())
         {
+          calculation_steps++;
           if (S[alpha].contains(v))
           {
             continue;
@@ -365,6 +368,7 @@ void fatal_attractors_original(const simple_structure_graph& G,
         // S_alpha := S_alpha U Y
         for (structure_graph::index_type y: Y.vertices())
         {
+          calculation_steps++;
           insertion_count++;
           S[alpha].insert(y);
           mCRL2log(log::debug) << "  insert vertex " << y << " in S" << alpha << std::endl;

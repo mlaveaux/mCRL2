@@ -652,10 +652,10 @@ class pbesinst_structure_graph_algorithm2: public pbesinst_structure_graph_algor
         std::size_t calculation_steps=0;  // Count how many calculation steps it takes to find loops, and retry this after on_discovered_elements have been called that many times. 
         simple_structure_graph G(m_graph_builder.vertices());
         detail::find_loops2(G, S, tau, calculation_steps, m_iteration_count); // modifies S[0] and S[1]
-        on_the_fly_solve_trigger.set_expiration_steps(m_options.prune_and_solve_frequently?calculation_steps/1000:calculation_steps/10);
         assert(strategies_are_set_in_solved_nodes());
         report_found_solutions(timer);
         prune_todo_list_conditional(init, todo, calculation_steps);
+        on_the_fly_solve_trigger.set_expiration_steps(m_options.prune_and_solve_frequently?calculation_steps/1000:calculation_steps/10);
       }
       else if ((partial_solve_strategy::solve_subgames_using_fatal_attractor_local <= m_options.optimization && 
                 m_options.optimization <= partial_solve_strategy::solve_subgames_using_solver) && 
@@ -673,18 +673,18 @@ class pbesinst_structure_graph_algorithm2: public pbesinst_structure_graph_algor
         }
         else if (m_options.optimization == partial_solve_strategy::solve_subgames_using_fatal_attractor_original)
         {
-          detail::fatal_attractors_original(G, S, tau, m_iteration_count); // modifies S[0] and S[1]
+          detail::fatal_attractors_original(G, S, tau, calculation_steps, m_iteration_count); // modifies S[0] and S[1]
           assert(strategies_are_set_in_solved_nodes());
         }
         else if (m_options.optimization == partial_solve_strategy::solve_subgames_using_solver)
         {
           m_graph_builder.finalize();
-          detail::partial_solve(m_graph_builder.m_graph, todo, S, tau, m_iteration_count, m_graph_builder); // modifies S[0] and S[1]
+          detail::partial_solve(m_graph_builder.m_graph, todo, S, tau, calculation_steps, m_iteration_count, m_graph_builder); // modifies S[0] and S[1]
           assert(strategies_are_set_in_solved_nodes());
         }
-        on_the_fly_solve_trigger.set_expiration_steps(m_options.prune_and_solve_frequently?calculation_steps/1000:calculation_steps/10);
         report_found_solutions(timer);
         prune_todo_list_conditional(init, todo, calculation_steps);
+        on_the_fly_solve_trigger.set_expiration_steps(m_options.prune_and_solve_frequently?calculation_steps/1000:calculation_steps/10);
       }
       else if (m_options.optimization == partial_solve_strategy::detect_winning_loops_original && 
                (m_options.aggressive || on_the_fly_solve_trigger.is_expired()))
@@ -695,10 +695,9 @@ class pbesinst_structure_graph_algorithm2: public pbesinst_structure_graph_algor
 
         simple_structure_graph G(m_graph_builder.vertices());
         detail::find_loops(G, discovered, todo, S, tau, m_iteration_count, m_graph_builder); // modifies S[0] and S[1]
-        on_the_fly_solve_trigger.set_expiration_steps(m_options.prune_and_solve_frequently?calculation_steps/1000:calculation_steps/10);
         assert(strategies_are_set_in_solved_nodes());
-        on_the_fly_solve_trigger.set_expiration_steps(m_options.prune_and_solve_frequently?calculation_steps/1000:calculation_steps/10);
         prune_todo_list_conditional(init, todo, calculation_steps);
+        on_the_fly_solve_trigger.set_expiration_steps(m_options.prune_and_solve_frequently?calculation_steps/1000:calculation_steps/10);
       }
 
       prune_todo_list_time_triggered(init, todo);
