@@ -1729,7 +1729,7 @@ inline
 pres_expression optimized_supremum(const data::variable_list& l, const pres_expression& p, bool remove_variables = false)
 {
   pres_expression result;
-  make_optimized_infimum(result, l, p, remove_variables);
+  make_optimized_supremum(result, l, p, remove_variables);
   return result;
 }
 
