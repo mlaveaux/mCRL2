@@ -1698,8 +1698,9 @@ pres_expression optimized_infimum(const data::variable_list& l, const pres_expre
   return result;
 }
 
+/// \brief Make an optimized supremum quantification.
 /// \brief Make a supremum.
-/// \param result The optiized value <tt>sup l.p</tt> is stored in result.
+/// \param result The optimized value <tt>sup l.p</tt> is stored in result.
 /// \param l A sequence of data variables.
 /// \param p A PRES expression.
 inline
@@ -1730,6 +1731,41 @@ pres_expression optimized_supremum(const data::variable_list& l, const pres_expr
 {
   pres_expression result;
   make_optimized_supremum(result, l, p, remove_variables);
+  return result;
+}
+
+/// \brief Make an optimized sum
+/// \param result The optimized value <tt>sum l.p</tt> is stored in result.
+/// \param l A sequence of data variables.
+/// \param p A PRES expression.
+inline
+void make_optimized_sum(pres_expression& result, const data::variable_list& l, const pres_expression& p, bool remove_variables = false)
+{
+  if (l.empty() || is_true(p) || is_false(p))
+  {
+    result=p;
+  }
+  else if (remove_variables)
+  { 
+    data::variable_list new_l = data::detail::set_intersection(l, find_free_variables(p));
+    if (new_l.empty())
+    {
+      result=p;
+    }
+    else make_sum(result, new_l, p);
+  }
+  else make_sum(result, l, p);
+}
+
+/// \brief Make an optimized sum.
+/// \param l A sequence of data variables
+/// \param p A PRES expression
+/// \return The value <tt>sum l.p</tt>
+inline
+pres_expression optimized_sum(const data::variable_list& l, const pres_expression& p, bool remove_variables = false)
+{
+  pres_expression result;
+  make_optimized_sum(result, l, p, remove_variables);
   return result;
 }
 
@@ -1994,6 +2030,11 @@ void make_optimized_const_multiply(pres_expression& result, const data::data_exp
     result = atermpp::down_cast<pres_expression>(d);
     return;
   }
+  if (data::sort_real::is_one(d))
+  {
+    result = p;
+    return;
+  }
   if (data::sort_real::is_larger_zero(d) && 
       (p==false_() || p==true_() || is_eqinf(p) || is_eqninf(d)))
   {
@@ -2025,6 +2066,11 @@ void make_optimized_const_multiply_alt(pres_expression& result, const data::data
   if (data::sort_real::is_zero(d))
   { 
     result = atermpp::down_cast<pres_expression>(d);
+    return;
+  }
+  if (data::sort_real::is_one(d))
+  {
+    result = p;
     return;
   }
   if (data::sort_real::is_larger_zero(d) && 
