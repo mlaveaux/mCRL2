@@ -47,7 +47,7 @@ void make_optimized_and(data_expression& result, const data_expression& p, const
   mcrl2::core::make_optimized_and(result, p, q);
 }
 
-/* /// \brief Make a conjunction, and optimize if possible.
+/// \brief Make a conjunction, and optimize if possible.
 /// \param p A term
 /// \param q A term
 /// \return The application of and to the arguments.
