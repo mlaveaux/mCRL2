@@ -36,7 +36,7 @@ inline void check_lps2pres_actions(const state_formulas::state_formula& formula,
   {
     mCRL2log(log::warning) << "Warning: the modal formula contains actions "
                            << core::detail::print_list(diff)
-                           << " that are in the data specification, but does not appear in the LPS!" << std::endl;
+                           << " that are in the data specification, but do not appear in the LPS!" << std::endl;
   }
 }
 
