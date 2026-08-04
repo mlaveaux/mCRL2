@@ -1,4 +1,4 @@
-// Author(s): Wieger Wesselink
+// Author(s): Jeroen Keiren, Wieger Wesselink
 // Copyright: see the accompanying file COPYING or copy at
 // https://github.com/mCRL2org/mCRL2/blob/master/COPYING
 //
@@ -59,6 +59,8 @@ struct symbolic_reachability_options: public symbolic::symbolic_reachability_opt
   bool reset_parameters = false;
   bool aggressive = false;
   bool naive_counter_example_instantiation = false;
+  bool determinize_strategy = true; // keep a single strategy successor per vertex of the winner
+                                    // during the second (evidence) instantiation
   std::size_t solve_strategy = 0;
   std::size_t split_conditions = 0;
   std::string srf;
@@ -69,6 +71,7 @@ std::ostream& operator<<(std::ostream& out, const symbolic_reachability_options&
 {
   out << static_cast<const symbolic::symbolic_reachability_options&>(options);
   out << "solve_strategy = " << options.solve_strategy << std::endl;
+  out << "determinize_strategy = " << std::boolalpha << options.determinize_strategy << std::endl;
   out << "split_conditions = " << options.split_conditions << std::endl;
   out << "total = " << std::boolalpha << options.make_total << std::endl;
   return out;

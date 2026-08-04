@@ -122,11 +122,13 @@ public:
     const std::vector<symbolic::data_expression_index>& _data_index,
     const sylvan::ldds::ldd& Valpha_,
     const sylvan::ldds::ldd& S,
+    bool _determinize_strategy = true,
     std::optional<data::rewriter> rewriter = std::nullopt)
     : pbesinst_structure_graph_algorithm(options, p, G, rewriter),
       alpha(_alpha),
       strategy(S),
       Valpha(Valpha_),
+      determinize_strategy(_determinize_strategy),
       data_index(_data_index),
       propvar_map(_propvar_map),
       X_false(p.equations()[p.equations().size() - 2].variable().name()),
@@ -144,10 +146,89 @@ public:
         pbesinst_structure_graph_algorithm::phi_substitution(thread_index, symbol, X, phi)));
   }
 
+  /// \brief Restricts the right-hand side of an equation for a vertex of the winning player to a
+  ///        single strategy successor.
+  ///
+  /// The strategy computed by the symbolic solver is a Cartesian over-approximation, which for a
+  /// game with a single priority is the full relation. Keeping one successor per vertex of the
+  /// winning player keeps this second instantiation from re-exploring the entire game.
+  ///
+  /// Not done in rewrite_star_substitution: that substitution is applied while psi is still being
+  /// constructed, where the choice can be consumed by an occurrence that is discarded again.
+  void rewrite_psi(const std::size_t /* thread_index */,
+    pbes_expression& result,
+    const fixpoint_symbol& /* symbol */,
+    const propositional_variable_instantiation& X,
+    const pbes_expression& psi) override
+  {
+    result = psi;
+
+    if (!determinize_strategy)
+    {
+      return;
+    }
+
+    // The counter example equations (those in L) are not part of the symbolic game and have no
+    // strategy. They are knowingly absent from propvar_map, so skip them before the lookup below.
+    if (mcrl2::pbes_system::detail::is_counter_example_name(X.name()))
+    {
+      return;
+    }
+
+    // Only the vertices of player alpha have a strategy; for the other player every successor has
+    // to be kept. As in rewrite_star_substitution, an unresolvable cube means that X is unknown to
+    // the symbolic exploration, which must never be grounds for pruning.
+    std::vector<std::uint32_t> X_cube;
+    if (!detail::vertex_cube(X, data_index, propvar_map, X_cube) || !sylvan::ldds::member_cube(Valpha, X_cube))
+    {
+      return;
+    }
+
+    // Collect the successors that rewrite_star_substitution has kept, i.e. the closed occurrences
+    // that are not counter example variables (those are in L and are always kept).
+    propositional_variable_instantiation chosen;
+    std::vector<std::uint32_t> chosen_cube;
+    std::vector<std::uint32_t> Y_cube;
+    std::size_t count = 0;
+
+    for (const propositional_variable_instantiation& Y: find_propositional_variable_instantiations(psi))
+    {
+      if (!find_free_variables(Y).empty() || mcrl2::pbes_system::detail::is_counter_example_name(Y.name())
+          || !detail::vertex_cube(Y, data_index, propvar_map, Y_cube))
+      {
+        continue;
+      }
+
+      // Choose the candidate with the smallest cube. Note that the iteration order of the set above
+      // is the order of the aterm addresses, which is not reproducible over different runs, whereas
+      // the order on the cubes is.
+      if (count == 0 || Y_cube < chosen_cube)
+      {
+        chosen = Y;
+        chosen_cube = Y_cube;
+      }
+      ++count;
+    }
+
+    if (count < 2)
+    {
+      return;
+    }
+
+    mCRL2log(log::debug) << "determinize strategy for " << X << ": keeping " << chosen << " out of " << count
+                         << " successors" << std::endl;
+
+    pbes_system::simplify_rewriter simplify;
+    pbes_expression reduced;
+    simplify(reduced, psi, keep_one_successor_substitution(data_index, propvar_map, chosen, alpha));
+    result = reduced;
+  }
+
 private:
   bool alpha;
   sylvan::ldds::ldd strategy;
   sylvan::ldds::ldd Valpha;
+  bool determinize_strategy;
   const std::vector<symbolic::data_expression_index>& data_index;
   const std::unordered_map<core::identifier_string, data::data_expression>& propvar_map;
   const core::identifier_string& X_false;
@@ -177,6 +258,42 @@ private:
       {
         return x;
       }
+    }
+  };
+
+  /// Replaces every closed successor except the chosen one by the constant that is losing for
+  /// player alpha, so that only a single strategy edge remains. See rewrite_psi above.
+  struct keep_one_successor_substitution
+  {
+    const std::vector<symbolic::data_expression_index>& data_index;
+    const std::unordered_map<core::identifier_string, data::data_expression>& propvar_map;
+    const propositional_variable_instantiation& chosen;
+    const bool alpha;
+
+    mutable std::vector<std::uint32_t> cube;
+
+    keep_one_successor_substitution(const std::vector<symbolic::data_expression_index>& data_index,
+      const std::unordered_map<core::identifier_string, data::data_expression>& propvar_map,
+      const propositional_variable_instantiation& chosen,
+      bool alpha)
+      : data_index(data_index),
+        propvar_map(propvar_map),
+        chosen(chosen),
+        alpha(alpha)
+    {}
+
+    pbes_expression operator()(const propositional_variable_instantiation& Y) const
+    {
+      // Keep the chosen successor, the counter example variables (they are in L), the occurrences
+      // that are not closed, and anything that is unknown to the symbolic exploration.
+      if (Y == chosen || !find_free_variables(Y).empty()
+          || mcrl2::pbes_system::detail::is_counter_example_name(Y.name())
+          || !detail::vertex_cube(Y, data_index, propvar_map, cube))
+      {
+        return Y;
+      }
+
+      return alpha == 0 ? false_() : true_();
     }
   };
 
@@ -433,6 +550,10 @@ protected:
       "3 alternative split for conjunctive conditions where even more states can become reachable.");
     desc.add_hidden_option("naive-counter-example-instantiation",
       "run the naive instantiation algorithm for pbes with counter example information");
+    desc.add_hidden_option("no-determinize-strategy",
+      "do not restrict the strategy to a single successor per vertex during the second "
+      "instantiation. This explores considerably more vertices, but does not rely on every edge "
+      "recorded in the (over-approximated) symbolic strategy being a winning move.");
   }
 
   void parse_options(const utilities::command_line_parser& parser) override
@@ -458,6 +579,7 @@ protected:
     options.make_total = parser.has_option("total");
     options.reset_parameters = parser.has_option("reset");
     options.naive_counter_example_instantiation = parser.has_option("naive-counter-example-instantiation");
+    options.determinize_strategy = !parser.has_option("no-determinize-strategy");
     if (!options.make_total)
     {
       options.detect_deadlocks = true; // This is a required setting if the pbes is not total.
@@ -792,6 +914,7 @@ void solve(pbes_system::pbes pbesspec,
           reach.data_index(),
           G.players(V)[result ? 0 : 1],
           result ? *solution.strategy[0] : *solution.strategy[1], // NOLINT(bugprone-unchecked-optional-access)
+          options_.determinize_strategy,
           reach.rewriter());
 
         // Perform the second instantiation given the proof graph.
