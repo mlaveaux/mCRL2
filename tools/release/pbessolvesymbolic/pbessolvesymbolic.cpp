@@ -1,4 +1,4 @@
-// Author(s): Wieger Wesselink
+// Author(s): Jeroen Keiren, Wieger Wesselink
 // Copyright: see the accompanying file COPYING or copy at
 // https://github.com/mCRL2org/mCRL2/blob/master/COPYING
 //
@@ -62,6 +62,55 @@ TASK_DECL_1(bool, pbessolvesymbolic_task, arguments*); // NOLINT(cppcoreguidelin
 namespace mcrl2::pbes_system
 {
 
+namespace detail
+{
+
+/// \brief Computes the LDD cube for the vertex X, i.e. [index(name), index(param_0), ...].
+/// \returns false if X is unknown to the symbolic exploration, because its name is not in
+///          propvar_map or one of its parameter values is not in data_index; the contents of cube
+///          are then unspecified. Callers must never treat this as grounds for pruning: index()
+///          returns npos for unknown values, which truncates to 0xFFFFFFFF in the cube and merely
+///          makes member_cube return false.
+inline bool vertex_cube(const propositional_variable_instantiation& X,
+  const std::vector<symbolic::data_expression_index>& data_index,
+  const std::unordered_map<core::identifier_string, data::data_expression>& propvar_map,
+  std::vector<std::uint32_t>& cube)
+{
+  cube.clear();
+
+  std::unordered_map<core::identifier_string, data::data_expression>::const_iterator propvar_it
+    = propvar_map.find(X.name());
+  if (propvar_it == propvar_map.end())
+  {
+    mCRL2log(log::debug) << "vertex_cube: " << X.name() << " is unknown to the symbolic exploration" << std::endl;
+    return false;
+  }
+
+  std::size_t name_index = data_index[0].index(propvar_it->second);
+  if (name_index == symbolic::data_expression_index::npos)
+  {
+    mCRL2log(log::debug) << "vertex_cube: " << X.name() << " is unknown to the symbolic exploration" << std::endl;
+    return false;
+  }
+  cube.push_back(static_cast<std::uint32_t>(name_index));
+
+  std::size_t i = 1;
+  for (const data::data_expression& param: X.parameters())
+  {
+    std::size_t param_index = data_index[i].index(param);
+    if (param_index == symbolic::data_expression_index::npos)
+    {
+      mCRL2log(log::debug) << "vertex_cube: " << X << " has an unknown parameter value" << std::endl;
+      return false;
+    }
+    cube.push_back(static_cast<std::uint32_t>(param_index));
+    ++i;
+  }
+  return true;
+}
+
+} // namespace detail
+
 class pbesinst_symbolic_counter_example_structure_graph_algorithm : public pbesinst_structure_graph_algorithm
 {
 public:
@@ -72,14 +121,12 @@ public:
     const std::unordered_map<core::identifier_string, data::data_expression>& _propvar_map,
     const std::vector<symbolic::data_expression_index>& _data_index,
     const sylvan::ldds::ldd& Valpha_,
-    const sylvan::ldds::ldd& Vall_,
     const sylvan::ldds::ldd& S,
     std::optional<data::rewriter> rewriter = std::nullopt)
     : pbesinst_structure_graph_algorithm(options, p, G, rewriter),
       alpha(_alpha),
       strategy(S),
       Valpha(Valpha_),
-      Vall(Vall_),
       data_index(_data_index),
       propvar_map(_propvar_map),
       X_false(p.equations()[p.equations().size() - 2].variable().name()),
@@ -101,7 +148,6 @@ private:
   bool alpha;
   sylvan::ldds::ldd strategy;
   sylvan::ldds::ldd Valpha;
-  sylvan::ldds::ldd Vall;
   const std::vector<symbolic::data_expression_index>& data_index;
   const std::unordered_map<core::identifier_string, data::data_expression>& propvar_map;
   const core::identifier_string& X_false;
@@ -138,7 +184,6 @@ private:
   struct rewrite_star_substitution
   {
     mutable std::vector<std::uint32_t> singleton;
-    mutable std::smatch match;
 
     const std::vector<symbolic::data_expression_index>& data_index;
     const std::unordered_map<core::identifier_string, data::data_expression>& propvar_map;
@@ -146,6 +191,14 @@ private:
     const sylvan::ldds::ldd& Valpha;
     const propositional_variable_instantiation& X;
     const bool alpha;
+
+    // Everything below depends only on X, so it is computed once in the constructor instead of
+    // once per successor Y (phi_substitution, and hence this substitution, is constructed once
+    // per equation, but operator() below is called once per successor in the right-hand side).
+    std::vector<std::uint32_t> m_X_cube;
+    bool m_X_is_counter_example; // X is a counter example equation, i.e. in L
+    bool m_X_known;              // X was resolved to a vertex of the symbolic game
+    bool m_X_is_alpha;
 
     rewrite_star_substitution(const std::vector<symbolic::data_expression_index>& data_index,
       const std::unordered_map<core::identifier_string, data::data_expression>& propvar_map,
@@ -159,7 +212,15 @@ private:
         Valpha(Valpha),
         X(X),
         alpha(alpha)
-    {}
+    {
+      // TODO: This depends on the encoding used in pbesreach.
+      // The counter example equations (those in L) are not part of the symbolic game, so they are
+      // knowingly absent from propvar_map. Recognising them here keeps a failure of vertex_cube a
+      // reliable indication that the two instantiations have gone out of step.
+      m_X_is_counter_example = mcrl2::pbes_system::detail::is_counter_example_name(X.name());
+      m_X_known = !m_X_is_counter_example && detail::vertex_cube(X, data_index, propvar_map, m_X_cube);
+      m_X_is_alpha = m_X_known && sylvan::ldds::member_cube(Valpha, m_X_cube);
+    }
 
     pbes_expression operator()(const propositional_variable_instantiation& Y) const
     {
@@ -170,43 +231,43 @@ private:
         return Y;
       }
 
-      if (std::regex_match(static_cast<const std::string&>(Y.name()),
-            match,
-            mcrl2::pbes_system::detail::positive_or_negative))
+      if (mcrl2::pbes_system::detail::is_counter_example_name(Y.name()))
       {
         // If Y in L return Y
         mCRL2log(log::debug) << "rewrite_star " << Y << " is counter example equation (in L)" << std::endl;
         return Y;
       }
 
-      // TODO: This depends on the encoding used in pbesreach.
-      // Determine whether X belongs to player alpha
-      singleton.clear();
-      singleton.emplace_back(data_index[0].index(propvar_map.at(X.name())));
-
-      std::size_t i = 1;
-      for (const auto& param: X.parameters())
+      if (!m_X_known)
       {
-        singleton.emplace_back(data_index[i].index(param));
-        ++i;
+        // X could not be resolved to a known vertex in the symbolic exploration. This is a second,
+        // independent source of blow-up if it ever happens; preserve the pre-existing behaviour of
+        // treating X as not belonging to alpha, i.e. do not prune. For counter example equations
+        // this is expected and not worth reporting.
+        if (!m_X_is_counter_example)
+        {
+          mCRL2log(log::debug) << "rewrite_star " << X << " could not be resolved to a known vertex, not pruning"
+                               << std::endl;
+        }
+        return Y;
       }
 
-      if (sylvan::ldds::member_cube(Valpha, singleton))
+      if (m_X_is_alpha)
       {
         // Determine whether (X, Y) is in the strategy.
 
         // Add the propositional variables.
         singleton.clear();
-        singleton.emplace_back(data_index[0].index(propvar_map.at(X.name())));
+        singleton.emplace_back(m_X_cube[0]);
         singleton.emplace_back(data_index[0].index(propvar_map.at(Y.name())));
 
         // Add the interleaved data expressions.
         std::size_t i = 1;
         auto param_Y_it = Y.parameters().begin();
 
-        for (const data::data_expression& param_X_it: X.parameters())
+        for (std::size_t k = 1; k < m_X_cube.size(); ++k)
         {
-          singleton.emplace_back(data_index[i].index(param_X_it));
+          singleton.emplace_back(m_X_cube[k]);
           singleton.emplace_back(data_index[i].index(*param_Y_it));
 
           ++param_Y_it;
@@ -709,9 +770,8 @@ void solve(pbes_system::pbes pbesspec,
 
         // Set some options for the second instantiation.
         pbessolve_options pbessolve_options;
-        // only remove self-loops. The other optimizations are disabled for the second run.
-        // pbessolve_options.optimization = std::min(partial_solve_strategy::remove_self_loops,
-        // options_.solve_strategy);
+        // All optimizations disabled for the second run. They are not needed due to the
+        // availability of a winning strategy
         pbessolve_options.rewrite_strategy = options_.rewrite_strategy;
         pbessolve_options.remove_unused_rewrite_rules = options_.remove_unused_rewrite_rules;
         pbessolve_options.check_strategy = options_.check_strategy;
@@ -731,7 +791,6 @@ void solve(pbes_system::pbes pbesspec,
           reach.propvar_map(),
           reach.data_index(),
           G.players(V)[result ? 0 : 1],
-          V,
           result ? *solution.strategy[0] : *solution.strategy[1], // NOLINT(bugprone-unchecked-optional-access)
           reach.rewriter());
 
