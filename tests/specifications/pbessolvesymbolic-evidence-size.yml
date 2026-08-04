@@ -1,0 +1,75 @@
+# Checks that pbessolvesymbolic restricts its second (evidence) instantiation to a single strategy
+# successor per vertex of the winning player.
+#
+# t3 solves with the default settings, t4 with --no-determinize-strategy, which keeps every edge of
+# the (Cartesian, over-approximated) strategy computed by the symbolic solver. The structure graph
+# built by t3 must be strictly smaller than the one built by t4.
+#
+# A size assertion on its own would be satisfied by pruning too much, so it is paired with two
+# correctness checks: the solution must agree with pbessolve (t5), and the evidence produced by t3
+# must be simulated by the original LPS (t8).
+
+nodes:
+  l1:
+    type: mcrl2
+  l2:
+    type: mcf
+  l3:
+    type: lps
+  l4:
+    type: pbes
+  l5:
+    type: lps
+  l6:
+    type: lps
+  l7:
+    type: lts
+  l8:
+    type: lts
+
+tools:
+  t1:
+    input: [l1]
+    output: [l3]
+    args: []
+    name: mcrl22lps
+  t2:
+    input: [l3, l2]
+    output: [l4]
+    args: [-c]
+    name: lps2pbes
+  t3:
+    input: [l4, l3]
+    output: [l5]
+    args: ['-v']
+    name: pbessolvesymbolic
+  t4:
+    input: [l4, l3]
+    output: [l6]
+    args: ['-v', '--no-determinize-strategy']
+    name: pbessolvesymbolic
+  t5:
+    input: [l4]
+    output: []
+    args: []
+    name: pbessolve
+  t6:
+    input: [l3]
+    output: [l7]
+    args: []
+    name: lps2lts
+  t7:
+    input: [l5]
+    output: [l8]
+    args: []
+    name: lps2lts
+  t8:
+    input: [l8, l7]
+    output: []
+    args: [--equivalence=none, --preorder=sim]
+    name: ltscompare
+
+result: |
+  result = (t3.value['solution'] == t5.value['solution'] and
+            t3.value['evidence-structure-graph-vertices'] < t4.value['evidence-structure-graph-vertices'] and
+            t8.value['result'])

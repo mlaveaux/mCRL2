@@ -1,0 +1,70 @@
+# Checks that the evidence produced by pbessolvesymbolic is correct, independently of its size.
+#
+#   * the solution must agree with the one computed by pbessolve (t4), which uses an explicit
+#     two-pass instantiation with a genuinely deterministic strategy;
+#   * the evidence must be simulated by the original LPS (t7);
+#   * pbessolvesymbolic must not report, at debug level, any vertex of its second instantiation that
+#     it could not locate in the symbolic game. Such a report means the two instantiations have gone
+#     out of step and the strategy pruning was silently skipped.
+#
+# This is the counterpart of pbessolvesymbolic-evidence-size.yml, which asserts on the size of the
+# structure graph. Size is only meaningful for the cases where determinization actually bites, so
+# the two are kept apart and this one is registered for several models and solve strategies.
+
+nodes:
+  l1:
+    type: mcrl2
+  l2:
+    type: mcf
+  l3:
+    type: lps
+  l4:
+    type: pbes
+  l5:
+    type: lps
+  l6:
+    type: lts
+  l7:
+    type: lts
+
+tools:
+  t1:
+    input: [l1]
+    output: [l3]
+    args: []
+    name: mcrl22lps
+  t2:
+    input: [l3, l2]
+    output: [l4]
+    args: [-c]
+    name: lps2pbes
+  t3:
+    input: [l4, l3]
+    output: [l5]
+    args: ['-v', '--debug']
+    name: pbessolvesymbolic
+  t4:
+    input: [l4]
+    output: []
+    args: []
+    name: pbessolve
+  t5:
+    input: [l3]
+    output: [l6]
+    args: []
+    name: lps2lts
+  t6:
+    input: [l5]
+    output: [l7]
+    args: []
+    name: lps2lts
+  t7:
+    input: [l7, l6]
+    output: []
+    args: [--equivalence=none, --preorder=sim]
+    name: ltscompare
+
+result: |
+  result = (t3.value['solution'] == t4.value['solution'] and
+            not t3.value['symbolic-desync'] and
+            t7.value['result'])

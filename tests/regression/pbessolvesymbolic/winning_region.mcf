@@ -1,0 +1,3 @@
+% A state in which c is enabled is reachable. Combined with winning_region.mcrl2 this yields a
+% parity game in which both players win part of the vertices.
+mu X. (<c>true || <true>X)

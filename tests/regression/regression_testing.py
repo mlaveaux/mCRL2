@@ -98,8 +98,47 @@ regression_tests = {
     'pfnf1'         : lambda name, settings: PbesrewrTest(name, [abspath('pfnf/1.txt')], 'pfnf', settings),
     }
 
+class PbessolvesymbolicEvidenceTest(YmlTest):
+    # options are passed to the pbessolvesymbolic invocation (t3) of pbessolvesymbolic-evidence.yml
+    def __init__(self, name, inputfiles, options, settings):
+        super(PbessolvesymbolicEvidenceTest, self).__init__(name, ymlfile('pbessolvesymbolic-evidence'), inputfiles, settings)
+        if options:
+            self.add_command_line_options('t3', options)
+
+def pbessolvesymbolic_evidence_test(inputfiles, options = None):
+    # N.B. inputfiles and options are bound as default arguments on purpose: without that, every
+    # lambda in the dict below would capture the last value of the loop variable.
+    return lambda name, settings, inputfiles = inputfiles, options = options: \
+        PbessolvesymbolicEvidenceTest(name, inputfiles, options, settings)
+
+_abp = mcrl2file('examples/academic/abp/abp.mcrl2')
+
+pbessolvesymbolic_evidence_tests = {
+    # A witness whose parity game has a single priority: the case in which the strategy computed by
+    # the symbolic solver degenerates into the full relation.
+    'pbessolvesymbolic-evidence-lasso'          : pbessolvesymbolic_evidence_test([_abp, abspath('pbessolvesymbolic/lasso.mcf')]),
+    # A counter example rather than a witness, i.e. the winning player is the conjunctive one.
+    'pbessolvesymbolic-evidence-false'          : pbessolvesymbolic_evidence_test([_abp, abspath('pbessolvesymbolic/false.mcf')]),
+    # More than one priority, so the strategy comes from the attractor computations.
+    'pbessolvesymbolic-evidence-alternating'    : pbessolvesymbolic_evidence_test([_abp, abspath('pbessolvesymbolic/alternating.mcf')]),
+    # A game in which both players win part of the vertices.
+    'pbessolvesymbolic-evidence-winning-region' : pbessolvesymbolic_evidence_test([abspath('pbessolvesymbolic/winning_region.mcrl2'), abspath('pbessolvesymbolic/winning_region.mcf')]),
+    # Genuine self-dependencies X(e) = ... X(e) ..., in both the case where the self-loop is by
+    # itself a winning move and the case where it is a losing one.
+    'pbessolvesymbolic-evidence-self-loop-nu'   : pbessolvesymbolic_evidence_test([abspath('pbessolvesymbolic/self_loop.mcrl2'), abspath('pbessolvesymbolic/self_loop_nu.mcf')]),
+    'pbessolvesymbolic-evidence-self-loop-mu'   : pbessolvesymbolic_evidence_test([abspath('pbessolvesymbolic/self_loop.mcrl2'), abspath('pbessolvesymbolic/self_loop_mu.mcf')]),
+    # The partial solvers contribute strategies of their own, which are unioned with the one
+    # computed by the Zielonka solver, so the evidence has to stay correct for those as well.
+    'pbessolvesymbolic-evidence-s2'             : pbessolvesymbolic_evidence_test([_abp, abspath('pbessolvesymbolic/lasso.mcf')], ['-s2']),
+    'pbessolvesymbolic-evidence-s3'             : pbessolvesymbolic_evidence_test([_abp, abspath('pbessolvesymbolic/lasso.mcf')], ['-s3']),
+    'pbessolvesymbolic-evidence-s7'             : pbessolvesymbolic_evidence_test([_abp, abspath('pbessolvesymbolic/alternating.mcf')], ['-s7']),
+    }
+
 if os.name != 'nt':
     regression_tests['ticket-1892'] = lambda name, settings: YmlTest(name, ymlfile('ticket_1892'), [abspath('tickets/1892/1.mcrl2'), abspath('tickets/1892/2.mcf')], settings)
+    # pbessolvesymbolic requires Sylvan, which is only built on Unix.
+    regression_tests['pbessolvesymbolic-evidence-size'] = lambda name, settings: YmlTest(name, ymlfile('pbessolvesymbolic-evidence-size'), [mcrl2file('examples/academic/abp/abp.mcrl2'), abspath('pbessolvesymbolic/lasso.mcf')], settings)
+    regression_tests.update(pbessolvesymbolic_evidence_tests)
 
 pbessolve_tests       = { 'pbessolve-{}'.format(filename[:-4]) : lambda name, settings: YmlTest(name, ymlfile('pbespgsolve'), [abspath('pbessolve/{}'.format(filename))], settings) for filename in sorted(os.listdir(abspath('pbessolve'))) }
 alphabet_reduce_tests = { 'alphabet-reduce-{}'.format(filename[:-6]) : lambda name, settings: YmlTest(name, ymlfile('alphabet-reduce'), [abspath('alphabet-reduce/{}'.format(filename))], settings) for filename in sorted(os.listdir(abspath('alphabet-reduce'))) }

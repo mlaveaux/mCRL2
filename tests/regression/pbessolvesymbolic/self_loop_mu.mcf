@@ -1,0 +1,4 @@
+% Every path terminates. On self_loop.mcrl2 this fails, and here the self-dependency is a losing
+% move for the disjunctive player, so it is never part of the strategy. This is the complementary
+% case to self_loop_nu.mcf.
+mu X. <true>X

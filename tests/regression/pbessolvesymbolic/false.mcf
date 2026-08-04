@@ -1,0 +1,5 @@
+% It is never possible to receive d1. This does not hold for abp, so the property is false and the
+% evidence is a counter example rather than a witness. This is the direction in which the winning
+% player is the conjunctive one, so the second instantiation of pbessolvesymbolic replaces pruned
+% successors by true rather than by false.
+[true*][r1(d1)]false

@@ -1,0 +1,5 @@
+% There is an infinite path. The witness for this property is a single lasso, but the parity game
+% has a single priority, which is the case in which the strategy computed by the symbolic solver
+% degenerates into the full relation. Without determinization of that strategy the second
+% (evidence) instantiation of pbessolvesymbolic re-explores the whole game explicitly.
+nu X. <true>X

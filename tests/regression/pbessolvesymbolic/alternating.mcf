@@ -1,0 +1,6 @@
+% It is possible to receive d1 infinitely often. The alternation gives the parity game more than one
+% priority, so the strategy computed by the symbolic solver comes from the attractor computations
+% rather than from the degenerate single-priority case. Those pieces of the strategy are already
+% restricted to one attractor layer, and determinizing them relies on a different argument (progress
+% towards the target) than the arbitrary choice at the minimal rank.
+nu X. mu Y. ((<r1(d1)>X) || (<true>Y))

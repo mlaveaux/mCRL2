@@ -1,0 +1,13 @@
+% Every state of this model has a transition to itself, so the instantiated PBES contains genuine
+% self-dependencies X(e) = ... X(e) ... . Those are the case that partial_solve_strategy::
+% remove_self_loops rewrites away, and the case in which a self-loop is either not part of the
+% strategy at all (under a mu, where looping forever loses for the disjunctive player) or is by
+% itself winning, so that no other successor is needed (under a nu).
+
+act a, b, c, d, e;
+
+proc P = a . P + b . Q + d . R;
+     Q = c . Q;
+     R = e . R;
+
+init P;
