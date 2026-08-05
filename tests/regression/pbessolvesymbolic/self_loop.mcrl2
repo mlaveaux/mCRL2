@@ -1,8 +1,13 @@
 % Every state of this model has a transition to itself, so the instantiated PBES contains genuine
 % self-dependencies X(e) = ... X(e) ... . Those are the case that partial_solve_strategy::
-% remove_self_loops rewrites away, and the case in which a self-loop is either not part of the
-% strategy at all (under a mu, where looping forever loses for the disjunctive player) or is by
-% itself winning, so that no other successor is needed (under a nu).
+% remove_self_loops rewrites away. Two properties are checked against it:
+%
+%   * lasso.mcf and self_loop_mu.mcf, where the self-loop is either by itself a winning move, so
+%     that no other successor is needed (under a nu), or not part of the strategy at all (under a
+%     mu, where looping forever loses for the disjunctive player);
+%   * winning_region.mcf, which holds in P and Q but fails in R, so that the winning region of the
+%     winning player is a strict subset of the game and the vertex for P has an edge into the
+%     losing region.
 
 act a, b, c, d, e;
 

@@ -1,3 +1,4 @@
-% A state in which c is enabled is reachable. Combined with winning_region.mcrl2 this yields a
-% parity game in which both players win part of the vertices.
+% A state in which c is enabled is reachable. Combined with self_loop.mcrl2 this yields a parity
+% game in which both players win part of the vertices: the property holds in P (from which Q is
+% reachable) and in Q, but fails in R, which can only ever do e.
 mu X. (<c>true || <true>X)

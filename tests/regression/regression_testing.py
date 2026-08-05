@@ -122,10 +122,10 @@ pbessolvesymbolic_evidence_tests = {
     # More than one priority, so the strategy comes from the attractor computations.
     'pbessolvesymbolic-evidence-alternating'    : pbessolvesymbolic_evidence_test([_abp, abspath('pbessolvesymbolic/alternating.mcf')]),
     # A game in which both players win part of the vertices.
-    'pbessolvesymbolic-evidence-winning-region' : pbessolvesymbolic_evidence_test([abspath('pbessolvesymbolic/winning_region.mcrl2'), abspath('pbessolvesymbolic/winning_region.mcf')]),
+    'pbessolvesymbolic-evidence-winning-region' : pbessolvesymbolic_evidence_test([abspath('pbessolvesymbolic/self_loop.mcrl2'), abspath('pbessolvesymbolic/winning_region.mcf')]),
     # Genuine self-dependencies X(e) = ... X(e) ..., in both the case where the self-loop is by
     # itself a winning move and the case where it is a losing one.
-    'pbessolvesymbolic-evidence-self-loop-nu'   : pbessolvesymbolic_evidence_test([abspath('pbessolvesymbolic/self_loop.mcrl2'), abspath('pbessolvesymbolic/self_loop_nu.mcf')]),
+    'pbessolvesymbolic-evidence-self-loop-nu'   : pbessolvesymbolic_evidence_test([abspath('pbessolvesymbolic/self_loop.mcrl2'), abspath('pbessolvesymbolic/lasso.mcf')]),
     'pbessolvesymbolic-evidence-self-loop-mu'   : pbessolvesymbolic_evidence_test([abspath('pbessolvesymbolic/self_loop.mcrl2'), abspath('pbessolvesymbolic/self_loop_mu.mcf')]),
     # The partial solvers contribute strategies of their own, which are unioned with the one
     # computed by the Zielonka solver, so the evidence has to stay correct for those as well.

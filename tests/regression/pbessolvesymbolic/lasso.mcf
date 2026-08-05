@@ -2,4 +2,7 @@
 % has a single priority, which is the case in which the strategy computed by the symbolic solver
 % degenerates into the full relation. Without determinization of that strategy the second
 % (evidence) instantiation of pbessolvesymbolic re-explores the whole game explicitly.
+%
+% Used both on abp, where the lasso is long, and on self_loop.mcrl2, where the self-loop is by
+% itself a winning move so the witness is a single state.
 nu X. <true>X

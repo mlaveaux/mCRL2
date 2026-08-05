@@ -66,11 +66,14 @@ namespace detail
 {
 
 /// \brief Computes the LDD cube for the vertex X, i.e. [index(name), index(param_0), ...].
-/// \returns false if X is unknown to the symbolic exploration, because its name is not in
-///          propvar_map or one of its parameter values is not in data_index; the contents of cube
-///          are then unspecified. Callers must never treat this as grounds for pruning: index()
-///          returns npos for unknown values, which truncates to 0xFFFFFFFF in the cube and merely
-///          makes member_cube return false.
+/// \returns false if X is not a vertex of the symbolic game, because its name is not in propvar_map
+///          or one of its parameter values is not in data_index; the contents of cube are then
+///          unspecified.
+///
+/// If X is the target of an edge, this is expected as the exploration may have been partial, and it
+/// says that the edge is not in the strategy; we shall prune it.
+/// If X is the source it means the two instantiations have
+/// gone out of step, so we have encountered a vertex that was not visited during symbolic exploration, and we must not prune it.
 inline bool vertex_cube(const propositional_variable_instantiation& X,
   const std::vector<symbolic::data_expression_index>& data_index,
   const std::unordered_map<core::identifier_string, data::data_expression>& propvar_map,
@@ -82,14 +85,12 @@ inline bool vertex_cube(const propositional_variable_instantiation& X,
     = propvar_map.find(X.name());
   if (propvar_it == propvar_map.end())
   {
-    mCRL2log(log::debug) << "vertex_cube: " << X.name() << " is unknown to the symbolic exploration" << std::endl;
     return false;
   }
 
   std::size_t name_index = data_index[0].index(propvar_it->second);
   if (name_index == symbolic::data_expression_index::npos)
   {
-    mCRL2log(log::debug) << "vertex_cube: " << X.name() << " is unknown to the symbolic exploration" << std::endl;
     return false;
   }
   cube.push_back(static_cast<std::uint32_t>(name_index));
@@ -100,13 +101,28 @@ inline bool vertex_cube(const propositional_variable_instantiation& X,
     std::size_t param_index = data_index[i].index(param);
     if (param_index == symbolic::data_expression_index::npos)
     {
-      mCRL2log(log::debug) << "vertex_cube: " << X << " has an unknown parameter value" << std::endl;
       return false;
     }
     cube.push_back(static_cast<std::uint32_t>(param_index));
     ++i;
   }
   return true;
+}
+
+/// \brief Interleaves the cubes of two vertices into the cube for the edge between them, i.e.
+///        [index(name_X), index(name_Y), index(param_X_0), index(param_Y_0), ...], which is the
+///        encoding that pbesreach uses for the edge relation and hence for the strategy.
+inline void interleave(const std::vector<std::uint32_t>& X_cube,
+  const std::vector<std::uint32_t>& Y_cube,
+  std::vector<std::uint32_t>& cube)
+{
+  assert(X_cube.size() == Y_cube.size());
+  cube.clear();
+  for (std::size_t i = 0; i < X_cube.size(); ++i)
+  {
+    cube.emplace_back(X_cube[i]);
+    cube.emplace_back(Y_cube[i]);
+  }
 }
 
 } // namespace detail
@@ -221,6 +237,11 @@ public:
     pbes_system::simplify_rewriter simplify;
     pbes_expression reduced;
     simplify(reduced, psi, keep_one_successor_substitution(data_index, propvar_map, chosen, alpha));
+
+    // There should be at least one disjunct / conjunct that
+    // survives to ensure that player alpha wins.
+    assert(alpha == 0 ? !is_false(reduced) : !is_true(reduced));
+
     result = reduced;
   }
 
@@ -301,6 +322,7 @@ private:
   struct rewrite_star_substitution
   {
     mutable std::vector<std::uint32_t> singleton;
+    mutable std::vector<std::uint32_t> Y_cube;
 
     const std::vector<symbolic::data_expression_index>& data_index;
     const std::unordered_map<core::identifier_string, data::data_expression>& propvar_map;
@@ -372,26 +394,17 @@ private:
       if (m_X_is_alpha)
       {
         // Determine whether (X, Y) is in the strategy.
-
-        // Add the propositional variables.
-        singleton.clear();
-        singleton.emplace_back(m_X_cube[0]);
-        singleton.emplace_back(data_index[0].index(propvar_map.at(Y.name())));
-
-        // Add the interleaved data expressions.
-        std::size_t i = 1;
-        auto param_Y_it = Y.parameters().begin();
-
-        for (std::size_t k = 1; k < m_X_cube.size(); ++k)
+        // If Y is not a vertex of the symbolic game,
+        // which happens when the exploration was partial, then it certainly is not: the strategy is
+        // winning within the explored part, so player alpha never needs an edge that leaves it.
+        bool in_strategy = false;
+        if (detail::vertex_cube(Y, data_index, propvar_map, Y_cube))
         {
-          singleton.emplace_back(m_X_cube[k]);
-          singleton.emplace_back(data_index[i].index(*param_Y_it));
-
-          ++param_Y_it;
-          ++i;
+          detail::interleave(m_X_cube, Y_cube, singleton);
+          in_strategy = sylvan::ldds::member_cube(strategy, singleton);
         }
 
-        if (sylvan::ldds::member_cube(strategy, singleton))
+        if (in_strategy)
         {
           // If Y in E0
           mCRL2log(log::debug) << "rewrite_star " << Y << " is reachable" << std::endl;
@@ -552,8 +565,10 @@ protected:
       "run the naive instantiation algorithm for pbes with counter example information");
     desc.add_hidden_option("no-determinize-strategy",
       "do not restrict the strategy to a single successor per vertex during the second "
-      "instantiation. This explores considerably more vertices, but does not rely on every edge "
-      "recorded in the (over-approximated) symbolic strategy being a winning move.");
+      "instantiation. Keeping one successor is sound because every edge that the symbolic solver "
+      "records stays within the winning region, so each of them is a winning move; "
+      "this option explores considerably more vertices and is meant for debugging a failure of "
+      "that invariant.");
   }
 
   void parse_options(const utilities::command_line_parser& parser) override
@@ -939,7 +954,7 @@ void solve(pbes_system::pbes pbesspec,
         if (result != final_result)
         {
           throw mcrl2::runtime_error(
-            "The result of the first and second instantiations do not match, this is a bug in the tool!");
+            "The result of the first and second instantiations do not match, this is a bug in the tool! Please report it.");
         }
       }
     }
