@@ -304,22 +304,9 @@ class bdd_substitution
       sylvan_protect(&m_bdd);
     }
 
-    // TODO: copying is disabled, because it leads to crashes
-    // It's not clear why, because this class is very similar to the class bdd.
-    bdd_substitution(const bdd& other) = delete;
-
-//    explicit bdd_substitution(BDD other)
-//     : m_bdd(other)
-//    {
-//      sylvan_protect(&m_bdd);
-//    }
-//
-//    bdd_substitution(const bdd& other)
-//     : m_bdd(other.m_bdd)
-//    {
-//       sylvan_protect(&m_bdd);
-//    }
-
+    // TODO: copying is disabled, because it leads to crashes It's not clear
+    // why, because this class is very similar to the class bdd.
+    bdd_substitution(const bdd_substitution& other) = delete;
     ~bdd_substitution()
     {
       sylvan_unprotect(&m_bdd);
