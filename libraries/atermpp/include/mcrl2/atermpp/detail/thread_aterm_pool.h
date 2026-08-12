@@ -164,6 +164,11 @@ public:
   /// Triggers a global garbage collection
   inline void collect() { m_pool.collect(m_shared_mutex); }
 
+  /// Returns true iff one of the global hash tables has to be resized.
+  /// \details Only takes a shared lock, as opposed to resize() below, so it can be
+  ///          used to avoid suspending all other threads when no resize is needed.
+  inline bool resize_is_needed() { return m_pool.resize_is_needed(m_shared_mutex); }
+
   /// Resizes the global hash tables when needed.
   inline void resize() { m_pool.resize_if_needed(m_shared_mutex); }
 
