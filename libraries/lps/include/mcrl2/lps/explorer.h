@@ -12,6 +12,7 @@
 #ifndef MCRL2_LPS_EXPLORER_H
 #define MCRL2_LPS_EXPLORER_H
 
+#include <optional>
 #include <random>
 #include <thread>
 #include <type_traits>
@@ -102,7 +103,24 @@ class explorer: public abortable
     mutable std::vector<data::data_expression> timed_state;
 
 #ifdef MCRL2_USE_CONTROL_FLOW
-    std::vector<cf_graph> m_control_flow_graphs;
+    using active_cfg_vertices_type = boost::container::small_vector<std::size_t, 64>;
+
+    // Only initialised when control flow reduction is enabled at runtime, i.e. when m_options.use_control_flow
+    // holds and at least one control flow graph was computed. Empty otherwise, in which case no control flow
+    // information is computed or inspected during exploration.
+    std::optional<std::vector<cf_graph>> m_control_flow_graphs;
+
+    /// \brief Computes the active control flow graph vertices for the state stored in sigma, if control flow
+    ///        reduction is enabled, and returns an empty optional otherwise.
+    std::optional<active_cfg_vertices_type> compute_active_cfg_vertices_if_enabled(
+      const data::mutable_indexed_substitution<>& sigma) const
+    {
+      if (!m_control_flow_graphs)
+      {
+        return std::nullopt;
+      }
+      return compute_active_cfg_vertices<active_cfg_vertices_type>(sigma, m_process_parameters, *m_control_flow_graphs);
+    }
 #endif
 
     Specification preprocess(const Specification& lpsspec)
@@ -389,7 +407,7 @@ class explorer: public abortable
       data::enumerator_algorithm<>& enumerator,
       data::enumerator_identifier_generator& id_generator,
 #ifdef MCRL2_USE_CONTROL_FLOW
-      const boost::container::small_vector<std::size_t, 64>& active_cfg_vertices,
+      const std::optional<active_cfg_vertices_type>& active_cfg_vertices,
 #endif
       ReportTransition report_transition = ReportTransition()
     )
@@ -397,7 +415,7 @@ class explorer: public abortable
       bool variables_are_assigned_to_sigma=false;
 
 #ifdef MCRL2_USE_CONTROL_FLOW
-      if (m_options.use_control_flow && !m_control_flow_graphs.empty() && !cfg_allows_summand(summand.index, m_control_flow_graphs, active_cfg_vertices))
+      if (active_cfg_vertices && !cfg_allows_summand(summand.index, *m_control_flow_graphs, *active_cfg_vertices))
       {
         return;
       }
@@ -638,7 +656,7 @@ class explorer: public abortable
       std::list<transition> transitions;
       data::add_assignments(sigma, m_process_parameters, s);
 #ifdef MCRL2_USE_CONTROL_FLOW
-      auto active_cfg_vertices = compute_active_cfg_vertices(sigma, m_process_parameters, m_control_flow_graphs);
+      auto active_cfg_vertices = compute_active_cfg_vertices_if_enabled(sigma);
 #endif
       for (const explorer_summand& summand: regular_summands)
       {
@@ -696,7 +714,7 @@ class explorer: public abortable
       std::vector<state> result;
       data::add_assignments(sigma, m_process_parameters, s0);
 #ifdef MCRL2_USE_CONTROL_FLOW
-      auto active_cfg_vertices = compute_active_cfg_vertices(sigma, m_process_parameters, m_control_flow_graphs);
+      auto active_cfg_vertices = compute_active_cfg_vertices_if_enabled(sigma);
 #endif
       for (const explorer_summand& summand: summands)
       {
@@ -785,15 +803,24 @@ class explorer: public abortable
         m_discovered(m_options.number_of_threads)
     {
 #ifdef MCRL2_USE_CONTROL_FLOW
+      // The control flow graphs are only computed when the reduction is enabled at runtime.
       if constexpr (!Stochastic)
       {
-        lps::specification control_flow_lpsspec = lpsspec;
-        m_control_flow_graphs = compute_control_flow_graphs(control_flow_lpsspec, stategraph_options, compute_marking);
-        if (mCRL2logEnabled(log::debug))
+        if (m_options.use_control_flow)
         {
-          for (const cf_graph& G: m_control_flow_graphs)
+          lps::specification control_flow_lpsspec = lpsspec;
+          std::vector<cf_graph> graphs = compute_control_flow_graphs(control_flow_lpsspec, stategraph_options, compute_marking);
+          if (mCRL2logEnabled(log::debug))
           {
-            print_graph(G);
+            for (const cf_graph& G: graphs)
+            {
+              print_graph(G);
+            }
+          }
+          // Without any graph there is nothing to restrict, so leave the data structures uninitialised.
+          if (!graphs.empty())
+          {
+            m_control_flow_graphs = std::move(graphs);
           }
         }
       }
@@ -988,7 +1015,7 @@ class explorer: public abortable
       atermpp::aterm key;
       state_type state;
 #ifdef MCRL2_USE_CONTROL_FLOW
-      auto active_cfg_vertices = compute_active_cfg_vertices(sigma, m_process_parameters, m_control_flow_graphs);
+      auto active_cfg_vertices = compute_active_cfg_vertices_if_enabled(sigma);
 #endif
       for (const explorer_summand& summand: m_regular_summands)
       {
@@ -1051,7 +1078,7 @@ class explorer: public abortable
       std::vector<std::pair<lps::multi_action, state_type>> result;
       data::add_assignments(sigma, m_process_parameters, d0);
 #ifdef MCRL2_USE_CONTROL_FLOW
-      auto active_cfg_vertices = compute_active_cfg_vertices(sigma, m_process_parameters, m_control_flow_graphs);
+      auto active_cfg_vertices = compute_active_cfg_vertices_if_enabled(sigma);
 #endif
       generate_transitions(
         m_regular_summands[i],

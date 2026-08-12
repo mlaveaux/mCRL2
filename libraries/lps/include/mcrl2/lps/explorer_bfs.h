@@ -80,7 +80,7 @@ namespace mcrl2::lps
             start_state(thread_index, current_state, s_index);
             data::add_assignments(thread_sigma, m_process_parameters, current_state);
 #ifdef MCRL2_USE_CONTROL_FLOW
-            auto active_cfg_vertices = compute_active_cfg_vertices(thread_sigma, m_process_parameters, m_control_flow_graphs);
+            auto active_cfg_vertices = compute_active_cfg_vertices_if_enabled(thread_sigma);
 #endif
             for (const explorer_summand& summand: regular_summands)
             {   
