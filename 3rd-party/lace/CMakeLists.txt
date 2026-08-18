@@ -116,19 +116,34 @@ foreach(_target lace lace14)
     add_library(${_target})
     add_library(lace::${_target} ALIAS ${_target})
 
+    # The static header lives under src/ and the generated lace_config.h lives
+    # under the build directory. These are kept in two separate file sets
+    # (rather than one FILE_SET with two BASE_DIRS) because CMake requires
+    # that all base directories accumulated for a single file set be disjoint
+    # (no base directory may be a subdirectory of another); depending on how
+    # the source and binary directories are laid out relative to each other,
+    # combining them into one file set can trip that check.
     if(_target STREQUAL "lace")
         target_sources(${_target}
           PRIVATE src/lace.c
           PUBLIC  FILE_SET HEADERS
-                  BASE_DIRS src ${CMAKE_CURRENT_BINARY_DIR}
-                  FILES src/lace.h ${CMAKE_CURRENT_BINARY_DIR}/lace_config.h
+                  BASE_DIRS src
+                  FILES src/lace.h
+          PUBLIC  FILE_SET generated_headers
+                  TYPE HEADERS
+                  BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR}
+                  FILES ${CMAKE_CURRENT_BINARY_DIR}/lace_config.h
         )
     else()
         target_sources(${_target}
           PRIVATE src/lace14.c
           PUBLIC  FILE_SET HEADERS
-                  BASE_DIRS src ${CMAKE_CURRENT_BINARY_DIR}
-                  FILES src/lace14.h ${CMAKE_CURRENT_BINARY_DIR}/lace_config.h
+                  BASE_DIRS src
+                  FILES src/lace14.h
+          PUBLIC  FILE_SET generated_headers
+                  TYPE HEADERS
+                  BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR}
+                  FILES ${CMAKE_CURRENT_BINARY_DIR}/lace_config.h
         )
     endif()
 
@@ -252,7 +267,8 @@ install(TARGETS lace lace14
     ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME       DESTINATION ${CMAKE_INSTALL_BINDIR}
-    FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILE_SET HEADERS           DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILE_SET generated_headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(EXPORT lace-targets
