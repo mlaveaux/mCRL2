@@ -36,7 +36,7 @@ the `University of Twente <http://fmt.cs.utwente.nl>`_.
 
 .. note::
 
-   The latest release, mCRL2 202507.0, is now available from the :ref:`download` page.
+   The latest release, mCRL2 202607.0, is now available from the :ref:`download` page.
    See the `changelog <https://github.com/mCRL2org/mCRL2/blob/master/CHANGES>`_ for a detailed list
    of changes.
 
