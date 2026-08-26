@@ -19,9 +19,11 @@
 #include "mcrl2/data/rewriter_tool.h"
 #include "mcrl2/lps/detail/instantiate_global_variables.h"
 #include "mcrl2/lps/io.h"
+#include "mcrl2/lts/lts_io.h"
 #include "mcrl2/pbes/pbes_input_tool.h"
 #include "mcrl2/pbes/detail/pbes_io.h"
 #include "mcrl2/pbes/detail/pbes_remove_counterexample_info.h"
+#include "mcrl2/pbes/evidence_lts.h"
 #include "mcrl2/pbes/pbesinst_lazy_counter_example.h"
 #include "mcrl2/pbes/pbesinst_structure_graph2.h"
 
@@ -53,19 +55,33 @@ bool run_solve(const pbes_system::pbes& pbesspec,
     lps::specification lpsspec;
     lps::load_lps(lpsspec, lpsfile);
     lps::detail::replace_global_variables(lpsspec, sigma);
-          
-    lps::specification evidence;
-    timer.start("solving");
-    std::tie(result, evidence) = solve_structure_graph_with_counter_example(
-        G, lpsspec, pbesspec, equation_index);
-    timer.finish("solving");
 
-    std::cout << (result ? "true" : "false") << std::endl;
     if (evidence_file.empty())
     {
       evidence_file = input_filename + ".evidence.lps";
     }
-    lps::save_lps(evidence, evidence_file);
+
+    // Guess the requested evidence format from the file extension.
+    lts::lts_type format = lts::detail::guess_format(evidence_file, false);
+    if (format == lts::lts_none)
+    {
+      lps::specification evidence;
+      timer.start("solving");
+      std::tie(result, evidence) = solve_structure_graph_with_counter_example(
+          G, lpsspec, pbesspec, equation_index);
+      timer.finish("solving");
+
+      std::cout << (result ? "true" : "false") << std::endl;
+      lps::save_lps(evidence, evidence_file);
+    }
+    else
+    {
+      timer.start("solving");
+      result = solve_structure_graph_with_evidence_lts(
+          G, lpsspec, pbesspec, equation_index, options.rewrite_strategy, format, evidence_file);
+      timer.finish("solving");
+      std::cout << (result ? "true" : "false") << std::endl;
+    }
     mCRL2log(log::verbose)
         << "Saved " << (result ? "witness" : "counter example") << " in "
         << evidence_file << std::endl;
@@ -75,11 +91,11 @@ bool run_solve(const pbes_system::pbes& pbesspec,
     lts::lts_lts_t ltsspec;
     ltsspec.load(ltsfile);
 
-    lts::lts_lts_t evidence;
     timer.start("solving");
     result = solve_structure_graph_with_counter_example(G, ltsspec);
     timer.finish("solving");
     std::cout << (result ? "true" : "false") << std::endl;
+
     if (evidence_file.empty())
     {
       evidence_file = input_filename + ".evidence.lts";
@@ -141,7 +157,11 @@ class pbessolve_tool
       desc.add_option("evidence-file",
           utilities::make_file_argument("NAME"),
           "The file to which the evidence is written. If not set, a "
-          "default name will be chosen.");
+          "default name will be chosen. If --file is an LPS and NAME has "
+          "a .lts, .aut, .fsm or .dot extension, the evidence is written "
+          "directly as a state space, without an intermediate evidence "
+          "LPS and a separate lps2lts exploration; any other extension "
+          "(or none) writes an evidence LPS, as before.");
       desc.add_option("solve-strategy",
           utilities::make_enum_argument<int>("NAME")
               .add_value_desc(0, "No on-the-fly solving is applied", true)

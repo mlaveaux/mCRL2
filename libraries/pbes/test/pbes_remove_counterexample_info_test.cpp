@@ -62,3 +62,23 @@ BOOST_AUTO_TEST_CASE(test_is_counter_example_positive)
   BOOST_CHECK(!is_counter_example_positive(core::identifier_string("Zneg_0_r1")));
   BOOST_CHECK(!is_counter_example_positive(core::identifier_string("X")));
 }
+
+/// counter_example_index extracts the embedded index, for both Zpos_ and Zneg_ names.
+BOOST_AUTO_TEST_CASE(test_counter_example_index)
+{
+  std::size_t index;
+
+  BOOST_CHECK(counter_example_index(core::identifier_string("Zpos_0_r1"), index));
+  BOOST_CHECK_EQUAL(index, 0u);
+
+  BOOST_CHECK(counter_example_index(core::identifier_string("Zneg_12_c6"), index));
+  BOOST_CHECK_EQUAL(index, 12u);
+
+  BOOST_CHECK(counter_example_index(core::identifier_string("Zpos_3_"), index)); // tau summand
+  BOOST_CHECK_EQUAL(index, 3u);
+
+  for (const char* name: other_names)
+  {
+    BOOST_CHECK(!counter_example_index(core::identifier_string(name), index));
+  }
+}

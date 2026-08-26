@@ -437,6 +437,23 @@ class Pbes2bool_counter_exampleTest(ProcessTest):
         write_text(filename, str(formula))
         self.inputfiles += [filename]
 
+class Pbes2bool_evidence_ltsTest(ProcessTest):
+    def __init__(self, name, optimization, settings):
+        super().__init__(name, ymlfile('pbessolve-evidence-lts'), settings)
+        if optimization in [4, 5]:
+            self.add_command_line_options('t3', [f'-l{optimization}', '--aggressive', '--prune-todo-list'])
+            self.add_command_line_options('t4', [f'-l{optimization}', '--aggressive', '--prune-todo-list'])
+        else:
+            self.add_command_line_options('t3', [f'-l{optimization}', '--prune-todo-list'])
+            self.add_command_line_options('t4', [f'-l{optimization}', '--prune-todo-list'])
+
+    def create_inputfiles(self, runpath = '.'):
+        super().create_inputfiles(runpath)
+        filename = f'{self.name}.mcf'
+        formula = random_state_formula_generator.make_modal_formula()
+        write_text(filename, str(formula))
+        self.inputfiles += [filename]
+
 class Pbes2bool_counter_example_parelmTest(ProcessTest):
     def __init__(self, name, settings):
         super().__init__(name, ymlfile('pbessolve-parelm'), settings)
@@ -564,6 +581,14 @@ available_tests = {
     'pbessolve-counter-example-optimization-5'    : lambda name, settings: Pbes2bool_counter_exampleTest(name, 5, settings)                            ,
     'pbessolve-counter-example-optimization-6'    : lambda name, settings: Pbes2bool_counter_exampleTest(name, 6, settings)                            ,
     'pbessolve-counter-example-optimization-7'    : lambda name, settings: Pbes2bool_counter_exampleTest(name, 7, settings)                            ,
+    'pbessolve-evidence-lts-optimization-0'       : lambda name, settings: Pbes2bool_evidence_ltsTest(name, 0, settings)                                ,
+    'pbessolve-evidence-lts-optimization-1'       : lambda name, settings: Pbes2bool_evidence_ltsTest(name, 1, settings)                                ,
+    'pbessolve-evidence-lts-optimization-2'       : lambda name, settings: Pbes2bool_evidence_ltsTest(name, 2, settings)                                ,
+    'pbessolve-evidence-lts-optimization-3'       : lambda name, settings: Pbes2bool_evidence_ltsTest(name, 3, settings)                                ,
+    'pbessolve-evidence-lts-optimization-4'       : lambda name, settings: Pbes2bool_evidence_ltsTest(name, 4, settings)                                ,
+    'pbessolve-evidence-lts-optimization-5'       : lambda name, settings: Pbes2bool_evidence_ltsTest(name, 5, settings)                                ,
+    'pbessolve-evidence-lts-optimization-6'       : lambda name, settings: Pbes2bool_evidence_ltsTest(name, 6, settings)                                ,
+    'pbessolve-evidence-lts-optimization-7'       : lambda name, settings: Pbes2bool_evidence_ltsTest(name, 7, settings)                                ,
     # Reenable when the issues have been resolved.
     # 'pbessolve-parelm'                            : lambda name, settings: Pbes2bool_counter_example_parelmTest(name, settings)                        ,
     'pbesstategraph'                              : lambda name, settings: PbesstategraphTest(name, settings)                                          ,

@@ -46,6 +46,23 @@ bool is_counter_example_name(const core::identifier_string& name)
   return std::regex_match(name_str, match, positive_or_negative);
 }
 
+/// \brief Extracts the index embedded in a Zpos_<index>_.../Zneg_<index>_... counter example name.
+/// \param name A PBES variable name.
+/// \param index Set to the extracted index if the name matches, left unchanged otherwise.
+/// \return True iff \a name is a counter example name, in which case \a index is updated.
+inline
+bool counter_example_index(const core::identifier_string& name, std::size_t& index)
+{
+  std::smatch match;
+  std::string name_str = name;
+  if (!std::regex_match(name_str, match, positive_or_negative))
+  {
+    return false;
+  }
+  index = std::stoul(match[2]);
+  return true;
+}
+
 inline
 bool is_counter_example_variable(const propositional_variable& X)
 {

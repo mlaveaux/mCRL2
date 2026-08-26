@@ -21,6 +21,83 @@
 
 namespace mcrl2::pbes_system {
 
+namespace detail {
+
+/// \brief Walks the extracted evidence vertex set \a V of a structure graph that was built from
+/// the lps2pbes -c encoding, and calls \a yield once for every Zpos_i/Zneg_i vertex it contains,
+/// with the summand it originates from and the transition it encodes. Shared between the
+/// LPS-evidence and LTS-evidence sinks so they cannot drift apart.
+/// \param yield A callback with signature
+///        void(std::size_t summand_index, const data::data_expression_vector& source,
+///             const lps::multi_action& a, const data::data_expression_vector& target)
+///        where \a source and \a target have lpsspec.process().process_parameters().size() elements,
+///        positionally corresponding to those process parameters.
+template <typename Callback>
+void for_each_evidence_transition(structure_graph& G,
+                                   const std::set<structure_graph::index_type>& V,
+                                   const lps::specification& lpsspec,
+                                   const pbes& p,
+                                   const pbes_equation_index& p_index,
+                                   Callback yield)
+{
+  std::size_t n = lpsspec.process().process_parameters().size();
+
+  for (structure_graph::index_type vi: V)
+  {
+    const auto& v = G.find_vertex(vi);
+    if (!is_propositional_variable_instantiation(v.formula()))
+    {
+      continue;
+    }
+
+    // The variable Z below should be a reference, but this leads to crashes with the GCC compiler (March 2022).
+    // JFG: I think this is a GCC problem, which may resolve itself in due time.
+    const auto Z = atermpp::down_cast<propositional_variable_instantiation>(v.formula());
+    std::size_t summand_index;
+    if (!counter_example_index(Z.name(), summand_index))
+    {
+      continue;
+    }
+
+    if (summand_index >= lpsspec.process().action_summands().size())
+    {
+      throw mcrl2::runtime_error("Counter-example cannot be reconstructed from this LPS. Did you supply the correct file?");
+    }
+
+    // The parameters are [from] + [action_parameters] + [to]
+    const lps::action_summand& summand = lpsspec.process().action_summands().at(summand_index);
+    std::size_t equation_index = p_index.index(Z.name());
+    const pbes_equation& eqn = p.equations().at(equation_index);
+    const data::variable_list& d = eqn.variable().parameters();
+    std::size_t m = d.size() - 2 * n;
+
+    const data::data_expression_list& e = Z.parameters();
+    data::data_expression_vector e1(e.begin(), e.end());
+
+    data::data_expression_vector source(e1.begin(), e1.begin() + static_cast<std::ptrdiff_t>(n));
+    data::data_expression_vector target(e1.begin() + static_cast<std::ptrdiff_t>(n + m), e1.begin() + static_cast<std::ptrdiff_t>(2 * n + m));
+
+    process::action_vector actions;
+    std::size_t index = 0;
+    for (const process::action& a: summand.multi_action().actions())
+    {
+      if (index > e1.size() || index + a.arguments().size() > e1.size())
+      {
+        throw mcrl2::runtime_error("Invalid parameter index");
+      }
+
+      process::action a1(a.label(), data::data_expression_list(e1.begin() + static_cast<std::ptrdiff_t>(n + index), e1.begin() + static_cast<std::ptrdiff_t>(n + index + a.arguments().size())));
+      actions.push_back(a1);
+      index = index + a.arguments().size();
+    }
+
+    lps::multi_action a(process::action_list(actions.begin(), actions.end()), summand.multi_action().time());
+    yield(summand_index, source, a, target);
+  }
+}
+
+} // namespace detail
+
 inline
 std::tuple<std::size_t, std::size_t, vertex_set> get_minmax_rank(const structure_graph& G)
 {
@@ -398,6 +475,25 @@ class solve_structure_graph_algorithm
       mCRL2log(log::debug) << G << std::endl;
       return W;
     }
+
+  protected:
+    // Solves G, and extracts the minimal vertex set that forms the evidence for the computed
+    // solution. Shared preamble of solve_with_counter_example / solve_with_evidence_lts in the
+    // subclasses below.
+    inline
+    std::pair<bool, std::set<structure_graph::index_type>> extract_evidence(structure_graph& G)
+    {
+      mCRL2log(log::verbose) << "Solving parity game..." << std::endl;
+      vertex_set Wconj;
+      vertex_set Wdisj;
+      std::size_t calculation_steps = 0;
+      std::tie(Wdisj, Wconj) = solve_recursive_extended(G, calculation_steps);
+      structure_graph::index_type init = G.initial_vertex();
+
+      mCRL2log(log::verbose) << "Extracting evidence..." << std::endl;
+      std::set<structure_graph::index_type> W = extract_minimal_structure_graph(G, init, Wdisj, Wconj);
+      return { Wdisj.contains(init), W };
+    }
 };
 
 class lps_solve_structure_graph_algorithm: public solve_structure_graph_algorithm
@@ -410,76 +506,36 @@ class lps_solve_structure_graph_algorithm: public solve_structure_graph_algorith
         result.process().action_summands().clear();
         result.process().deadlock_summands().clear();
         auto& action_summands = result.process().action_summands();
-        std::regex re("Z(neg|pos)_(\\d+)_.*");
-        std::size_t n = lpsspec.process().process_parameters().size();
+        const data::variable_list& process_parameters = lpsspec.process().process_parameters();
 
-        for (structure_graph::index_type vi: V)
-        {
-          const auto& v = G.find_vertex(vi);
-          if (is_propositional_variable_instantiation(v.formula()))
+        detail::for_each_evidence_transition(G, V, lpsspec, p, p_index,
+          [&](std::size_t summand_index, const data::data_expression_vector& source, const lps::multi_action& a, const data::data_expression_vector& target)
           {
-            // The variable Z below should be a reference, but this leads to crashes with the GCC compiler (March 2022).
-            // JFG: I think this is a GCC problem, which may resolve itself in due time. 
-            const auto Z = atermpp::down_cast<propositional_variable_instantiation>(v.formula());
-            std::string Zname = Z.name();
-            std::smatch match;
-            if (std::regex_match(Zname, match, re))
+            lps::action_summand summand = lpsspec.process().action_summands().at(summand_index);
+
+            data::data_expression_vector condition;
+            data::assignment_vector next_state_assignments;
+            std::size_t i = 0;
+            for (const data::variable& d_i: process_parameters)
             {
-              std::size_t summand_index = std::stoul(match[2]);
-              if (summand_index >= lpsspec.process().action_summands().size())
-              {
-                throw mcrl2::runtime_error("Counter-example cannot be reconstructed from this LPS. Did you supply the correct file?");
-              }
-
-              // The parameters are [from] + [action_parameters] + [to]
-              lps::action_summand summand = lpsspec.process().action_summands().at(summand_index);
-              std::size_t equation_index = p_index.index(Z.name());
-              const pbes_equation& eqn = p.equations().at(equation_index);
-              const data::variable_list& d = eqn.variable().parameters();
-              data::variable_vector d1(d.begin(), d.end());
-
-              const data::data_expression_list& e = Z.parameters();
-              data::data_expression_vector e1(e.begin(), e.end());
-
-              data::data_expression_vector condition;
-              data::assignment_vector next_state_assignments;
-              std::size_t m = d.size() - 2 * n;
-
-              for (std::size_t i = 0; i < n; i++)
-              {
-                condition.push_back(data::equal_to(d1.at(i), e1.at(i)));
-                next_state_assignments.emplace_back(d1.at(i), e1.at(n + m + i));
-              }
-                
-              process::action_vector actions;
-              std::size_t index = 0;
-              for (const process::action& a: summand.multi_action().actions())
-              {
-                if (index > e1.size() || index + a.arguments().size() > e1.size())
-                {
-                  throw mcrl2::runtime_error("Invalid parameter index");
-                }
-
-                process::action a1(a.label(), data::data_expression_list(e1.begin() + static_cast<std::ptrdiff_t>(n + index), e1.begin() + static_cast<std::ptrdiff_t>(n + index + a.arguments().size())));
-                actions.push_back(a1);
-                index = index + a.arguments().size();
-              }
-
-              summand.summation_variables() = data::variable_list();
-              summand.condition() = data::join_and(condition.begin(), condition.end());
-              summand.multi_action() = lps::multi_action(process::action_list(actions.begin(), actions.end()),summand.multi_action().time());
-              summand.assignments() = data::assignment_list(next_state_assignments.begin(), next_state_assignments.end());
-
-              action_summands.push_back(summand);
+              condition.push_back(data::equal_to(d_i, source.at(i)));
+              next_state_assignments.emplace_back(d_i, target.at(i));
+              i++;
             }
-          }
-        }
+
+            summand.summation_variables() = data::variable_list();
+            summand.condition() = data::join_and(condition.begin(), condition.end());
+            summand.multi_action() = a;
+            summand.assignments() = data::assignment_list(next_state_assignments.begin(), next_state_assignments.end());
+
+            action_summands.push_back(summand);
+          });
 
         if (!check_well_typedness(result))
         {
           throw mcrl2::runtime_error("The counter example LPS is not well typed, either wrong file provided or an internal error occurred.");
         }
-        
+
         return result;
       }
       catch (const std::exception& e)
@@ -508,16 +564,8 @@ class lps_solve_structure_graph_algorithm: public solve_structure_graph_algorith
         throw mcrl2::runtime_error("solve_with_counter_example requires a PBES without global variables.");
       }
 
-      mCRL2log(log::verbose) << "Solving parity game..." << std::endl;
-      vertex_set Wconj;
-      vertex_set Wdisj;
-      std::size_t calculation_steps=0;
-      std::tie(Wdisj, Wconj) = solve_recursive_extended(G, calculation_steps);
-      structure_graph::index_type init = G.initial_vertex();
-
-      mCRL2log(log::verbose) << "Extracting evidence..." << std::endl;
-      std::set<structure_graph::index_type> W = extract_minimal_structure_graph(G, init, Wdisj, Wconj);
-      return { Wdisj.contains(init), create_counter_example_lps(G, W, lpsspec, p, p_index) };
+      auto [is_disjunctive, W] = extract_evidence(G);
+      return { is_disjunctive, create_counter_example_lps(G, W, lpsspec, p, p_index) };
     }
 };
 
@@ -550,9 +598,7 @@ class lts_solve_structure_graph_algorithm: public solve_structure_graph_algorith
     static inline
     void create_counter_example_lts(structure_graph& G, const std::set<structure_graph::index_type>& V, lts::lts_lts_t& ltsspec)
     {
-      std::regex re("Z(neg|pos)_(\\d+)_.*");
-
-      try 
+      try
       {
         std::set<std::size_t> transition_indices;
         for (structure_graph::index_type vi: V)
@@ -561,11 +607,9 @@ class lts_solve_structure_graph_algorithm: public solve_structure_graph_algorith
           if (is_propositional_variable_instantiation(v.formula()))
           {
             const propositional_variable_instantiation& Z = atermpp::down_cast<propositional_variable_instantiation>(v.formula());
-            std::string Zname = Z.name();
-            std::smatch match;
-            if (std::regex_match(Zname, match, re))
+            std::size_t transition_index;
+            if (detail::counter_example_index(Z.name(), transition_index))
             {
-              std::size_t transition_index = std::stoul(match[2]);
               transition_indices.insert(transition_index);
             }
           }
@@ -587,17 +631,9 @@ class lts_solve_structure_graph_algorithm: public solve_structure_graph_algorith
     inline
     bool solve_with_counter_example(structure_graph& G, lts::lts_lts_t& ltsspec)
     {
-      mCRL2log(log::verbose) << "Solving parity game..." << std::endl;
-      vertex_set Wconj;
-      vertex_set Wdisj;
-      std::size_t calculation_steps=0;
-      std::tie(Wdisj, Wconj) = solve_recursive_extended(G, calculation_steps);
-      structure_graph::index_type init = G.initial_vertex();
-
-      mCRL2log(log::verbose) << "Extracting evidence..." << std::endl;
-      std::set<structure_graph::index_type> W = extract_minimal_structure_graph(G, init, Wdisj, Wconj);
+      auto [is_disjunctive, W] = extract_evidence(G);
       create_counter_example_lts(G, W, ltsspec);
-      return Wdisj.contains(init);
+      return is_disjunctive;
     }
 };
 

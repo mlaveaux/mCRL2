@@ -1,0 +1,54 @@
+# Checks that pbessolve's direct evidence-LTS output (--file=*.lps --evidence-file=*.lts) is
+# bisimilar to the evidence obtained via the existing round trip through an evidence LPS.
+
+nodes:
+  l1:
+    type: mcrl2
+  l2:
+    type: mcf
+  l3:
+    type: lps
+  l4:
+    type: pbes
+  l5:
+    type: lts
+  l6:
+    type: lps
+  l7:
+    type: lts
+
+tools:
+  t1:
+    input: [l1]
+    output: [l3]
+    args: []
+    name: mcrl22lps
+  t2:
+    input: [l3, l2]
+    output: [l4]
+    args: [-c]
+    name: lps2pbes
+  t3:
+    input: [l4, l3]
+    output: [l5]
+    args: ['-v']
+    name: pbessolve
+  t4:
+    input: [l4, l3]
+    output: [l6]
+    args: ['-v']
+    name: pbessolve
+  t5:
+    input: [l6]
+    output: [l7]
+    args: []
+    name: lps2lts
+  t6:
+    input: [l7, l5]
+    output: []
+    args: [--equivalence=bisim]
+    name: ltscompare
+
+result: |
+  result = (t3.value['solution'] == t4.value['solution'] and
+            t6.value['result'])
