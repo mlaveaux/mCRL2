@@ -14,9 +14,7 @@
 #include <boost/crc.hpp>
 #include <boost/json/src.hpp>
 
-#include <fstream>
-#include <iomanip>
-#include <sstream>
+#include <string>
 
 #include "mcrl2/data/rewriter.h"
 #include "mcrl2/data/rewriter_tool.h"
@@ -24,7 +22,6 @@
 #include "mcrl2/lps/io.h"
 #include "mcrl2/lps/specification.h"
 #include "mcrl2/utilities/input_tool.h"
-#include "mcrl2/utilities/logger.h"
 
 #include "io_classifier.h"
 #include "mbt_session.h"
@@ -33,33 +30,6 @@ using namespace mcrl2;
 using namespace mcrl2::utilities;
 using namespace mcrl2::utilities::tools;
 using mcrl2::data::tools::rewriter_tool;
-
-namespace
-{
-
-std::string crc32_hex(const std::string& filename)
-{
-  std::ifstream f(filename, std::ios::binary);
-  if (!f)
-  {
-    return "";
-  }
-  boost::crc_32_type crc;
-  char buf[4096];
-  while (f.read(buf, sizeof(buf)))
-  {
-    crc.process_bytes(buf, static_cast<std::size_t>(f.gcount()));
-  }
-  if (f.gcount() > 0)
-  {
-    crc.process_bytes(buf, static_cast<std::size_t>(f.gcount()));
-  }
-  std::ostringstream oss;
-  oss << std::hex << std::setfill('0') << std::setw(8) << crc.checksum();
-  return oss.str();
-}
-
-} // namespace
 
 class mcrl2mbt_tool : public rewriter_tool<input_tool>
 {
@@ -79,7 +49,7 @@ protected:
     desc.add_option("io-file",
       make_optional_argument("FILE", ""),
       "action classification file with 'input'/'output' sections",
-      'i');
+      'f');
   }
 
   void parse_options(const command_line_parser& parser) override
@@ -116,8 +86,11 @@ protected:
     lps::explorer_options options;
     options.number_of_threads = 1;
 
-    // Use the input filename as the LPS identifier and its CRC32 as a cheap integrity hash.
-    mbt_session session(spec, options, rewr, classifier, m_input_filename, crc32_hex(m_input_filename));
+    // Use the input filename as the LPS identifier and its CRC32 as a cheap integrity hash.    
+    boost::crc_32_type result;
+    result.process_bytes(m_input_filename.data(), m_input_filename.size());
+
+    mbt_session session(spec, options, rewr, classifier, m_input_filename, std::to_string(result.checksum()));
     session.connect(m_adapter_url);
     session.run();
     return !session.had_error();

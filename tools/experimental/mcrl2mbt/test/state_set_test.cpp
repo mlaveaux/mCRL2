@@ -75,8 +75,6 @@ static const std::string SPEC_IO = "act inp, outp;\n"
                                    "proc P = inp.P + outp.P;\n"
                                    "init P;\n";
 
-// ─────────────────────────────────────────────────────────────────────────────
-
 BOOST_AUTO_TEST_CASE(reset_to_initial_is_singleton)
 {
   state_set ss = make_state_set(SPEC_INPUT_LOOP);
