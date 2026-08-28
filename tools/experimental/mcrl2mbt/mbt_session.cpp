@@ -257,6 +257,7 @@ void mbt_session::on_output(const mbt_protocol::incoming_message& msg)
       {
         return;
       }
+
       // Find the entry by stable reply-to id (on_reset may have cleared the list already).
       auto found = std::find_if(m_early_outputs.begin(),
         m_early_outputs.end(),
@@ -360,8 +361,6 @@ void mbt_session::on_heartbeat(const mbt_protocol::incoming_message& /*msg*/)
   // Nothing to reply; watchdog was reset by on_message.
 }
 
-// ─── heartbeat timers ─────────────────────────────────────────────────────────
-
 void mbt_session::arm_heartbeat_send_timer()
 {
   m_send_timer.expires_after(std::chrono::milliseconds(m_config.heartbeat_interval_ms));
@@ -415,8 +414,6 @@ void mbt_session::reevaluate_early_set()
     }
   }
 }
-
-// ─── helpers ──────────────────────────────────────────────────────────────────
 
 std::string mbt_session::extract_action(const mbt_protocol::incoming_message& msg)
 {

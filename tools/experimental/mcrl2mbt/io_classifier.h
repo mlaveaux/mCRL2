@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <istream>
 #include <set>
 #include <string>
 
@@ -38,6 +39,10 @@ public:
   /// \brief Load classifications from a file.
   /// \throws std::runtime_error on I/O or parse error.
   void load(const std::string& filename);
+
+  /// \brief Read classifications from an input stream.
+  /// \throws std::runtime_error on I/O or parse error.
+  void read(std::istream& input);
 
   /// \brief Classify an action by its label name.
   action_type classify(const std::string& action_name) const;

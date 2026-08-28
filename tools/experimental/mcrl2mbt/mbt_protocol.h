@@ -50,8 +50,6 @@ enum class error_code
 
 std::string_view to_string(error_code code);
 
-// ─── Outgoing (tool → adapter) ────────────────────────────────────────────────
-
 /// \brief First message sent by the tool after connecting.
 json::object make_hello(const std::string& lps_identifier, const std::string& lps_hash);
 

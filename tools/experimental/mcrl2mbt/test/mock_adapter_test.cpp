@@ -37,14 +37,10 @@ using tcp = net::ip::tcp;
 
 using namespace mcrl2;
 
-// ─── Minimal LPS used by the test session ─────────────────────────────────────
-
 // Single output action looping; "out" is classified as output.
 static const std::string SPEC_TEXT = "act out;\n"
                                      "proc P = out.P;\n"
                                      "init P;\n";
-
-// ─── Sync mock adapter (runs in its own thread) ───────────────────────────────
 
 /// Describes the sequence of assertions and replies the mock adapter performs.
 struct mock_adapter_result
@@ -142,8 +138,6 @@ static mock_adapter_result run_mock_adapter(tcp::acceptor& acceptor)
 
   return result;
 }
-
-// ─── Test case ───────────────────────────────────────────────────────────────
 
 BOOST_AUTO_TEST_CASE(mock_adapter_round_trip)
 {

@@ -25,6 +25,11 @@ void io_classifier::load(const std::string& filename)
     throw mcrl2::runtime_error("cannot open action classification file: " + filename);
   }
 
+  read(file);
+}
+
+void io_classifier::read(std::istream& input)
+{
   enum class section
   {
     none,
@@ -34,7 +39,7 @@ void io_classifier::load(const std::string& filename)
   section current = section::none;
   std::string line;
 
-  while (std::getline(file, line))
+  while (std::getline(input, line))
   {
     // Strip comments and trailing whitespace
     const std::size_t hash = line.find('#');
@@ -83,10 +88,12 @@ io_classifier::action_type io_classifier::classify(const std::string& action_nam
   {
     return action_type::input;
   }
+
   if (m_outputs.contains(action_name))
   {
     return action_type::output;
   }
+  
   return action_type::internal;
 }
 

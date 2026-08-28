@@ -18,8 +18,6 @@
 namespace mcrl2
 {
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
-
 /// \brief Return true when the multi-action represents an internal (tau) step.
 static bool is_tau(const lps::multi_action& action)
 {
@@ -31,12 +29,12 @@ static std::string first_label(const lps::multi_action& action)
 {
   return std::string(action.actions().front().label().name());
 }
-/// rief The full wire-format label: lps::pp(), matching what adapters send.
+
+/// \brief The full wire-format label: lps::pp(), matching what adapters send.
 static std::string wire_label(const lps::multi_action& action)
 {
   return lps::pp(action);
 }
-// ─── state_set ────────────────────────────────────────────────────────────────
 
 state_set::state_set(const lps::specification& spec, const lps::explorer_options& options, const data::rewriter& rewr)
   : m_rewr(rewr),

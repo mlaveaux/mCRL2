@@ -11,20 +11,6 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include <sstream>
-
-// Write a temporary file containing the given text and return its path.
-static std::string write_temp(const std::string& content)
-{
-  char tmpl[] = "/tmp/mbt_test_XXXXXX";
-  const int fd = mkstemp(tmpl);
-  BOOST_REQUIRE(fd >= 0);
-  const std::string path(tmpl);
-  ::write(fd, content.data(), content.size());
-  ::close(fd);
-  return path;
-}
-
-#include <fstream>
 #include <unistd.h>
 
 // Pull the implementation directly (no separate library target needed).
@@ -41,10 +27,9 @@ BOOST_AUTO_TEST_CASE(classify_basic)
                               "  display_message\n"
                               "  eject_card\n";
 
-  const std::string path = write_temp(content);
   io_classifier cls;
-  cls.load(path);
-  std::remove(path.c_str());
+  std::istringstream input(content);
+  cls.read(input);
 
   BOOST_CHECK(cls.classify("button_press") == io_classifier::action_type::input);
   BOOST_CHECK(cls.classify("pin_enter") == io_classifier::action_type::input);
@@ -62,10 +47,9 @@ BOOST_AUTO_TEST_CASE(classify_comments_and_blank_lines)
                               "output\n"
                               "  b\n";
 
-  const std::string path = write_temp(content);
+  std::istringstream input2(content);
   io_classifier cls;
-  cls.load(path);
-  std::remove(path.c_str());
+  cls.read(input2);
 
   BOOST_CHECK(cls.classify("a") == io_classifier::action_type::input);
   BOOST_CHECK(cls.classify("b") == io_classifier::action_type::output);
@@ -74,28 +58,26 @@ BOOST_AUTO_TEST_CASE(classify_comments_and_blank_lines)
 BOOST_AUTO_TEST_CASE(classify_action_before_section_throws)
 {
   const std::string content = "stray_action\ninput\n  a\n";
-  const std::string path = write_temp(content);
+  std::istringstream input3(content);
   io_classifier cls;
-  BOOST_CHECK_THROW(cls.load(path), mcrl2::runtime_error);
-  std::remove(path.c_str());
+  BOOST_CHECK_THROW(cls.read(input3), mcrl2::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE(classify_empty_file)
 {
-  const std::string path = write_temp("");
+  const std::string content = "";
+  std::istringstream input4(content);
   io_classifier cls;
-  BOOST_CHECK_NO_THROW(cls.load(path));
+  BOOST_CHECK_NO_THROW(cls.read(input4));
   BOOST_CHECK(cls.classify("anything") == io_classifier::action_type::internal);
-  std::remove(path.c_str());
 }
 
 BOOST_AUTO_TEST_CASE(is_input_is_output_helpers)
 {
   const std::string content = "input\n  i\noutput\n  o\n";
-  const std::string path = write_temp(content);
+  std::istringstream input5(content);
   io_classifier cls;
-  cls.load(path);
-  std::remove(path.c_str());
+  cls.read(input5);
 
   BOOST_CHECK(cls.is_input("i"));
   BOOST_CHECK(!cls.is_input("o"));
