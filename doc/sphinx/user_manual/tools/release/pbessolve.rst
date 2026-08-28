@@ -32,7 +32,7 @@ encoded into the PBES using special PBES variables, whose structure must be pres
 transformations applied to the PBES. In particular, transformations such as `pbesparelm` create a
 PBES that is no longer suitable for counter example generation.
 
-Alternative, the two-step recipe that yields a `.lps` remains available, for
+Alternatively, the two-step recipe that yields a `.lps` remains available, for
 instance to inspect the evidence as an LPS before exploring it::
 
    mcrl22lps abp.mcrl2 abp.lps

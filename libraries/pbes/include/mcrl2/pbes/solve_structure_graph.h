@@ -73,6 +73,11 @@ void for_each_evidence_transition(structure_graph& G,
 
     const data::data_expression_list& e = Z.parameters();
     data::data_expression_vector e1(e.begin(), e.end());
+    
+    if (e1.size() < 2 * n + m)
+    {
+      throw mcrl2::runtime_error("Invalid parameter list size");
+    }
 
     data::data_expression_vector source(e1.begin(), e1.begin() + static_cast<std::ptrdiff_t>(n));
     data::data_expression_vector target(e1.begin() + static_cast<std::ptrdiff_t>(n + m), e1.begin() + static_cast<std::ptrdiff_t>(2 * n + m));
@@ -81,7 +86,7 @@ void for_each_evidence_transition(structure_graph& G,
     std::size_t index = 0;
     for (const process::action& a: summand.multi_action().actions())
     {
-      if (index > e1.size() || index + a.arguments().size() > e1.size())
+      if (n + index > e1.size() || n + index + a.arguments().size() > e1.size())
       {
         throw mcrl2::runtime_error("Invalid parameter index");
       }
