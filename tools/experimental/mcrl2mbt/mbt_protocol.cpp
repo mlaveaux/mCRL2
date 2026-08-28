@@ -54,10 +54,13 @@ std::string_view to_string(error_code code)
 json::object make_hello(const std::string& lps_identifier, const std::string& lps_hash)
 {
   return {{"type", "hello"},
+    {"role", "mbt_tool"},
     {"id", next_id()},
-    {"lps_identifier", lps_identifier},
-    {"lps_hash", lps_hash},
-    {"protocol_version", "0.2"}};
+    {"protocol_version", "0.2"},
+    // TODO: mCRL2 version
+    {"tool", {{"name", "mbt_tool"}, {"version", "0.2"}}},
+    {"lps", {{"identifier", lps_identifier}, {"hash", lps_hash}}}
+  };
 }
 
 json::object make_heartbeat()

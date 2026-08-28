@@ -147,6 +147,16 @@ void mbt_session::on_hello_response(const mbt_protocol::incoming_message& msg)
       return;
     }
 
+    const std::string role = json::value_to<std::string>(*msg.payload.if_contains("role"));
+    if (role != "adapter")
+    {
+      m_had_error = true;
+      m_client.send(mbt_protocol::make_error_no_id(mbt_protocol::error_code::protocol_mismatch,
+        "unexpected role: " + role));
+      m_client.close("protocol mismatch");
+      return;
+    }
+
     const std::string ver = json::value_to<std::string>(*ver_val);
     if (ver != "0.2")
     {
@@ -392,8 +402,6 @@ void mbt_session::arm_heartbeat_recv_watchdog()
       m_client.close("heartbeat timeout");
     });
 }
-
-// ─── early set ────────────────────────────────────────────────────────────────
 
 void mbt_session::reevaluate_early_set()
 {
