@@ -45,10 +45,6 @@ This package is currently maintained by Kevin Jilissen.
    On macOS Silicon (ARM64), the mCRL2 app must be manually signed by executing the following command, assuming that it is located in the `/Applications/` directory::
 
    $ sudo codesign --force --deep -s - /Applications/mCRL2.app
-
-.. warning::
-
-   On Windows, mCRL2 tools occasionally get stuck trying to read .aut files. This has been resolved in later Nightly builds.
    
 
 Nightly build
