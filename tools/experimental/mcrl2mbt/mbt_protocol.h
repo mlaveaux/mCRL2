@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <optional>
 #include <stdexcept>
@@ -22,6 +23,39 @@ namespace json = boost::json;
 
 namespace mcrl2::mbt_protocol
 {
+
+/// \brief A single action on the wire: a name plus canonicalised argument strings.
+struct wire_action
+{
+  std::string name;
+  std::vector<std::string> args;
+
+  bool operator==(const wire_action& other) const = default;
+  bool operator<(const wire_action& other) const
+  {
+    if (name != other.name)
+    {
+      return name < other.name;
+    }
+    return args < other.args;
+  }
+};
+
+/// \brief A multi-action on the wire: a multiset of actions (vector for serialisation order).
+using wire_multi_action = std::vector<wire_action>;
+
+/// \brief Sort a wire_multi_action into canonical order (by name, then args).
+inline wire_multi_action normalize(wire_multi_action ma)
+{
+  std::sort(ma.begin(), ma.end());
+  return ma;
+}
+
+/// \brief Serialise a wire_multi_action to a JSON array.
+json::array to_json(const wire_multi_action& ma);
+
+/// \brief Deserialise a wire_multi_action from a JSON array.  Normalises order.
+wire_multi_action from_json(const json::array& arr);
 
 using message_id = std::uint64_t;
 
@@ -71,8 +105,8 @@ json::object make_error_no_id(error_code code, std::string_view detail = "");
 
 /// \brief Reply to get_enabled.
 json::object make_enabled(message_id in_reply_to,
-  const std::vector<std::string>& inputs,
-  const std::vector<std::string>& outputs,
+  const std::vector<wire_multi_action>& inputs,
+  const std::vector<wire_multi_action>& outputs,
   bool quiescence);
 
 /// \brief Reply to reset.

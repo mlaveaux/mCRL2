@@ -23,6 +23,60 @@ static message_id next_id()
   return s_next_id.fetch_add(1, std::memory_order_relaxed);
 }
 
+json::array to_json(const wire_multi_action& ma)
+{
+  json::array arr;
+  for (const auto& act: ma)
+  {
+    json::object obj{{"name", act.name}};
+    json::array args_arr;
+    for (const auto& arg: act.args)
+    {
+      args_arr.push_back(json::value(arg));
+    }
+    obj["args"] = std::move(args_arr);
+    arr.push_back(std::move(obj));
+  }
+  return arr;
+}
+
+wire_multi_action from_json(const json::array& arr)
+{
+  wire_multi_action ma;
+  ma.reserve(arr.size());
+  for (const auto& val: arr)
+  {
+    if (!val.is_object())
+    {
+      throw std::runtime_error("expected a JSON object in multi_action array");
+    }
+    const json::object& obj = val.as_object();
+    const json::value* name_val = obj.if_contains("name");
+    if (name_val == nullptr || !name_val->is_string())
+    {
+      throw std::runtime_error("action object missing or non-string 'name' field");
+    }
+    wire_action act;
+    act.name = json::value_to<std::string>(*name_val);
+
+    const json::value* args_val = obj.if_contains("args");
+    if (args_val != nullptr && args_val->is_array())
+    {
+      for (const auto& arg: args_val->as_array())
+      {
+        if (!arg.is_string())
+        {
+          throw std::runtime_error("expected string in 'args' array");
+        }
+        act.args.push_back(json::value_to<std::string>(arg));
+      }
+    }
+
+    ma.push_back(std::move(act));
+  }
+  return normalize(std::move(ma));
+}
+
 std::string_view to_string(error_code code)
 {
   switch (code)
@@ -107,19 +161,19 @@ json::object make_error_no_id(error_code code, std::string_view detail)
 }
 
 json::object make_enabled(message_id in_reply_to,
-  const std::vector<std::string>& inputs,
-  const std::vector<std::string>& outputs,
+  const std::vector<wire_multi_action>& inputs,
+  const std::vector<wire_multi_action>& outputs,
   bool quiescence)
 {
   json::array input_arr;
-  for (const auto& s: inputs)
+  for (const auto& ma: inputs)
   {
-    input_arr.push_back(json::value(s));
+    input_arr.push_back(to_json(ma));
   }
   json::array output_arr;
-  for (const auto& s: outputs)
+  for (const auto& ma: outputs)
   {
-    output_arr.push_back(json::value(s));
+    output_arr.push_back(to_json(ma));
   }
 
   return {{"type", "enabled"},

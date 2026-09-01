@@ -66,3 +66,46 @@ BOOST_AUTO_TEST_CASE(ids_are_unique)
   const auto b = make_heartbeat();
   BOOST_CHECK(json::value_to<message_id>(a.at("id")) != json::value_to<message_id>(b.at("id")));
 }
+
+BOOST_AUTO_TEST_CASE(to_json_and_from_json_round_trip)
+{
+  const wire_action a{"a", {"3"}};
+  const wire_action b{"b", {"true"}};
+  const wire_multi_action ma{a, b};
+  const json::array arr = to_json(ma);
+  const auto parsed = from_json(arr);
+  BOOST_CHECK(parsed == ma);
+}
+
+BOOST_AUTO_TEST_CASE(from_json_normalises_order)
+{
+  // Unsorted wire order is normalised by from_json.
+  const json::array arr = json::parse(
+    R"([{"name":"b","args":["true"]},{"name":"a","args":["3"]}])").as_array();
+  const auto parsed = from_json(arr);
+  BOOST_REQUIRE_EQUAL(parsed.size(), 2u);
+  BOOST_CHECK_EQUAL(parsed[0].name, "a");
+  BOOST_CHECK_EQUAL(parsed[1].name, "b");
+}
+
+BOOST_AUTO_TEST_CASE(make_enabled_uses_wire_multiactions)
+{
+  const std::vector<wire_multi_action> inputs{wire_multi_action{wire_action{"a", {"1"}}}};
+  const std::vector<wire_multi_action> outputs{wire_multi_action{wire_action{"b", {"true"}}}};
+  const auto msg = make_enabled(7, inputs, outputs, false);
+
+  const auto& in_arr = msg.at("inputs").as_array();
+  BOOST_REQUIRE_EQUAL(in_arr.size(), 1u);
+  const auto& in_ma = in_arr[0].as_array();
+  BOOST_REQUIRE_EQUAL(in_ma.size(), 1u);
+  BOOST_CHECK_EQUAL(json::value_to<std::string>(in_ma[0].as_object().at("name")), "a");
+  const auto& args = in_ma[0].as_object().at("args").as_array();
+  BOOST_REQUIRE_EQUAL(args.size(), 1u);
+  BOOST_CHECK_EQUAL(json::value_to<std::string>(args[0]), "1");
+
+  const auto& out_arr = msg.at("outputs").as_array();
+  BOOST_REQUIRE_EQUAL(out_arr.size(), 1u);
+  const auto& out_ma = out_arr[0].as_array();
+  BOOST_REQUIRE_EQUAL(out_ma.size(), 1u);
+  BOOST_CHECK_EQUAL(json::value_to<std::string>(out_ma[0].as_object().at("name")), "b");
+}

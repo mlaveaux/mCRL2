@@ -79,8 +79,8 @@ private:
   /// \brief Process early outputs that may now be enabled after S changed.
   void reevaluate_early_set();
 
-  /// \brief Parse "multi_action" string from a message payload.
-  static std::string extract_action(const mbt_protocol::incoming_message& msg);
+  /// \brief Parse "multi_action" from a message payload as a wire representation.
+  static mbt_protocol::wire_multi_action extract_action(const mbt_protocol::incoming_message& msg);
 
   net::io_context m_ioc{1}; // must be declared before m_client and the timers
   mbt_client m_client;
@@ -98,7 +98,7 @@ private:
 
   struct early_entry
   {
-    std::string label;
+    mbt_protocol::wire_multi_action label;
     mbt_protocol::message_id reply_to;
     net::steady_timer timer;
   };

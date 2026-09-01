@@ -19,6 +19,12 @@
 
 using namespace mcrl2;
 
+// Helper: construct a single-action wire multi-action with no arguments.
+static mbt_protocol::wire_multi_action single_action(const std::string& name)
+{
+  return mbt_protocol::wire_multi_action{{{name, {}}}};
+}
+
 // Helper: construct a state_set from an inline LPS spec.
 static state_set make_state_set(const std::string& spec_text)
 {
@@ -86,14 +92,14 @@ BOOST_AUTO_TEST_CASE(is_action_enabled_true)
 {
   state_set ss = make_state_set(SPEC_INPUT_LOOP);
   ss.reset_to_initial();
-  BOOST_CHECK(ss.is_action_enabled("a", 0));
+  BOOST_CHECK(ss.is_action_enabled(single_action("a"), 0));
 }
 
 BOOST_AUTO_TEST_CASE(is_action_enabled_false_wrong_label)
 {
   state_set ss = make_state_set(SPEC_INPUT_LOOP);
   ss.reset_to_initial();
-  BOOST_CHECK(!ss.is_action_enabled("z", 0));
+  BOOST_CHECK(!ss.is_action_enabled(single_action("z"), 0));
 }
 
 BOOST_AUTO_TEST_CASE(is_action_enabled_via_tau)
@@ -101,16 +107,16 @@ BOOST_AUTO_TEST_CASE(is_action_enabled_via_tau)
   state_set ss = make_state_set(SPEC_TAU_THEN_A);
   ss.reset_to_initial();
   // With depth 0: no tau closure — 'a' is not enabled from P(false).
-  BOOST_CHECK(!ss.is_action_enabled("a", 0));
+  BOOST_CHECK(!ss.is_action_enabled(single_action("a"), 0));
   // With depth 1: follows the tau to P(true) — 'a' becomes enabled.
-  BOOST_CHECK(ss.is_action_enabled("a", 1));
+  BOOST_CHECK(ss.is_action_enabled(single_action("a"), 1));
 }
 
 BOOST_AUTO_TEST_CASE(apply_action_enabled_returns_true)
 {
   state_set ss = make_state_set(SPEC_INPUT_LOOP);
   ss.reset_to_initial();
-  BOOST_CHECK(ss.apply_action("a", 0));
+  BOOST_CHECK(ss.apply_action(single_action("a"), 0));
   BOOST_CHECK_EQUAL(ss.size(), 1u); // still one state (loop)
 }
 
@@ -118,7 +124,7 @@ BOOST_AUTO_TEST_CASE(apply_action_disabled_returns_false)
 {
   state_set ss = make_state_set(SPEC_INPUT_LOOP);
   ss.reset_to_initial();
-  BOOST_CHECK(!ss.apply_action("z", 0));
+  BOOST_CHECK(!ss.apply_action(single_action("z"), 0));
   // S must remain unchanged.
   BOOST_CHECK_EQUAL(ss.size(), 1u);
 }
@@ -131,8 +137,10 @@ BOOST_AUTO_TEST_CASE(get_enabled_classifies_input_and_output)
   const auto result = ss.get_enabled(0, cls);
   BOOST_REQUIRE_EQUAL(result.inputs.size(), 1u);
   BOOST_REQUIRE_EQUAL(result.outputs.size(), 1u);
-  BOOST_CHECK_EQUAL(result.inputs[0], "inp");
-  BOOST_CHECK_EQUAL(result.outputs[0], "outp");
+  BOOST_REQUIRE_EQUAL(result.inputs[0].size(), 1u);
+  BOOST_REQUIRE_EQUAL(result.outputs[0].size(), 1u);
+  BOOST_CHECK_EQUAL(result.inputs[0][0].name, "inp");
+  BOOST_CHECK_EQUAL(result.outputs[0][0].name, "outp");
   BOOST_CHECK(!result.quiescence); // output present — not quiescent
 }
 
@@ -170,7 +178,7 @@ BOOST_AUTO_TEST_CASE(tau_depth_zero_does_not_expand)
   // only reachable after a tau step.
   state_set ss = make_state_set(SPEC_TAU_THEN_A);
   ss.reset_to_initial();
-  BOOST_CHECK(!ss.apply_action("a", 0));
+  BOOST_CHECK(!ss.apply_action(single_action("a"), 0));
 }
 
 BOOST_AUTO_TEST_CASE(tau_depth_one_follows_tau_edge)
@@ -178,5 +186,38 @@ BOOST_AUTO_TEST_CASE(tau_depth_one_follows_tau_edge)
   state_set ss = make_state_set(SPEC_TAU_THEN_A);
   ss.reset_to_initial();
   // With depth 1, apply_action succeeds by first following the tau.
-  BOOST_CHECK(ss.apply_action("a", 1));
+  BOOST_CHECK(ss.apply_action(single_action("a"), 1));
+}
+
+// LPS: a multi-action with two actions a and b (a synchronous multi-action).
+static const std::string SPEC_MULTI_ACTION = "act a, b;\n"
+                                             "proc P = (a | b).P;\n"
+                                             "init P;\n";
+
+BOOST_AUTO_TEST_CASE(multi_action_enabled_in_any_order)
+{
+  state_set ss = make_state_set(SPEC_MULTI_ACTION);
+  ss.reset_to_initial();
+  // The multiset has {a, b}; order in the wire label is not significant.
+  const mbt_protocol::wire_multi_action ab{mbt_protocol::wire_action{"b", {}}, mbt_protocol::wire_action{"a", {}}}; // order reversed vs stored
+  const mbt_protocol::wire_multi_action ba{mbt_protocol::wire_action{"a", {}}, mbt_protocol::wire_action{"b", {}}}; // canonical order
+  BOOST_CHECK(ss.is_action_enabled(ab, 0));
+  BOOST_CHECK(ss.is_action_enabled(ba, 0));
+  BOOST_CHECK(!ss.is_action_enabled(single_action("a"), 0)); // partial multiset does not match
+  BOOST_CHECK(ss.apply_action(ab, 0));
+}
+
+BOOST_AUTO_TEST_CASE(wire_label_rewrites_arguments)
+{
+  // P(x) emits a(x+1); the wire argument should be the rewritten normal form.
+  state_set ss = make_state_set("act a: Nat;\n"
+                                "proc P(x: Nat) = a(x + 1).P(x);\n"
+                                "init P(0);\n");
+  ss.reset_to_initial();
+  const auto enabled = ss.get_enabled(0, make_classifier({}, {"a"}));
+  BOOST_REQUIRE_EQUAL(enabled.outputs.size(), 1u);
+  BOOST_REQUIRE_EQUAL(enabled.outputs[0].size(), 1u);
+  BOOST_CHECK_EQUAL(enabled.outputs[0][0].name, "a");
+  BOOST_REQUIRE_EQUAL(enabled.outputs[0][0].args.size(), 1u);
+  BOOST_CHECK_EQUAL(enabled.outputs[0][0].args[0], "1"); // 0+1 rewritten to 1
 }
