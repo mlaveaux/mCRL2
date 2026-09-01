@@ -117,7 +117,6 @@ void mbt_client::close(std::string_view reason)
   m_closing = true;
   websocket::close_reason cr{websocket::close_code::normal};
   cr.reason.assign(reason.data(), reason.size());
-  // Use async_close so we never block inside an async handler.
   m_ws.async_close(cr,
     [](beast::error_code ec)
     {
@@ -125,8 +124,6 @@ void mbt_client::close(std::string_view reason)
       {
         mCRL2log(log::warning) << "WebSocket close error: " << ec.message() << std::endl;
       }
-      // The pending async_read will complete with websocket::error::closed and
-      // stop the io_context in on_read.
     });
 }
 

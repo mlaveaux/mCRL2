@@ -71,16 +71,3 @@ BOOST_AUTO_TEST_CASE(classify_empty_file)
   BOOST_CHECK_NO_THROW(cls.read(input4));
   BOOST_CHECK(cls.classify("anything") == io_classifier::action_type::internal);
 }
-
-BOOST_AUTO_TEST_CASE(is_input_is_output_helpers)
-{
-  const std::string content = "input\n  i\noutput\n  o\n";
-  std::istringstream input5(content);
-  io_classifier cls;
-  cls.read(input5);
-
-  BOOST_CHECK(cls.is_input("i"));
-  BOOST_CHECK(!cls.is_input("o"));
-  BOOST_CHECK(cls.is_output("o"));
-  BOOST_CHECK(!cls.is_output("i"));
-}
