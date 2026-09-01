@@ -72,7 +72,6 @@ void state_set::reset_to_initial()
 
 std::vector<lps::state> state_set::tau_closure(const std::vector<lps::state>& seeds, std::size_t depth)
 {
-  // BFS over tau edges; track visited states to avoid cycles.
   std::vector<lps::state> result = seeds;
   std::unordered_set<lps::state> visited(seeds.begin(), seeds.end());
 
@@ -158,7 +157,7 @@ state_set::enabled_actions state_set::get_enabled(std::size_t tau_depth, const i
 
   for (const lps::state& s: tau_closed_states(tau_depth))
   {
-    bool quiescent = true; // innocent until a tau or output edge is found
+    bool quiescent = true;
 
     for (const auto& edge: m_explorer.out_edges(s))
     {
@@ -168,8 +167,8 @@ state_set::enabled_actions state_set::get_enabled(std::size_t tau_depth, const i
         continue;
       }
 
-      const std::string name = first_label(edge.action); // for io classification
-      const auto wire = wire_label(edge.action); // label returned on wire
+      const std::string name = first_label(edge.action);
+      const auto wire = wire_label(edge.action);
       const auto type = classifier.classify(name);
 
       if (type == io_classifier::action_type::input && std::find(seen_inputs.begin(), seen_inputs.end(), wire) == seen_inputs.end())
@@ -189,7 +188,6 @@ state_set::enabled_actions state_set::get_enabled(std::size_t tau_depth, const i
     if (quiescent)
     {
       result.quiescence = true;
-      // Keep iterating — other states may still contribute inputs/outputs.
     }
   }
 

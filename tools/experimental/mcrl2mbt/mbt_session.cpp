@@ -251,7 +251,6 @@ void mbt_session::on_output(const mbt_protocol::incoming_message& msg)
 
   if (m_config.early_output_timeout_ms == 0)
   {
-    // Timeout zero: immediately expire (fire error inline, no timer needed).
     m_client.send(mbt_protocol::make_error(reply_to,
       mbt_protocol::error_code::output_unprocessed,
       json::serialize(mbt_protocol::to_json(label))));
@@ -261,7 +260,6 @@ void mbt_session::on_output(const mbt_protocol::incoming_message& msg)
   m_early_outputs.push_back({label, reply_to, net::steady_timer{m_ioc}});
   auto it = std::prev(m_early_outputs.end());
   it->timer.expires_after(std::chrono::milliseconds(m_config.early_output_timeout_ms));
-  // Capture by value so this handler is safe even if the list is reorganised.
   const mbt_protocol::message_id id_copy = reply_to;
   const mbt_protocol::wire_multi_action label_copy = label;
   it->timer.async_wait(
@@ -272,13 +270,12 @@ void mbt_session::on_output(const mbt_protocol::incoming_message& msg)
         return;
       }
 
-      // Find the entry by stable reply-to id (on_reset may have cleared the list already).
       auto found = std::find_if(m_early_outputs.begin(),
         m_early_outputs.end(),
         [id_copy](const early_entry& e) { return e.reply_to == id_copy; });
       if (found == m_early_outputs.end())
       {
-        return; // Removed by on_reset before this handler ran.
+        return;
       }
       m_client.send(mbt_protocol::make_error(id_copy,
         mbt_protocol::error_code::output_unprocessed,
@@ -423,7 +420,7 @@ void mbt_session::reevaluate_early_set()
         m_client.send(mbt_protocol::make_ack(it->reply_to, "output"));
         m_early_outputs.erase(it);
         found = true;
-        break; // restart scan from the beginning
+        break;
       }
     }
   }

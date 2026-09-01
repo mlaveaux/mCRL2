@@ -86,7 +86,7 @@ protected:
     lps::explorer_options options;
     options.number_of_threads = 1;
 
-    // Use the input filename as the LPS identifier and its CRC32 as a cheap integrity hash.    
+    // Use the input filename as the LPS identifier and its CRC32 as a cheap integrity hash.
     boost::crc_32_type result;
     result.process_bytes(m_input_filename.data(), m_input_filename.size());
 
