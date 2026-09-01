@@ -85,7 +85,9 @@ static mock_adapter_result run_mock_adapter(tcp::acceptor& acceptor)
     BOOST_REQUIRE_EQUAL(json::value_to<std::string>(msg.at("type")), "hello");
     BOOST_REQUIRE(msg.contains("protocol_version"));
     BOOST_REQUIRE_EQUAL(json::value_to<std::string>(msg.at("protocol_version")), "0.2");
-    BOOST_REQUIRE(msg.contains("lps_hash"));
+    BOOST_REQUIRE(msg.contains("lps"));
+    BOOST_REQUIRE(msg.at("lps").is_object());
+    BOOST_REQUIRE(msg.at("lps").as_object().contains("hash"));
     result.hello_received = true;
   }
 
@@ -93,6 +95,7 @@ static mock_adapter_result run_mock_adapter(tcp::acceptor& acceptor)
   {
     json::object reply;
     reply["type"] = "hello";
+    reply["role"] = "adapter";
     reply["protocol_version"] = "0.2";
     reply["config"] = json::object{{"tau_closure_depth", json::value(static_cast<std::int64_t>(0))},
       {"early_output_timeout_ms", json::value(static_cast<std::int64_t>(0))},
@@ -111,6 +114,13 @@ static mock_adapter_result run_mock_adapter(tcp::acceptor& acceptor)
     const auto resp = ws_recv(ws);
     BOOST_REQUIRE(resp.contains("type"));
     BOOST_REQUIRE_EQUAL(json::value_to<std::string>(resp.at("type")), "enabled");
+    BOOST_REQUIRE(resp.contains("outputs"));
+    BOOST_REQUIRE(resp.at("outputs").is_array());
+    BOOST_REQUIRE(resp.at("outputs").as_array().size() >= 1u);
+    // Each output is a wire multi-action array.
+    const auto& ma = resp.at("outputs").as_array()[0].as_array();
+    BOOST_REQUIRE(ma.size() >= 1u);
+    BOOST_CHECK_EQUAL(json::value_to<std::string>(ma[0].as_object().at("name")), "out");
     result.get_enabled_acked = true;
   }
 

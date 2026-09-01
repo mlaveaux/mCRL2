@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <unordered_set>
 
+#include "mcrl2/data/print.h"
 #include "mcrl2/lps/print.h"
 
 namespace mcrl2
@@ -30,16 +31,27 @@ static std::string first_label(const lps::multi_action& action)
   return std::string(action.actions().front().label().name());
 }
 
-/// \brief The full wire-format label: lps::pp(), matching what adapters send.
-static std::string wire_label(const lps::multi_action& action)
-{
-  return lps::pp(action);
-}
-
 state_set::state_set(const lps::specification& spec, const lps::explorer_options& options, const data::rewriter& rewr)
   : m_rewr(rewr),
     m_explorer(spec, options, rewr)
 {}
+
+mbt_protocol::wire_multi_action state_set::wire_label(const lps::multi_action& action) const
+{
+  mbt_protocol::wire_multi_action result;
+  for (const auto& act: action.actions())
+  {
+    mbt_protocol::wire_action wa;
+    wa.name = std::string(act.label().name());
+    for (const auto& arg: act.arguments())
+    {
+      data::data_expression rewritten = m_rewr(arg);
+      wa.args.push_back(data::pp(rewritten));
+    }
+    result.push_back(std::move(wa));
+  }
+  return mbt_protocol::normalize(std::move(result));
+}
 
 lps::state state_set::compute_initial_state() const
 {
@@ -91,13 +103,14 @@ std::vector<lps::state> state_set::tau_closed_states(std::size_t tau_depth)
   return tau_closure(m_states, tau_depth);
 }
 
-bool state_set::is_action_enabled(const std::string& label, std::size_t tau_depth)
+bool state_set::is_action_enabled(const mbt_protocol::wire_multi_action& label, std::size_t tau_depth)
 {
+  const auto canonical = mbt_protocol::normalize(label);
   for (const lps::state& s: tau_closed_states(tau_depth))
   {
     for (const auto& edge: m_explorer.out_edges(s))
     {
-      if (!is_tau(edge.action) && wire_label(edge.action) == label)
+      if (!is_tau(edge.action) && wire_label(edge.action) == canonical)
       {
         return true;
       }
@@ -106,9 +119,10 @@ bool state_set::is_action_enabled(const std::string& label, std::size_t tau_dept
   return false;
 }
 
-bool state_set::apply_action(const std::string& label, std::size_t tau_depth)
+bool state_set::apply_action(const mbt_protocol::wire_multi_action& label, std::size_t tau_depth)
 {
   const std::vector<lps::state> closed = tau_closed_states(tau_depth);
+  const auto canonical = mbt_protocol::normalize(label);
 
   // Collect all immediate successors via `label`.
   std::vector<lps::state> post;
@@ -116,7 +130,7 @@ bool state_set::apply_action(const std::string& label, std::size_t tau_depth)
   {
     for (const auto& edge: m_explorer.out_edges(s))
     {
-      if (!is_tau(edge.action) && wire_label(edge.action) == label)
+      if (!is_tau(edge.action) && wire_label(edge.action) == canonical)
       {
         post.push_back(edge.state);
       }
@@ -139,8 +153,8 @@ bool state_set::apply_action(const std::string& label, std::size_t tau_depth)
 state_set::enabled_actions state_set::get_enabled(std::size_t tau_depth, const io_classifier& classifier)
 {
   enabled_actions result;
-  std::unordered_set<std::string> seen_inputs;
-  std::unordered_set<std::string> seen_outputs;
+  std::vector<mbt_protocol::wire_multi_action>& seen_inputs = result.inputs;
+  std::vector<mbt_protocol::wire_multi_action>& seen_outputs = result.outputs;
 
   for (const lps::state& s: tau_closed_states(tau_depth))
   {
@@ -155,19 +169,19 @@ state_set::enabled_actions state_set::get_enabled(std::size_t tau_depth, const i
       }
 
       const std::string name = first_label(edge.action); // for io classification
-      const std::string wire = wire_label(edge.action); // label returned on wire
+      const auto wire = wire_label(edge.action); // label returned on wire
       const auto type = classifier.classify(name);
 
-      if (type == io_classifier::action_type::input && seen_inputs.insert(wire).second)
+      if (type == io_classifier::action_type::input && std::find(seen_inputs.begin(), seen_inputs.end(), wire) == seen_inputs.end())
       {
-        result.inputs.push_back(wire);
+        seen_inputs.push_back(wire);
       }
       else if (type == io_classifier::action_type::output)
       {
         quiescent = false;
-        if (seen_outputs.insert(wire).second)
+        if (std::find(seen_outputs.begin(), seen_outputs.end(), wire) == seen_outputs.end())
         {
-          result.outputs.push_back(wire);
+          seen_outputs.push_back(wire);
         }
       }
     }

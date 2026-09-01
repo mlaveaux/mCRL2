@@ -195,7 +195,7 @@ void mbt_session::on_input(const mbt_protocol::incoming_message& msg)
     return;
   }
 
-  std::string label;
+  mbt_protocol::wire_multi_action label;
   try
   {
     label = extract_action(msg);
@@ -208,7 +208,9 @@ void mbt_session::on_input(const mbt_protocol::incoming_message& msg)
 
   if (!m_states.apply_action(label, m_config.tau_closure_depth))
   {
-    m_client.send(mbt_protocol::make_error(*msg.id, mbt_protocol::error_code::input_not_enabled, label));
+    m_client.send(mbt_protocol::make_error(*msg.id,
+      mbt_protocol::error_code::input_not_enabled,
+      json::serialize(mbt_protocol::to_json(label))));
     return;
   }
 
@@ -225,7 +227,7 @@ void mbt_session::on_output(const mbt_protocol::incoming_message& msg)
     return;
   }
 
-  std::string label;
+  mbt_protocol::wire_multi_action label;
   try
   {
     label = extract_action(msg);
@@ -250,7 +252,9 @@ void mbt_session::on_output(const mbt_protocol::incoming_message& msg)
   if (m_config.early_output_timeout_ms == 0)
   {
     // Timeout zero: immediately expire (fire error inline, no timer needed).
-    m_client.send(mbt_protocol::make_error(reply_to, mbt_protocol::error_code::output_unprocessed, label));
+    m_client.send(mbt_protocol::make_error(reply_to,
+      mbt_protocol::error_code::output_unprocessed,
+      json::serialize(mbt_protocol::to_json(label))));
     return;
   }
 
@@ -259,7 +263,7 @@ void mbt_session::on_output(const mbt_protocol::incoming_message& msg)
   it->timer.expires_after(std::chrono::milliseconds(m_config.early_output_timeout_ms));
   // Capture by value so this handler is safe even if the list is reorganised.
   const mbt_protocol::message_id id_copy = reply_to;
-  const std::string label_copy = label;
+  const mbt_protocol::wire_multi_action label_copy = label;
   it->timer.async_wait(
     [this, id_copy, label_copy](const boost::system::error_code& ec)
     {
@@ -276,7 +280,9 @@ void mbt_session::on_output(const mbt_protocol::incoming_message& msg)
       {
         return; // Removed by on_reset before this handler ran.
       }
-      m_client.send(mbt_protocol::make_error(id_copy, mbt_protocol::error_code::output_unprocessed, label_copy));
+      m_client.send(mbt_protocol::make_error(id_copy,
+        mbt_protocol::error_code::output_unprocessed,
+        json::serialize(mbt_protocol::to_json(label_copy))));
       m_early_outputs.erase(found);
     });
 }
@@ -423,14 +429,14 @@ void mbt_session::reevaluate_early_set()
   }
 }
 
-std::string mbt_session::extract_action(const mbt_protocol::incoming_message& msg)
+mbt_protocol::wire_multi_action mbt_session::extract_action(const mbt_protocol::incoming_message& msg)
 {
   const json::value* val = msg.payload.if_contains("multi_action");
-  if (val == nullptr || !val->is_string())
+  if (val == nullptr || !val->is_array())
   {
-    throw std::runtime_error("message missing 'multi_action' field");
+    throw std::runtime_error("message missing or non-array 'multi_action' field");
   }
-  return json::value_to<std::string>(*val);
+  return mbt_protocol::from_json(val->as_array());
 }
 
 } // namespace mcrl2

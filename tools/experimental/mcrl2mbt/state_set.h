@@ -20,6 +20,7 @@
 #include "mcrl2/lps/state.h"
 
 #include "io_classifier.h"
+#include "mbt_protocol.h"
 
 namespace mcrl2
 {
@@ -38,8 +39,8 @@ public:
   /// \brief Aggregated result of get_enabled().
   struct enabled_actions
   {
-    std::vector<std::string> inputs;
-    std::vector<std::string> outputs;
+    std::vector<mbt_protocol::wire_multi_action> inputs;
+    std::vector<mbt_protocol::wire_multi_action> outputs;
     bool quiescence = false;
   };
 
@@ -49,11 +50,11 @@ public:
   void reset_to_initial();
 
   /// \brief Check whether action `label` is enabled from tau*_k(S).
-  bool is_action_enabled(const std::string& label, std::size_t tau_depth);
+  bool is_action_enabled(const mbt_protocol::wire_multi_action& label, std::size_t tau_depth);
 
   /// \brief S := tau*_k(post_label(tau*_k(S))).
   /// \returns false if the action was not enabled (S unchanged).
-  bool apply_action(const std::string& label, std::size_t tau_depth);
+  bool apply_action(const mbt_protocol::wire_multi_action& label, std::size_t tau_depth);
 
   /// \brief Return all enabled observable actions from tau*_k(S).
   enabled_actions get_enabled(std::size_t tau_depth, const io_classifier& classifier);
@@ -74,6 +75,12 @@ private:
 
   /// \brief Compute the initial lps::state from the spec's initial expressions.
   lps::state compute_initial_state() const;
+
+  /// \brief Convert an lps::multi_action to its canonical wire representation.
+  ///
+  /// Each data argument is rewritten with the LPS's data equations and
+  /// pretty-printed to produce a canonical string form.
+  mbt_protocol::wire_multi_action wire_label(const lps::multi_action& action) const;
 
   data::rewriter m_rewr;
   explorer_type m_explorer;
