@@ -79,7 +79,7 @@ def difference(l1, l2):
   return result
 
 def is_standard_function(s):
-  return str(s) in ["equal_to", "not_equal_to", "if_", "less", "less_equal", "greater", "greater_equal"]
+  return str(s) in ["equal_to", "not_equal_to", "if_", "less", "less_equal", "greater", "greater_equal", "less_total"]
 
 def target_sort(sort_expr):
   if isinstance(sort_expr, sort_arrow):
@@ -365,6 +365,9 @@ class function_declaration_list():
                     internal_external("internal"), defined_by("defined_by_rewrite_rules"))
     elif function.id == ">=":
       return function_declaration(function.id, sort_expression(), label(identifier("greater_equal")),
+                    internal_external("internal"), defined_by("defined_by_rewrite_rules"))
+    elif function.id == "less_total":
+      return function_declaration(function.id, sort_expression(), label(identifier("less_total")),
                     internal_external("internal"), defined_by("defined_by_rewrite_rules"))
     else:
       for e in self.elements:

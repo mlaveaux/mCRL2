@@ -3964,6 +3964,7 @@ void mcrl2::data::data_type_checker::initialise_system_defined_functions()
   add_system_function(greater(data::untyped_sort()));
   add_system_function(equal_to(data::untyped_sort()));
   add_system_function(not_equal_to(data::untyped_sort()));
+  add_system_function(less_total(data::untyped_sort()));
 
   //Bool
   add_system_constants_and_functions(sort_bool::bool_mCRL2_usable_constructors());
