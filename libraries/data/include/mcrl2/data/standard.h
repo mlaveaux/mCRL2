@@ -26,6 +26,7 @@ const basic_sort& bool_();
 const function_symbol& false_();
 const function_symbol& true_();
 application and_(const data_expression&,const data_expression&);
+application or_(const data_expression&,const data_expression&);
 application not_(const data_expression&);
 application implies(const data_expression&,const data_expression&);
 bool is_bool(const sort_expression&);
@@ -472,9 +473,11 @@ inline data_equation_vector standard_generate_equations_code(const sort_expressi
     {
       std::stringstream xs;
       xs << "x" << index;
+      std::stringstream ys;
+      ys << "y" << index;
       ++index;
-      variable x(xs.str(),sort);
-      xvars.push_back(x);
+      xvars.emplace_back(xs.str(),sort);
+      yvars.emplace_back(ys.str(),sort);
     }
     variable f("f",s);
     variable g("g",s);
@@ -485,22 +488,30 @@ inline data_equation_vector standard_generate_equations_code(const sort_expressi
             xvar_list,
             equal_to(application(f, xvars.begin(), xvars.end()), application(g, xvars.begin(), xvars.end()))));
 
-    // less_total(f,g) holds iff there is a point x, smaller (w.r.t. less_total on the domain) than every
-    // point where f and g differ, such that f(x) is less_total than g(x). This defines a total order on
-    // functions given a total order on the domain and codomain (see the domain/codomain totality proof).
-    if (xvars.size() == 1)
+    // less_total(f,g) holds iff there is a point x=(x0,...,xn-1), lexicographically smaller (w.r.t.
+    // less_total on the domain sorts) than every point where f and g differ, such that f(x) is
+    // less_total than g(x). This defines a total order on functions of arbitrary arity, given a total
+    // order on each domain sort and on the codomain (see the domain/codomain totality proof).
+    if (!xvars.empty())
     {
-      const variable& x = xvars.front();
-      variable y("y", x.sort());
+      data_expression tuple_less_total = less_total(yvars.back(), xvars.back());
+      for (std::size_t i = xvars.size() - 1; i > 0; --i)
+      {
+        tuple_less_total = sort_bool::or_(less_total(yvars[i - 1], xvars[i - 1]),
+            sort_bool::and_(equal_to(yvars[i - 1], xvars[i - 1]), tuple_less_total));
+      }
+
+      variable_list yvar_list=variable_list(yvars.begin(),yvars.end());
       result.emplace_back(variable_list({f, g}),
           less_total(f, g),
           abstraction(exists_binder(),
-              variable_list({x}),
+              xvar_list,
               sort_bool::and_(
                   abstraction(forall_binder(),
-                      variable_list({y}),
-                      sort_bool::implies(less_total(y, x), equal_to(application(f, y), application(g, y)))),
-                  less_total(application(f, x), application(g, x)))));
+                      yvar_list,
+                      sort_bool::implies(tuple_less_total,
+                          equal_to(application(f, yvars.begin(), yvars.end()), application(g, yvars.begin(), yvars.end())))),
+                  less_total(application(f, xvars.begin(), xvars.end()), application(g, xvars.begin(), xvars.end())))));
     }
   }
 
