@@ -61,6 +61,7 @@ var m:Nat;
 eqn  ==(@cReal(x, p), @cReal(y, q))  =  ==(*(x, @cInt(@cNat(q))), *(y, @cInt(@cNat(p))));
      <(@cReal(x, p), @cReal(y, q))  =  <(*(x, @cInt(@cNat(q))), *(y, @cInt(@cNat(p))));
      <=(@cReal(x, p), @cReal(y, q))  =  <=(*(x, @cInt(@cNat(q))), *(y, @cInt(@cNat(p))));
+     less_total(r,s) = <(r,s);
      Int2Real(x)  =  @cReal(x, @c1);
      Nat2Real(n)  =  @cReal(@cInt(n), @c1);
      Pos2Real(p)  =  @cReal(@cInt(@cNat(p)), @c1);

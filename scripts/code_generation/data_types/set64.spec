@@ -54,7 +54,7 @@ eqn @setfset(s)  =  @set(@false_, s);
     ==(@set(f, s), @set(g, t))  =  forall(c:S, ==(==(f(c),g(c)),==(in(c,s),in(c,t))));
     <(x, y)  =  &&(<=(x, y), !=(x, y));
     <=(x,y) = ==(*(x,y),x);
-    less_total(@set(f, s), @set(g, t)) = ||(less_total(s, t), &&(==(s, t), less_total(f, s)));
+    less_total(@set(f, s), @set(g, t)) = ||(less_total(s, t), &&(==(s, t), less_total(f, g)));
     !(@set(f, s))  =  @set(@not_(f), s);
     +(x, x) = x;
     +(x, +(x, y)) = +(x, y);

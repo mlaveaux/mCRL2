@@ -65,6 +65,7 @@ eqn ==(@cInt(m),@cInt(n)) = ==(m,n);
     <=(@cInt(n),@cNeg(p)) = false;
     <=(@cNeg(p),@cInt(n)) = true;
     <=(@cNeg(p),@cNeg(q)) = <=(q,p);
+    less_total(x,y) = <(x,y);
     Nat2Int(n) = @cInt(n);
     Int2Nat(@cInt(n)) = n;
     Pos2Int(p) = @cInt(@cNat(p));

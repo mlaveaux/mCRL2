@@ -54,6 +54,7 @@ eqn ==(@c1, @cDub(b,p)) = false;
     <=(succ(p),@cDub(c,q)) = <(p,@cDub(c,q));
     <=(@cDub(b,p),succ(q)) = <=(@pospred(@cDub(b,p)),q);
     <=(succ(p),@c1) = false;
+    less_total(p,q) = <(p,q);
     max(p,q) = if(<=(p,q),q,p);
     min(p,q) = if(<=(p,q),p,q);
     succ(@c1) = @cDub(false, @c1);

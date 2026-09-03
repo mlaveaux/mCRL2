@@ -42,6 +42,7 @@ eqn ==([], |>(d,s)) = false;
     <(|>(d,s), |>(e,t)) = ||(&&(==(d,e),<(s,t)),<(d,e));
     less_total([],[]) = false;
     less_total([],|>(d,s)) = true;
+    less_total(|>(d,s), []) = false;
     less_total(|>(d,s), |>(e,t)) = ||(&&(==(d,e),less_total(s,t)),less_total(d,e));
     <=([],|>(d,s)) = true;
     <=(|>(d,s),[]) = false;

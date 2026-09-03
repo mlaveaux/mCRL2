@@ -59,6 +59,7 @@ eqn ==({}, @fset_cons(d, s))  =  false;
     <(@fset_cons(d, s), @fset_cons(e, t))  =  if(<(d,e), false, if(==(d, e), <(s, t), <=(@fset_cons(d, s), t)));
     less_total({}, {}) = false;
     less_total({}, @fset_cons(d, s)) = true;
+    less_total(@fset_cons(d, s), {}) = false;
     less_total(@fset_cons(d, s), @fset_cons(e, t)) = ||(less_total(d, e), &&(==(d, e), less_total(s, t)));
     @fset_insert(d, {})  =  @fset_cons(d, {});
     @fset_insert(d, @fset_cons(d, s))  =  @fset_cons(d, s);

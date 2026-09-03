@@ -73,6 +73,7 @@ eqn ==(@c0, @cNat(p)) = false;
     <(n, @c0) = false;
     <(@c0, @cNat(p)) = true;
     <(@cNat(p), @cNat(q)) = <(p,q);
+    less_total(m,n) = <(m,n);
     <=(@c0, n) = true;
     <=(@cNat(p), @c0) = false;
     <=(@cNat(p), @cNat(q)) = <=(p,q);
