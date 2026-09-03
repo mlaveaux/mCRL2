@@ -282,6 +282,9 @@ class structured_sort: public sort_expression
       result.emplace_back(xy, less(to_pos_x, to_pos_y), less_equal(x, y), sort_bool::true_());
       result.emplace_back(xy, equal_to(to_pos_x, to_pos_y), less_equal(x, y), smaller_equal_arguments_xy);
       result.emplace_back(xy, greater(to_pos_x, to_pos_y), less_equal(x, y), sort_bool::false_());
+      // < is already a total order on structured sorts, constructed lexicographically from the
+      // constructor index and the arguments, so less_total can simply reuse it.
+      result.emplace_back(xy, less_total(x, y), less(x, y));
       // (JK) The following encoding of the equations would be more desirable; however,
       // rewriting fails if we use this.
 /*

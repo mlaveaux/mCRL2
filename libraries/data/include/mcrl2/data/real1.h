@@ -2019,6 +2019,7 @@ namespace mcrl2::data::sort_real
         result.emplace_back(variable_list({vp, vq, vx, vy}), equal_to(creal(vx, vp), creal(vy, vq)), equal_to(times(vx, sort_int::cint(sort_nat::cnat(vq))), times(vy, sort_int::cint(sort_nat::cnat(vp)))));
         result.emplace_back(variable_list({vp, vq, vx, vy}), less(creal(vx, vp), creal(vy, vq)), less(times(vx, sort_int::cint(sort_nat::cnat(vq))), times(vy, sort_int::cint(sort_nat::cnat(vp)))));
         result.emplace_back(variable_list({vp, vq, vx, vy}), less_equal(creal(vx, vp), creal(vy, vq)), less_equal(times(vx, sort_int::cint(sort_nat::cnat(vq))), times(vy, sort_int::cint(sort_nat::cnat(vp)))));
+        result.emplace_back(variable_list({vr, vs}), less_total(vr, vs), less(vr, vs));
         result.emplace_back(variable_list({vx}), int2real(vx), creal(vx, sort_pos::c1()));
         result.emplace_back(variable_list({vn}), nat2real(vn), creal(sort_int::cint(vn), sort_pos::c1()));
         result.emplace_back(variable_list({vp}), pos2real(vp), creal(sort_int::cint(sort_nat::cnat(vp)), sort_pos::c1()));

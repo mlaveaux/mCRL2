@@ -873,6 +873,10 @@ namespace mcrl2::data::sort_list
         result.emplace_back(variable_list({vd, vs}), less(empty(s), cons_(s, vd, vs)), sort_bool::true_());
         result.emplace_back(variable_list({vd, vs}), less(cons_(s, vd, vs), empty(s)), sort_bool::false_());
         result.emplace_back(variable_list({vd, ve, vs, vt}), less(cons_(s, vd, vs), cons_(s, ve, vt)), sort_bool::or_(sort_bool::and_(equal_to(vd, ve), less(vs, vt)), less(vd, ve)));
+        result.emplace_back(variable_list(), less_total(empty(s), empty(s)), sort_bool::false_());
+        result.emplace_back(variable_list({vd, vs}), less_total(empty(s), cons_(s, vd, vs)), sort_bool::true_());
+        result.emplace_back(variable_list({vd, vs}), less_total(cons_(s, vd, vs), empty(s)), sort_bool::false_());
+        result.emplace_back(variable_list({vd, ve, vs, vt}), less_total(cons_(s, vd, vs), cons_(s, ve, vt)), sort_bool::or_(sort_bool::and_(equal_to(vd, ve), less_total(vs, vt)), less_total(vd, ve)));
         result.emplace_back(variable_list({vd, vs}), less_equal(empty(s), cons_(s, vd, vs)), sort_bool::true_());
         result.emplace_back(variable_list({vd, vs}), less_equal(cons_(s, vd, vs), empty(s)), sort_bool::false_());
         result.emplace_back(variable_list({vd, ve, vs, vt}), less_equal(cons_(s, vd, vs), cons_(s, ve, vt)), sort_bool::or_(sort_bool::and_(equal_to(vd, ve), less_equal(vs, vt)), less(vd, ve)));

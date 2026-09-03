@@ -4891,6 +4891,7 @@ namespace mcrl2::data::sort_nat
         result.emplace_back(variable_list({vn1, vn2, vw1, vw2}), less(concat_digit(vn1, vw1), concat_digit(vn2, vw2)), if_(sort_machine_word::less_word(vw1, vw2), less_equal(vn1, vn2), less(vn1, vn2)));
         result.emplace_back(variable_list({vn1, vn2}), less(succ_nat(vn1), vn2), sort_bool::and_(less(most_significant_digit_nat(sort_machine_word::one_word()), vn2), less(vn1, natpred(vn2))));
         result.emplace_back(variable_list({vn1, vn2}), less(vn1, succ_nat(vn2)), less_equal(vn1, vn2));
+        result.emplace_back(variable_list({vm, vn}), less_total(vn, vm), less(vn, vm));
         result.emplace_back(variable_list({vn, vw1}), sort_machine_word::equals_zero_word(vw1), less(vn, most_significant_digit_nat(vw1)), sort_bool::false_());
         result.emplace_back(variable_list({vw1, vw2}), less_equal(most_significant_digit_nat(vw1), most_significant_digit_nat(vw2)), sort_machine_word::less_equal_word(vw1, vw2));
         result.emplace_back(variable_list({vn, vw1, vw2}), less_equal(concat_digit(vn, vw1), most_significant_digit_nat(vw2)), sort_bool::false_());

@@ -858,6 +858,7 @@ namespace mcrl2::data::sort_pos
         result.emplace_back(variable_list({vc, vp, vq}), less_equal(succ(vp), cdub(vc, vq)), less(vp, cdub(vc, vq)));
         result.emplace_back(variable_list({vb, vp, vq}), less_equal(cdub(vb, vp), succ(vq)), less_equal(pos_predecessor(cdub(vb, vp)), vq));
         result.emplace_back(variable_list({vp}), less_equal(succ(vp), c1()), sort_bool::false_());
+        result.emplace_back(variable_list({vp, vq}), less_total(vp, vq), less(vp, vq));
         result.emplace_back(variable_list({vp, vq}), maximum(vp, vq), if_(less_equal(vp, vq), vq, vp));
         result.emplace_back(variable_list({vp, vq}), minimum(vp, vq), if_(less_equal(vp, vq), vp, vq));
         result.emplace_back(variable_list(), succ(c1()), cdub(sort_bool::false_(), c1()));

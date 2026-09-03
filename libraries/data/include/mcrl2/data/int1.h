@@ -1542,6 +1542,7 @@ namespace mcrl2::data::sort_int
         result.emplace_back(variable_list({vn, vp}), less_equal(cint(vn), cneg(vp)), sort_bool::false_());
         result.emplace_back(variable_list({vn, vp}), less_equal(cneg(vp), cint(vn)), sort_bool::true_());
         result.emplace_back(variable_list({vp, vq}), less_equal(cneg(vp), cneg(vq)), less_equal(vq, vp));
+        result.emplace_back(variable_list({vx, vy}), less_total(vx, vy), less(vx, vy));
         result.emplace_back(variable_list({vn}), nat2int(vn), cint(vn));
         result.emplace_back(variable_list({vn}), int2nat(cint(vn)), vn);
         result.emplace_back(variable_list({vp}), pos2int(vp), cint(sort_nat::cnat(vp)));

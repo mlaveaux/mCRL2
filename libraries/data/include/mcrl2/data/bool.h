@@ -499,6 +499,7 @@ namespace mcrl2::data::sort_bool
       data_equation_vector bool_generate_equations_code()
       {
         variable vb("b",bool_());
+        variable vc("c",bool_());
 
         data_equation_vector result;
         result.emplace_back(variable_list(), not_(true_()), false_());
@@ -528,6 +529,7 @@ namespace mcrl2::data::sort_bool
         result.emplace_back(variable_list({vb}), less_equal(true_(), vb), vb);
         result.emplace_back(variable_list({vb}), less_equal(vb, false_()), not_(vb));
         result.emplace_back(variable_list({vb}), less_equal(vb, true_()), true_());
+        result.emplace_back(variable_list({vb, vc}), less_total(vb, vc), less(vb, vc));
         return result;
       }
 

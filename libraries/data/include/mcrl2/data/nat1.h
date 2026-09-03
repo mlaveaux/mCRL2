@@ -2302,6 +2302,7 @@ namespace mcrl2::data::sort_nat
         result.emplace_back(variable_list({vn}), less(vn, c0()), sort_bool::false_());
         result.emplace_back(variable_list({vp}), less(c0(), cnat(vp)), sort_bool::true_());
         result.emplace_back(variable_list({vp, vq}), less(cnat(vp), cnat(vq)), less(vp, vq));
+        result.emplace_back(variable_list({vm, vn}), less_total(vm, vn), less(vm, vn));
         result.emplace_back(variable_list({vn}), less_equal(c0(), vn), sort_bool::true_());
         result.emplace_back(variable_list({vp}), less_equal(cnat(vp), c0()), sort_bool::false_());
         result.emplace_back(variable_list({vp, vq}), less_equal(cnat(vp), cnat(vq)), less_equal(vp, vq));
