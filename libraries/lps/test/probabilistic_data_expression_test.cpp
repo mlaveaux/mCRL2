@@ -24,8 +24,14 @@ using namespace mcrl2::lps;
 
 BOOST_AUTO_TEST_CASE(test_very_few_digits)
 {
+#ifdef MCRL2_ENABLE_MACHINENUMBERS
   probabilistic_data_expression r1(real_("79","842"));
   probabilistic_data_expression r2(real_("6398","87493"));
+#else
+  // Without machine numbers, this test was too slow.
+  probabilistic_data_expression r1(real_("3","4"));
+  probabilistic_data_expression r2(real_("1","5"));
+#endif
   probabilistic_data_expression zero;
   BOOST_CHECK(r1>zero);
   BOOST_CHECK(r1+r2>zero);
