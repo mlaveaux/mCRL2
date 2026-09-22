@@ -217,11 +217,11 @@ public:
       sylvan::sylvan_init_ldd();
 
       auto args = arguments{.input_filename = input_filename(), .output_filename = output_filename(), .equivalence = m_equivalence, .outtype = outtype};
-      ltsconvertsymbolic_task(&args);
+      bool result = ltsconvertsymbolic_task(&args);
 
       sylvan::sylvan_quit();
       lace_stop();
-      return true;
+      return result;
     }
 
   private:
@@ -234,43 +234,53 @@ public:
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
 TASK_IMPL_1(bool, ltsconvertsymbolic_task, arguments*, args)
 {
-  if (args->input_filename.empty() || args->input_filename == "-")
+  // Exceptions thrown here do not reliably unwind through the Lace task scheduler back to
+  // execute()'s try/catch, so they must be caught locally to avoid an uncaught-exception abort.
+  try
   {
-    std::cin >> args->input;
-  }
-  else
-  {
-    std::ifstream ifs(args->input_filename, std::ifstream::in | std::ios_base::binary);
-    if (!ifs.good())
+    if (args->input_filename.empty() || args->input_filename == "-")
     {
-      throw mcrl2::runtime_error("Could not open file " + args->input_filename + ".");
+      std::cin >> args->input;
     }
-    ifs >> args->input;
-  }
-
-  if (args->equivalence == symbolic_lts_equivalence::none)
-  {
-    // Convert into a concrete LTS.
-    lps::specification lpsspec;
-    lps::explorer_options options;
-    options.save_at_end = false;
-    
-    if (args->outtype == lts_type::lts_none)
+    else
     {
-      mCRL2log(log_level_t::verbose) << "Trying to detect output format by extension..." << std::endl;
-
-      args->outtype = mcrl2::lts::detail::guess_format(args->output_filename, true);
+      std::ifstream ifs(args->input_filename, std::ifstream::in | std::ios_base::binary);
+      if (!ifs.good())
+      {
+        throw mcrl2::runtime_error("Could not open file " + args->input_filename + ".");
+      }
+      ifs >> args->input;
     }
-    
-    std::unique_ptr<lts_builder> builder = create_lts_builder(lpsspec, options, args->outtype, args->output_filename);
 
-    convert_concrete_lts algorithm(args->input, std::move(builder));
-    algorithm.run();
-    algorithm.save(args->output_filename);
+    if (args->equivalence == symbolic_lts_equivalence::none)
+    {
+      // Convert into a concrete LTS.
+      lps::specification lpsspec;
+      lps::explorer_options options;
+      options.save_at_end = false;
+
+      if (args->outtype == lts_type::lts_none)
+      {
+        mCRL2log(log_level_t::verbose) << "Trying to detect output format by extension..." << std::endl;
+
+        args->outtype = mcrl2::lts::detail::guess_format(args->output_filename, true);
+      }
+
+      std::unique_ptr<lts_builder> builder = create_lts_builder(lpsspec, options, args->outtype, args->output_filename);
+
+      convert_concrete_lts algorithm(args->input, std::move(builder));
+      algorithm.run();
+      algorithm.save(args->output_filename);
+    }
+    else
+    {
+      bisim(args->input);
+    }
   }
-  else
+  catch (std::exception& e)
   {
-    bisim(args->input);
+    mCRL2log(log_level_t::error) << e.what() << std::endl;
+    return false;
   }
 
   return true;

@@ -188,46 +188,56 @@ public:
     sylvan::sylvan_init_ldd();
 
     auto args = arguments{.options=options, .input_filename=input_filename(), .output_filename=output_filename()};
-    lpsreach_task(&args);
+    bool result = lpsreach_task(&args);
 
     sylvan::sylvan_quit();
     lace_stop();
-    return true;
+    return result;
   }
 };
 
 TASK_IMPL_1(bool, lpsreach_task, arguments*, arguments) // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 {
-  mCRL2log(log::log_level_t::verbose) << arguments->options << std::endl;
-
-  lps::stochastic_specification stochastic_lpsspec;
-  lps::load_lps(stochastic_lpsspec, arguments->input_filename);
-  lps::specification lpsspec = lps::remove_stochastic_operators(stochastic_lpsspec);
-
-  lps::lpsreach_algorithm algorithm(lpsspec, arguments->options);
-
-  if (arguments->options.info)
+  // Exceptions thrown here do not reliably unwind through the Lace task scheduler back to
+  // execute()'s try/catch, so they must be caught locally to avoid an uncaught-exception abort.
+  try
   {
-    std::cout << symbolic::print_read_write_patterns(algorithm.read_write_group_patterns());
-  }
-  else
-  {
-    sylvan::ldds::ldd V = algorithm.run();
-    if (!arguments->options.dot_file.empty())
+    mCRL2log(log::log_level_t::verbose) << arguments->options << std::endl;
+
+    lps::stochastic_specification stochastic_lpsspec;
+    lps::load_lps(stochastic_lpsspec, arguments->input_filename);
+    lps::specification lpsspec = lps::remove_stochastic_operators(stochastic_lpsspec);
+
+    lps::lpsreach_algorithm algorithm(lpsspec, arguments->options);
+
+    if (arguments->options.info)
     {
-      print_dot(arguments->options.dot_file, V);
+      std::cout << symbolic::print_read_write_patterns(algorithm.read_write_group_patterns());
     }
-
-    if (!arguments->output_filename.empty())
+    else
     {
-      std::ofstream to(arguments->output_filename, std::ofstream::out | std::ofstream::binary);
-      if (!to.good())
+      sylvan::ldds::ldd V = algorithm.run();
+      if (!arguments->options.dot_file.empty())
       {
-        throw mcrl2::runtime_error("Could not write to filename " + arguments->output_filename);
+        print_dot(arguments->options.dot_file, V);
       }
 
-      to << algorithm.get_symbolic_lts();
+      if (!arguments->output_filename.empty())
+      {
+        std::ofstream to(arguments->output_filename, std::ofstream::out | std::ofstream::binary);
+        if (!to.good())
+        {
+          throw mcrl2::runtime_error("Could not write to filename " + arguments->output_filename);
+        }
+
+        to << algorithm.get_symbolic_lts();
+      }
     }
+  }
+  catch (std::exception& e)
+  {
+    mCRL2log(log::log_level_t::error) << e.what() << std::endl;
+    return false;
   }
 
   return true;

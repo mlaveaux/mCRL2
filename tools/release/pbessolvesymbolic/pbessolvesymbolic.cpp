@@ -731,11 +731,11 @@ public:
       .lpsfile = lpsfile,
       .ltsfile = ltsfile,
       .timer = timer()};
-    pbessolvesymbolic_task(&args);
+    bool result = pbessolvesymbolic_task(&args);
 
     sylvan::sylvan_quit();
     lace_stop();
-    return true;
+    return result;
   }
 };
 
@@ -1007,38 +1007,48 @@ void solve(pbes_system::pbes pbesspec,
 
 TASK_IMPL_1(bool, pbessolvesymbolic_task, arguments*, args) // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 {
-  mCRL2log(log::log_level_t::verbose) << args->options << std::endl;
-
-  pbes_system::pbes pbesspec = pbes_system::detail::load_pbes(args->input_filename);
-
-  if (pbesspec.initial_state().empty())
+  // Exceptions thrown here do not reliably unwind through the Lace task scheduler back to
+  // execute()'s try/catch, so they must be caught locally to avoid an uncaught-exception abort.
+  try
   {
-    throw mcrl2::runtime_error("PBESses without parameters are not supported");
-  }
-  else
-  {
-    if (args->options.solve_strategy == 0)
+    mCRL2log(log::log_level_t::verbose) << args->options << std::endl;
+
+    pbes_system::pbes pbesspec = pbes_system::detail::load_pbes(args->input_filename);
+
+    if (pbesspec.initial_state().empty())
     {
-      solve<pbesreach_algorithm, pbesinst_symbolic_counter_example_structure_graph_algorithm>(pbesspec,
-        args->options,
-        args->input_filename,
-        args->evidence_filename,
-        args->structure_graph_filename,
-        args->lpsfile,
-        args->ltsfile,
-        args->timer);
+      throw mcrl2::runtime_error("PBESses without parameters are not supported");
     }
     else
     {
-      solve<pbesreach_algorithm_partial, pbesinst_symbolic_counter_example_structure_graph_algorithm>(pbesspec,
-        args->options,
-        args->input_filename,
-        args->evidence_filename,
-        args->structure_graph_filename,
-        args->lpsfile,
-        args->ltsfile,
-        args->timer);
+      if (args->options.solve_strategy == 0)
+      {
+        solve<pbesreach_algorithm, pbesinst_symbolic_counter_example_structure_graph_algorithm>(pbesspec,
+          args->options,
+          args->input_filename,
+          args->evidence_filename,
+          args->structure_graph_filename,
+          args->lpsfile,
+          args->ltsfile,
+          args->timer);
+      }
+      else
+      {
+        solve<pbesreach_algorithm_partial, pbesinst_symbolic_counter_example_structure_graph_algorithm>(pbesspec,
+          args->options,
+          args->input_filename,
+          args->evidence_filename,
+          args->structure_graph_filename,
+          args->lpsfile,
+          args->ltsfile,
+          args->timer);
+      }
     }
+  }
+  catch (std::exception& e)
+  {
+    mCRL2log(log::log_level_t::error) << e.what() << std::endl;
+    return false;
   }
 
   return true;
