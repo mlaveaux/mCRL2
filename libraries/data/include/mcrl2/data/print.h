@@ -1508,6 +1508,16 @@ struct printer: public data::add_traverser_sort_expressions<core::detail::printe
     {
       derived().print("{}");
     }
+#ifdef MCRL2_ENABLE_MACHINENUMBERS
+    else if (sort_pos::is_equals_one_function_symbol(x))
+    {
+      derived().print("(lambda x: Pos. x == 1)");
+    }
+    else if (sort_nat::is_equals_one_function_symbol(x))
+    {
+      derived().print("(lambda x: Nat. x == 1)");
+    }
+#endif
     else
     {
       derived().print(x.name());
@@ -1639,21 +1649,282 @@ struct printer: public data::add_traverser_sort_expressions<core::detail::printe
       derived().print(max_machine_number_string());
       derived().print(" )");
     }
-
-/* TODO: Handle the following cases. 
- 
-     @div_doubleword <"div_doubleword">: @word <"arg1"> # @word <"arg2"> # @word <"arg3"> -> @word                                                  
-     @div_double_doubleword <"div_double_doubleword">: @word <"arg1"> # @word <"arg2"> # @word <"arg3"> # @word <"arg4"> -> @word                   
-     @div_triple_doubleword <"div_triple_doubleword">: @word <"arg1"> # @word <"arg2"> # @word <"arg3"> # @word <"arg4"> # @word <"arg5"> -> @word  
-     @mod_doubleword <"mod_doubleword">: @word <"arg1"> # @word <"arg2"> # @word <"arg3"> -> @word                                                  
-     @sqrt_doubleword <"sqrt_doubleword">: @word <"arg1"> # @word <"arg2"> -> @word                                                                 
-     @sqrt_tripleword <"sqrt_tripleword">: @word <"arg1"> # @word <"arg2"> # @word <"arg3"> -> @word                                                
-     @sqrt_tripleword_overflow <"sqrt_tripleword_overflow">: @word <"arg1"> # @word <"arg2"> # @word <"arg3"> -> @word                              
-     @sqrt_quadrupleword <"sqrt_quadrupleword">: @word <"arg1"> # @word <"arg2"> # @word <"arg3"> # @word <"arg4"> -> @word                         
-     @sqrt_quadrupleword_overflow <"sqrt_quadrupleword_overflow">: @word <"arg1"> # @word <"arg2"> # @word <"arg3"> # @word <"arg4"> -> @word       
-     @pred_word <"pred_word">: @word <"arg"> ->@word                                                                                                
-*/
-
+    else if (sort_machine_word::is_two_word_function_symbol(x))
+    {
+      derived().print("2");
+    }
+    else if (sort_machine_word::is_three_word_function_symbol(x))
+    {
+      derived().print("3");
+    }
+    else if (sort_machine_word::is_four_word_function_symbol(x))
+    {
+      derived().print("4");
+    }
+    else if (sort_machine_word::is_equals_zero_word_application(x))
+    {
+      derived().print("(");
+      derived().apply(sort_machine_word::arg(x));
+      derived().print(" == 0)");
+    }
+    else if (sort_machine_word::is_not_equals_zero_word_application(x))
+    {
+      derived().print("(");
+      derived().apply(sort_machine_word::arg(x));
+      derived().print(" != 0)");
+    }
+    else if (sort_machine_word::is_equals_one_word_application(x))
+    {
+      derived().print("(");
+      derived().apply(sort_machine_word::arg(x));
+      derived().print(" == 1)");
+    }
+    else if (sort_machine_word::is_equals_max_word_application(x))
+    {
+      derived().print("(");
+      derived().apply(sort_machine_word::arg(x));
+      derived().print(" == " + std::to_string(sort_machine_word::detail::max_word().value()) + ")");
+    }
+    else if (sort_machine_word::is_add_with_carry_word_application(x))
+    {
+      derived().print("((");
+      derived().apply(sort_machine_word::left(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::right(x));
+      derived().print(" + 1) mod ");
+      derived().print(max_machine_number_string());
+      derived().print(" )");
+    }
+    else if (sort_machine_word::is_add_with_carry_overflow_word_application(x))
+    {
+      derived().print("((");
+      derived().apply(sort_machine_word::left(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::right(x));
+      derived().print(" + 1) div ");
+      derived().print(max_machine_number_string());
+      derived().print(" )");
+    }
+    else if (sort_machine_word::is_times_with_carry_word_application(x))
+    {
+      derived().print("((");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(" * ");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg3(x));
+      derived().print(") mod ");
+      derived().print(max_machine_number_string());
+      derived().print(" )");
+    }
+    else if (sort_machine_word::is_times_with_carry_overflow_word_application(x))
+    {
+      derived().print("((");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(" * ");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg3(x));
+      derived().print(") div ");
+      derived().print(max_machine_number_string());
+      derived().print(" )");
+    }
+    else if (sort_machine_word::is_minus_word_application(x))
+    {
+      derived().print("((");
+      derived().apply(sort_machine_word::left(x));
+      derived().print(" - ");
+      derived().apply(sort_machine_word::right(x));
+      derived().print(") mod ");
+      derived().print(max_machine_number_string());
+      derived().print(" )");
+    }
+    else if (sort_machine_word::is_monus_word_application(x))
+    {
+      derived().print("max(0,");
+      derived().apply(sort_machine_word::left(x));
+      derived().print(" - ");
+      derived().apply(sort_machine_word::right(x));
+      derived().print(")");
+    }
+    else if (sort_machine_word::is_div_word_application(x))
+    {
+      derived().print("(");
+      derived().apply(sort_machine_word::left(x));
+      derived().print(" div ");
+      derived().apply(sort_machine_word::right(x));
+      derived().print(")");
+    }
+    else if (sort_machine_word::is_mod_word_application(x))
+    {
+      derived().print("(");
+      derived().apply(sort_machine_word::left(x));
+      derived().print(" mod ");
+      derived().apply(sort_machine_word::right(x));
+      derived().print(")");
+    }
+    else if (sort_machine_word::is_sqrt_word_application(x))
+    {
+      derived().print("sqrt(");
+      derived().apply(sort_machine_word::arg(x));
+      derived().print(")");
+    }
+    else if (sort_machine_word::is_div_doubleword_application(x))
+    {
+      derived().print("((" + max_machine_number_string() + "*");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(") div ");
+      derived().apply(sort_machine_word::arg3(x));
+      derived().print(")");
+    }
+    else if (sort_machine_word::is_div_double_doubleword_application(x))
+    {
+      derived().print("((" + max_machine_number_string() + "*");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(") div (" + max_machine_number_string() + "*");
+      derived().apply(sort_machine_word::arg3(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg4(x));
+      derived().print("))");
+    }
+    else if (sort_machine_word::is_div_triple_doubleword_application(x))
+    {
+      derived().print("((" + max_machine_number_string() + "*(" + max_machine_number_string() + "*");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(") + ");
+      derived().apply(sort_machine_word::arg3(x));
+      derived().print(") div (" + max_machine_number_string() + "*");
+      derived().apply(sort_machine_word::arg4(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg5(x));
+      derived().print("))");
+    }
+    else if (sort_machine_word::is_mod_doubleword_application(x))
+    {
+      derived().print("((" + max_machine_number_string() + "*");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(") mod ");
+      derived().apply(sort_machine_word::arg3(x));
+      derived().print(")");
+    }
+    else if (sort_machine_word::is_sqrt_doubleword_application(x))
+    {
+      derived().print("sqrt(" + max_machine_number_string() + "*");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(")");
+    }
+    else if (sort_machine_word::is_sqrt_tripleword_application(x))
+    {
+      // The least significant word of sqrt(BASE*(BASE*arg1 + arg2) + arg3).
+      derived().print("(sqrt(" + max_machine_number_string() + "*(" + max_machine_number_string() + "*");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(") + ");
+      derived().apply(sort_machine_word::arg3(x));
+      derived().print(") mod ");
+      derived().print(max_machine_number_string());
+      derived().print(")");
+    }
+    else if (sort_machine_word::is_sqrt_tripleword_overflow_application(x))
+    {
+      // The most significant word of sqrt(BASE*(BASE*arg1 + arg2) + arg3).
+      derived().print("(sqrt(" + max_machine_number_string() + "*(" + max_machine_number_string() + "*");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(") + ");
+      derived().apply(sort_machine_word::arg3(x));
+      derived().print(") div ");
+      derived().print(max_machine_number_string());
+      derived().print(")");
+    }
+    else if (sort_machine_word::is_sqrt_quadrupleword_application(x))
+    {
+      // The least significant word of sqrt(BASE*(BASE*(BASE*arg1 + arg2) + arg3) + arg4).
+      derived().print("(sqrt(" + max_machine_number_string() + "*(" + max_machine_number_string() + "*(" + max_machine_number_string() + "*");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(") + ");
+      derived().apply(sort_machine_word::arg3(x));
+      derived().print(") + ");
+      derived().apply(sort_machine_word::arg4(x));
+      derived().print(") mod ");
+      derived().print(max_machine_number_string());
+      derived().print(")");
+    }
+    else if (sort_machine_word::is_sqrt_quadrupleword_overflow_application(x))
+    {
+      // The most significant word of sqrt(BASE*(BASE*(BASE*arg1 + arg2) + arg3) + arg4).
+      derived().print("(sqrt(" + max_machine_number_string() + "*(" + max_machine_number_string() + "*(" + max_machine_number_string() + "*");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(" + ");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(") + ");
+      derived().apply(sort_machine_word::arg3(x));
+      derived().print(") + ");
+      derived().apply(sort_machine_word::arg4(x));
+      derived().print(") div ");
+      derived().print(max_machine_number_string());
+      derived().print(")");
+    }
+    else if (sort_machine_word::is_pred_word_application(x))
+    {
+      derived().print("(");
+      derived().apply(sort_machine_word::arg(x));
+      derived().print(" - 1)");
+    }
+    else if (sort_machine_word::is_equal_word_application(x))
+    {
+      print_binary_data_operation(x, sort_machine_word::left(x), sort_machine_word::right(x), " == ");
+    }
+    else if (sort_machine_word::is_not_equal_word_application(x))
+    {
+      print_binary_data_operation(x, sort_machine_word::left(x), sort_machine_word::right(x), " != ");
+    }
+    else if (sort_machine_word::is_less_word_application(x))
+    {
+      print_binary_data_operation(x, sort_machine_word::left(x), sort_machine_word::right(x), " < ");
+    }
+    else if (sort_machine_word::is_less_equal_word_application(x))
+    {
+      print_binary_data_operation(x, sort_machine_word::left(x), sort_machine_word::right(x), " <= ");
+    }
+    else if (sort_machine_word::is_greater_word_application(x))
+    {
+      print_binary_data_operation(x, sort_machine_word::left(x), sort_machine_word::right(x), " > ");
+    }
+    else if (sort_machine_word::is_greater_equal_word_application(x))
+    {
+      print_binary_data_operation(x, sort_machine_word::left(x), sort_machine_word::right(x), " >= ");
+    }
+    else if (sort_machine_word::is_rightmost_bit_application(x))
+    {
+      derived().print("(");
+      derived().apply(sort_machine_word::arg(x));
+      derived().print(" mod 2 == 1)");
+    }
+    else if (sort_machine_word::is_shift_right_application(x))
+    {
+      // Shifts the word one position to the right, shifting the incoming bit into the most
+      // significant position.
+      derived().print("(");
+      derived().apply(sort_machine_word::arg2(x));
+      derived().print(" div 2 + if(");
+      derived().apply(sort_machine_word::arg1(x));
+      derived().print(", " + std::to_string(std::numeric_limits<std::size_t>::max() / 2 + 1) + ", 0))");
+    }
 
 #endif
 
@@ -1846,6 +2117,12 @@ struct printer: public data::add_traverser_sort_expressions<core::detail::printe
       derived().apply(sort_nat::arg(x));
       derived().print(" == 1)");
     }
+    else if (sort_nat::is_div2_application(x))
+    {
+      derived().print("(");
+      derived().apply(sort_nat::arg(x));
+      derived().print(" div 2)");
+    }
 #else
     else if (sort_nat::is_cnat_application(x))
     {
@@ -1883,7 +2160,24 @@ struct printer: public data::add_traverser_sort_expressions<core::detail::printe
       derived().print(")");
     }
 
-    // TODO: handle @swap_zero*
+    else if (sort_nat::is_swap_zero_application(x))
+    {
+      // swap_zero(m, n) = if n == m then 0 else if n == 0 then m else n.
+      const data_expression& m = sort_nat::left(x);
+      const data_expression& n = sort_nat::right(x);
+      derived().print("if(");
+      derived().apply(n);
+      derived().print(" == ");
+      derived().apply(m);
+      derived().print(", 0, if(");
+      derived().apply(n);
+      derived().print(" == 0, ");
+      derived().apply(m);
+      derived().print(", ");
+      derived().apply(n);
+      derived().print("))");
+    }
+    // TODO: handle @swap_zero_add, @swap_zero_min, @swap_zero_monus (legacy, non-machine-number representation only)
 
     //-------------------------------------------------------------------//
     //                            int
