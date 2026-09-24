@@ -37,6 +37,7 @@ class mcrl2mbt_tool : public rewriter_tool<input_tool>
 
   std::string m_adapter_url;
   std::string m_io_file;
+  lps::explorer_options m_options;
 
 protected:
   void add_options(interface_description& desc) override
@@ -50,6 +51,8 @@ protected:
       make_optional_argument("FILE", ""),
       "action classification file with 'input'/'output' sections",
       'f');
+    desc.add_option("cached", "use enumeration caching techniques to speed up state exploration. ");
+    desc.add_hidden_option("global-cache", "use a global cache instead of a cache per summand");
   }
 
   void parse_options(const command_line_parser& parser) override
@@ -63,6 +66,12 @@ protected:
     {
       m_io_file = parser.option_argument("io-file");
     }
+
+    m_options.number_of_threads = 1;
+    m_options.rewrite_strategy = rewrite_strategy();
+    m_options.remove_unused_rewrite_rules = true;
+    m_options.cached = parser.has_option("cached");
+    m_options.global_cache = parser.has_option("global-cache");
   }
 
   bool run() override
@@ -75,7 +84,8 @@ protected:
     lps::specification spec;
     lps::load_lps(spec, m_input_filename);
 
-    const data::rewriter rewr(spec.data(), rewrite_strategy());
+    const data::rewriter rewr
+      = lps::construct_rewriter(spec, m_options.rewrite_strategy, m_options.remove_unused_rewrite_rules);
 
     io_classifier classifier;
     if (!m_io_file.empty())
@@ -83,14 +93,11 @@ protected:
       classifier.load(m_io_file);
     }
 
-    lps::explorer_options options;
-    options.number_of_threads = 1;
-
     // Use the input filename as the LPS identifier and its CRC32 as a cheap integrity hash.
     boost::crc_32_type result;
     result.process_bytes(m_input_filename.data(), m_input_filename.size());
 
-    mbt_session session(spec, options, rewr, classifier, m_input_filename, std::to_string(result.checksum()));
+    mbt_session session(spec, m_options, rewr, classifier, m_input_filename, std::to_string(result.checksum()));
     session.connect(m_adapter_url);
     session.run();
     return !session.had_error();
