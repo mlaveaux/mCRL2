@@ -39,7 +39,7 @@ mbt_session::mbt_session(const lps::specification& spec,
   m_client.set_error_handler(
     [this](const std::string& desc)
     {
-      mCRL2log(log::error) << "connection error: " << desc << std::endl;
+      mCRL2log(log::log_level_t::error) << "connection error: " << desc << std::endl;
       m_had_error = true;
       m_status = status::closed;
     });
@@ -176,7 +176,7 @@ void mbt_session::on_hello_response(const mbt_protocol::incoming_message& msg)
     m_status = status::ready;
     arm_heartbeat_send_timer();
 
-    mCRL2log(log::verbose) << "hello handshake complete; session ready" << std::endl;
+    mCRL2log(log::log_level_t::verbose) << "hello handshake complete; session ready" << std::endl;
   }
   catch (const std::exception& e)
   {
@@ -366,6 +366,7 @@ void mbt_session::on_close(const mbt_protocol::incoming_message& msg)
   m_status = status::closed;
   m_send_timer.cancel();
   m_recv_watchdog.cancel();
+  m_client.send(mbt_protocol::make_close());
   m_client.close();
 }
 
@@ -399,7 +400,7 @@ void mbt_session::arm_heartbeat_recv_watchdog()
       {
         return;
       }
-      mCRL2log(log::error) << "heartbeat timeout: no message received from adapter" << std::endl;
+      mCRL2log(log::log_level_t::error) << "heartbeat timeout: no message received from adapter" << std::endl;
       m_had_error = true;
       m_status = status::closed;
       m_client.close("heartbeat timeout");

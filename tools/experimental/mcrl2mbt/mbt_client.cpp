@@ -122,7 +122,7 @@ void mbt_client::close(std::string_view reason)
     {
       if (ec && ec != websocket::error::closed)
       {
-        mCRL2log(log::warning) << "WebSocket close error: " << ec.message() << std::endl;
+        mCRL2log(log::log_level_t::warning) << "WebSocket close error: " << ec.message() << std::endl;
       }
     });
 }
@@ -134,7 +134,8 @@ void mbt_client::schedule_read()
 
 void mbt_client::on_read(beast::error_code ec, std::size_t bytes)
 {
-  if (ec == websocket::error::closed || ec == net::error::eof)
+  // If we are closing, ignore any read error.
+  if (ec == websocket::error::closed || ec == net::error::eof || (m_closing && ec))
   {
     m_connected = false;
     m_ioc.stop();
@@ -160,7 +161,7 @@ void mbt_client::on_read(beast::error_code ec, std::size_t bytes)
   }
   catch (const std::exception& e)
   {
-    mCRL2log(log::warning) << "failed to parse incoming message: " << e.what() << std::endl;
+    mCRL2log(log::log_level_t::warning) << "failed to parse incoming message: " << e.what() << std::endl;
   }
 
   schedule_read();
@@ -195,7 +196,7 @@ void mbt_client::on_write(beast::error_code ec, std::size_t bytes)
 
 void mbt_client::handle_error(const std::string& description)
 {
-  mCRL2log(log::error) << "mbt_client: " << description << std::endl;
+  mCRL2log(log::log_level_t::error) << "mbt_client: " << description << std::endl;
   if (m_error_handler)
   {
     m_error_handler(description);
