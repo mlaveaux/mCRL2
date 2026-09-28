@@ -53,6 +53,8 @@ protected:
       'f');
     desc.add_option("cached", "use enumeration caching techniques to speed up state exploration. ");
     desc.add_hidden_option("global-cache", "use a global cache instead of a cache per summand");
+    desc.add_hidden_option("no-one-point-rule-rewrite", "do not apply the one point rule rewriter");
+    desc.add_hidden_option("no-replace-constants-by-variables", "do not move constant expressions to a substitution");
   }
 
   void parse_options(const command_line_parser& parser) override
@@ -72,6 +74,8 @@ protected:
     m_options.remove_unused_rewrite_rules = true;
     m_options.cached = parser.has_option("cached");
     m_options.global_cache = parser.has_option("global-cache");
+    m_options.one_point_rule_rewrite = !parser.has_option("no-one-point-rule-rewrite");
+    m_options.replace_constants_by_variables = !parser.has_option("no-replace-constants-by-variables");
   }
 
   bool run() override

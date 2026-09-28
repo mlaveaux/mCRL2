@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "mcrl2/data/rewriter.h"
-#include "mcrl2/data/substitution_utility.h"
 #include "mcrl2/lps/explorer.h"
 #include "mcrl2/lps/explorer_options.h"
 #include "mcrl2/lps/specification.h"

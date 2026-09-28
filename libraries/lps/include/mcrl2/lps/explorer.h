@@ -868,6 +868,16 @@ class explorer: public abortable
       return m_initial_state;
     }
 
+    // Compute the (rewritten, closed) initial state. Unlike initial_state(), this resolves any
+    // fresh variables introduced by explorer_options::replace_constants_by_variables, which live
+    // only in this explorer's own sigma/rewriter and cannot be resolved by a caller-supplied one.
+    state compute_initial_state() const
+    {
+      state result;
+      compute_state(result, m_initial_state, m_global_sigma, m_global_rewr);
+      return result;
+    }
+
     // Make the rewriter available to be used in a class that uses this explorer class.
     const data::rewriter& get_rewriter() const
     {

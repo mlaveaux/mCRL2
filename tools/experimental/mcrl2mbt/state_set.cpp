@@ -56,14 +56,7 @@ mbt_protocol::wire_multi_action state_set::wire_label(const lps::multi_action& a
 
 lps::state state_set::compute_initial_state() const
 {
-  data::mutable_indexed_substitution<> sigma;
-  lps::state s0;
-  const data::data_expression_list& init = m_explorer.initial_state();
-  lps::make_state(s0,
-    init.begin(),
-    init.size(),
-    [&](data::data_expression& result, const data::data_expression& x) { m_rewr(result, x, sigma); });
-  return s0;
+  return m_explorer.compute_initial_state();
 }
 
 void state_set::reset_to_initial()
