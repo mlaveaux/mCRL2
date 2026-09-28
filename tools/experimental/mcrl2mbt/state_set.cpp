@@ -10,6 +10,7 @@
 #include "state_set.h"
 
 #include <algorithm>
+#include <queue>
 #include <stdexcept>
 #include <unordered_set>
 
@@ -70,34 +71,53 @@ void state_set::reset_to_initial()
   m_states = {compute_initial_state()};
 }
 
-std::vector<lps::state> state_set::tau_closure(const std::vector<lps::state>& seeds, std::size_t depth)
+const state_set::edge_list_type& state_set::cached_out_edges(const lps::state& s)
 {
-  std::vector<lps::state> result = seeds;
+  auto it = m_edge_cache.find(s);
+  if (it == m_edge_cache.end())
+  {
+    const std::list<explorer_type::transition> edges = m_explorer.out_edges(s);
+    it = m_edge_cache.emplace(std::make_pair(s, edge_list_type(edges.begin(), edges.end()))).first;
+  }
+  return it->second;
+}
+
+std::vector<state_set::closure_entry> state_set::tau_closure(const std::vector<lps::state>& seeds, std::size_t depth)
+{
+  std::vector<closure_entry> result;
   std::unordered_set<lps::state> visited(seeds.begin(), seeds.end());
 
-  std::vector<lps::state> frontier = seeds;
-  for (std::size_t d = 0; d < depth && !frontier.empty(); ++d)
+  // Each queued state is visited, and thus has cached_out_edges() called on it, exactly once.
+  std::queue<std::pair<lps::state, std::size_t>> todo;
+  for (const lps::state& s: seeds)
   {
-    std::vector<lps::state> next_frontier;
-    for (const lps::state& s: frontier)
+    todo.emplace(s, 0);
+  }
+
+  while (!todo.empty())
+  {
+    const auto [s, d] = std::move(todo.front());
+    todo.pop();
+
+    const edge_list_type& edges = cached_out_edges(s);
+    result.push_back({.state=s, .edges=edges});
+
+    if (d < depth)
     {
-      for (const auto& edge: m_explorer.out_edges(s))
+      for (const auto& edge: edges)
       {
-        if (is_tau(edge.action) && visited.find(edge.state) == visited.end())
+        if (is_tau(edge.action) && visited.insert(edge.state).second)
         {
-          visited.insert(edge.state);
-          result.push_back(edge.state);
-          next_frontier.push_back(edge.state);
+          todo.emplace(edge.state, d + 1);
         }
       }
     }
-    frontier = std::move(next_frontier);
   }
 
   return result;
 }
 
-std::vector<lps::state> state_set::tau_closed_states(std::size_t tau_depth)
+std::vector<state_set::closure_entry> state_set::tau_closed_states(std::size_t tau_depth)
 {
   return tau_closure(m_states, tau_depth);
 }
@@ -105,9 +125,9 @@ std::vector<lps::state> state_set::tau_closed_states(std::size_t tau_depth)
 bool state_set::is_action_enabled(const mbt_protocol::wire_multi_action& label, std::size_t tau_depth)
 {
   const auto canonical = mbt_protocol::normalize(label);
-  for (const lps::state& s: tau_closed_states(tau_depth))
+  for (const closure_entry& entry: tau_closed_states(tau_depth))
   {
-    for (const auto& edge: m_explorer.out_edges(s))
+    for (const auto& edge: entry.edges)
     {
       if (!is_tau(edge.action) && wire_label(edge.action) == canonical)
       {
@@ -120,14 +140,13 @@ bool state_set::is_action_enabled(const mbt_protocol::wire_multi_action& label, 
 
 bool state_set::apply_action(const mbt_protocol::wire_multi_action& label, std::size_t tau_depth)
 {
-  const std::vector<lps::state> closed = tau_closed_states(tau_depth);
   const auto canonical = mbt_protocol::normalize(label);
 
   // Collect all immediate successors via `label`.
   std::vector<lps::state> post;
-  for (const lps::state& s: closed)
+  for (const closure_entry& entry: tau_closed_states(tau_depth))
   {
-    for (const auto& edge: m_explorer.out_edges(s))
+    for (const auto& edge: entry.edges)
     {
       if (!is_tau(edge.action) && wire_label(edge.action) == canonical)
       {
@@ -145,7 +164,13 @@ bool state_set::apply_action(const mbt_protocol::wire_multi_action& label, std::
   std::sort(post.begin(), post.end());
   post.erase(std::unique(post.begin(), post.end()), post.end());
 
-  m_states = tau_closure(post, tau_depth);
+  std::vector<closure_entry> closure = tau_closure(post, tau_depth);
+  m_states.clear();
+  m_states.reserve(closure.size());
+  for (closure_entry& entry: closure)
+  {
+    m_states.push_back(std::move(entry.state));
+  }
   return true;
 }
 
@@ -155,11 +180,11 @@ state_set::enabled_actions state_set::get_enabled(std::size_t tau_depth, const i
   std::vector<mbt_protocol::wire_multi_action>& seen_inputs = result.inputs;
   std::vector<mbt_protocol::wire_multi_action>& seen_outputs = result.outputs;
 
-  for (const lps::state& s: tau_closed_states(tau_depth))
+  for (const closure_entry& entry: tau_closed_states(tau_depth))
   {
     bool quiescent = true;
 
-    for (const auto& edge: m_explorer.out_edges(s))
+    for (const auto& edge: entry.edges)
     {
       if (is_tau(edge.action))
       {
@@ -196,13 +221,11 @@ state_set::enabled_actions state_set::get_enabled(std::size_t tau_depth, const i
 
 bool state_set::refine_to_quiescent(std::size_t tau_depth, const io_classifier& classifier)
 {
-  const std::vector<lps::state> closed = tau_closed_states(tau_depth);
-
   std::vector<lps::state> quiescent;
-  for (const lps::state& s: closed)
+  for (const closure_entry& entry: tau_closed_states(tau_depth))
   {
     bool is_quiescent = true;
-    for (const auto& edge: m_explorer.out_edges(s))
+    for (const auto& edge: entry.edges)
     {
       if (is_tau(edge.action) || classifier.is_output(first_label(edge.action)))
       {
@@ -212,7 +235,7 @@ bool state_set::refine_to_quiescent(std::size_t tau_depth, const io_classifier& 
     }
     if (is_quiescent)
     {
-      quiescent.push_back(s);
+      quiescent.push_back(entry.state);
     }
   }
 

@@ -43,6 +43,9 @@ public:
     }
   }
 
+  iterator begin() { return m_map.begin(); }
+  iterator end() { return m_map.end(); }
+
   const_iterator begin() const { return m_map.begin(); }
   const_iterator end() const { return m_map.end(); }
 
@@ -50,9 +53,11 @@ public:
 
   std::size_t count(const key_type& key) const { return m_map.count(key); }
 
-  iterator find(const key_type& key)
+  /// \brief Looks up an element by key.
+  template<typename... Args>
+  iterator find(const Args&... args)
   {
-    return m_map.find(key);
+    return m_map.find(args...);
   }
 
   /// \brief Stores the given key-value pair in the cache. Depending on the cache policy and capacity an existing element

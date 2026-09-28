@@ -18,6 +18,7 @@
 #include "mcrl2/lps/explorer_options.h"
 #include "mcrl2/lps/specification.h"
 #include "mcrl2/lps/state.h"
+#include "mcrl2/utilities/fixed_size_cache.h"
 
 #include "io_classifier.h"
 #include "mbt_protocol.h"
@@ -35,6 +36,7 @@ class state_set
 {
 public:
   using explorer_type = lps::explorer<false, false, lps::specification>;
+  using edge_list_type = std::vector<explorer_type::transition>;
 
   /// \brief Aggregated result of get_enabled().
   struct enabled_actions
@@ -67,11 +69,25 @@ public:
   std::size_t size() const { return m_states.size(); }
 
 private:
-  /// \brief Compute tau*_k(seeds) — BFS following tau edges up to depth k.
-  std::vector<lps::state> tau_closure(const std::vector<lps::state>& seeds, std::size_t depth);
+  /// \brief A state paired with its complete out-edge set (tau and non-tau), computed exactly
+  /// once per tau_closure() call so that callers never need to query out_edges again for it.
+  struct closure_entry
+  {
+    lps::state state;
+    edge_list_type edges;
+  };
 
-  /// \brief Compute tau*_k(m_states).
-  std::vector<lps::state> tau_closed_states(std::size_t tau_depth);
+  /// \brief Compute tau*_k(seeds) — BFS following tau edges up to depth k. Each returned entry
+  /// carries its state's full out-edge set, fetched via cached_out_edges().
+  std::vector<closure_entry> tau_closure(const std::vector<lps::state>& seeds, std::size_t depth);
+
+  /// \brief Compute tau*_k(m_states); see tau_closure().
+  std::vector<closure_entry> tau_closed_states(std::size_t tau_depth);
+
+  /// \brief Return (and cache) the out-edges of state `s`. The LPS never changes for the
+  /// lifetime of a state_set, so a cache hit is always exact; the cache has a fixed maximum
+  /// size to bound memory use on large state spaces.
+  const edge_list_type& cached_out_edges(const lps::state& s);
 
   /// \brief Compute the initial lps::state from the spec's initial expressions.
   lps::state compute_initial_state() const;
@@ -82,9 +98,13 @@ private:
   /// pretty-printed to produce a canonical string form.
   mbt_protocol::wire_multi_action wire_label(const lps::multi_action& action) const;
 
+  /// \brief Maximum number of states' out-edges kept in the cache at once.
+  static constexpr std::size_t edge_cache_size = 200'000;
+
   data::rewriter m_rewr;
   explorer_type m_explorer;
   std::vector<lps::state> m_states;
+  mcrl2::utilities::fifo_cache<lps::state, edge_list_type> m_edge_cache{edge_cache_size};
 };
 
 } // namespace mcrl2
